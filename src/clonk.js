@@ -10,6 +10,7 @@ import {
   AIR,
   COAL,
   EARTH,
+  GEM,
   GOLD,
   H,
   LAVA,
@@ -77,10 +78,20 @@ function digAt(cx, cy, r) {
   }
   spawnFromDig(cx, cy);
 }
+const CRUMB = {
+  [EARTH]: '#7d5230',
+  [SAND]: '#d9b56a',
+  [LOAM]: '#b07a45',
+  [ORE]: '#9a5a46',
+  [COAL]: '#3b3735',
+  [GEM]: '#b6f6ff',
+  [GOLD]: '#ffe066',
+};
 function digCell(x, y) {
   const i = y * W + x,
     m = mat[i];
-  if (m !== EARTH && m !== SAND && m !== GOLD && m !== LOAM && m !== ORE && m !== COAL) return;
+  if (m !== EARTH && m !== SAND && m !== GOLD && m !== LOAM && m !== ORE && m !== COAL && m !== GEM) return;
+  if (rnd() < 0.06) parts.push({ x, y, vx: (rnd() - 0.5) * 1.2, vy: -rnd(), l: 20, c: CRUMB[m] });
   if (m === GOLD) {
     G.goldDust++;
     if (rnd() < 0.25) parts.push({ x, y, vx: (rnd() - 0.5) * 1.2, vy: -rnd() * 1.4, l: 25, c: '#ffe066' });
@@ -88,6 +99,7 @@ function digCell(x, y) {
   else if (m === LOAM) G.loamDug++;
   else if (m === ORE) G.oreDug++;
   else if (m === COAL) G.coalDug++;
+  else if (m === GEM) G.gemDug = (G.gemDug || 0) + 1;
   mat[i] = AIR;
   bg[i] = 1;
   paint(i);
@@ -107,6 +119,11 @@ function spawnFromDig(cx, cy) {
     G.coalDug = 0;
     spawnItem('coal', cx - 1, cy - 2, rnd() - 0.5, -1, 20);
     sfx('pick', cx, cy);
+  }
+  if (G.gemDug >= 24) {
+    G.gemDug = 0;
+    spawnItem('gem', cx - 1, cy - 2, rnd() - 0.5, -1.2, 10);
+    sfx('coin', cx, cy);
   }
   if (G.loamDug >= 90) {
     G.loamDug = 0;

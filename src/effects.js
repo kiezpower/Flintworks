@@ -1,7 +1,7 @@
 import { biome } from './biomes.js';
 // Visual extras: distant mountains, glowing lava, dust and splashes.
 import { G, parts } from './state.js';
-import { AIR, LAVA, W, WATER, mat, rnd } from './world.js';
+import { AIR, GEM, LAVA, W, WATER, mat, rnd } from './world.js';
 
 // Far mountain range with snow caps, drawn behind the hills
 function drawMountains(ctx, cx, cy, dark) {
@@ -25,10 +25,12 @@ function drawMountains(ctx, cx, cy, dark) {
 
 // Lava pixels on screen, sampled on a coarse grid (reused for glow and night light)
 const lavaSpots = [],
-  waterSpots = [];
+  waterSpots = [],
+  gemSpots = [];
 function scanLava(cx, cy) {
   lavaSpots.length = 0;
   waterSpots.length = 0;
+  gemSpots.length = 0;
   for (let y = 1; y < G.VH && lavaSpots.length < 160; y += 3)
     for (let x = 1; x < G.VW; x += 3) {
       const i = (cy + y) * W + cx + x;
@@ -42,12 +44,20 @@ function scanLava(cx, cy) {
         }
         if (mat[j - W] === AIR) waterSpots.push(x, y - k);
       }
+      if (mat[i] === GEM && rnd() < 0.08) gemSpots.push(x, y);
       if (mat[i] !== LAVA) continue;
       lavaSpots.push(x, y);
       if (mat[i - W] !== LAVA && rnd() < 0.004)
         parts.push({ x: cx + x, y: cy + y - 1, vx: 0, vy: -0.4, l: 25, c: '#ffcf4a', g: -0.004 });
     }
   return lavaSpots;
+}
+function drawGemSparkles(ctx) {
+  ctx.fillStyle = '#ffffff';
+  for (let k = 0; k < gemSpots.length; k += 2) {
+    ctx.fillRect(gemSpots[k], gemSpots[k + 1] - 1, 1, 3);
+    ctx.fillRect(gemSpots[k] - 1, gemSpots[k + 1], 3, 1);
+  }
 }
 function drawWaterGlints(ctx) {
   ctx.fillStyle = 'rgba(255,255,255,0.75)';
@@ -92,4 +102,4 @@ const splash = (x, y, n) => {
     });
 };
 
-export { drawLavaGlow, drawMountains, drawWaterGlints, dust, scanLava, splash };
+export { drawGemSparkles, drawLavaGlow, drawMountains, drawWaterGlints, dust, scanLava, splash };

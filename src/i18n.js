@@ -37,6 +37,7 @@ const EN = {
   Erz: 'Ore',
   Kohle: 'Coal',
   Metall: 'Metal',
+  Edelstein: 'Gem',
   // building messages
   '{name} braucht {cost}': '{name} needs {cost}',
   '{name}: Wühler drin stehen lassen zum Bauen': '{name}: keep a digger inside to build it',

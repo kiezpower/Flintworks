@@ -1,5 +1,6 @@
+import { drawDecor } from './decor.js';
 import { biome } from './biomes.js';
-import { drawLavaGlow, drawMountains, drawWaterGlints, scanLava } from './effects.js';
+import { drawGemSparkles, drawLavaGlow, drawMountains, drawWaterGlints, scanLava } from './effects.js';
 import { drawTutorial } from './tutorial.js';
 import { arrows, lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
@@ -142,6 +143,14 @@ function drawAnimal(a, sx, sy) {
     ctx.fillRect(f > 0 ? sx + x : sx + a.w - x - w, sy + y, w, h);
   };
   const ph = Math.sin(a.anim) > 0;
+  if (a.kind === 'bat') {
+    const up = Math.sin(a.anim) > 0;
+    put(2, 1, 1, 2, '#2a2235');
+    put(0, up ? 0 : 2, 2, 1, '#3a2f45');
+    put(3, up ? 0 : 2, 2, 1, '#3a2f45');
+    put(2, 1, 1, 1, '#ff5050');
+    return;
+  }
   if (a.kind === 'wipf') {
     put(0, 1, 5, 2, '#f2e6d0');
     put(3, 0, 2, 2, '#f2e6d0');
@@ -241,9 +250,11 @@ function render() {
     ctx.fillRect(x + 1, up ? y - 1 : y + 1, 1, 1);
   }
   ctx.drawImage(wc, cx, cy, G.VW, G.VH, 0, 0, G.VW, G.VH);
+  drawDecor(ctx, cx, cy);
   const lava = scanLava(cx, cy);
   drawLavaGlow(ctx);
   drawWaterGlints(ctx);
+  drawGemSparkles(ctx);
   // pump pipes
   for (const b of builds)
     if (b.type === 'pump' && b.done && b.pipe) {

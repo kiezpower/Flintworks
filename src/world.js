@@ -16,10 +16,11 @@ const AIR = 0,
   LOAM = 9,
   ORE = 10,
   COAL = 11,
-  PLANK = 12;
-const SOLID = [0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1];
-const LIQ = [0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0];
-const BLAST = [0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1];
+  PLANK = 12,
+  GEM = 13;
+const SOLID = [0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1];
+const LIQ = [0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0];
+const BLAST = [0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1];
 const mat = new Uint8Array(W * H),
   bg = new Uint8Array(W * H),
   shade = new Uint8Array(W * H),
@@ -42,6 +43,7 @@ const PAL = [
   ['#8a4a3a', '#9a5a46', '#7a3e30', '#c07658'].map(c => hex(c)),
   ['#2a2626', '#33302e', '#232020', '#3b3735'].map(c => hex(c)),
   ['#a0703f', '#8b5e34', '#b07a45', '#946436'].map(c => hex(c)),
+  ['#3fb5d6', '#5fd3e8', '#2f8fb0', '#b6f6ff'].map(c => hex(c)),
 ];
 const TUN = ['#3a2416', '#33200f', '#402a1a', '#2e1c10'].map(c => hex(c));
 const MINI = [
@@ -58,6 +60,7 @@ const MINI = [
   '#9a5a46',
   '#2a2626',
   '#a0703f',
+  '#5fd3e8',
 ];
 // brighter / darker copies of a packed colour (alpha kept)
 const tint = (c, f) => {
@@ -207,6 +210,7 @@ const rnd = seedParam === null ? Math.random : seeded,
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
 export {
+  GEM,
   setGroundTop,
   activateAll,
   markActive,

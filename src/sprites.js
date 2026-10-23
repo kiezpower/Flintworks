@@ -192,6 +192,7 @@ const ICOL = {
   ore: '#9a5a46',
   coal: '#262222',
   metal: '#b0b8c0',
+  gem: '#5fd3e8',
 };
 const ITEM = {
   rock: { name: 'Stein', s: [3, 3], val: 2 },
@@ -204,6 +205,7 @@ const ITEM = {
   ore: { name: 'Erz', s: [3, 3], val: 6 },
   coal: { name: 'Kohle', s: [3, 3], val: 4 },
   metal: { name: 'Metall', s: [4, 2], val: 15 },
+  gem: { name: 'Edelstein', s: [3, 3], val: 60 },
 };
 function drawItemPx(g, t, x, y, blink) {
   const R = (a, b, w, h, c) => {
@@ -250,6 +252,10 @@ function drawItemPx(g, t, x, y, blink) {
     R(0, 0, 4, 2, '#8a949e');
     R(0, 0, 4, 1, '#d4dbe2');
     R(3, 1, 1, 1, '#5f6870');
+  } else if (t === 'gem') {
+    R(1, 0, 1, 1, '#b6f6ff');
+    R(0, 1, 3, 1, '#5fd3e8');
+    R(1, 2, 1, 1, '#2f8fb0');
   }
 }
 const iconCache = {};

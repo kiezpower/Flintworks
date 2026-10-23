@@ -1,3 +1,4 @@
+import { scatterDecor } from './decor.js';
 import { biome, setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
 import { addClonk, mkAnimal, spawnItem } from './entities.js';
@@ -23,6 +24,7 @@ import {
   AIR,
   COAL,
   EARTH,
+  GEM,
   GOLD,
   GRANITE,
   H,
@@ -165,6 +167,11 @@ function gen() {
       const d = 6 + Math.round(3 * Math.sin(x * 0.05) + 3);
       for (let y = surf[x] + 1; y <= surf[x] + d; y++) if (mat[y * W + x] === EARTH) mat[y * W + x] = SAND;
     }
+  // gems: small, rare pockets deep down
+  for (let k = 0; k < 12; k++) {
+    const x = ri(220, W - 20);
+    blob(x, H - 30 - rnd() * 80, ri(2, 4), ri(2, 3), GEM);
+  }
   // balancing: one shallow gold vein close to the base for the first sale
   {
     const x = ri(135, 165);
@@ -242,6 +249,7 @@ function gen() {
       fish++;
     }
   }
+  for (const c of caves.slice(2, 10)) animals.push(mkAnimal('bat', c.x, c.y - 2));
   for (let k = 0; k < 2 && k + 7 < caves.length; k++) {
     const c = caves[7 + k];
     animals.push(mkAnimal('monster', c.x - 6, c.y - 4));
@@ -259,6 +267,7 @@ function gen() {
   G.rainNext = 9000 + rnd() * 4000;
   arrows.length = 0;
   calcTerr();
+  scatterDecor();
 }
 function clearFoot(bx, gy, w, h) {
   for (let y = gy - h; y < gy; y++)

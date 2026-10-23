@@ -40,7 +40,7 @@ function addClonk(x, y) {
   return c;
 }
 function mkAnimal(kind, x, y) {
-  const sz = { wipf: [5, 4], fish: [4, 2], monster: [12, 9] }[kind];
+  const sz = { wipf: [5, 4], fish: [4, 2], monster: [12, 9], bat: [5, 3] }[kind];
   return {
     kind,
     x,

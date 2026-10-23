@@ -1,3 +1,4 @@
+import { updDecor } from './decor.js';
 import { biome } from './biomes.js';
 import { updAmbience } from './ambience.js';
 import { endTutorial, startTutorial, updTutorial } from './tutorial.js';
@@ -197,6 +198,7 @@ function step() {
       }
     updTutorial();
     if (G.frame % 15 === 0) updAmbience();
+    if (G.frame % 30 === 0) updDecor();
     if (G.frame % 60 === 0) checkHints();
     if (G.frame % 3600 === 0) saveGame();
     if (G.money >= GOAL) endScreen(true);

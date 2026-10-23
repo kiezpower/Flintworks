@@ -1,3 +1,4 @@
+import { scatterDecor } from './decor.js';
 import { setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
 import { mkCloud } from './gen.js';
@@ -154,6 +155,7 @@ function loadGame() {
       G.sel = n < 0 ? 0 : n;
     }
     arrows.length = 0;
+    scatterDecor();
     calcTerr();
     G.startT = performance.now() - (d.play || 0);
     return true;

@@ -301,6 +301,23 @@ function updAnimal(a) {
     inL = LIQ[m];
   if (m === LAVA || m === ACID) a.hp -= m === LAVA ? 2 : 0.3;
   if (a.hp <= 0) return false;
+  if (a.kind === 'bat') {
+    // flutter around inside caves, turn at walls
+    if (--a.t <= 0) {
+      a.t = ri(20, 70);
+      a.vx = (rnd() - 0.5) * 1.4;
+      a.vy = (rnd() - 0.5) * 0.9;
+    }
+    a.vy += Math.sin(G.frame * 0.3 + a.x) * 0.03;
+    if (free(a.x + a.vx, a.y, a.w, a.h) && !LIQ[matAt(Math.floor(a.x + a.vx + 2), Math.floor(a.y + 1))])
+      a.x += a.vx;
+    else a.vx *= -1;
+    if (free(a.x, a.y + a.vy, a.w, a.h)) a.y += a.vy;
+    else a.vy *= -1;
+    if (a.vx) a.face = Math.sign(a.vx);
+    a.anim += 0.6;
+    return a.hp > 0;
+  }
   if (a.kind === 'fish') {
     if (m === WATER) {
       a.dry = 0;
@@ -396,7 +413,7 @@ function updAnimal(a) {
   return true;
 }
 function killAnimal(a) {
-  const col = a.kind === 'monster' ? '#5a56a0' : a.kind === 'wipf' ? '#f2e6d0' : '#e0a13a';
+  const col = { monster: '#5a56a0', wipf: '#f2e6d0', bat: '#3a2f45' }[a.kind] || '#e0a13a';
   for (let q = 0; q < 14; q++)
     parts.push({ x: a.x + a.w / 2, y: a.y + a.h / 2, vx: (rnd() - 0.5) * 2, vy: -rnd() * 2, l: 30, c: col });
   if (a.kind === 'monster') {
