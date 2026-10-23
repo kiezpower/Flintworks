@@ -63,7 +63,7 @@ addEventListener('keydown', e => {
     const n = +e.code.slice(5) - 1;
     if (n < c.inv.length) c.isel = n;
   }
-  if (e.code === 'Enter' && G.state !== 'play') startGame();
+  if (e.code === 'Enter' && G.state !== 'play') startGame(false);
 });
 addEventListener('keyup', e => {
   if (e.code in KEYMAP) keys[KEYMAP[e.code]] = 0;

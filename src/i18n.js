@@ -1,0 +1,232 @@
+// Translations. The German text is the key; English entries replace it.
+// Placeholders: {name} is filled from the params object.
+const EN = {
+  // buildings
+  Hütte: 'Hut',
+  'Heilt die Crew': 'Heals your crew',
+  Flagge: 'Flag',
+  'Erweitert dein Baugebiet': 'Extends your building area',
+  Werkstatt: 'Workshop',
+  'Feuersteine, Sprengladungen, Loren': 'Flints, explosives, lorries',
+  Sägewerk: 'Sawmill',
+  'Holz → 3 Bretter · braucht Strom': 'Wood → 3 planks · needs power',
+  Windrad: 'Windmill',
+  'Erzeugt Strom aus Wind': 'Makes power from wind',
+  Fahrstuhl: 'Elevator',
+  'Kabine gräbt Schacht · Strom': 'Cabin digs a shaft · power',
+  Pumpe: 'Pump',
+  'Pumpt Flüssigkeit · Strom': 'Pumps liquids · power',
+  Hochofen: 'Furnace',
+  'Erz + Kohle → Metall · Strom': 'Ore + coal → metal · power',
+  Chemiefabrik: 'Chemical plant',
+  'Sprengstoff aus Kohle · Strom': 'Explosives from coal · power',
+  Wachturm: 'Watchtower',
+  'Schießt auf Monster, weite Sicht': 'Shoots monsters, wide view',
+  Tor: 'Gate',
+  'Öffnet nur für deine Crew': 'Opens only for your crew',
+  // items and resources
+  Lore: 'Lorry',
+  Wühler: 'Digger',
+  Stein: 'Rock',
+  Feuerstein: 'Flint',
+  Gold: 'Gold',
+  Holz: 'Wood',
+  Lehm: 'Loam',
+  Sprengladung: 'Explosive',
+  Brett: 'Plank',
+  Erz: 'Ore',
+  Kohle: 'Coal',
+  Metall: 'Metal',
+  // building messages
+  '{name} braucht {cost}': '{name} needs {cost}',
+  '{name}: Wühler drin stehen lassen zum Bauen': '{name}: keep a digger inside to build it',
+  '{name} fertig': '{name} finished',
+  'Erst auf festen Boden stellen': 'Stand on solid ground first',
+  'Zu weit weg von deinem Gebiet': 'Too far from your area',
+  'Außerhalb deines Gebiets – stell zuerst eine Flagge auf': 'Outside your area – place a flag first',
+  'Kein Platz am Rand': 'No room at the edge',
+  'Zu nah an einem Gebäude': 'Too close to a building',
+  'Hier ist es zu uneben': 'The ground is too uneven here',
+  'Nicht in Flüssigkeit bauen': 'Cannot build in liquid',
+  'Kein Strom – bau ein Windrad': 'No power – build a windmill',
+  'Fels blockiert – sprengen!': 'Rock in the way – blast it!',
+  'Windrad fertig: liefert Strom, je nach Wind': 'Windmill finished: makes power depending on the wind',
+  'Wachturm fertig: drin stehen für weite Sicht': 'Watchtower finished: stand inside for a wide view',
+  'Fahrstuhl fertig: draufstellen, Stick runter oder hoch':
+    'Elevator finished: stand on it, stick down or up',
+  'Pumpe fertig: drin stehen, Aktion schaltet ein': 'Pump finished: stand inside, Action turns it on',
+  'Lore verkauft: +{v} Taler': 'Lorry sold: +{v} coins',
+  // actions
+  Basis: 'Base',
+  Werk: 'Craft',
+  'Pumpe aus': 'Pump off',
+  'Pumpe an': 'Pump on',
+  'Pumpe läuft': 'Pump running',
+  'Pumpe steht': 'Pump stopped',
+  Fällen: 'Chop',
+  Brücke: 'Bridge',
+  Zünden: 'Light',
+  'Lauf!': 'Run!',
+  Bauen: 'Build',
+  'Lore ist voll': 'Lorry is full',
+  'Lore ist leer': 'Lorry is empty',
+  '{n} Sachen in die Lore': '{n} items into the lorry',
+  '{n} Sachen genommen': 'Took {n} items',
+  '{name} ist erschöpft': '{name} is exhausted',
+  'Gräbt weiter – nochmal tippen stoppt': 'Keeps digging – tap again to stop',
+  'Monster besiegt': 'Monster defeated',
+  'Meteore am Himmel!': 'Meteors in the sky!',
+  'Es fängt an zu regnen': 'It starts to rain',
+  // HUD and panels
+  '{money} / {goal} Taler': '{money} / {goal} coins',
+  'Strom {s} / {d} · Wind {w}%': 'Power {s} / {d} · Wind {w}%',
+  Leer: 'Empty',
+  'Bezahlt aus dem Gepäck, einer Lore und von Wühlern daneben. Der Bau entsteht dort, wo {name} steht.':
+    'Paid from your pack, a lorry and diggers next to you. It is built where {name} stands.',
+  'Arbeitet gerade.': 'Busy right now.',
+  'Wenig Strom: arbeitet langsamer. Bau ein Windrad.': 'Low power: works slower. Build a windmill.',
+  Rezepte: 'Recipes',
+  '{name} wird hergestellt': 'Making {name}',
+  Heimatbasis: 'Home base',
+  '{name} trägt {items}': '{name} carries {items}',
+  nichts: 'nothing',
+  'Verkaufen +{v}': 'Sell +{v}',
+  '+{v} Taler': '+{v} coins',
+  Ausbau: 'Upgrade',
+  'Burg Stufe {n}': 'Castle level {n}',
+  'Preise +{p}%, {c} Wühler, Strom {pw}, größeres Gebiet':
+    'Prices +{p}%, {c} diggers, power {pw}, larger area',
+  '{m} Taler + {cost}': '{m} coins + {cost}',
+  'Ausbau braucht {m} Taler + {cost}': 'Upgrade needs {m} coins + {cost}',
+  'Burg auf Stufe {n} ausgebaut': 'Castle upgraded to level {n}',
+  'Kaufen · Kasse: {m} Taler': 'Buy · Cash: {m} coins',
+  'Neues Crewmitglied': 'New crew member',
+  'Transportiert 25 Sachen': 'Carries 25 items',
+  '{p} Taler': '{p} coins',
+  '{name} ist da': '{name} has arrived',
+  'Lore steht bereit': 'Lorry is ready',
+  '{name} kommt aus der Basis (−60 Taler)': '{name} leaves the base (−60 coins)',
+  'Sicher? Nochmal tippen': 'Sure? Tap again',
+  'Nochmal tippen: neue Welt starten, Fortschritt geht verloren':
+    'Tap again to start a new world – progress will be lost',
+  Nah: 'Close',
+  Weit: 'Far',
+  Normal: 'Normal',
+  'Die Crew folgt': 'Your crew follows',
+  'Die Crew bleibt stehen': 'Your crew stays',
+  // hints
+  'Oben links wechselst du zwischen deinen Wühlern': 'Top left: switch between your diggers',
+  'Aktion fällt den Baum. Holz brauchst du zum Bauen': 'Action chops the tree. You need wood to build',
+  'Gold zur Heimatbasis bringen und dort verkaufen': 'Bring gold to your home base and sell it',
+  'Genug Material für eine Hütte: Bauen': 'Enough material for a hut: Build',
+  'Fels ist zu hart. Wirf einen Feuerstein darauf': 'Rock is too hard. Throw a flint at it',
+  'Lehm in der Hand: Aktion baut eine Brücke': 'Loam in hand: Action builds a bridge',
+  'Erz und Kohle schmilzt der Hochofen zu Metall': 'The furnace smelts ore and coal into metal',
+  'Bretter: für Gebäude oder als Holzbrücke (Aktion)': 'Planks: for buildings or as a wooden bridge (Action)',
+  'Zu wenig Strom – bau ein Windrad': 'Not enough power – build a windmill',
+  'Du bist außerhalb deines Gebiets. Flaggen erweitern es': 'You are outside your area. Flags extend it',
+  'Du hängst an der Decke. Runter lässt los': 'You are hanging from the ceiling. Down lets go',
+  'Es wird Nacht. Bleib in der Nähe der Basis': 'Night is falling. Stay close to the base',
+  'Vorsicht: In der Tiefe gibt es Lava und Säure': 'Careful: lava and acid lurk deep down',
+  // start and end screens
+  'Führe deine Crew: fällt Bäume, grabt nach Gold, baut Gebäude und verkauft alles an der Heimatbasis. Ziel sind {goal} Taler.':
+    'Lead your crew: chop trees, dig for gold, build and sell everything at your home base. Goal: {goal} coins.',
+  'Stick links': 'Left stick',
+  'laufen, klettern, Grabrichtung; nach oben schnippen = springen':
+    'walk, climb, dig direction; flick up = jump',
+  Graben: 'Dig',
+  'halten oder kurz tippen zum Dauergraben; gerade, Stick runter/hoch schräg':
+    'hold, or tap to keep digging; straight, stick down/up for diagonal',
+  Wurf: 'Throw',
+  'Stick hoch = Bogen, runter = ablegen': 'stick up = arc, down = drop',
+  Aktion: 'Action',
+  'Fällen, Basis, Lore, Brücke, Bauen': 'chop, base, lorry, bridge, build',
+  'Oben links': 'Top left',
+  'Wühler wechseln': 'switch digger',
+  'Pfeile / WASD': 'Arrows / WASD',
+  'laufen, klettern, hangeln, schwimmen': 'walk, climb, hang, swim',
+  Leertaste: 'Space',
+  springen: 'jump',
+  'graben: gerade, mit ↓/↑ schräg': 'dig: straight, with ↓/↑ diagonal',
+  'werfen (Q wechselt, 1–5 wählt)': 'throw (Q switches, 1–5 selects)',
+  'Aktion: Fällen, Basis, Lore, Brücke': 'Action: chop, base, lorry, bridge',
+  'Bauen · Wühler wechseln · Karte': 'Build · switch digger · map',
+  'Baue eine Produktionskette: Holz → Bretter, Erz + Kohle → Metall, Windräder für Strom. Feuersteine sprengen Fels. Lehm baut Brücken. Lava und Säure meiden, Monster lauern in der Tiefe.':
+    'Build a production chain: wood → planks, ore + coal → metal, windmills for power. Flints blast rock. Loam builds bridges. Avoid lava and acid, monsters lurk deep down.',
+  'Im Querformat spielt es sich am besten.': 'Plays best in landscape.',
+  Weiterspielen: 'Continue',
+  'Neue Welt': 'New world',
+  Losgraben: 'Start digging',
+  'Mit Tutorial starten': 'Start with tutorial',
+  'Der Spielstand wird in diesem Browser gespeichert.': 'Your progress is saved in this browser.',
+  Geschafft: 'Well done',
+  '{goal} Taler in {time} Minuten.': '{goal} coins in {time} minutes.',
+  'Crew verloren': 'Crew lost',
+  'Alle Wühler sind erschöpft und die Kasse reicht für keinen neuen.':
+    'All diggers are exhausted and you cannot afford a new one.',
+  // static page labels
+  Folgen: 'Follow',
+  'Crew folgt dem gewählten Wühler': 'Crew follows the selected digger',
+  Zoom: 'Zoom',
+  Karte: 'Map',
+  Ton: 'Sound',
+  Neu: 'New',
+  Sprung: 'Jump',
+  Schließen: 'Close',
+  'Karte · Antippen schließt': 'Map · tap to close',
+  gewählt: 'selected',
+  Crew: 'Crew',
+  Gebäude: 'Buildings',
+  Monster: 'Monster',
+  Lava: 'Lava',
+  Säure: 'Acid',
+  Energie: 'Energy',
+  Luft: 'Air',
+  Spielwelt: 'Game world',
+  Sprache: 'Language',
+  // tutorial
+  Überspringen: 'Skip',
+  'Gepäck voll: wirf etwas mit Wurf weg': 'Pack is full: throw something away with Throw',
+  'Tutorial geschafft! +20 Taler': 'Tutorial done! +20 coins',
+  'Lauf ein Stück nach rechts': 'Walk a bit to the right',
+  'Spring einmal: Stick nach oben schnippen oder Sprung': 'Jump once: flick the stick up or press Jump',
+  'Grab dich in die Erde: Graben halten': 'Dig into the ground: hold Dig',
+  'Geh zu einem Baum und fälle ihn mit Aktion': 'Go to a tree and chop it with Action',
+  'Sammle 2 Holz ein: einfach darüberlaufen': 'Collect 2 wood: just walk over it',
+  'Tippe auf Bauen und wähle die Hütte': 'Tap Build and choose the hut',
+  'Bleib in der Baustelle, bis die Hütte steht': 'Stay on the site until the hut is finished',
+  'Grab zur Goldader und sammle Gold': 'Dig to the gold vein and collect gold',
+  'Bring das Gold zur Basis und verkaufe es mit Aktion': 'Bring the gold to the base and sell it with Action',
+};
+
+let lang = 'de';
+try {
+  lang = localStorage.getItem('flintworks-lang') || (navigator.language || 'de').slice(0, 2);
+} catch {
+  lang = (navigator.language || 'de').slice(0, 2);
+}
+if (lang !== 'de') lang = 'en';
+
+const tr = (key, params = {}) =>
+  (lang === 'en' ? (EN[key] ?? key) : key).replace(/\{(\w+)\}/g, (_, k) => params[k]);
+
+// Translate the fixed labels in index.html (data-i18n, data-i18n-title, data-i18n-aria)
+function applyStatic() {
+  document.documentElement.lang = lang;
+  for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = tr(el.dataset.i18n);
+  for (const el of document.querySelectorAll('[data-i18n-title]')) el.title = tr(el.dataset.i18nTitle);
+  for (const el of document.querySelectorAll('[data-i18n-aria]'))
+    el.setAttribute('aria-label', tr(el.dataset.i18nAria));
+}
+function setLang(l) {
+  lang = l;
+  try {
+    localStorage.setItem('flintworks-lang', l);
+  } catch {
+    // language choice is a convenience; ignore blocked storage
+  }
+  applyStatic();
+}
+const getLang = () => lang;
+
+export { applyStatic, getLang, setLang, tr };

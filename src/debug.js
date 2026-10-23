@@ -43,6 +43,10 @@ window.__ww = {
   set money(v) {
     G.money = v;
   },
+  get tut() {
+    return G.tut;
+  },
+  matAt,
   get state() {
     return G.state;
   },

@@ -80,7 +80,7 @@ function gen() {
   bg.fill(0);
   for (const a of [meteors, items, parts, flashes, builds, trees, crew, animals, lorries, birds, clouds])
     a.length = 0;
-  G.meteorNext = 7000 + rnd() * 6000;
+  G.meteorNext = 15000 + rnd() * 8000;
   G.goldDust = G.earthDug = G.loamDug = G.oreDug = G.coalDug = 0;
   G.hintsSeen = new Set();
   for (let i = 0; i < W * H; i++) shade[i] = (rnd() * 4) | 0;
@@ -156,6 +156,11 @@ function gen() {
     const x = ri(160, W - 15);
     blob(x, deep(x, 22), ri(3, 7), ri(2, 5), GOLD);
   }
+  // balancing: one shallow gold vein close to the base for the first sale
+  {
+    const x = ri(135, 165);
+    blob(x, surf[x] + 16, 5, 3, GOLD);
+  }
   // surface pond
   const x0 = ri(Math.floor(W * 0.45), Math.floor(W * 0.75));
   for (let x = x0 - 50; x <= x0 + 50; x++) {
@@ -185,7 +190,12 @@ function gen() {
   G.base.gy = surf[90] + 1;
   clearFoot(G.base.x, G.base.gy, G.base.w, G.base.h);
   builds.push(G.base);
-  // trees
+  // trees: two big ones right next to the base, so the first hut is quick
+  for (let x = 125, n = 0; x < 200 && n < 2; x += 3)
+    if (canPlantAt(x)) {
+      plantTree(x, 4);
+      n++;
+    }
   let tries = 0;
   while (trees.length < 28 && tries++ < 500) {
     const x = ri(10, W - 10);
@@ -203,10 +213,10 @@ function gen() {
     spawnItem('flint', x, topSolid(x) - 6, 0, 0);
   }
   // crew
-  G.money = 30;
+  G.money = 40;
   G.sel = 0;
   for (let k = 0; k < 3; k++) addClonk(G.base.x + 10 + k * 6, G.base.gy - 10);
-  crew[0].inv = ['flint', 'flint'];
+  crew[0].inv = ['flint', 'rock'];
   crew[1].inv = ['loam'];
   crew[2].inv = ['rock'];
   // animals
@@ -235,9 +245,9 @@ function gen() {
       birds.push({ x: bx + k * 6, y: by + (k % 2) * 4, vx: dir * (0.5 + rnd() * 0.15), ph: rnd() * 6 });
   }
   for (let k = 0; k < 9; k++) clouds.push(mkCloud(rnd() * W));
-  G.dayT = 0.08;
+  G.dayT = 0.02;
   G.rainT = 0;
-  G.rainNext = 3000 + rnd() * 3000;
+  G.rainNext = 9000 + rnd() * 4000;
   arrows.length = 0;
   calcTerr();
 }

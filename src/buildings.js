@@ -1,3 +1,4 @@
+import { tr } from './i18n.js';
 import { digCell, lorryNear, onCase, spawnFromDig } from './clonk.js';
 import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './entities.js';
 import { clearFoot } from './gen.js';
@@ -123,7 +124,7 @@ function terrOK(x, extra = 0) {
     if (b.type === 'flag' && b.done && Math.abs(x - (b.x + 3)) < 150 + extra) return true;
   return false;
 }
-const resName = t => (t === 'lorry' ? 'Lore' : t === 'clonk' ? 'Wühler' : ITEM[t].name);
+const resName = t => tr(t === 'lorry' ? 'Lore' : t === 'clonk' ? 'Wühler' : ITEM[t].name);
 function resSources(c) {
   const src = [c.inv];
   const L = lorryNear(c);
@@ -155,7 +156,7 @@ function payRes(c, need) {
 }
 const costTxt = need =>
   Object.entries(need)
-    .map(([t, n]) => `${n} ${ITEM[t].name}`)
+    .map(([t, n]) => `${n}× ${resName(t)}`)
     .join(' + ');
 function tryBuild(type) {
   const T = BT[type],
@@ -167,7 +168,7 @@ function tryBuild(type) {
     return;
   }
   if (!hasRes(c, T.cost)) {
-    toast(`${T.name} braucht ${costTxt(T.cost)}`);
+    toast('{name} braucht {cost}', { name: tr(T.name), cost: costTxt(T.cost) });
     return;
   }
   const gy = Math.floor(c.y) + 10,
@@ -231,7 +232,7 @@ function tryBuild(type) {
   };
   if (type === 'lift') b.cs = { x: bx + 2, y: gy - 2, home: gy - 2 };
   builds.push(b);
-  toast(`${T.name}: Wühler drin stehen lassen zum Bauen`);
+  toast('{name}: Wühler drin stehen lassen zum Bauen', { name: tr(T.name) });
 }
 function liftUpd(b) {
   const c = b.cs,
@@ -359,7 +360,7 @@ function updBuilds() {
         if (b.prog >= 1) {
           b.prog = 1;
           b.done = true;
-          toast(BT[b.type].name + ' fertig');
+          toast('{name} fertig', { name: tr(BT[b.type].name) });
           sfx('done', b.x, b.gy);
           if (b.type === 'flag') calcTerr();
           if (b.type === 'wind') toast('Windrad fertig: liefert Strom, je nach Wind');
@@ -389,7 +390,7 @@ function updBuilds() {
           if (b.out === 'lorry') lorries.push(mkLorry(b.x + 4, b.gy - 8));
           else spawnItem(b.out, b.x + 4 + q * 3, b.gy - 5 - q, -0.8, -1.2, 20);
         }
-        toast(resName(b.out) + ' fertig');
+        toast('{name} fertig', { name: resName(b.out) });
         sfx('done', b.x, b.gy);
       }
     }
@@ -492,7 +493,7 @@ function updLorry(L) {
   ) {
     const v = sellVal(L.items);
     G.money += v;
-    toast(`Lore verkauft: +${v} Taler`);
+    toast('Lore verkauft: +{v} Taler', { v });
     sfx('coin', L.x, L.y);
     L.items = [];
   }

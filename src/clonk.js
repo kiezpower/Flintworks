@@ -44,7 +44,7 @@ function killClonk(c) {
   c.climb = c.hangle = false;
   for (const t of c.inv) spawnItem(t, c.x + 2, c.y + 2, (rnd() - 0.5) * 1.5, -1.2, 30);
   c.inv = [];
-  toast(`${c.name} ist erschöpft`);
+  toast('{name} ist erschöpft', { name: c.name });
   sfx('hurt', c.x, c.y);
   if (crew[G.sel] === c) {
     const nx = crew.findIndex(o => !o.dead);
@@ -524,12 +524,12 @@ function lorryAct(c, L) {
     }
     L.items.push(...c.inv.splice(0, n));
     c.isel = 0;
-    toast(`${n} Sachen in die Lore`);
+    toast('{n} Sachen in die Lore', { n });
     sfx('pick', c.x, c.y);
   } else if (L.items.length) {
     const n = Math.min(5, L.items.length);
     c.inv.push(...L.items.splice(L.items.length - n, n));
-    toast(`${n} Sachen genommen`);
+    toast('{n} Sachen genommen', { n });
     sfx('pick', c.x, c.y);
   } else toast('Lore ist leer');
 }

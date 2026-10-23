@@ -10,7 +10,7 @@ import { AIR, H, LIQ, SOLID, W, bg, clamp, mat, ri, rnd } from './world.js';
 
 // ---- Weather & day ----
 function updWeather() {
-  G.dayT = (G.dayT + 1 / 18000) % 1;
+  G.dayT = (G.dayT + 1 / 36000) % 1; // one day = 10 minutes
   if (G.frame % 1500 === 0) G.windT = 0.25 + rnd() * 0.75;
   G.wind += ((G.rainT > 0 ? Math.min(1.2, G.windT + 0.35) : G.windT) - G.wind) * 0.002;
   for (const c of clouds) {

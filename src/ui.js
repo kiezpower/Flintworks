@@ -22,6 +22,7 @@ import { held, joy, keys, selectCrew } from './input.js';
 import { calcTerr, cam } from './render.js';
 import { sfx } from './sound.js';
 import { ITEM, SPR, itemIcon } from './sprites.js';
+import { tr } from './i18n.js';
 import { G, animals, builds, crew, lorries } from './state.js';
 import { darkness } from './weather.js';
 import { AIR, GOAL, GOLD, H, MINI, ROCK, W, bg, hex, mat, matAt } from './world.js';
@@ -52,21 +53,25 @@ G.invKey = '';
 G.crewKey = '';
 function hud() {
   const c = sel_();
-  moneyTxt.textContent = `${G.money} / ${GOAL} Taler`;
+  moneyTxt.textContent = tr('{money} / {goal} Taler', { money: G.money, goal: GOAL });
   const hasPwr = builds.some(b => b.done && (b.type === 'wind' || PWR[b.type]));
   pwrTxt.hidden = !hasPwr;
   if (hasPwr) {
-    pwrTxt.textContent = `Strom ${G.power.sup.toFixed(1)} / ${G.power.dem.toFixed(1)} · Wind ${Math.round(G.wind * 100)}%`;
+    pwrTxt.textContent = tr('Strom {s} / {d} · Wind {w}%', {
+      s: G.power.sup.toFixed(1),
+      d: G.power.dem.toFixed(1),
+      w: Math.round(G.wind * 100),
+    });
     pwrTxt.classList.toggle('low', G.power.ratio < 1);
   }
-  if (c) whoTxt.textContent = c.inv[c.isel] ? `${c.name} · ${ITEM[c.inv[c.isel]].name}` : c.name;
+  if (c) whoTxt.textContent = c.inv[c.isel] ? `${c.name} · ${resName(c.inv[c.isel])}` : c.name;
   if (c) {
     hpBar.style.width = Math.max(0, c.energy) + '%';
     hpBar.style.background = c.energy < 30 ? '#e0572f' : '';
     airWrap.hidden = c.breath >= 100;
     airBar.style.width = c.breath + '%';
   }
-  actBtn.textContent = context(c).label;
+  actBtn.textContent = tr(context(c).label);
   const ck = crew.map((o, n) => `${n === G.sel}${o.dead}${Math.round(o.energy / 10)}`).join();
   if (ck !== G.crewKey) {
     G.crewKey = ck;
@@ -89,8 +94,8 @@ function hud() {
       const b = document.createElement('button');
       const t = c && c.inv[s];
       b.className = 'slot' + (t && s === c.isel ? ' sel' : '');
-      b.setAttribute('aria-label', t ? ITEM[t].name : 'Leer');
-      b.title = t ? ITEM[t].name : '';
+      b.setAttribute('aria-label', t ? resName(t) : tr('Leer'));
+      b.title = t ? resName(t) : '';
       if (t) {
         const cvs = document.createElement('canvas');
         cvs.width = 8;
@@ -161,15 +166,15 @@ function toggleMap() {
 }
 const toastEl = $('toast');
 G.toastT = 0;
-function toast(t) {
-  toastEl.textContent = t;
+function toast(key, params) {
+  toastEl.textContent = tr(key, params);
   toastEl.hidden = false;
   G.toastT = 170;
 }
 G.panelT = 0;
 function openPanel(title) {
   G.panelT = performance.now();
-  pTitle.textContent = title;
+  pTitle.textContent = tr(title);
   pBody.innerHTML = '';
   panelEl.hidden = false;
   joy.x = joy.y = 0;
@@ -216,7 +221,7 @@ function opt(parent, { icon, title, sub, cost, short, disabled, onClick }) {
 function sec(parent, t) {
   const d = document.createElement('div');
   d.className = 'psec';
-  d.textContent = t;
+  d.textContent = tr(t);
   parent.appendChild(d);
   const l = document.createElement('div');
   l.className = 'plist';
@@ -229,14 +234,19 @@ function openBuild() {
   const p = openPanel('Bauen');
   const l = sec(
     p,
-    `Bezahlt aus dem Gepäck, einer Lore und von Wühlern daneben. Der Bau entsteht dort, wo ${c.name} steht.`,
+    tr(
+      'Bezahlt aus dem Gepäck, einer Lore und von Wühlern daneben. Der Bau entsteht dort, wo {name} steht.',
+      {
+        name: c.name,
+      },
+    ),
   );
   for (const t in BT) {
     const T = BT[t];
     opt(l, {
       icon: SPR[t],
-      title: T.name,
-      sub: T.info,
+      title: tr(T.name),
+      sub: tr(T.info),
       cost: costTxt(T.cost),
       short: !hasRes(c, T.cost),
       onClick: () => tryBuild(t),
@@ -264,7 +274,7 @@ function openProd(b) {
       disabled: !!b.busy,
       onClick: () => {
         if (!hasRes(c, r.need)) {
-          toast(`${name} braucht ${costTxt(r.need)}`);
+          toast('{name} braucht {cost}', { name, cost: costTxt(r.need) });
           return;
         }
         payRes(c, r.need);
@@ -272,7 +282,7 @@ function openProd(b) {
         b.out = r.out;
         b.n = r.n;
         closePanel();
-        toast(`${name} wird hergestellt`);
+        toast('{name} wird hergestellt', { name });
       },
     });
   }
@@ -283,10 +293,10 @@ function openBase() {
   const val = sellVal(c.inv);
   const row = document.createElement('div');
   row.className = 'sellrow';
-  row.innerHTML = `<span>${c.name} trägt ${c.inv.length ? c.inv.map(t => ITEM[t].name).join(', ') : 'nichts'}</span>`;
+  row.innerHTML = `<span>${tr('{name} trägt {items}', { name: c.name, items: c.inv.length ? c.inv.map(resName).join(', ') : tr('nichts') })}</span>`;
   const sb = document.createElement('button');
   sb.className = 'go';
-  sb.textContent = `Verkaufen +${val}`;
+  sb.textContent = tr('Verkaufen +{v}', { v: val });
   sb.disabled = !val;
   sb.onclick = () => {
     if (performance.now() - G.panelT < 450) return;
@@ -294,7 +304,7 @@ function openBase() {
     c.inv = [];
     c.isel = 0;
     sfx('coin');
-    toast(`+${val} Taler`);
+    toast('+{v} Taler', { v: val });
     openBase();
   };
   row.appendChild(sb);
@@ -307,13 +317,17 @@ function openBase() {
     const ok = G.money >= u.money && hasRes(c, u.need);
     opt(ul, {
       icon: SPR.base,
-      title: `Burg Stufe ${nx}`,
-      sub: `Preise +${Math.round((L2.sell - 1) * 100)}%, ${L2.crew} Wühler, Strom ${L2.power}, größeres Gebiet`,
-      cost: `${u.money} Taler + ${costTxt(u.need)}`,
+      title: tr('Burg Stufe {n}', { n: nx }),
+      sub: tr('Preise +{p}%, {c} Wühler, Strom {pw}, größeres Gebiet', {
+        p: Math.round((L2.sell - 1) * 100),
+        c: L2.crew,
+        pw: L2.power,
+      }),
+      cost: tr('{m} Taler + {cost}', { m: u.money, cost: costTxt(u.need) }),
       short: !ok,
       onClick: () => {
         if (!ok) {
-          toast(`Ausbau braucht ${u.money} Taler + ${costTxt(u.need)}`);
+          toast('Ausbau braucht {m} Taler + {cost}', { m: u.money, cost: costTxt(u.need) });
           return;
         }
         G.money -= u.money;
@@ -321,12 +335,12 @@ function openBase() {
         G.base.lvl = nx;
         calcTerr();
         sfx('done');
-        toast(`Burg auf Stufe ${nx} ausgebaut`);
+        toast('Burg auf Stufe {n} ausgebaut', { n: nx });
         openBase();
       },
     });
   }
-  const l = sec(p, `Kaufen · Kasse: ${G.money} Taler`);
+  const l = sec(p, tr('Kaufen · Kasse: {m} Taler', { m: G.money }));
   for (const o of BUY) {
     const icon = ITEM[o.t] ? itemIcon(o.t) : o.t === 'lorry' ? SPR.lorryIcon : SPR.clonkIcon;
     const alive = crew.filter(x => !x.dead).length;
@@ -334,8 +348,8 @@ function openBase() {
     opt(l, {
       icon,
       title: resName(o.t),
-      sub: o.t === 'clonk' ? 'Neues Crewmitglied' : o.t === 'lorry' ? 'Transportiert 25 Sachen' : '',
-      cost: `${o.price} Taler`,
+      sub: tr(o.t === 'clonk' ? 'Neues Crewmitglied' : o.t === 'lorry' ? 'Transportiert 25 Sachen' : ''),
+      cost: tr('{p} Taler', { p: o.price }),
       disabled: dis,
       onClick: () => {
         if (G.money < o.price) return;
@@ -343,7 +357,7 @@ function openBase() {
         sfx('coin');
         if (o.t === 'clonk') {
           const n = addClonk(G.base.x + 15, G.base.gy - 10);
-          toast(`${n.name} ist da`);
+          toast('{name} ist da', { name: n.name });
         } else if (o.t === 'lorry') {
           lorries.push(mkLorry(G.base.x + 12, G.base.gy - 8));
           toast('Lore steht bereit');
@@ -396,7 +410,7 @@ const HINTS = [
 ];
 function checkHints() {
   const c = sel_();
-  if (!c || c.dead || G.toastT > 0) return;
+  if (!c || c.dead || G.toastT > 0 || G.tut) return;
   for (const h of HINTS) {
     if (G.hintsSeen.has(h.id)) continue;
     if (h.test(c)) {

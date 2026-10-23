@@ -1,3 +1,5 @@
+import { endTutorial, startTutorial, updTutorial } from './tutorial.js';
+import { applyStatic, getLang, setLang, tr } from './i18n.js';
 import './style.css';
 import { updBuilds, updLorry } from './buildings.js';
 import { NOIN, context, doThrow, updClonk } from './clonk.js';
@@ -28,27 +30,53 @@ import { GOAL, H, W, clamp } from './world.js';
 // ---- Screens & loop ----
 const overlay = $('overlay'),
   card = $('card');
+const TOUCH_KEYS = [
+  ['Stick links', 'laufen, klettern, Grabrichtung; nach oben schnippen = springen'],
+  ['Graben', 'halten oder kurz tippen zum Dauergraben; gerade, Stick runter/hoch schräg'],
+  ['Wurf', 'Stick hoch = Bogen, runter = ablegen'],
+  ['Aktion', 'Fällen, Basis, Lore, Brücke, Bauen'],
+  ['Oben links', 'Wühler wechseln'],
+];
+const DESK_KEYS = [
+  ['Pfeile / WASD', 'laufen, klettern, hangeln, schwimmen'],
+  ['Leertaste', 'springen'],
+  ['Shift / X', 'graben: gerade, mit ↓/↑ schräg'],
+  ['E', 'werfen (Q wechselt, 1–5 wählt)'],
+  ['F', 'Aktion: Fällen, Basis, Lore, Brücke'],
+  ['B · Tab · M', 'Bauen · Wühler wechseln · Karte'],
+];
+const keyList = (cls, rows) =>
+  `<dl class="keys ${cls}">${rows.map(([k, v]) => `<dt>${tr(k)}</dt><dd>${tr(v)}</dd>`).join('')}</dl>`;
 function menu() {
+  const buttons = hasSave()
+    ? `<button class="go" id="contBtn">${tr('Weiterspielen')}</button><button class="ghost" id="goBtn">${tr('Neue Welt')}</button>`
+    : `<button class="go" id="tutBtn">${tr('Mit Tutorial starten')}</button><button class="ghost" id="goBtn">${tr('Losgraben')}</button>`;
   card.innerHTML = `<h1>Flintworks</h1>
-  <p>Führe deine Crew: fällt Bäume, grabt nach Gold, baut Gebäude und verkauft alles an der Heimatbasis. Ziel sind ${GOAL} Taler.</p>
-  <dl class="keys touchonly"><dt>Stick links</dt><dd>laufen, klettern, Grabrichtung; nach oben schnippen = springen</dd><dt>Graben</dt><dd>halten oder kurz tippen zum Dauergraben; gräbt gerade; Stick schräg runter/hoch gräbt schräg</dd><dt>Wurf</dt><dd>Stick hoch = Bogen, runter = ablegen</dd><dt>Aktion</dt><dd>Fällen, Basis, Lore, Brücke, Bauen</dd><dt>Oben links</dt><dd>Wühler wechseln</dd></dl>
-  <dl class="keys keyonly"><dt>Pfeile / WASD</dt><dd>laufen, klettern, hangeln, schwimmen</dd><dt>Leertaste</dt><dd>springen</dd><dt>Shift / X</dt><dd>graben: gerade, mit ↓/↑ schräg</dd><dt>E</dt><dd>werfen (Q wechselt, 1–5 wählt)</dd><dt>F</dt><dd>Aktion: Fällen, Basis, Lore, Brücke</dd><dt>B · Tab · M</dt><dd>Bauen · Wühler wechseln · Karte</dd></dl>
-  <p class="hint">Baue eine Produktionskette: Holz → Bretter, Erz + Kohle → Metall, Windräder für Strom. Feuersteine sprengen Fels. Lehm baut Brücken. Lava und Säure meiden, Monster lauern in der Tiefe.</p>
-  <p class="hint touchonly">Im Querformat spielt es sich am besten.</p>
-  <div class="btnrow">${hasSave() ? '<button class="go" id="contBtn">Weiterspielen</button><button class="ghost" id="goBtn">Neue Welt</button>' : '<button class="go" id="goBtn">Losgraben</button>'}</div>
-  <p class="hint">Der Spielstand wird in diesem Browser gespeichert.</p>`;
+  <p>${tr('Führe deine Crew: fällt Bäume, grabt nach Gold, baut Gebäude und verkauft alles an der Heimatbasis. Ziel sind {goal} Taler.', { goal: GOAL })}</p>
+  ${keyList('touchonly', TOUCH_KEYS)}
+  ${keyList('keyonly', DESK_KEYS)}
+  <p class="hint">${tr('Baue eine Produktionskette: Holz → Bretter, Erz + Kohle → Metall, Windräder für Strom. Feuersteine sprengen Fels. Lehm baut Brücken. Lava und Säure meiden, Monster lauern in der Tiefe.')}</p>
+  <p class="hint touchonly">${tr('Im Querformat spielt es sich am besten.')}</p>
+  <div class="btnrow">${buttons}<button class="ghost" id="langBtn">${getLang() === 'de' ? 'English' : 'Deutsch'}</button></div>
+  <p class="hint">${tr('Der Spielstand wird in diesem Browser gespeichert.')}</p>`;
+  if ($('tutBtn')) $('tutBtn').onclick = () => startGame(true);
+  $('langBtn').onclick = () => {
+    setLang(getLang() === 'de' ? 'en' : 'de');
+    G.crewKey = G.invKey = '';
+    menu();
+  };
   $('goBtn').onclick = () => {
     if (hasSave()) {
       if (performance.now() - G.newArmed > 3000) {
         G.newArmed = performance.now();
-        $('goBtn').textContent = 'Sicher? Nochmal tippen';
+        $('goBtn').textContent = tr('Sicher? Nochmal tippen');
         return;
       }
       clearSave();
       gen();
       resetCam();
     }
-    startGame();
+    startGame(false);
   };
   if ($('contBtn'))
     $('contBtn').onclick = () => {
@@ -61,7 +89,9 @@ function menu() {
     };
   overlay.hidden = false;
 }
-function startGame() {
+function startGame(withTutorial = false) {
+  if (withTutorial === true) startTutorial();
+  else endTutorial(false);
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   if (G.state === 'won' || G.state === 'lost') {
@@ -77,10 +107,12 @@ function endScreen(won) {
   closePanel();
   clearSave();
   const s = Math.round((performance.now() - G.startT) / 1000);
+  const time = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   card.innerHTML = won
-    ? `<h1>Geschafft</h1><p>${GOAL} Taler in ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} Minuten.</p><button class="go" id="goBtn">Neue Welt</button>`
-    : `<h1>Crew verloren</h1><p>Alle Wühler sind erschöpft und die Kasse reicht für keinen neuen.</p><button class="go" id="goBtn">Neue Welt</button>`;
-  $('goBtn').onclick = startGame;
+    ? `<h1>${tr('Geschafft')}</h1><p>${tr('{goal} Taler in {time} Minuten.', { goal: GOAL, time })}</p>`
+    : `<h1>${tr('Crew verloren')}</h1><p>${tr('Alle Wühler sind erschöpft und die Kasse reicht für keinen neuen.')}</p>`;
+  card.innerHTML += `<button class="go" id="goBtn">${tr('Neue Welt')}</button>`;
+  $('goBtn').onclick = () => startGame(false);
   overlay.hidden = false;
 }
 G.newArmed = 0;
@@ -159,6 +191,7 @@ function step() {
         if (G.sel >= k && G.sel > 0) G.sel--;
         G.crewKey = '';
       }
+    updTutorial();
     if (G.frame % 60 === 0) checkHints();
     if (G.frame % 3600 === 0) saveGame();
     if (G.money >= GOAL) endScreen(true);
@@ -167,7 +200,7 @@ function step() {
         G.money -= 60;
         const n = addClonk(G.base.x + 15, G.base.gy - 10);
         G.sel = crew.indexOf(n);
-        toast(`${n.name} kommt aus der Basis (−60 Taler)`);
+        toast('{name} kommt aus der Basis (−60 Taler)', { name: n.name });
         G.crewKey = '';
       } else endScreen(false);
     }
@@ -206,6 +239,7 @@ function loop(t) {
   if (G.tick % 10 === 0) drawMini(G.tick % 60 === 0);
   requestAnimationFrame(loop);
 }
+applyStatic();
 gen();
 resize();
 resetCam();

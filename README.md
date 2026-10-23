@@ -2,7 +2,7 @@
 
 Ein Aufbau- und Grabespiel mit Pixel-Physik im Stil der Klassiker, inspiriert von den Clonk-Spielen: Führe deine Crew, grabe nach Gold, fälle Bäume, baue eine Produktionskette und verkaufe alles an der Heimatbasis.
 
-Läuft im Browser, als installierbare Web-App und als Android-App.
+Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch und Englisch (Umschalter im Startbildschirm). Ein geführtes Tutorial erklärt die ersten Schritte.
 
 ## Spielen
 
@@ -37,6 +37,10 @@ npm run android    # Web-Version bauen und ins Android-Projekt kopieren
 
 Die Android-App lässt sich lokal mit Android Studio aus dem Ordner `android/` bauen. Normalerweise ist das nicht nötig: GitHub baut sie automatisch.
 
+## Neue Texte übersetzen
+
+Texte werden mit `tr('Deutscher Text', { platzhalter })` ausgegeben bzw. direkt an `toast()` übergeben. Für Englisch den deutschen Text als Schlüssel in `src/i18n.js` eintragen. Fehlt ein Eintrag, erscheint der deutsche Text.
+
 ## Automatische Builds
 
 | Workflow | Auslöser | Ergebnis |
@@ -67,6 +71,8 @@ src/
   ui.js               HUD, Menüs, Karte, Tipps
   save.js             Spielstand im Browser speichern
   sprites.js          Pixel-Grafiken
+  tutorial.js         Geführtes Tutorial mit Zielpfeil
+  i18n.js             Übersetzungen (Deutsch ist der Schlüssel, Englisch die Übersetzung)
   debug.js            Test-Zugang, nur im Entwicklungsmodus
   style.css           Gestaltung
 public/icons/         App-Icons

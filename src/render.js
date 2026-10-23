@@ -1,3 +1,4 @@
+import { drawTutorial } from './tutorial.js';
 import { arrows, lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
 import { topSolid } from './gen.js';
@@ -511,6 +512,7 @@ function render() {
     for (const c of crew) if (c.burn > 0) light(c.x + 3 - cx, c.y + 4 - cy, 24, 0.9);
     ctx.drawImage(lc, 0, 0);
   }
+  drawTutorial(ctx, cx, cy);
 }
 function drawFlag(x, y, pole, len) {
   ctx.fillStyle = '#4a3a2a';
