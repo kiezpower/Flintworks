@@ -2,21 +2,7 @@
 import { BIOMES } from './biomes.js';
 import './lobby.css';
 import { getLang, setLang, tr } from './i18n.js';
-import {
-  CAPS,
-  HATS,
-  P,
-  QUESTS,
-  ROAD,
-  buyHat,
-  chestReady,
-  claimQuest,
-  claimRoad,
-  claimable,
-  openChest,
-  saveProfile,
-  xpNeed,
-} from './profile.js';
+import { CAPS, HATS, P, QUESTS, claimQuest, saveProfile, unlockText, xpNeed } from './profile.js';
 import { drawPortrait } from './portrait.js';
 import { audioInit, sfx } from './sound.js';
 import { padIcon, treeSprite } from './sprites.js';
@@ -141,26 +127,29 @@ function refresh() {
   $('lbXp').style.width = Math.round((P.xp / xpNeed()) * 100) + '%';
   setTxt('lbXpTxt', `${P.xp}/${xpNeed()}`);
   setTxt('lbTro', P.trophies);
-  setTxt('lbCr', P.crystals);
   setTxt('lbHat', P.hat === 'none' ? `Kurt · ${tr('Level')} ${P.level}` : `Kurt · ${tr(HATS[P.hat].name)}`);
   $('lbQuest').classList.toggle(
     'alert',
     P.quests.some(q => !q.done && q.have >= q.goal),
   );
-  $('lbChest').classList.toggle('alert', chestReady());
-  const k = ROAD.findIndex((r, i) => !P.road.includes(i));
-  const r = ROAD[k];
-  const prev = k > 0 ? ROAD[k - 1].t : 0;
+  const road = Object.keys(HATS)
+    .filter(id => HATS[id].t)
+    .sort((a, b) => HATS[a].t - HATS[b].t);
+  const next = road.find(id => P.trophies < HATS[id].t);
+  const prev =
+    road
+      .filter(id => P.trophies >= HATS[id].t)
+      .map(id => HATS[id].t)
+      .pop() || 0;
+  const r = next && HATS[next];
   $('lbRoadBar').style.width = r ? Math.min(100, ((P.trophies - prev) / (r.t - prev)) * 100) + '%' : '100%';
-  setTxt('lbRoadTxt', r ? `${P.trophies}/${r.t} · ${rewardTxt(r)}` : tr('Alles freigeschaltet'));
-  $('lbRoad').classList.toggle('alert', !!r && P.trophies >= r.t);
+  setTxt('lbRoadTxt', r ? `${P.trophies}/${r.t} · ${tr(r.name)}` : tr('Alles freigeschaltet'));
   const run = hooks.hasRun();
   setTxt('lbPlayTxt', tr(run ? 'Weiterspielen' : 'Spielen'));
   $('lbNew').hidden = !run;
   $('lbMode').disabled = run;
   setTxt('lbModeTxt', tr(run ? BIOMES[G.biome].name : MODE_NAME[P.mode || 'random']));
 }
-const rewardTxt = r => (r.cr ? `+${r.cr} ${tr('Kristalle')}` : tr(HATS[r.hat].name));
 
 function frame() {
   if (el.hidden) return;
@@ -189,47 +178,25 @@ function hatIcon(hat, cap = P.cap) {
   drawPortrait(x, 2, 7, 1, cap, hat, false);
   return c;
 }
-function openShop() {
-  const p = openPanel('Shop');
-  const l = sec(p, tr('Hüte · Kristalle: {n}', { n: P.crystals }));
-  for (const id in HATS) {
-    const h = HATS[id];
-    if (id === 'none' || (h.road && !P.hats.includes(id))) continue;
-    const own = P.hats.includes(id);
-    opt(l, {
-      icon: hatIcon(id),
-      title: tr(h.name),
-      sub: h.sub ? tr(h.sub) : '',
-      cost: own ? tr(P.hat === id ? 'Getragen' : 'Anziehen') : `${h.price} ◆`,
-      disabled: !own && P.crystals < h.price,
-      onClick: () => {
-        if (own) P.hat = id;
-        else if (buyHat(id)) {
-          sfx('coin');
-          burst(16, ['#7fe0ff', '#ffffff', '#f2c230']);
-          toast('{name} gekauft!', { name: tr(h.name) });
-        }
-        saveProfile();
-        openShop();
-      },
-    });
-  }
-}
 function openWho() {
   const p = openPanel('Dein Wühler');
   const l = sec(p, 'Hut');
-  for (const id of P.hats)
+  for (const id in HATS) {
+    const own = P.hats.includes(id);
     opt(l, {
       icon: hatIcon(id),
       title: tr(HATS[id].name),
+      sub: HATS[id].sub && own ? tr(HATS[id].sub) : '',
       short: true,
-      cost: P.hat === id ? '✓' : '',
+      disabled: !own,
+      cost: P.hat === id ? '✓' : own ? '' : '🔒 ' + unlockText(HATS[id]),
       onClick: () => {
         P.hat = id;
         saveProfile();
         openWho();
       },
     });
+  }
   const c = sec(p, 'Mützenfarbe');
   for (const col of CAPS)
     opt(c, {
@@ -257,7 +224,7 @@ function openQuests() {
     const btn = document.createElement('button');
     btn.className = ready ? 'go' : 'ghost';
     btn.disabled = !ready;
-    btn.textContent = q.done ? tr('Erledigt') : ready ? tr('Abholen +{n} ◆', { n: Q.cr }) : `+${Q.cr} ◆`;
+    btn.textContent = q.done ? tr('Erledigt') : ready ? tr('Abholen +{n} XP', { n: Q.xp }) : `+${Q.xp} XP`;
     btn.onclick = () => {
       if (performance.now() - G.panelT < 450) return;
       if (claimQuest(q)) {
@@ -269,28 +236,6 @@ function openQuests() {
     row.appendChild(btn);
     p.appendChild(row);
   }
-}
-function openRoad() {
-  const p = openPanel('Trophäenpfad');
-  const l = sec(p, tr('Trophäen: {n} · Siege bringen +30', { n: P.trophies }));
-  ROAD.forEach((r, k) => {
-    const got = P.road.includes(k),
-      ready = !got && P.trophies >= r.t;
-    opt(l, {
-      icon: r.hat ? hatIcon(r.hat) : null,
-      title: rewardTxt(r),
-      sub: `${r.t} ${tr('Trophäen')}`,
-      cost: got ? '✓' : ready ? tr('Abholen') : '',
-      disabled: !ready,
-      onClick: () => {
-        if (claimRoad(k)) {
-          sfx('done');
-          burst(24, ['#f2c230', '#ffffff', '#7fe0ff']);
-        }
-        openRoad();
-      },
-    });
-  });
 }
 function openOptions() {
   const p = openPanel('Optionen');
@@ -336,20 +281,10 @@ function tap(id, fn) {
     fn();
   });
 }
-tap('lbShop', openShop);
 tap('lbWho', openWho);
 tap('lbQuest', openQuests);
-tap('lbRoad', openRoad);
+tap('lbRoad', openWho);
 tap('lbOpt', openOptions);
-tap('lbChest', () => {
-  const n = openChest();
-  if (!n) return toast('Die Truhe ist morgen wieder voll');
-  sfx('done');
-  $('lbChest').classList.add('pop');
-  setTimeout(() => $('lbChest').classList.remove('pop'), 500);
-  burst(30, ['#7fe0ff', '#ffffff', '#f2c230']);
-  toast('Truhe: +{n} Kristalle', { n });
-});
 tap('lbMode', () => {
   const m = P.mode || 'random';
   P.mode = MODES[(MODES.indexOf(m) + 1) % MODES.length];
@@ -383,7 +318,6 @@ function showLobby(h) {
   el.hidden = false;
   $('game').classList.add('inlobby');
   refresh();
-  if (claimable()) $('lbTitle').classList.add('wiggle');
 }
 function hideLobby() {
   el.hidden = true;

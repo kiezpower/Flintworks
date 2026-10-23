@@ -165,11 +165,8 @@
   transform: translateY(3px);
   box-shadow: 0 1px 0 #0d1840;
 }
-#lbShop {
+#lbWho {
   background: linear-gradient(#ffcf4a, #e89a1c);
-}
-#lbChest {
-  background: linear-gradient(#a06ef0, #6a3fd0);
 }
 .alert::after {
   content: '!';
@@ -189,17 +186,6 @@
 @keyframes lb-bounce {
   50% {
     transform: translateY(-4px);
-  }
-}
-.pop {
-  animation: lb-pop 0.5s;
-}
-@keyframes lb-pop {
-  30% {
-    transform: scale(1.25) rotate(-6deg);
-  }
-  60% {
-    transform: scale(0.95) rotate(4deg);
   }
 }
 
