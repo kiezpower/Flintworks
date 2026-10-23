@@ -17,7 +17,7 @@ import {
   saveProfile,
   xpNeed,
 } from './profile.js';
-import { drawClonkPx } from './render.js';
+import { drawPortrait } from './portrait.js';
 import { audioInit, sfx } from './sound.js';
 import { padIcon, treeSprite } from './sprites.js';
 import { G } from './state.js';
@@ -57,8 +57,10 @@ function stageSky() {
   return BIOMES[m];
 }
 function drawStage() {
-  const W = cv.width,
-    H = cv.height;
+  const W = cv.width / 2,
+    H = cv.height / 2;
+  g.setTransform(2, 0, 0, 2, 0, 0);
+  g.imageSmoothingEnabled = false;
   const b = stageSky();
   const sk = g.createLinearGradient(0, 0, 0, H);
   sk.addColorStop(0, `rgb(${b.sky[0]})`);
@@ -104,7 +106,9 @@ function drawStage() {
   g.fillRect((W >> 1) - 3 + Math.round(jumpY / 6), H - 10, 6 - Math.round(-jumpY / 4), 1);
   const bob = jumpY < 0 ? 0 : Math.floor(t / 30) % 2;
   const f = spin > 0 ? (Math.floor(spin / 6) % 2 ? 1 : -1) : 1;
-  drawClonkPx(look(), (W >> 1) - 3, H - 19 + bob + Math.round(jumpY), f, g);
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  drawPortrait(g, W - 8, H * 2 - 38 + bob + Math.round(jumpY * 2), f, P.cap, P.hat, (G.frame + 21) % 240 < 6);
+  g.setTransform(2, 0, 0, 2, 0, 0);
   for (let k = sparks.length - 1; k >= 0; k--) {
     const s = sparks[k];
     s.x += s.vx;
@@ -118,8 +122,8 @@ function drawStage() {
 function burst(n, cols) {
   for (let k = 0; k < n; k++)
     sparks.push({
-      x: cv.width / 2,
-      y: cv.height - 16,
+      x: cv.width / 4,
+      y: cv.height / 2 - 16,
       vx: (Math.random() - 0.5) * 1.4,
       vy: -Math.random() * 1.4,
       l: 30 + Math.random() * 20,
@@ -178,11 +182,11 @@ function frame() {
 // ---- Panels ----
 function hatIcon(hat, cap = P.cap) {
   const c = document.createElement('canvas');
-  c.width = 30;
-  c.height = 42;
+  c.width = 40;
+  c.height = 56;
   const x = c.getContext('2d');
-  x.scale(3, 3);
-  drawClonkPx({ ...look(), hat, cap, anim: 0 }, 2, 4, 1, x);
+  x.scale(2, 2);
+  drawPortrait(x, 2, 7, 1, cap, hat, false);
   return c;
 }
 function openShop() {

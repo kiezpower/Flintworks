@@ -2,6 +2,7 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'Edelstein verkauft: +{n} Kristalle': 'Gem sold: +{n} crystals',
   Lobby: 'Lobby',
   Shop: 'Shop',
   Aufgaben: 'Quests',
@@ -106,8 +107,7 @@ const EN = {
   'Fels blockiert – sprengen!': 'Rock in the way – blast it!',
   'Windrad fertig: liefert Strom, je nach Wind': 'Windmill finished: makes power depending on the wind',
   'Wachturm fertig: drin stehen für weite Sicht': 'Watchtower finished: stand inside for a wide view',
-  'Fahrstuhl fertig: draufstellen, Stick runter oder hoch':
-    'Elevator finished: stand on it, stick down or up',
+  'Fahrstuhl fertig: draufstellen, Stick runter oder hoch': 'Elevator finished: stand on it, stick down or up',
   'Pumpe fertig: drin stehen, Aktion schaltet ein': 'Pump finished: stand inside, Action turns it on',
   'Lore verkauft: +{v} Taler': 'Lorry sold: +{v} coins',
   // actions
@@ -148,8 +148,7 @@ const EN = {
   '+{v} Taler': '+{v} coins',
   Ausbau: 'Upgrade',
   'Burg Stufe {n}': 'Castle level {n}',
-  'Preise +{p}%, {c} Wühler, Strom {pw}, größeres Gebiet':
-    'Prices +{p}%, {c} diggers, power {pw}, larger area',
+  'Preise +{p}%, {c} Wühler, Strom {pw}, größeres Gebiet': 'Prices +{p}%, {c} diggers, power {pw}, larger area',
   '{m} Taler + {cost}': '{m} coins + {cost}',
   'Ausbau braucht {m} Taler + {cost}': 'Upgrade needs {m} coins + {cost}',
   'Burg auf Stufe {n} ausgebaut': 'Castle upgraded to level {n}',
@@ -186,8 +185,7 @@ const EN = {
   'Führe deine Crew: fällt Bäume, grabt nach Gold, baut Gebäude und verkauft alles an der Heimatbasis. Ziel sind {goal} Taler.':
     'Lead your crew: chop trees, dig for gold, build and sell everything at your home base. Goal: {goal} coins.',
   'Stick links': 'Left stick',
-  'laufen, klettern, Grabrichtung; nach oben schnippen = springen':
-    'walk, climb, dig direction; flick up = jump',
+  'laufen, klettern, Grabrichtung; nach oben schnippen = springen': 'walk, climb, dig direction; flick up = jump',
   Graben: 'Dig',
   'halten oder kurz tippen zum Dauergraben; gerade, Stick runter/hoch schräg':
     'hold, or tap to keep digging; straight, stick down/up for diagonal',
@@ -267,8 +265,7 @@ try {
 }
 if (lang !== 'de') lang = 'en';
 
-const tr = (key, params = {}) =>
-  (lang === 'en' ? (EN[key] ?? key) : key).replace(/\{(\w+)\}/g, (_, k) => params[k]);
+const tr = (key, params = {}) => (lang === 'en' ? (EN[key] ?? key) : key).replace(/\{(\w+)\}/g, (_, k) => params[k]);
 
 // Translate the fixed labels in index.html (data-i18n, data-i18n-title, data-i18n-aria)
 function applyStatic() {

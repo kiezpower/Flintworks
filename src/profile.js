@@ -142,6 +142,12 @@ function buyHat(id) {
 function sold(list, v) {
   G.earned = (G.earned || 0) + v;
   track('sell', v);
+  const gems = list.filter(t => t === 'gem').length;
+  if (gems) {
+    P.crystals += gems * 3;
+    toast('Edelstein verkauft: +{n} Kristalle', { n: gems * 3 });
+    saveProfile();
+  }
   const n = list.filter(t => t === 'nug').length;
   if (n) track('gold', n);
 }

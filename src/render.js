@@ -86,60 +86,115 @@ function drawHat(put, hat) {
     put(3, -2, 1, 1, '#ffe27a');
   }
 }
+// colour helpers for sprite shading, cached per input colour
+const shadeCache = {};
+function shade(hex, k) {
+  const key = hex + k;
+  if (shadeCache[key]) return shadeCache[key];
+  const n = parseInt(hex.slice(1), 16);
+  const ch = s => Math.max(0, Math.min(255, Math.round(((n >> s) & 255) * k)));
+  return (shadeCache[key] = `rgb(${ch(16)},${ch(8)},${ch(0)})`);
+}
+// The Wühler: 7×10 pixel sprite (facing right, mirrored for left) with a soft dark outline.
+// Rects are collected first so the outline can be drawn underneath in one pass.
+const rects = [];
 function drawClonkPx(c, ox, oy, f, g = ctx) {
-  const put = (x, y, w, h, col) => {
-    g.fillStyle = col;
-    g.fillRect(f > 0 ? ox + x : ox + 6 - x - w, oy + y, w, h);
-  };
+  rects.length = 0;
+  const put = (x, y, w, h, col) => rects.push(f > 0 ? ox + x : ox + 6 - x - w, oy + y, w, h, col);
+  const abs = (x, y, w, h, col) => rects.push(x, y, w, h, col);
   const hurtF = c.hurt > 0 && c.hurt & 2;
-  const skin = c.dead ? '#9a8f84' : hurtF ? '#ff6a5a' : '#f0c49a',
-    tunic = c.dead ? '#6a6a72' : hurtF ? '#ff6a5a' : '#3f5f9a',
-    leg = '#4a2f1c';
-  put(1, 0, 4, 1, c.cap);
-  put(0, 1, 5, 1, c.cap);
+  const grey = c.dead,
+    red = !grey && hurtF;
+  const skin = grey ? '#9a8f84' : red ? '#ff6a5a' : '#f0c49a',
+    skinD = grey ? '#7a7068' : red ? '#d84a3a' : '#d49a72',
+    tun = grey ? '#6a6a72' : red ? '#ff6a5a' : '#3f5f9a',
+    tunL = grey ? '#7a7a82' : red ? '#ff8a7a' : '#5578b8',
+    tunD = grey ? '#55555c' : red ? '#c84a3a' : '#2c4677',
+    cap = grey ? '#77777f' : c.cap,
+    pants = '#5a3a22',
+    boot = '#2e1d12',
+    hair = '#6a4022';
+  // cap with highlight and a brim pointing forward
+  put(1, 0, 4, 1, cap);
+  put(2, 0, 1, 1, shade(cap, 1.35));
+  put(0, 1, 5, 1, cap);
+  put(0, 1, 1, 1, shade(cap, 0.7));
+  put(5, 1, 2, 1, shade(cap, 0.75));
   if (c.hat && c.hat !== 'none') drawHat(put, c.hat);
+  // head: hair at the back, big Clonk nose in front
   put(1, 2, 4, 2, skin);
-  const blink = !c.dead && (G.frame + c.x * 7) % 240 < 6;
-  put(4, 2, 1, 1, c.dead ? '#5a5048' : blink ? skin : '#1a120c');
-  put(1, 4, 4, 4, tunic);
-  put(1, 4, 1, 4, c.dead ? '#5a5a62' : '#32507f');
-  put(1, 6, 4, 1, '#25304a');
-  put(3, 6, 1, 1, '#c9a43a');
-  const ph = Math.sin(c.anim) > 0;
+  put(0, 2, 1, 2, hair);
+  put(1, 3, 1, 1, skinD);
+  put(5, 2, 1, 2, skin);
+  put(6, 3, 1, 1, skinD);
+  const blink = !grey && (G.frame + c.x * 7) % 240 < 6;
+  put(4, 2, 1, 1, grey ? '#5a5048' : blink ? skinD : '#1a120c');
+  put(4, 3, 1, 1, skinD);
+  // tunic: lit top row, shaded back, belt with buckle
+  put(1, 4, 4, 3, tun);
+  put(2, 4, 3, 1, tunL);
+  put(1, 4, 1, 4, tunD);
+  put(2, 7, 3, 1, tun);
+  put(1, 6, 4, 1, '#3a2616');
+  put(3, 6, 1, 1, grey ? '#8a8a8a' : '#e0b844');
+  const walking = Math.abs(c.vx || 0) > 0.15;
+  const ph = Math.floor(((c.anim % (Math.PI * 2)) + Math.PI * 2) / (Math.PI / 2)) % 4;
   if (c.hangle) {
     put(1, -2, 1, 2, skin);
     put(4, -2, 1, 2, skin);
-    put(1, 8, 1, 2, leg);
-    put(4, 8, 1, 2, leg);
-    return;
-  }
-  if (c.climb) {
-    put(4, 1, 2, 1, skin);
-    put(4, ph ? 3 : 5, 2, 1, skin);
-    put(1, 8, 1, 2, leg);
-    put(3, 8, 2, 1, leg);
-    return;
-  }
-  if (ph) {
-    put(0, 8, 2, 2, leg);
-    put(3, 8, 2, 2, leg);
+    put(1, 8, 1, 1, pants);
+    put(4, 8, 1, 1, pants);
+    put(1, 9, 1, 1, boot);
+    put(4, 9, 1, 1, boot);
+  } else if (c.climb) {
+    const up = ph < 2;
+    put(5, up ? 1 : 3, 1, 2, tunD);
+    put(5, up ? 0 : 2, 1, 1, skin);
+    put(2, 8, 1, 1, pants);
+    put(4, 8, 1, 1, pants);
+    put(2, up ? 9 : 8, 2, 1, boot);
+    put(4, up ? 8 : 9, 2, 1, boot);
   } else {
-    put(1, 8, 2, 2, leg);
-    put(4, 8, 1, 2, leg);
+    // legs: four-step walk cycle, boots with toes pointing forward
+    const front = walking ? [3, 4, 3, 2][ph] : 3,
+      back = walking ? [1, 0, 1, 2][ph] : 1;
+    put(back, 8, 1, 1, shade(pants, 0.8));
+    put(back, 9, 2, 1, boot);
+    put(front, 8, 1, 1, pants);
+    put(front, 9, 2, 1, boot);
   }
-  if (c.digging) {
-    const [dx, dy] = c.digDir;
-    g.fillStyle = '#b8b2a8';
-    g.fillRect(Math.round(ox + 2.5 + dx * 5 + Math.sin(c.anim * 2) * 0.7), Math.round(oy + 4.5 + dy * 5), 2, 2);
-  } else if (c.hammer || c.chop || c.bridge) {
-    const up = Math.sin(c.anim * 2) > 0;
-    put(4, up ? 2 : 4, 1, 2, skin);
-    put(4, up ? 1 : 5, 2, 1, c.chop ? '#c0c6cc' : '#9a948c');
-    if (c.chop) put(6, up ? 0 : 4, 1, 2, '#c0c6cc');
-  } else {
-    put(4, 4, 1, 3, skin);
-    const t = c.inv[c.isel];
-    if (t && !c.dead) put(4, 6, 2, 2, ICOL[t]);
+  if (!c.hangle && !c.climb) {
+    if (c.digging) {
+      const [dx, dy] = c.digDir;
+      const wob = Math.sin(c.anim * 2) * 0.7;
+      put(4, 4, 1, 2, tunD);
+      abs(Math.round(ox + 3 + dx * 3 + wob * 0.5), Math.round(oy + 5 + dy * 3), 1, 1, '#8b5e34');
+      abs(Math.round(ox + 2.5 + dx * 5 + wob), Math.round(oy + 4.5 + dy * 5), 2, 2, '#aab0b6');
+      abs(Math.round(ox + 2.5 + dx * 5 + wob), Math.round(oy + 4.5 + dy * 5), 1, 1, '#e4e8ec');
+    } else if (c.hammer || c.chop || c.bridge) {
+      const up = Math.sin(c.anim * 2) > 0;
+      put(4, up ? 3 : 4, 1, 2, tunD);
+      put(5, up ? 2 : 5, 1, 1, skin);
+      put(5, up ? 1 : 5, 2, 1, '#8b5e34');
+      put(6, up ? 0 : 4, 1, 2, c.chop ? '#c0c6cc' : '#9a948c');
+    } else {
+      // arm swings with the step
+      const sw = walking ? [0, 1, 0, -1][ph] : 0;
+      put(4, 4, 1, 2, tunD);
+      put(4 + Math.max(0, sw), 6, 1, 1, skin);
+      const t = c.inv[c.isel];
+      if (t && !grey) put(4 + Math.max(0, sw), 6, 2, 2, ICOL[t]);
+    }
+  }
+  // outline pass, then colours
+  g.fillStyle = '#24160c';
+  for (let k = 0; k < rects.length; k += 5) {
+    g.fillRect(rects[k] - 1, rects[k + 1], rects[k + 2] + 2, rects[k + 3]);
+    g.fillRect(rects[k], rects[k + 1] - 1, rects[k + 2], rects[k + 3] + 2);
+  }
+  for (let k = 0; k < rects.length; k += 5) {
+    g.fillStyle = rects[k + 4];
+    g.fillRect(rects[k], rects[k + 1], rects[k + 2], rects[k + 3]);
   }
   if (c.burn > 0) {
     for (let k = 0; k < 2; k++) {
@@ -578,4 +633,20 @@ function hills(cx, cy, par, base0, amp, col, ph) {
   ctx.fill();
 }
 
-export { calcTerr, cam, ctx, cv, drawAnimal, drawClonkPx, drawFlag, hills, lc, lctx, render, resize, stars };
+export {
+  calcTerr,
+  cam,
+  ctx,
+  cv,
+  drawAnimal,
+  drawClonkPx,
+  drawHat,
+  shade,
+  drawFlag,
+  hills,
+  lc,
+  lctx,
+  render,
+  resize,
+  stars,
+};
