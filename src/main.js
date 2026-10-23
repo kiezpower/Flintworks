@@ -120,13 +120,6 @@ $('newBtn').addEventListener('click', () => {
   closePanel();
   menu();
 });
-// phones kill background tabs and apps without warning: save whenever the game is hidden
-addEventListener('visibilitychange', () => {
-  if (document.hidden && G.state === 'play') saveGame();
-});
-addEventListener('pagehide', () => {
-  if (G.state === 'play') saveGame();
-});
 $('buildBtn').addEventListener('click', openBuild);
 $('mapBtn').addEventListener('click', toggleMap);
 $('zoomBtn').addEventListener('click', () => {
