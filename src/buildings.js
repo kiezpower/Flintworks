@@ -1,5 +1,5 @@
-import { addFloat } from './floats.js';
-import { sold, track } from './profile.js';
+import { arriveAtBase, stock, takeStock, unload, updProduction } from './store.js';
+import { track } from './profile.js';
 import { tr } from './i18n.js';
 import { digCell, lorryNear, onCase, spawnFromDig } from './clonk.js';
 import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './entities.js';
@@ -27,20 +27,21 @@ const BT = {
     h: 18,
     cost: { wood: 2 },
     info: 'Erweitert dein Baugebiet',
+    terrOnly: true,
   },
   shop: {
     name: 'Werkstatt',
     w: 26,
     h: 17,
     cost: { wood: 2, rock: 2 },
-    info: 'Feuersteine, Sprengladungen, Loren',
+    info: 'Macht Feuersteine und Sprengladungen aus dem Lager',
   },
   saw: {
     name: 'Sägewerk',
     w: 24,
     h: 14,
     cost: { wood: 3, rock: 1 },
-    info: 'Holz → 3 Bretter · braucht Strom',
+    info: 'Holz → 3 Bretter, ganz von selbst',
   },
   wind: {
     name: 'Windrad',
@@ -48,13 +49,14 @@ const BT = {
     h: 28,
     cost: { plank: 2, wood: 1, rock: 1 },
     info: 'Erzeugt Strom aus Wind',
+    hidden: true,
   },
   lift: {
     name: 'Fahrstuhl',
     w: 16,
     h: 22,
     cost: { wood: 3, rock: 1 },
-    info: 'Kabine gräbt Schacht · Strom',
+    info: 'Kabine gräbt einen Schacht nach unten',
   },
   pump: {
     name: 'Pumpe',
@@ -62,13 +64,14 @@ const BT = {
     h: 16,
     cost: { wood: 2, rock: 3 },
     info: 'Pumpt Flüssigkeit · Strom',
+    hidden: true,
   },
   furnace: {
     name: 'Hochofen',
     w: 18,
     h: 22,
     cost: { rock: 3, plank: 2 },
-    info: 'Erz + Kohle → Metall · Strom',
+    info: 'Erz + Kohle → Metall, ganz von selbst',
   },
   chem: {
     name: 'Chemiefabrik',
@@ -76,6 +79,7 @@ const BT = {
     h: 18,
     cost: { metal: 1, plank: 2, rock: 1 },
     info: 'Sprengstoff aus Kohle · Strom',
+    hidden: true,
   },
   tower: {
     name: 'Wachturm',
@@ -130,7 +134,10 @@ G.towerView = false;
 const arrows = [];
 const lvl = () => (G.base && G.base.lvl) || 1;
 const sellVal = items_ => Math.round(items_.reduce((s, t) => s + ITEM[t].val, 0) * BASELV[lvl()].sell);
+// building areas are optional (lobby options); off by default
+const terrOn = () => !!G.territory;
 function terrOK(x, extra = 0) {
+  if (!terrOn()) return true;
   if (Math.abs(x - (G.base.x + G.base.w / 2)) < BASELV[lvl()].terr + extra) return true;
   for (const b of builds) if (b.type === 'flag' && b.done && Math.abs(x - (b.x + 3)) < 150 + extra) return true;
   return false;
@@ -144,7 +151,7 @@ function resSources(c) {
   return src;
 }
 function countRes(c, t) {
-  return resSources(c).reduce((n, a) => n + a.filter(x => x === t).length, 0);
+  return resSources(c).reduce((n, a) => n + a.filter(x => x === t).length, 0) + stock(t);
 }
 function hasRes(c, need) {
   for (const t in need) if (countRes(c, t) < need[t]) return false;
@@ -154,6 +161,7 @@ function payRes(c, need) {
   const src = resSources(c);
   for (const t in need) {
     let n = need[t];
+    n -= takeStock(t, n);
     for (const a of src)
       while (n > 0) {
         const i = a.lastIndexOf(t);
@@ -183,7 +191,7 @@ function tryBuild(type) {
   }
   const gy = Math.floor(c.y) + 10,
     bx = Math.round(c.x + 3 - T.w / 2);
-  if (!terrOK(bx + T.w / 2, type === 'flag' ? 110 : 0)) {
+  if (terrOn() && !terrOK(bx + T.w / 2, type === 'flag' ? 110 : 0)) {
     toast(
       type === 'flag' ? 'Zu weit weg von deinem Gebiet' : 'Außerhalb deines Gebiets – stell zuerst eine Flagge auf',
     );
@@ -253,11 +261,7 @@ function liftUpd(b) {
   b.moving = 0;
   b.want = !!dir;
   if (!dir) return;
-  if (G.power.ratio < 0.05) {
-    if (!G.toastT) toast('Kein Strom – bau ein Windrad');
-    return;
-  }
-  const spd = 0.6 * G.power.ratio;
+  const spd = 0.6;
   const riders = [...crew.filter(e => !e.dead), ...lorries, ...items, ...animals].filter(e => onCase(e, c));
   if (dir > 0) {
     if (c.y + 2 >= H - 10) return;
@@ -324,17 +328,8 @@ function pumpUpd(b) {
 }
 function updBuilds() {
   for (const c of crew) c.hammer = false;
-  let dem = 0,
-    mills = 0;
-  for (const b of builds) {
-    if (!b.done) continue;
-    if (b.type === 'pump' && b.on) dem += PWR.pump;
-    if (b.type === 'lift' && b.want) dem += PWR.lift;
-    if (PROD[b.type] && b.busy > 0 && PWR[b.type]) dem += PWR[b.type];
-    if (b.type === 'wind') mills++;
-  }
-  const sup = BASELV[lvl()].power + mills * 1.5 * G.wind;
-  G.power = { sup, dem, ratio: dem ? Math.min(1, sup / dem) : 1 };
+  // no power system any more: everything always runs
+  G.power = { sup: 1, dem: 0, ratio: 1 };
   for (const b of builds) {
     if (!b.done) {
       const helpers = crew.filter(
@@ -371,10 +366,8 @@ function updBuilds() {
           toast('{name} fertig', { name: tr(BT[b.type].name) });
           sfx('done', b.x, b.gy);
           if (b.type === 'flag') calcTerr();
-          if (b.type === 'wind') toast('Windrad fertig: liefert Strom, je nach Wind');
           if (b.type === 'tower') toast('Wachturm fertig: drin stehen für weite Sicht');
           if (b.type === 'lift') toast('Fahrstuhl fertig: draufstellen, Stick runter oder hoch');
-          if (b.type === 'pump') toast('Pumpe fertig: drin stehen, Aktion schaltet ein');
         }
       }
       continue;
@@ -383,25 +376,8 @@ function updBuilds() {
       for (const c of crew) if (!c.dead && insideB(c, b)) c.energy = Math.min(100, c.energy + 0.3);
       if (b.type === 'hut' && G.frame % 22 === 0) smoke(b.x + 15, b.gy - b.h - 1);
     }
-    if (PROD[b.type] && b.busy > 0) {
-      const r = PWR[b.type] ? G.power.ratio : 1;
-      b.busy -= r;
-      const chim = { shop: 19, furnace: 13, chem: 4, saw: -1 }[b.type];
-      if (r > 0 && G.frame % 7 === 0) {
-        if (chim >= 0) smoke(b.x + chim, b.gy - b.h - 1);
-        else parts.push({ x: b.x + 16, y: b.gy - 7, vx: (rnd() - 0.5) * 0.8, vy: -0.6, l: 20, c: '#d9b98a' });
-      }
-      if (r > 0 && G.frame % 20 === 0) sfx(b.type === 'saw' ? 'saw' : 'hammer', b.x, b.gy);
-      if (b.busy <= 0) {
-        b.busy = 0;
-        for (let q = 0; q < (b.n || 1); q++) {
-          if (b.out === 'lorry') lorries.push(mkLorry(b.x + 4, b.gy - 8));
-          else spawnItem(b.out, b.x + 4 + q * 3, b.gy - 5 - q, -0.8, -1.2, 20);
-        }
-        toast('{name} fertig', { name: resName(b.out) });
-        sfx('done', b.x, b.gy);
-      }
-    }
+    updProduction(b);
+    if (b.type === 'base' && G.frame % 12 === 0) for (const c of crew) if (!c.dead && insideB(c, b)) arriveAtBase(c);
     if (b.type === 'wind') {
       b.rot = (b.rot || 0) + G.wind * 0.07;
     }
@@ -441,10 +417,6 @@ function updBuilds() {
       if (o < 0.05 !== b.open < 0.05) sfx('lift', b.x, b.gy);
     }
     if (b.type === 'lift') liftUpd(b);
-    if (b.type === 'pump') {
-      pumpUpd(b);
-      if (b.on && G.frame % 9 === 0) smoke(b.x + 4, b.gy - b.h - 1);
-    }
   }
 }
 function smoke(x, y) {
@@ -499,13 +471,7 @@ function updLorry(L) {
     overlap(L, { x: G.base.x, y: G.base.gy - G.base.h, w: G.base.w, h: G.base.h }) &&
     G.frame % 20 === 0
   ) {
-    const v = sellVal(L.items);
-    G.money += v;
-    sold(L.items, v);
-    addFloat(G.base.x + G.base.w / 2, G.base.gy - G.base.h - 4, '+' + v, '#f2c230');
-    toast('Lore verkauft: +{v} Taler', { v });
-    sfx('coin', L.x, L.y);
-    L.items = [];
+    unload(L.items, G.base.x + G.base.w / 2, G.base.gy - G.base.h - 4);
   }
 }
 
@@ -531,6 +497,7 @@ export {
   sellVal,
   smoke,
   terrOK,
+  terrOn,
   tryBuild,
   updBuilds,
   updLorry,

@@ -87,7 +87,7 @@ const STEPS = [
     done: c => c.inv.includes('nug'),
   },
   {
-    text: 'Bring das Gold zur Basis und verkaufe es mit Aktion',
+    text: 'Lauf mit dem Gold in die Basis – es wird sofort verkauft',
     target: () => ({ x: G.base.x + G.base.w / 2, y: G.base.gy - G.base.h }),
     done: (c, s) => G.money > s.money0,
   },

@@ -1,17 +1,14 @@
+import { stock, takeStock } from './store.js';
 import { hasTool, toolSection } from './tools.js';
 const depthEl = document.getElementById('depthTxt');
 import { GAME_MODES, mode } from './modes.js';
 const goalWrap = document.getElementById('goalWrap'),
   goalTxt = document.getElementById('goalTxt'),
   goalBar = document.getElementById('goalBar');
-import { addFloat } from './floats.js';
-import { sold } from './profile.js';
 import {
   BASELV,
   BT,
   BUY,
-  PROD,
-  PWR,
   UPG,
   costTxt,
   countRes,
@@ -20,8 +17,8 @@ import {
   mkLorry,
   payRes,
   resName,
-  sellVal,
   terrOK,
+  terrOn,
   tryBuild,
 } from './buildings.js';
 import { context, nearTree } from './clonk.js';
@@ -73,15 +70,18 @@ function hud() {
     goalTxt.textContent = `${tr(M.name)} ${p}/${M.goal}`;
     goalBar.style.width = (p / M.goal) * 100 + '%';
   }
-  const hasPwr = builds.some(b => b.done && (b.type === 'wind' || PWR[b.type]));
-  pwrTxt.hidden = !hasPwr;
-  if (hasPwr) {
-    pwrTxt.textContent = tr('Strom {s} / {d} · Wind {w}%', {
-      s: G.power.sup.toFixed(1),
-      d: G.power.dem.toFixed(1),
-      w: Math.round(G.wind * 100),
-    });
-    pwrTxt.classList.toggle('low', G.power.ratio < 1);
+  pwrTxt.hidden = true;
+  // store contents as small icons with counts
+  const sk = G.store ? Object.entries(G.store).filter(([, n]) => n > 0) : [];
+  const key = sk.map(([t, n]) => t + n).join();
+  if (key !== G.storeKey) {
+    G.storeKey = key;
+    storeRow.hidden = !sk.length;
+    storeRow.innerHTML = sk
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([t, n]) => `<span title="${resName(t)}"><img src="${iconUrl(t)}" alt="">${n}</span>`)
+      .join('');
   }
   if (c) {
     // depth below the surface, 1 pixel ≈ 0.25 m
@@ -136,8 +136,13 @@ function hud() {
     }
   }
 }
+const storeRow = $('storeRow');
+const iconUrls = {};
+const iconUrl = t => (iconUrls[t] ||= itemIcon(t).toDataURL());
+const thumb = $('miniThumb'),
+  tctx = thumb.getContext('2d');
 function drawMini(full) {
-  if (mapView.hidden) return;
+  if (G.state !== 'play') return;
   const K = 4;
   if (full) {
     const d = new Uint32Array(mimg.data.buffer);
@@ -186,6 +191,9 @@ function drawMini(full) {
     mctx.fillStyle = n === G.sel ? '#ffffff' : c.cap;
     mctx.fillRect(Math.floor(c.x / K) - 1, Math.floor(c.y / K) - 1, 4, 4);
   });
+  // the small always-visible map in the corner
+  tctx.imageSmoothingEnabled = true;
+  tctx.drawImage(mini, 0, 0, thumb.width, thumb.height);
 }
 function toggleMap() {
   mapView.hidden = !mapView.hidden;
@@ -261,12 +269,13 @@ function openBuild() {
   const p = openPanel('Bauen');
   const l = sec(
     p,
-    tr('Bezahlt aus dem Gepäck, einer Lore und von Wühlern daneben. Der Bau entsteht dort, wo {name} steht.', {
+    tr('Bezahlt aus dem Lager und dem Gepäck. Der Bau entsteht dort, wo {name} steht.', {
       name: c.name,
     }),
   );
   for (const t in BT) {
     const T = BT[t];
+    if (T.hidden || (T.terrOnly && !terrOn())) continue;
     opt(l, {
       icon: SPR[t],
       title: tr(T.name),
@@ -277,64 +286,35 @@ function openBuild() {
     });
   }
 }
-function openProd(b) {
-  const c = sel_();
-  const p = openPanel(BT[b.type].name);
-  const note = b.busy
-    ? 'Arbeitet gerade.'
-    : PWR[b.type] && G.power.sup < PWR[b.type]
-      ? 'Wenig Strom: arbeitet langsamer. Bau ein Windrad.'
-      : 'Rezepte';
-  const l = sec(p, note);
-  for (const r of PROD[b.type]) {
-    const icon = r.out === 'lorry' ? SPR.lorryIcon : itemIcon(r.out);
-    const name = resName(r.out) + (r.n > 1 ? ` ×${r.n}` : '');
-    opt(l, {
-      icon,
-      title: name,
-      sub: '',
-      cost: costTxt(r.need),
-      short: !hasRes(c, r.need),
-      disabled: !!b.busy,
-      onClick: () => {
-        if (!hasRes(c, r.need)) {
-          toast('{name} braucht {cost}', { name, cost: costTxt(r.need) });
-          return;
-        }
-        payRes(c, r.need);
-        b.busy = r.time;
-        b.out = r.out;
-        b.n = r.n;
-        closePanel();
-        toast('{name} wird hergestellt', { name });
-      },
-    });
-  }
-}
 function openBase() {
   const c = sel_();
   const p = openPanel('Heimatbasis');
-  const val = sellVal(c.inv);
-  const row = document.createElement('div');
-  row.className = 'sellrow';
-  row.innerHTML = `<span>${tr('{name} trägt {items}', { name: c.name, items: c.inv.length ? c.inv.map(resName).join(', ') : tr('nichts') })}</span>`;
-  const sb = document.createElement('button');
-  sb.className = 'go';
-  sb.textContent = tr('Verkaufen +{v}', { v: val });
-  sb.disabled = !val;
-  sb.onclick = () => {
-    if (performance.now() - G.panelT < 450) return;
-    G.money += val;
-    sold(c.inv, val);
-    addFloat(G.base.x + G.base.w / 2, G.base.gy - G.base.h - 4, '+' + val, '#f2c230');
-    c.inv = [];
-    c.isel = 0;
-    sfx('coin');
-    toast('+{v} Taler', { v: val });
-    openBase();
-  };
-  row.appendChild(sb);
-  p.appendChild(row);
+  // the store: gold is sold and materials are stored automatically when walking in
+  const ls = sec(p, tr('Lager · Gold und Edelsteine werden beim Betreten verkauft'));
+  const kinds = Object.keys(ITEM).filter(t => stock(t) > 0);
+  if (!kinds.length) {
+    const e = document.createElement('p');
+    e.className = 'hint';
+    e.textContent = tr('Noch leer. Bring Holz, Steine, Erz und Kohle zur Basis.');
+    ls.appendChild(e);
+  }
+  for (const t of kinds)
+    opt(ls, {
+      icon: itemIcon(t),
+      title: resName(t),
+      sub: tr('{n} im Lager', { n: stock(t) }),
+      cost: tr('Nehmen'),
+      short: true,
+      disabled: c.inv.length >= 5,
+      onClick: () => {
+        if (c.inv.length >= 5 || !takeStock(t)) return;
+        c.inv.push(t);
+        c.isel = c.inv.length - 1;
+        G.invKey = '';
+        sfx('pick');
+        openBase();
+      },
+    });
   if (lvl() < 3) {
     const nx = lvl() + 1,
       u = UPG[nx],
@@ -344,10 +324,9 @@ function openBase() {
     opt(ul, {
       icon: SPR.base,
       title: tr('Burg Stufe {n}', { n: nx }),
-      sub: tr('Preise +{p}%, {c} Wühler, Strom {pw}, größeres Gebiet', {
+      sub: tr('Preise +{p}%, bis zu {c} Wühler', {
         p: Math.round((L2.sell - 1) * 100),
         c: L2.crew,
-        pw: L2.power,
       }),
       cost: tr('{m} Taler + {cost}', { m: u.money, cost: costTxt(u.need) }),
       short: !ok,
@@ -401,7 +380,11 @@ G.hintsSeen = new Set();
 const HINTS = [
   { id: 'crew', test: () => G.frame > 600, text: 'Oben links wechselst du zwischen deinen Wühlern' },
   { id: 'tree', test: c => nearTree(c), text: 'Aktion fällt den Baum. Holz brauchst du zum Bauen' },
-  { id: 'gold', test: c => c.inv.includes('nug'), text: 'Gold zur Heimatbasis bringen und dort verkaufen' },
+  {
+    id: 'gold',
+    test: c => c.inv.includes('nug'),
+    text: 'Lauf mit dem Gold in die Heimatbasis – es wird sofort verkauft',
+  },
   {
     id: 'build',
     test: c => countRes(c, 'wood') >= 2 && countRes(c, 'rock') >= 1,
@@ -435,8 +418,7 @@ const HINTS = [
     text: 'Die Karte zeigt, wo die Schatztruhen vergraben sind',
   },
   { id: 'plank', test: c => c.inv.includes('plank'), text: 'Bretter: für Gebäude oder als Holzbrücke (Aktion)' },
-  { id: 'power', test: () => G.power.ratio < 1, text: 'Zu wenig Strom – bau ein Windrad' },
-  { id: 'terr', test: c => !terrOK(c.x), text: 'Du bist außerhalb deines Gebiets. Flaggen erweitern es' },
+  { id: 'terr', test: c => terrOn() && !terrOK(c.x), text: 'Du bist außerhalb deines Gebiets. Flaggen erweitern es' },
   { id: 'hang', test: c => c.hangle, text: 'Du hängst an der Decke. Runter lässt los' },
   { id: 'night', test: () => darkness() > 0.35, text: 'Es wird Nacht. Bleib in der Nähe der Basis' },
   {
@@ -479,7 +461,6 @@ export {
   openBase,
   openBuild,
   openPanel,
-  openProd,
   opt,
   pBody,
   pTitle,

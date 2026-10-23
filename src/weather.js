@@ -25,7 +25,7 @@ function updWeather() {
     if (b.x > W + 30) b.x = -30;
     if (b.x < -30) b.x = W + 30;
   }
-  if (--G.meteorNext <= 0) {
+  if (--G.meteorNext <= 0 && !G.relaxed) {
     G.meteorNext = 9000 + rnd() * 9000;
     const n = ri(1, 3);
     for (let k = 0; k < n; k++) {
@@ -87,7 +87,7 @@ function updWeather() {
           );
       }
     }
-    if (rnd() < 1 / 700) lightning();
+    if (!G.relaxed && rnd() < 1 / 700) lightning();
     if (G.rainT === 0) {
       G.rainNext = 4000 + rnd() * 5000;
     }

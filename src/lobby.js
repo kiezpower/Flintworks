@@ -156,6 +156,8 @@ function refresh() {
   setTxt('lbGModeTxt', tr(run ? mode().name : GM.name));
   const gm = run ? mode() : GM;
   setTxt('lbGModeDesc', tr(gm.desc, { goal: gm.goal }));
+  $('lbDiff').disabled = run;
+  setTxt('lbDiffTxt', tr((run ? G.relaxed : P.diff === 'relaxed') ? 'Entspannt' : 'Abenteuer'));
   setTxt('lbModeTxt', tr(run ? BIOMES[G.biome].name : MODE_NAME[P.mode || 'random']));
 }
 
@@ -277,6 +279,15 @@ function openOptions() {
     },
   });
   opt(l, {
+    title: tr(P.territory ? 'Baugebiete an' : 'Baugebiete aus'),
+    sub: tr('Bauen nur im eigenen Gebiet, Flaggen erweitern es'),
+    onClick: () => {
+      P.territory = !P.territory;
+      saveProfile();
+      openOptions();
+    },
+  });
+  opt(l, {
     title: tr('Tutorial spielen'),
     sub: tr('Neue Welt mit Anleitung'),
     onClick: () => {
@@ -334,6 +345,14 @@ tap('lbGMode', () => {
   const m = P.gmode || 'gold';
   P.gmode = MODE_IDS[(MODE_IDS.indexOf(m) + 1) % MODE_IDS.length];
   saveProfile();
+  refresh();
+});
+tap('lbDiff', () => {
+  P.diff = P.diff === 'relaxed' ? 'adventure' : 'relaxed';
+  saveProfile();
+  toast(
+    P.diff === 'relaxed' ? 'Entspannt: keine Monster, kein Gas, keine Blitze und Meteore' : 'Abenteuer: alle Gefahren',
+  );
   refresh();
 });
 tap('lbMode', () => {

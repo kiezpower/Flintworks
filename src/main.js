@@ -1,3 +1,4 @@
+import { calcTerr } from './render.js';
 import { updHazards } from './hazards.js';
 import { goalReached, mode, starsFor } from './modes.js';
 import { updBuildFx } from './bfx.js';
@@ -10,12 +11,14 @@ import { biome } from './biomes.js';
 import { updAmbience } from './ambience.js';
 import { endTutorial, startTutorial, updTutorial } from './tutorial.js';
 import { applyStatic, tr } from './i18n.js';
+import { openPanel, opt, sec } from './ui.js';
 import './style.css';
 import { updBuilds, updLorry } from './buildings.js';
 import { NOIN, context, doThrow, updClonk } from './clonk.js';
 import { addClonk, insideB, sel_ } from './entities.js';
 import { gen } from './gen.js';
-import { cycleCrew, followAI, inp, readInput } from './input.js';
+import { cycleCrew, inp, readInput } from './input.js';
+import { helperAI } from './helpers.js';
 import { killAnimal, updAnimal, updArrows, updItems, updParts, updTrees } from './objects.js';
 import { cam, render, resize } from './render.js';
 import { clearSave, hasSave, loadGame, saveGame } from './save.js';
@@ -60,6 +63,7 @@ function play(withTutorial) {
     } else {
       G.nextBiome = chosenBiome();
       G.nextMode = P.gmode || 'gold';
+      G.nextDiff = P.diff || 'adventure';
       gen();
       if (!P.tutorialDone) withTutorial = true;
     }
@@ -85,6 +89,8 @@ function startGame(withTutorial = false) {
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   crew[0] && Object.assign(crew[0], { hat: P.hat, cap: P.cap });
+  G.territory = !!P.territory;
+  calcTerr();
   G.crewKey = '';
   G.state = 'play';
   hideLobby();
@@ -130,11 +136,28 @@ $('zoomBtn').addEventListener('click', () => {
   resize();
   toast(G.zoomAdj > 0 ? 'Nah' : G.zoomAdj < 0 ? 'Weit' : 'Normal');
 });
-$('grpBtn').addEventListener('click', () => {
-  G.follow = !G.follow;
-  $('grpBtn').classList.toggle('off', !G.follow);
-  toast(G.follow ? 'Die Crew folgt' : 'Die Crew bleibt stehen');
-});
+// one menu button instead of a row of small ones
+$('menuBtn').addEventListener('click', openMenu);
+$('miniThumb').addEventListener('click', toggleMap);
+function openMenu() {
+  if (G.state !== 'play') return;
+  const p = openPanel('Menü');
+  const l = sec(p, 'Spiel');
+  const item = (title, sub, fn) => opt(l, { title: tr(title), sub: sub ? tr(sub) : '', short: true, onClick: fn });
+  item('Karte', 'Die ganze Welt', () => {
+    closePanel();
+    toggleMap();
+  });
+  item('Zoom', G.zoomAdj > 0 ? 'Nah' : G.zoomAdj < 0 ? 'Weit' : 'Normal', () => {
+    $('zoomBtn').click();
+    openMenu();
+  });
+  item(G.muted ? 'Ton aus' : 'Ton an', 'Ton', () => {
+    $('sndBtn').click();
+    openMenu();
+  });
+  item('Lobby', 'Spiel speichern und zur Lobby', () => $('newBtn').click());
+}
 $('sndBtn').addEventListener('click', () => {
   G.muted = !G.muted;
   $('sndBtn').classList.toggle('off', G.muted);
@@ -155,7 +178,7 @@ function step() {
     if (s && s.dead) cycleCrew();
     crew.forEach((c, n) => {
       let I = n === G.sel ? inp : NOIN;
-      if (n !== G.sel && G.follow && !c.dead) I = followAI(c, n);
+      if (n !== G.sel && !c.dead) I = helperAI(c, n);
       updClonk(c, I);
       if (n === G.sel && !c.dead) {
         doThrow(c, I);

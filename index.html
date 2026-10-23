@@ -34,6 +34,7 @@
             <div class="who pwr" id="pwrTxt" hidden></div>
             <div class="who depth" id="depthTxt" hidden></div>
             <div class="money"><span class="coin"></span><span id="moneyTxt">0</span></div>
+            <div class="store" id="storeRow" hidden></div>
             <div class="goal" id="goalWrap" hidden>
               <span id="goalTxt"></span><span class="gbar"><b id="goalBar"></b></span>
             </div>
@@ -49,19 +50,14 @@
           <div class="inv panel" id="inv"></div>
           <div class="tools">
             <button class="small" id="buildBtn" data-i18n="Bauen">Bauen</button>
-            <button
-              class="small off"
-              id="grpBtn"
-              title="Crew folgt dem gewählten Wühler"
-              data-i18n-title="Crew folgt dem gewählten Wühler"
-              data-i18n="Folgen"
-            >
-              Folgen
-            </button>
-            <button class="small" id="zoomBtn" title="Zoom">Zoom</button>
-            <button class="small" id="mapBtn" data-i18n="Karte">Karte</button>
-            <button class="small" id="sndBtn" data-i18n="Ton">Ton</button>
-            <button class="small" id="newBtn" data-i18n="Lobby">Lobby</button>
+            <button class="small" id="menuBtn" data-i18n="Menü">Menü</button>
+          </div>
+          <canvas id="miniThumb" width="175" height="50" aria-label="Karte" data-i18n-aria="Karte"></canvas>
+          <div hidden>
+            <button id="zoomBtn">Zoom</button>
+            <button id="mapBtn">Karte</button>
+            <button id="sndBtn">Ton</button>
+            <button id="newBtn">Lobby</button>
           </div>
         </div>
       </div>
@@ -159,7 +155,14 @@
           <button class="lb-mode lb-gmode" id="lbGMode">
             <small data-i18n="Modus">Modus</small><b id="lbGModeTxt">Goldrausch</b><em id="lbGModeDesc"></em>
           </button>
-          <button class="lb-mode" id="lbMode"><small data-i18n="Welt">Welt</small><b id="lbModeTxt">Zufall</b></button>
+          <div class="lb-row">
+            <button class="lb-mode" id="lbMode">
+              <small data-i18n="Welt">Welt</small><b id="lbModeTxt">Zufall</b>
+            </button>
+            <button class="lb-mode lb-diff" id="lbDiff">
+              <small data-i18n="Gefahr">Gefahr</small><b id="lbDiffTxt">Abenteuer</b>
+            </button>
+          </div>
           <button class="lb-go" id="lbPlay">
             <span id="lbPlayTxt">Spielen</span>
           </button>

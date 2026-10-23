@@ -5,12 +5,11 @@ import { chestNear, openChest } from './treasure.js';
 import { addFloat } from './floats.js';
 import { track } from './profile.js';
 import { dust, splash } from './effects.js';
-import { PROD } from './buildings.js';
 import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './entities.js';
 import { inp } from './input.js';
 import { sfx } from './sound.js';
 import { G, builds, crew, lorries, parts, trees } from './state.js';
-import { openBase, openBuild, openProd, toast } from './ui.js';
+import { openBase, openBuild, toast } from './ui.js';
 import {
   ACID,
   AIR,
@@ -498,18 +497,6 @@ function lorryNear(c) {
 function context(c) {
   if (!c || c.dead) return { label: '—' };
   if (insideB(c, G.base)) return { label: 'Basis', fn: () => openBase() };
-  for (const b of builds) {
-    if (!b.done || !insideB(c, b)) continue;
-    if (PROD[b.type]) return { label: 'Werk', fn: () => openProd(b) };
-    if (b.type === 'pump')
-      return {
-        label: b.on ? 'Pumpe aus' : 'Pumpe an',
-        fn: () => {
-          b.on = !b.on;
-          toast(b.on ? 'Pumpe läuft' : 'Pumpe steht');
-        },
-      };
-  }
   const ch = chestNear(c);
   if (ch) return { label: 'Öffnen', fn: () => openChest(ch) };
   const L = lorryNear(c);

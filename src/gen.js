@@ -69,6 +69,8 @@ function gen() {
   G.earned = 0;
   G.tools = {};
   G.mode = G.nextMode || 'gold';
+  G.relaxed = G.nextDiff === 'relaxed';
+  G.store = {};
   mat.fill(0);
   bg.fill(0);
   for (const a of [meteors, items, parts, flashes, builds, trees, crew, animals, lorries, birds, clouds]) a.length = 0;
@@ -173,6 +175,7 @@ function gen() {
   }
   placeChests();
   placeGas();
+  if (G.relaxed) G.gas = [];
   for (let x = 0; x < W; x++)
     for (let y = surf[x] + 1; y <= surf[x] + 3; y++) {
       const i = y * W + x;
@@ -231,8 +234,9 @@ function gen() {
       fish++;
     }
   }
-  for (const c of caves.slice(2, 10)) animals.push(mkAnimal('bat', c.x, c.y - 2));
-  for (let k = 0; k < 2 && k + 7 < caves.length; k++) {
+  // relaxed worlds have no creatures that hurt you
+  if (!G.relaxed) for (const c of caves.slice(2, 10)) animals.push(mkAnimal('bat', c.x, c.y - 2));
+  for (let k = 0; k < 2 && k + 7 < caves.length && !G.relaxed; k++) {
     const c = caves[7 + k];
     animals.push(mkAnimal('monster', c.x - 6, c.y - 4));
   }

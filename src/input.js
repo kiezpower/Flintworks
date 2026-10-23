@@ -1,10 +1,9 @@
 import { NOIN } from './clonk.js';
-import { midMat, sel_ } from './entities.js';
+import { sel_ } from './entities.js';
 import { cam, cv } from './render.js';
 import { audioInit } from './sound.js';
 import { G, crew } from './state.js';
 import { closePanel, openBuild, panelEl, toast, toggleMap } from './ui.js';
-import { LIQ } from './world.js';
 
 // ---- Input ----
 const inp = { ax: 0, ay: 0, dig: false, jumpP: false, jumpUp: false, throwP: false, actP: false };
@@ -196,21 +195,6 @@ function readInput() {
   inp.actP = edge.act;
   edge.jump = edge.jumpUp = edge.throw = edge.act = false;
 }
-function followAI(c, n) {
-  const s = sel_();
-  if (!s || s.dead) return NOIN;
-  const tx = s.x + (n < G.sel ? -8 : 8) * (1 + Math.abs(n - G.sel) * 0.5),
-    dx = tx - c.x,
-    dy = s.y - c.y;
-  if (Math.abs(dx) < 6 && Math.abs(dy) < 12) return NOIN;
-  const I = { ...NOIN };
-  if (Math.abs(dx) > 4) I.ax = Math.sign(dx);
-  if (dy < -12 && Math.abs(dx) < 20 && G.frame % 40 === (n * 7) % 40) I.jumpP = true;
-  if (c.climb && dy < 0) I.ay = -1;
-  if (LIQ[midMat(c, 0.1)]) I.ay = -1;
-  if (Math.abs(dx) > 200 || Math.abs(dy) > 80) return NOIN;
-  return I;
-}
 function tapSelect(clx, cly) {
   const r = cv.getBoundingClientRect(),
     k = r.width / G.VW;
@@ -256,7 +240,6 @@ export {
   buzz,
   cycleCrew,
   edge,
-  followAI,
   game,
   held,
   inp,

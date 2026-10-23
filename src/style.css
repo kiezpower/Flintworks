@@ -640,3 +640,39 @@ button:focus-visible {
 .depth.deep {
   color: #ffb08a;
 }
+
+#miniThumb {
+  display: block;
+  width: 175px;
+  height: 50px;
+  margin-top: 4px;
+  margin-left: auto;
+  border: 2px solid var(--edge);
+  border-radius: 4px;
+  background: var(--panel);
+  cursor: pointer;
+}
+@media (max-height: 420px) {
+  #miniThumb {
+    width: 140px;
+    height: 40px;
+  }
+}
+
+.store {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 7px;
+  font-size: 11px;
+  color: #e8dcc4;
+}
+.store span {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.store img {
+  width: 14px;
+  height: 14px;
+  image-rendering: pixelated;
+}

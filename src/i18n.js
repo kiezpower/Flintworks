@@ -2,6 +2,31 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  Menü: 'Menu',
+  'Die ganze Welt': 'The whole world',
+  'Spiel speichern und zur Lobby': 'Save and go to the lobby',
+  Gefahr: 'Danger',
+  Entspannt: 'Relaxed',
+  Abenteuer: 'Adventure',
+  'Entspannt: keine Monster, kein Gas, keine Blitze und Meteore':
+    'Relaxed: no monsters, no gas, no lightning or meteors',
+  'Abenteuer: alle Gefahren': 'Adventure: all dangers',
+  'Baugebiete an': 'Building areas on',
+  'Baugebiete aus': 'Building areas off',
+  'Bauen nur im eigenen Gebiet, Flaggen erweitern es': 'Build only inside your area, flags extend it',
+  'Lager · Gold und Edelsteine werden beim Betreten verkauft': 'Store · gold and gems are sold when you walk in',
+  'Noch leer. Bring Holz, Steine, Erz und Kohle zur Basis.': 'Still empty. Bring wood, rock, ore and coal to the base.',
+  '{n} im Lager': '{n} in store',
+  Nehmen: 'Take',
+  'Bezahlt aus dem Lager und dem Gepäck. Der Bau entsteht dort, wo {name} steht.':
+    'Paid from the store and your pack. It is built where {name} stands.',
+  'Preise +{p}%, bis zu {c} Wühler': 'Prices +{p}%, up to {c} diggers',
+  'Lauf mit dem Gold in die Heimatbasis – es wird sofort verkauft':
+    'Walk into the home base with gold – it is sold right away',
+  'Macht Feuersteine und Sprengladungen aus dem Lager': 'Makes flints and explosives from the store',
+  'Holz → 3 Bretter, ganz von selbst': 'Wood → 3 planks, all by itself',
+  'Kabine gräbt einen Schacht nach unten': 'The cabin digs a shaft downwards',
+  'Erz + Kohle → Metall, ganz von selbst': 'Ore + coal → metal, all by itself',
   'Ab hier wird es gefährlich: Die Decke kann einstürzen, Grubengas lauert':
     'It gets dangerous from here: the ceiling may cave in, mine gas lurks',
   'Mit Metall gibt es an der Basis besseres Werkzeug': 'With metal you can get better tools at the base',
@@ -284,7 +309,8 @@ const EN = {
   'Tippe auf Bauen und wähle die Hütte': 'Tap Build and choose the hut',
   'Bleib in der Baustelle, bis die Hütte steht': 'Stay on the site until the hut is finished',
   'Grab zur Goldader und sammle Gold': 'Dig to the gold vein and collect gold',
-  'Bring das Gold zur Basis und verkaufe es mit Aktion': 'Bring the gold to the base and sell it with Action',
+  'Lauf mit dem Gold in die Basis – es wird sofort verkauft':
+    'Walk into the base with the gold – it is sold right away',
 };
 
 let lang = 'de';

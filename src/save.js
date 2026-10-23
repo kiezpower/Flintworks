@@ -54,6 +54,8 @@ function saveGame() {
       earned: G.earned || 0,
       biome: G.biome,
       mode: G.mode,
+      relaxed: !!G.relaxed,
+      store: G.store || {},
       tools: G.tools || {},
       chests: G.chests,
       chestsFound: G.chestsFound,
@@ -119,6 +121,8 @@ function loadGame() {
     G.sel = d.sel;
     G.dayT = d.dayT;
     G.mode = d.mode || 'gold';
+    G.relaxed = !!d.relaxed;
+    G.store = d.store || {};
     G.tools = d.tools || {};
     G.chests = d.chests || [];
     G.chestsFound = d.chestsFound || 0;
