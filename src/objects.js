@@ -9,7 +9,7 @@ import { midMat, moveBody, overlap, spawnItem, unstuck } from './entities.js';
 import { canPlantAt, plantTree } from './gen.js';
 import { sfx } from './sound.js';
 import { treeSprite } from './sprites.js';
-import { G, animals, crew, flashes, items, lorries, parts, trees } from './state.js';
+import { INV_MAX, G, animals, crew, flashes, items, lorries, parts, trees } from './state.js';
 import { toast } from './ui.js';
 import {
   ACID,
@@ -168,7 +168,7 @@ function updItems() {
     // pickup: items roll towards a Wühler standing close by, then get collected
     if (it.pd <= 0 && sp < 1.5 && it.fuse < 0) {
       for (const c of crew) {
-        if (c.dead || c.tumble || c.inv.length >= 5) continue;
+        if (c.dead || c.tumble || c.inv.length >= INV_MAX) continue;
         const dx = c.x + 3 - (it.x + it.w / 2),
           dy = c.y + 5 - (it.y + it.h / 2);
         if (Math.abs(dx) < 12 && Math.abs(dy) < 10 && !overlap(it, c, 1)) {

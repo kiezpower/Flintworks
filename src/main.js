@@ -1,3 +1,4 @@
+import { tapGotoInput } from './tapgo.js';
 import { calcTerr } from './render.js';
 import { updHazards } from './hazards.js';
 import { goalReached, mode, starsFor } from './modes.js';
@@ -6,7 +7,7 @@ import { updMusic } from './music.js';
 import { updFloats } from './floats.js';
 import { updDecor } from './decor.js';
 import { chosenBiome, hideLobby, lobbyFrame, lobbyOpen, showLobby } from './lobby.js';
-import { P, finishGame } from './profile.js';
+import { P, finishGame, saveProfile } from './profile.js';
 import { biome } from './biomes.js';
 import { updAmbience } from './ambience.js';
 import { endTutorial, startTutorial, updTutorial } from './tutorial.js';
@@ -33,11 +34,10 @@ import { H, W, clamp, surf } from './world.js';
 const overlay = $('overlay'),
   card = $('card');
 const TOUCH_KEYS = [
-  ['Stick links', 'laufen, klettern, Grabrichtung; nach oben schnippen = springen'],
-  ['Graben', 'halten oder kurz tippen zum Dauergraben; gerade, Stick runter/hoch schräg'],
-  ['Wurf', 'Stick hoch = Bogen, runter = ablegen'],
-  ['Aktion', 'Fällen, Basis, Lore, Brücke, Bauen'],
-  ['Oben links', 'Wühler wechseln'],
+  ['Stick links', 'laufen, klettern, nach oben schnippen = springen; gegen Erde laufen oder runter drücken = graben'],
+  ['Tippen rechts', 'dein Wühler läuft dorthin'],
+  ['Aktion', 'Fällen, Basis, Truhe, Brücke, Bauen'],
+  ['Wurf', 'erscheint mit etwas in der Hand; Stick hoch = Bogen, runter = ablegen'],
 ];
 const DESK_KEYS = [
   ['Pfeile / WASD', 'laufen, klettern, hangeln, schwimmen'],
@@ -89,6 +89,8 @@ function startGame(withTutorial = false) {
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   crew[0] && Object.assign(crew[0], { hat: P.hat, cap: P.cap });
+  G.autoDig = P.autodig !== false;
+  G.sel = 0;
   G.territory = !!P.territory;
   calcTerr();
   G.crewKey = '';
@@ -156,6 +158,16 @@ function openMenu() {
     $('sndBtn').click();
     openMenu();
   });
+  item(
+    G.autoDig ? 'Automatisch graben an' : 'Automatisch graben aus',
+    'Gegen Erde laufen gräbt. Aus: Graben- und Sprung-Knopf wie früher',
+    () => {
+      P.autodig = !G.autoDig;
+      G.autoDig = P.autodig;
+      saveProfile();
+      openMenu();
+    },
+  );
   item('Lobby', 'Spiel speichern und zur Lobby', () => $('newBtn').click());
 }
 $('sndBtn').addEventListener('click', () => {
@@ -164,6 +176,23 @@ $('sndBtn').addEventListener('click', () => {
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
 });
+function respawn(c) {
+  Object.assign(c, {
+    dead: false,
+    deadT: 0,
+    energy: 100,
+    breath: 100,
+    burn: 0,
+    hurt: 0,
+    tumble: false,
+    vx: 0,
+    vy: 0,
+    x: G.base.x + 10 + crew.indexOf(c) * 6,
+    y: G.base.gy - 10,
+  });
+  G.crewKey = '';
+  if (c === crew[0]) toast('{name} ist wieder fit', { name: c.name });
+}
 function resetCam() {
   const s = crew[0];
   cam.x = clamp(s.x - G.VW / 2, 0, W - G.VW);
@@ -174,8 +203,8 @@ function step() {
   readInput();
   const paused = !panelEl.hidden;
   if (G.state === 'play' && !paused) {
-    const s = sel_();
-    if (s && s.dead) cycleCrew();
+    G.sel = 0; // you always play your own Wühler; the others work by themselves
+    tapGotoInput(crew[0]);
     crew.forEach((c, n) => {
       let I = n === G.sel ? inp : NOIN;
       if (n !== G.sel && !c.dead) I = helperAI(c, n);
@@ -201,27 +230,14 @@ function step() {
       }
     updTrees();
     updFloats();
-    for (let k = crew.length - 1; k >= 0; k--)
-      if (crew[k].dead && crew[k].deadT > 620) {
-        crew.splice(k, 1);
-        if (G.sel >= k && G.sel > 0) G.sel--;
-        G.crewKey = '';
-      }
+    // exhausted Wühler wake up again in the base after a short while
+    for (const c of crew) if (c.dead && c.deadT > 200) respawn(c);
     updTutorial();
     if (G.frame % 15 === 0) updAmbience();
     if (G.frame % 30 === 0) updDecor();
     if (G.frame % 60 === 0) checkHints();
     if (G.frame % 3600 === 0) saveGame();
     if (goalReached()) endScreen(true);
-    else if (!crew.some(c => !c.dead)) {
-      if (G.money >= 60) {
-        G.money -= 60;
-        const n = addClonk(G.base.x + 15, G.base.gy - 10);
-        G.sel = crew.indexOf(n);
-        toast('{name} kommt aus der Basis (−60 Taler)', { name: n.name });
-        G.crewKey = '';
-      } else endScreen(false);
-    }
   }
   if (!paused) {
     updWeather();

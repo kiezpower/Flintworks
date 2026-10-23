@@ -26,11 +26,11 @@ import { addClonk, sel_, spawnItem } from './entities.js';
 import { held, joy, keys, selectCrew } from './input.js';
 import { calcTerr, cam } from './render.js';
 import { sfx } from './sound.js';
-import { ITEM, SPR, itemIcon, padIcon } from './sprites.js';
+import { ITEM, SPR, itemIcon, padIcon, toolIcon } from './sprites.js';
 import { tr } from './i18n.js';
-import { G, animals, builds, crew, lorries } from './state.js';
+import { G, INV_MAX, animals, builds, crew, lorries } from './state.js';
 import { darkness } from './weather.js';
-import { AIR, GOLD, H, MINI, ROCK, W, bg, hex, mat, matAt, surf } from './world.js';
+import { PLANK, AIR, GOLD, H, MINI, ROCK, W, bg, hex, mat, matAt, surf } from './world.js';
 
 // ---- HUD, panels, minimap ----
 const $ = id => document.getElementById(id);
@@ -97,7 +97,16 @@ function hud() {
     airWrap.hidden = c.breath >= 100;
     airBar.style.width = c.breath + '%';
   }
-  actBtn.textContent = tr(context(c).label);
+  const cx = context(c);
+  actBtn.textContent = tr(cx.label);
+  // the action button shows what it will do
+  if (cx.label !== G.actKey) {
+    G.actKey = cx.label;
+    actIco.style.backgroundImage = `url(${actIcon(cx.label)})`;
+  }
+  // automatic digging hides the dig and jump buttons; throw only shows with something in hand
+  btnsEl.classList.toggle('auto', !!G.autoDig);
+  btnsEl.classList.toggle('noitem', !(c && !c.dead && c.inv[c.isel]));
   const ck = crew.map((o, n) => `${n === G.sel}${o.dead}${Math.round(o.energy / 10)}`).join();
   if (ck !== G.crewKey) {
     G.crewKey = ck;
@@ -116,7 +125,9 @@ function hud() {
   if (k !== G.invKey) {
     G.invKey = k;
     invEl.innerHTML = '';
-    for (let s = 0; s < 5; s++) {
+    // three slots are shown; the bag holds up to INV_MAX, the rest is behind the "+" slot
+    const shown = c && c.isel >= 3 ? [0, 1, c.isel] : [0, 1, 2];
+    for (const s of shown) {
       const b = document.createElement('button');
       const t = c && c.inv[s];
       b.className = 'slot' + (t && s === c.isel ? ' sel' : '');
@@ -134,8 +145,53 @@ function hud() {
       });
       invEl.appendChild(b);
     }
+    if (c && c.inv.length > 3) {
+      const more = document.createElement('button');
+      more.className = 'slot more';
+      more.textContent = '+' + (c.inv.length - 3);
+      more.setAttribute('aria-label', tr('Tasche'));
+      more.addEventListener('pointerdown', e => {
+        e.stopPropagation();
+        openBag();
+      });
+      invEl.appendChild(more);
+    }
   }
 }
+// the whole bag: pick what goes into the hand
+function openBag() {
+  const c = sel_();
+  if (!c || c.dead) return;
+  const p = openPanel('Tasche');
+  const l = sec(p, tr('{n} von {max} Plätzen', { n: c.inv.length, max: INV_MAX }));
+  c.inv.forEach((t, k) =>
+    opt(l, {
+      icon: itemIcon(t),
+      title: resName(t),
+      cost: k === c.isel ? '✓' : '',
+      short: true,
+      onClick: () => {
+        c.isel = k;
+        G.invKey = '';
+        closePanel();
+      },
+    }),
+  );
+}
+const ACT_ICONS = { Fällen: 'act', Basis: 'castle', Öffnen: 'chest', Bauen: 'hammer' };
+const actIconCache = {};
+function actIcon(label) {
+  if (actIconCache[label]) return actIconCache[label];
+  let url;
+  if (ACT_ICONS[label]) url = padIcon(ACT_ICONS[label]);
+  else if (label === 'Brücke') url = itemIcon('plank').toDataURL();
+  else if (label === 'Zünden') url = itemIcon('tnt').toDataURL();
+  else if (label === 'Lore') url = SPR.lorryIcon.toDataURL();
+  else url = padIcon('act');
+  return (actIconCache[label] = url);
+}
+const actIco = document.querySelector('.pad.act .ico'),
+  btnsEl = $('btns');
 const storeRow = $('storeRow');
 const iconUrls = {};
 const iconUrl = t => (iconUrls[t] ||= itemIcon(t).toDataURL());
@@ -273,6 +329,22 @@ function openBuild() {
       name: c.name,
     }),
   );
+  const stairCost = { plank: 2 };
+  opt(l, {
+    icon: toolIcon('stairs'),
+    title: tr('Treppe'),
+    sub: tr('Holztreppe schräg nach oben in Blickrichtung – auch zu Gebäuden, unter denen gegraben wurde'),
+    cost: costTxt(stairCost),
+    short: !hasRes(c, stairCost),
+    onClick: () => {
+      closePanel();
+      if (!hasRes(c, stairCost)) return toast('Treppe braucht {cost}', { cost: costTxt(stairCost) });
+      if (c.climb || c.hangle || c.tumble || c.bridge) return;
+      payRes(c, stairCost);
+      c.bridge = { n: 0, x0: c.x + 3 + c.face * 4, y0: c.y + 10, dy: -0.62, m: PLANK, len: 70, th: 2 };
+      sfx('hammer');
+    },
+  });
   for (const t in BT) {
     const T = BT[t];
     if (T.hidden || (T.terrOnly && !terrOn())) continue;
@@ -305,9 +377,9 @@ function openBase() {
       sub: tr('{n} im Lager', { n: stock(t) }),
       cost: tr('Nehmen'),
       short: true,
-      disabled: c.inv.length >= 5,
+      disabled: c.inv.length >= INV_MAX,
       onClick: () => {
-        if (c.inv.length >= 5 || !takeStock(t)) return;
+        if (c.inv.length >= INV_MAX || !takeStock(t)) return;
         c.inv.push(t);
         c.isel = c.inv.length - 1;
         G.invKey = '';
@@ -315,36 +387,6 @@ function openBase() {
         openBase();
       },
     });
-  if (lvl() < 3) {
-    const nx = lvl() + 1,
-      u = UPG[nx],
-      L2 = BASELV[nx];
-    const ul = sec(p, 'Ausbau');
-    const ok = G.money >= u.money && hasRes(c, u.need);
-    opt(ul, {
-      icon: SPR.base,
-      title: tr('Burg Stufe {n}', { n: nx }),
-      sub: tr('Preise +{p}%, bis zu {c} Wühler', {
-        p: Math.round((L2.sell - 1) * 100),
-        c: L2.crew,
-      }),
-      cost: tr('{m} Taler + {cost}', { m: u.money, cost: costTxt(u.need) }),
-      short: !ok,
-      onClick: () => {
-        if (!ok) {
-          toast('Ausbau braucht {m} Taler + {cost}', { m: u.money, cost: costTxt(u.need) });
-          return;
-        }
-        G.money -= u.money;
-        payRes(c, u.need);
-        G.base.lvl = nx;
-        calcTerr();
-        sfx('done');
-        toast('Burg auf Stufe {n} ausgebaut', { n: nx });
-        openBase();
-      },
-    });
-  }
   toolSection(p, c, { opt, sec, toast, reopen: openBase });
   const l = sec(p, tr('Kaufen · Kasse: {m} Taler', { m: G.money }));
   for (const o of BUY) {
@@ -367,7 +409,7 @@ function openBase() {
         } else if (o.t === 'lorry') {
           lorries.push(mkLorry(G.base.x + 12, G.base.gy - 8));
           toast('Lore steht bereit');
-        } else if (c.inv.length < 5) c.inv.push(o.t);
+        } else if (c.inv.length < INV_MAX) c.inv.push(o.t);
         else spawnItem(o.t, G.base.x + 16, G.base.gy - 6, 0, 0, 20);
         openBase();
       },
@@ -378,7 +420,8 @@ function openBase() {
 // ---- Hints ----
 G.hintsSeen = new Set();
 const HINTS = [
-  { id: 'crew', test: () => G.frame > 600, text: 'Oben links wechselst du zwischen deinen Wühlern' },
+  { id: 'crew', test: () => G.frame > 600, text: 'Deine Helfer sammeln von selbst und bringen alles zur Basis' },
+  { id: 'tap', test: () => G.frame > 1500, text: 'Tipp rechts ins Gelände: dein Wühler läuft (und gräbt) dorthin' },
   { id: 'tree', test: c => nearTree(c), text: 'Aktion fällt den Baum. Holz brauchst du zum Bauen' },
   {
     id: 'gold',

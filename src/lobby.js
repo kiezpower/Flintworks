@@ -279,6 +279,16 @@ function openOptions() {
     },
   });
   opt(l, {
+    title: tr(P.autodig === false ? 'Automatisch graben aus' : 'Automatisch graben an'),
+    sub: tr('Gegen Erde laufen gräbt. Aus: Graben- und Sprung-Knopf wie früher'),
+    onClick: () => {
+      P.autodig = P.autodig === false;
+      G.autoDig = P.autodig;
+      saveProfile();
+      openOptions();
+    },
+  });
+  opt(l, {
     title: tr(P.territory ? 'Baugebiete an' : 'Baugebiete aus'),
     sub: tr('Bauen nur im eigenen Gebiet, Flaggen erweitern es'),
     onClick: () => {

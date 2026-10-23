@@ -32,5 +32,7 @@ G.bolt = null;
 const NAMES = ['Kurt', 'Hilde', 'Bodo', 'Gerda', 'Udo', 'Frieda', 'Paul'];
 const CAPS = ['#c8402c', '#2f7fd0', '#3f9e4a', '#9a4fc4', '#e08a1f', '#d04f8a', '#3fb3a8'];
 G.base = null;
+// a Wühler carries up to INV_MAX things; the HUD shows three of them
+const INV_MAX = 10;
 
-export { CAPS, NAMES, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees };
+export { INV_MAX, CAPS, NAMES, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees };

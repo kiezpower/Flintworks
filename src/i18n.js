@@ -2,6 +2,34 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'Deine Helfer sammeln von selbst und bringen alles zur Basis':
+    'Your helpers collect by themselves and bring everything to the base',
+  'Tipp rechts ins Gelände: dein Wühler läuft (und gräbt) dorthin':
+    'Tap the ground on the right: your digger walks (and digs) there',
+  'laufen, klettern, nach oben schnippen = springen; gegen Erde laufen oder runter drücken = graben':
+    'walk, climb, flick up = jump; walk into earth or push down = dig',
+  'Tippen rechts': 'Tap right',
+  'dein Wühler läuft dorthin': 'your digger walks there',
+  'Fällen, Basis, Truhe, Brücke, Bauen': 'Chop, base, chest, bridge, build',
+  'erscheint mit etwas in der Hand; Stick hoch = Bogen, runter = ablegen':
+    'appears with something in hand; stick up = arc, down = drop',
+  'Grab dich in die Erde: Stick nach unten drücken': 'Dig into the ground: push the stick down',
+  'Fälle einen Baum mit Aktion und sammle 2 Holz': 'Chop a tree with Action and collect 2 wood',
+  'Bau eine Hütte: Bauen → Hütte, dann drin stehen bleiben': 'Build a hut: Build → Hut, then stay inside',
+  'Grab Gold aus und lauf damit in die Basis': 'Dig up gold and walk into the base with it',
+  Tasche: 'Bag',
+  '{n} von {max} Plätzen': '{n} of {max} slots',
+  Treppe: 'Stairs',
+  'Holztreppe schräg nach oben in Blickrichtung – auch zu Gebäuden, unter denen gegraben wurde':
+    'Wooden stairs going up where you face – also to buildings that were dug out below',
+  'Treppe braucht {cost}': 'Stairs need {cost}',
+  'Deine Burg wächst: Stufe {n} – bessere Preise, mehr Wühler':
+    'Your castle grows: level {n} – better prices, more diggers',
+  '{name} ist wieder fit': '{name} is fit again',
+  'Automatisch graben an': 'Auto digging on',
+  'Automatisch graben aus': 'Auto digging off',
+  'Gegen Erde laufen gräbt. Aus: Graben- und Sprung-Knopf wie früher':
+    'Walking into earth digs. Off: dig and jump buttons like before',
   Menü: 'Menu',
   'Die ganze Welt': 'The whole world',
   'Spiel speichern und zur Lobby': 'Save and go to the lobby',

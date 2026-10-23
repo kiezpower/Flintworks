@@ -676,3 +676,28 @@ button:focus-visible {
   height: 14px;
   image-rendering: pixelated;
 }
+
+/* automatic digging: one big action button, no dig or jump buttons */
+#btns.auto .pad.big,
+#btns.auto .pad.jump {
+  display: none;
+}
+#btns.auto .pad.act {
+  width: 88px;
+  height: 88px;
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  font-size: 10px;
+}
+#btns.auto .pad.act .ico {
+  width: 34px;
+  height: 34px;
+}
+#btns.noitem .pad.throw {
+  visibility: hidden;
+}
+.slot.more {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--gold);
+}

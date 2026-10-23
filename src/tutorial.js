@@ -49,31 +49,25 @@ function nearestGold(c) {
 const hut = () => builds.find(b => b.type === 'hut');
 const STEPS = [
   { text: 'Lauf ein Stück nach rechts', done: (c, s) => c.x > s.x0 + 30 },
-  { text: 'Spring einmal: Stick nach oben schnippen oder Sprung', done: c => c.vy < -1.5 && !c.climb },
-  { text: 'Grab dich in die Erde: Graben halten', done: (c, s) => (s.dig += c.digging ? 1 : 0) > 60 },
   {
-    text: 'Geh zu einem Baum und fälle ihn mit Aktion',
+    text: 'Grab dich in die Erde: Stick nach unten drücken',
+    hint: () => (G.autoDig ? null : 'Grab dich in die Erde: Graben halten'),
+    done: (c, s) => (s.dig += c.digging ? 1 : 0) > 60,
+  },
+  {
+    text: 'Fälle einen Baum mit Aktion und sammle 2 Holz',
     target: c => {
-      const t = nearest(
+      const wood = items.filter(i => i.t === 'wood');
+      if (wood.length) return nearest(c, wood);
+      return nearest(
         c,
         trees.filter(t => !t.fall).map(t => ({ x: t.x, y: t.gy - t.spr.height })),
       );
-      return t;
     },
-    done: c => countRes(c, 'wood') > 0 || items.some(i => i.t === 'wood'),
-  },
-  {
-    text: 'Sammle 2 Holz ein: einfach darüberlaufen',
-    target: c =>
-      nearest(
-        c,
-        items.filter(i => i.t === 'wood'),
-      ),
     done: c => countRes(c, 'wood') >= 2,
   },
-  { text: 'Tippe auf Bauen und wähle die Hütte', done: () => !!hut() },
   {
-    text: 'Bleib in der Baustelle, bis die Hütte steht',
+    text: 'Bau eine Hütte: Bauen → Hütte, dann drin stehen bleiben',
     target: () => {
       const b = hut();
       return b && { x: b.x + b.w / 2, y: b.gy - b.h };
@@ -81,14 +75,8 @@ const STEPS = [
     done: () => hut()?.done,
   },
   {
-    text: 'Grab zur Goldader und sammle Gold',
-    hint: c => (c.inv.length >= 5 ? 'Gepäck voll: wirf etwas mit Wurf weg' : null),
-    target: c => nearestGold(c),
-    done: c => c.inv.includes('nug'),
-  },
-  {
-    text: 'Lauf mit dem Gold in die Basis – es wird sofort verkauft',
-    target: () => ({ x: G.base.x + G.base.w / 2, y: G.base.gy - G.base.h }),
+    text: 'Grab Gold aus und lauf damit in die Basis',
+    target: c => (c.inv.includes('nug') ? { x: G.base.x + G.base.w / 2, y: G.base.gy - G.base.h } : nearestGold(c)),
     done: (c, s) => G.money > s.money0,
   },
 ];

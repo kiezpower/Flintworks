@@ -10,7 +10,24 @@ import { sfx } from './sound.js';
 import { ITEM } from './sprites.js';
 import { G, animals, builds, crew, items, lorries, parts, trees } from './state.js';
 import { closePanel, toast } from './ui.js';
-import { AIR, GRANITE, H, LIQ, ROCK, W, boxFree, clamp, free, mat, matAt, paint, rnd, solid } from './world.js';
+import {
+  AIR,
+  GRANITE,
+  H,
+  LIQ,
+  PLANK,
+  ROCK,
+  SOLID,
+  W,
+  boxFree,
+  clamp,
+  free,
+  mat,
+  matAt,
+  paint,
+  rnd,
+  solid,
+} from './world.js';
 
 // ---- Buildings & economy ----
 const BT = {
@@ -330,6 +347,16 @@ function updBuilds() {
   for (const c of crew) c.hammer = false;
   // no power system any more: everything always runs
   G.power = { sup: 1, dem: 0, ratio: 1 };
+  // floors blown away by explosions grow back
+  if (G.frame % 120 === 0) for (const b of builds) if (b.done && b.type !== 'base') foundation(b);
+  // the castle grows by itself with what you earned
+  const grow = [0, 0, 150, 350];
+  if (lvl() < 3 && (G.earned || 0) >= grow[lvl() + 1]) {
+    G.base.lvl = lvl() + 1;
+    calcTerr();
+    sfx('done');
+    toast('Deine Burg wächst: Stufe {n} – bessere Preise, mehr Wühler', { n: G.base.lvl });
+  }
   for (const b of builds) {
     if (!b.done) {
       const helpers = crew.filter(
@@ -362,6 +389,7 @@ function updBuilds() {
         if (b.prog >= 1) {
           b.prog = 1;
           b.done = true;
+          foundation(b);
           track('build');
           toast('{name} fertig', { name: tr(BT[b.type].name) });
           sfx('done', b.x, b.gy);
@@ -417,6 +445,21 @@ function updBuilds() {
       if (o < 0.05 !== b.open < 0.05) sfx('lift', b.x, b.gy);
     }
     if (b.type === 'lift') liftUpd(b);
+  }
+}
+// Every building stands on a wooden floor that hand digging cannot remove. If the ground
+// below is dug away, the floor stays as a platform you can jump onto or reach by stairs.
+function foundation(b) {
+  for (let x = b.x; x < b.x + b.w; x++) {
+    // the lift needs its shaft free
+    if (b.type === 'lift' && x >= b.x + 2 && x < b.x + 14) continue;
+    for (let y = b.gy; y < b.gy + 2 && y < H; y++) {
+      const i = y * W + x;
+      if (!SOLID[mat[i]] || LIQ[mat[i]]) {
+        mat[i] = PLANK;
+        paint(i);
+      }
+    }
   }
 }
 function smoke(x, y) {
@@ -501,4 +544,5 @@ export {
   tryBuild,
   updBuilds,
   updLorry,
+  foundation,
 };

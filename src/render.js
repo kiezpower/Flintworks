@@ -1,3 +1,4 @@
+import { drawGoal } from './tapgo.js';
 import { drawClonkHi } from './clonkhi.js';
 import { drawBackdrop } from './backdrop.js';
 import { hasTool } from './tools.js';
@@ -553,6 +554,7 @@ function render() {
     ctx.imageSmoothingEnabled = false;
     drawWindowGlow(ctx, cx, cy, dark);
   }
+  drawGoal(ctx, cx, cy);
   drawFloats(ctx, cx, cy);
   drawTutorial(ctx, cx, cy);
 }

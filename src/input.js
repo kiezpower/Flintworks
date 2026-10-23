@@ -1,3 +1,4 @@
+import { setGoal } from './tapgo.js';
 import { NOIN } from './clonk.js';
 import { sel_ } from './entities.js';
 import { cam, cv } from './render.js';
@@ -87,14 +88,14 @@ game.addEventListener('pointerdown', e => {
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   if (e.pointerType === 'mouse' && G.state === 'play' && panelEl.hidden && e.target === cv) {
-    tapSelect(e.clientX, e.clientY);
+    setGoal(e.clientX, e.clientY);
     return;
   }
   if (e.pointerType === 'mouse' || G.state !== 'play' || !panelEl.hidden) return;
   if (e.target.closest('button,#hud,#panel,#overlay')) return;
   const r = game.getBoundingClientRect();
   if (e.clientX - r.left > r.width * 0.55) {
-    tapSelect(e.clientX, e.clientY);
+    setGoal(e.clientX, e.clientY);
     return;
   }
   G.joyId = e.pointerId;
@@ -195,45 +196,9 @@ function readInput() {
   inp.actP = edge.act;
   edge.jump = edge.jumpUp = edge.throw = edge.act = false;
 }
-function tapSelect(clx, cly) {
-  const r = cv.getBoundingClientRect(),
-    k = r.width / G.VW;
-  const wx = (clx - r.left) / k + Math.round(cam.x),
-    wy = (cly - r.top) / k + Math.round(cam.y);
-  let best = -1,
-    bd = 10;
-  crew.forEach((c, n) => {
-    if (c.dead) return;
-    const d = Math.hypot(c.x + 3 - wx, c.y + 5 - wy);
-    if (d < bd) {
-      bd = d;
-      best = n;
-    }
-  });
-  if (best >= 0 && best !== G.sel) {
-    selectCrew(best);
-    toast(crew[best].name);
-  }
-}
-function cycleCrew() {
-  if (!crew.length) return;
-  for (let k = 1; k <= crew.length; k++) {
-    const n = (G.sel + k) % crew.length;
-    if (!crew[n].dead) {
-      selectCrew(n);
-      return;
-    }
-  }
-}
-function selectCrew(n) {
-  if (crew[n] && !crew[n].dead) {
-    const o = sel_();
-    if (o) {
-      o.chop = null;
-    }
-    G.sel = n;
-  }
-}
+// you always play your own Wühler now; kept so old key bindings do nothing harmful
+function cycleCrew() {}
+function selectCrew() {}
 
 export {
   KEYMAP,
@@ -251,5 +216,4 @@ export {
   knob,
   readInput,
   selectCrew,
-  tapSelect,
 };

@@ -74,6 +74,34 @@ function startTumble(c, vx, vy) {
   c.vx = vx;
   c.vy = vy;
 }
+const diggable = m =>
+  m === EARTH ||
+  m === SAND ||
+  m === GOLD ||
+  m === LOAM ||
+  m === ORE ||
+  m === COAL ||
+  m === GEM ||
+  (m === ROCK && hasTool('pick'));
+const digAtPx = (x, y) => diggable(mat[Math.floor(y) * W + Math.floor(x)]);
+function wantsDig(c, I) {
+  if (c.climb || c.hangle || c.tumble || c.bridge || c.chop || c.dead) return false;
+  if (builds.some(b => b.cs && b.done && onCase(c, b.cs))) return false;
+  if (free(c.x, c.y + 1, 6, 10)) return false;
+  if (I.ay > 0.6) {
+    const dir = Math.abs(I.ax) > 0.3 ? Math.sign(I.ax) : c.face;
+    return digAtPx(c.x + 3 + dir * 3, c.y + 12) || digAtPx(c.x + 3 + dir * 6, c.y + 10);
+  }
+  if (Math.abs(I.ax) > 0.5) {
+    const dir = Math.sign(I.ax);
+    // only a wall too high to step up on gets dug
+    if (free(c.x + dir * 1.5, c.y - 3, 6, 10)) return false;
+    return (
+      digAtPx(c.x + 3 + dir * 6, c.y + 5) || digAtPx(c.x + 3 + dir * 6, c.y + 1) || digAtPx(c.x + 3 + dir * 6, c.y + 8)
+    );
+  }
+  return false;
+}
 function digAt(cx, cy, r) {
   const r2 = r * r;
   for (let y = Math.floor(cy - r); y <= cy + r; y++) {
@@ -305,6 +333,8 @@ function updClonk(c, I) {
     if (c.chop) return;
   }
   const contact = !boxFree(c.x - 3, c.y - 3, 12, 16);
+  // automatic digging: walking into earth or pushing the stick down digs (can be turned off)
+  if (I === inp && G.autoDig && !I.dig && wantsDig(c, I)) I.dig = true;
   if (I.dig && contact && !c.climb && !c.hangle) {
     // Clonk-style digging: only horizontal or slanted, never straight up/down
     if (Math.abs(I.ax) > 0.25) c.face = Math.sign(I.ax);

@@ -2,7 +2,7 @@
 // carry them home to the base (where they are sold or stored) and then wait there.
 import { NOIN } from './clonk.js';
 import { midMat } from './entities.js';
-import { G, crew, items } from './state.js';
+import { G, INV_MAX, crew, items } from './state.js';
 import { LIQ, free } from './world.js';
 
 const TOOLS = ['flint', 'tnt', 'loam'];
@@ -27,7 +27,7 @@ function helperAI(c, n) {
   if (c.chop || c.digging) return NOIN;
   // drop a target that vanished or could not be reached in time
   if (c.target && (!items.includes(c.target) || G.frame - c.targetT > 600)) c.target = null;
-  const full = c.inv.length >= 5 || cargo(c) >= 3;
+  const full = c.inv.length >= INV_MAX || cargo(c) >= 4;
   if (!full && !c.target && G.frame % 20 === n) {
     c.target = pickTarget(c);
     c.targetT = G.frame;
