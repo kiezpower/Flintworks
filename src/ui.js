@@ -1,4 +1,4 @@
-import { toolSection } from './tools.js';
+import { hasTool, toolSection } from './tools.js';
 const depthEl = document.getElementById('depthTxt');
 import { GAME_MODES, mode } from './modes.js';
 const goalWrap = document.getElementById('goalWrap'),
@@ -418,6 +418,21 @@ const HINTS = [
     id: 'ore',
     test: c => c.inv.includes('ore') || c.inv.includes('coal'),
     text: 'Erz und Kohle schmilzt der Hochofen zu Metall',
+  },
+  {
+    id: 'deep',
+    test: c => c.y - surf[Math.max(0, Math.min(W - 1, Math.floor(c.x)))] > 45,
+    text: 'Ab hier wird es gefährlich: Die Decke kann einstürzen, Grubengas lauert',
+  },
+  {
+    id: 'metal',
+    test: c => c.inv.includes('metal') && !hasTool('pick'),
+    text: 'Mit Metall gibt es an der Basis besseres Werkzeug',
+  },
+  {
+    id: 'chest',
+    test: () => (G.chestsFound || 0) === 0 && G.mode === 'treasure' && G.frame > 900,
+    text: 'Die Karte zeigt, wo die Schatztruhen vergraben sind',
   },
   { id: 'plank', test: c => c.inv.includes('plank'), text: 'Bretter: für Gebäude oder als Holzbrücke (Aktion)' },
   { id: 'power', test: () => G.power.ratio < 1, text: 'Zu wenig Strom – bau ein Windrad' },

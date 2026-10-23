@@ -2,6 +2,10 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'Ab hier wird es gefährlich: Die Decke kann einstürzen, Grubengas lauert':
+    'It gets dangerous from here: the ceiling may cave in, mine gas lurks',
+  'Mit Metall gibt es an der Basis besseres Werkzeug': 'With metal you can get better tools at the base',
+  'Die Karte zeigt, wo die Schatztruhen vergraben sind': 'The map shows where the treasure chests are buried',
   Werkzeug: 'Tools',
   Stahlhacke: 'Steel pick',
   'Gräbt schneller und kommt auch durch Fels': 'Digs faster and gets through rock',
