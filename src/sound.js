@@ -145,4 +145,11 @@ function sfx(n, x, y, k = 1) {
   }
 }
 
-export { audioInit, nz, sfx, tn };
+// short vibration on phones for hits and blasts
+function buzz(ms) {
+  if (G.muted || !navigator.vibrate) return;
+  try {
+    navigator.vibrate(ms);
+  } catch {}
+}
+export { buzz, audioInit, nz, sfx, tn };

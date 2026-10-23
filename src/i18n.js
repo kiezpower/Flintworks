@@ -2,6 +2,10 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'Tiefe {d} m': 'Depth {d} m',
+  'Grubengas! Kein Feuer – und schnell raus hier': 'Mine gas! No fire – get out fast',
+  'Es knirscht über dir … Vorsicht!': 'The ceiling creaks … watch out!',
+  'Das Gas ist explodiert!': 'The gas exploded!',
   Modus: 'Mode',
   Goldrausch: 'Gold rush',
   Siedler: 'Settler',

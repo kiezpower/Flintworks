@@ -1,3 +1,5 @@
+import { cam } from './render.js';
+import { buzz } from './sound.js';
 import { addFloat } from './floats.js';
 import { track } from './profile.js';
 import { splash } from './effects.js';
@@ -500,6 +502,7 @@ function explode(cx, cy, r) {
       g: -0.003,
     });
   flashes.push({ x: cx, y: cy, r: r + 4, l: 7 });
+  if (Math.hypot(cx - cam.x - G.VW / 2, cy - cam.y - G.VH / 2) < G.VW * 0.7) buzz(60 + r * 6);
   G.shake = Math.max(G.shake, r > 15 ? 9 : 5);
   sfx('boom', cx, cy, r > 15 ? 1.4 : 1);
   for (const c of crew) {

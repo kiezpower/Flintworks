@@ -633,3 +633,10 @@ button:focus-visible {
   height: 100%;
   background: var(--gold);
 }
+
+.depth {
+  color: #b8d4ff;
+}
+.depth.deep {
+  color: #ffb08a;
+}

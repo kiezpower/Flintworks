@@ -1,9 +1,11 @@
+import { onDig } from './hazards.js';
+import { buzz } from './sound.js';
 import { chestNear, openChest } from './treasure.js';
 import { addFloat } from './floats.js';
 import { track } from './profile.js';
 import { dust, splash } from './effects.js';
 import { PROD } from './buildings.js';
-import { insideB, midMat, moveBody, overlap, spawnItem, unstuck } from './entities.js';
+import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './entities.js';
 import { inp } from './input.js';
 import { sfx } from './sound.js';
 import { G, builds, crew, lorries, parts, trees } from './state.js';
@@ -37,7 +39,10 @@ import {
 function hurt(c, a, silent) {
   if (c.dead) return;
   c.energy -= a;
-  if (a >= 5) addFloat(c.x + 3, c.y - 3, '-' + Math.round(a), '#ff6a5a');
+  if (a >= 5) {
+    addFloat(c.x + 3, c.y - 3, '-' + Math.round(a), '#ff6a5a');
+    if (c === sel_()) buzz(40 + Math.min(120, a * 4));
+  }
   c.hurt = 12;
   if (!silent && a > 3) sfx('hurt', c.x, c.y);
   if (c.energy <= 0) killClonk(c);
@@ -107,6 +112,7 @@ function digCell(x, y) {
   mat[i] = AIR;
   bg[i] = 1;
   paint(i);
+  onDig(x, y);
 }
 function spawnFromDig(cx, cy) {
   while (G.goldDust >= 16) {

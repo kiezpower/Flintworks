@@ -1,3 +1,4 @@
+import { updHazards } from './hazards.js';
 import { goalReached, mode, starsFor } from './modes.js';
 import { updBuildFx } from './bfx.js';
 import { updMusic } from './music.js';
@@ -119,6 +120,13 @@ $('newBtn').addEventListener('click', () => {
   closePanel();
   menu();
 });
+// phones kill background tabs and apps without warning: save whenever the game is hidden
+addEventListener('visibilitychange', () => {
+  if (document.hidden && G.state === 'play') saveGame();
+});
+addEventListener('pagehide', () => {
+  if (G.state === 'play') saveGame();
+});
 $('buildBtn').addEventListener('click', openBuild);
 $('mapBtn').addEventListener('click', toggleMap);
 $('zoomBtn').addEventListener('click', () => {
@@ -166,6 +174,7 @@ function step() {
     });
     updBuilds();
     updBuildFx();
+    updHazards();
     updArrows();
     updItems();
     for (const L of lorries) updLorry(L);

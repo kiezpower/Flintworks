@@ -56,6 +56,8 @@ function saveGame() {
       mode: G.mode,
       chests: G.chests,
       chestsFound: G.chestsFound,
+      gas: G.gas,
+      gasClouds: G.gasClouds,
       sel: G.sel,
       dayT: G.dayT,
       frame: G.frame,
@@ -119,6 +121,8 @@ function loadGame() {
     G.mode = d.mode || 'gold';
     G.chests = d.chests || [];
     G.chestsFound = d.chestsFound || 0;
+    G.gas = d.gas || [];
+    G.gasClouds = d.gasClouds || [];
     G.hintsSeen = new Set(d.hints || []);
     crew.push(...d.crew.map(c => ({ ...c, chop: null, bridge: null })));
     items.push(...d.items.map(it => ({ ...it, thrower: null })));

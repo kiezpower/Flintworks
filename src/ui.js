@@ -1,3 +1,4 @@
+const depthEl = document.getElementById('depthTxt');
 import { GAME_MODES, mode } from './modes.js';
 const goalWrap = document.getElementById('goalWrap'),
   goalTxt = document.getElementById('goalTxt'),
@@ -31,7 +32,7 @@ import { ITEM, SPR, itemIcon, padIcon } from './sprites.js';
 import { tr } from './i18n.js';
 import { G, animals, builds, crew, lorries } from './state.js';
 import { darkness } from './weather.js';
-import { AIR, GOLD, H, MINI, ROCK, W, bg, hex, mat, matAt } from './world.js';
+import { AIR, GOLD, H, MINI, ROCK, W, bg, hex, mat, matAt, surf } from './world.js';
 
 // ---- HUD, panels, minimap ----
 const $ = id => document.getElementById(id);
@@ -80,6 +81,13 @@ function hud() {
       w: Math.round(G.wind * 100),
     });
     pwrTxt.classList.toggle('low', G.power.ratio < 1);
+  }
+  if (c) {
+    // depth below the surface, 1 pixel ≈ 0.25 m
+    const d = Math.round((c.y + 10 - surf[Math.max(0, Math.min(W - 1, Math.floor(c.x + 3)))]) / 4);
+    depthEl.hidden = d < 3;
+    if (d >= 3) depthEl.textContent = tr('Tiefe {d} m', { d });
+    depthEl.classList.toggle('deep', d > 11);
   }
   if (c) whoTxt.textContent = c.inv[c.isel] ? `${c.name} · ${resName(c.inv[c.isel])}` : c.name;
   if (c) {

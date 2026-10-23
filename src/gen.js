@@ -1,3 +1,4 @@
+import { placeGas } from './hazards.js';
 import { placeChests } from './treasure.js';
 import { scatterDecor } from './decor.js';
 import { biome, setBiome } from './biomes.js';
@@ -173,6 +174,7 @@ function gen() {
     }
   }
   placeChests();
+  placeGas();
   for (let x = 0; x < W; x++)
     for (let y = surf[x] + 1; y <= surf[x] + 3; y++) {
       const i = y * W + x;
