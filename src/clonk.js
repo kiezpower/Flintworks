@@ -84,9 +84,18 @@ const diggable = m =>
   m === GEM ||
   (m === ROCK && hasTool('pick'));
 const digAtPx = (x, y) => diggable(mat[Math.floor(y) * W + Math.floor(x)]);
+// automatic digging: walking into earth digs, stick down digs down-slanted, stick up into
+// earth digs up-slanted. Returns 'up' for upward digging so the jump can be suppressed.
 function wantsDig(c, I) {
-  if (c.climb || c.hangle || c.tumble || c.bridge || c.chop || c.dead) return false;
+  if (c.tumble || c.bridge || c.chop || c.dead) return false;
   if (builds.some(b => b.cs && b.done && onCase(c, b.cs))) return false;
+  if (I.ay < -0.4) {
+    // only under a ceiling of earth (in a tunnel, also when hanging or climbing):
+    // out in the open, up still means jump
+    for (let dy = 1; dy <= 4; dy++) for (const dx of [1, 3, 5]) if (digAtPx(c.x + dx, c.y - dy)) return 'up';
+    return false;
+  }
+  if (c.hangle || c.climb) return false;
   if (free(c.x, c.y + 1, 6, 10)) return false;
   if (I.ay > 0.6) {
     const dir = Math.abs(I.ax) > 0.3 ? Math.sign(I.ax) : c.face;
@@ -187,6 +196,17 @@ function nearTree(c) {
 }
 const NOIN = { ax: 0, ay: 0, dig: false, jumpP: false, jumpUp: false, throwP: false, actP: false };
 function updClonk(c, I) {
+  if (I === inp && G.autoDig && !I.dig && !c.dead) {
+    const d = wantsDig(c, I);
+    if (d) {
+      I.dig = true;
+      // pushing up into earth digs upwards instead of jumping or grabbing the ceiling
+      if (d === 'up') {
+        I.jumpP = I.jumpUp = false;
+        c.hangle = c.climb = false;
+      }
+    }
+  }
   if (c.dead) {
     c.deadT++;
     c.vy = Math.min(c.vy + 0.17, 4);
@@ -333,8 +353,6 @@ function updClonk(c, I) {
     if (c.chop) return;
   }
   const contact = !boxFree(c.x - 3, c.y - 3, 12, 16);
-  // automatic digging: walking into earth or pushing the stick down digs (can be turned off)
-  if (I === inp && G.autoDig && !I.dig && wantsDig(c, I)) I.dig = true;
   if (I.dig && contact && !c.climb && !c.hangle) {
     // Clonk-style digging: only horizontal or slanted, never straight up/down
     if (Math.abs(I.ax) > 0.25) c.face = Math.sign(I.ax);
