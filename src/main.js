@@ -1,3 +1,4 @@
+import { updAmbience } from './ambience.js';
 import { endTutorial, startTutorial, updTutorial } from './tutorial.js';
 import { applyStatic, getLang, setLang, tr } from './i18n.js';
 import './style.css';
@@ -192,6 +193,7 @@ function step() {
         G.crewKey = '';
       }
     updTutorial();
+    if (G.frame % 15 === 0) updAmbience();
     if (G.frame % 60 === 0) checkHints();
     if (G.frame % 3600 === 0) saveGame();
     if (G.money >= GOAL) endScreen(true);

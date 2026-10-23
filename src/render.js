@@ -1,4 +1,4 @@
-import { drawLavaGlow, drawMountains, scanLava } from './effects.js';
+import { drawLavaGlow, drawMountains, drawWaterGlints, scanLava } from './effects.js';
 import { drawTutorial } from './tutorial.js';
 import { arrows, lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
@@ -79,9 +79,12 @@ function drawClonkPx(c, ox, oy, f) {
   put(1, 0, 4, 1, c.cap);
   put(0, 1, 5, 1, c.cap);
   put(1, 2, 4, 2, skin);
-  put(4, 2, 1, 1, '#1a120c');
+  const blink = !c.dead && (G.frame + c.x * 7) % 240 < 6;
+  put(4, 2, 1, 1, c.dead ? '#5a5048' : blink ? skin : '#1a120c');
   put(1, 4, 4, 4, tunic);
+  put(1, 4, 1, 4, c.dead ? '#5a5a62' : '#32507f');
   put(1, 6, 4, 1, '#25304a');
+  put(3, 6, 1, 1, '#c9a43a');
   const ph = Math.sin(c.anim) > 0;
   if (c.hangle) {
     put(1, -2, 1, 2, skin);
@@ -239,6 +242,7 @@ function render() {
   ctx.drawImage(wc, cx, cy, G.VW, G.VH, 0, 0, G.VW, G.VH);
   const lava = scanLava(cx, cy);
   drawLavaGlow(ctx);
+  drawWaterGlints(ctx);
   // pump pipes
   for (const b of builds)
     if (b.type === 'pump' && b.done && b.pipe) {
@@ -360,12 +364,17 @@ function render() {
       sy = t.gy - cy;
     if (sx + h < 0 || sx - h > G.VW || sy < 0 || sy - h > G.VH) continue;
     if (!t.fall) {
-      ctx.drawImage(t.spr, sx - Math.floor(w / 2), sy - h);
+      // trees sway gently with the wind
+      ctx.save();
+      ctx.translate(sx, sy);
+      ctx.rotate(Math.sin(G.frame * 0.025 + t.x * 0.13) * 0.025 * (0.4 + G.wind));
+      ctx.drawImage(t.spr, -Math.floor(w / 2), -h);
       if (t.char) {
         ctx.globalAlpha = clamp(1 - t.burn / 700, 0, 1);
-        ctx.drawImage(t.char, sx - Math.floor(w / 2), sy - h);
+        ctx.drawImage(t.char, -Math.floor(w / 2), -h);
         ctx.globalAlpha = 1;
       }
+      ctx.restore();
     } else {
       ctx.save();
       ctx.translate(sx, sy);
