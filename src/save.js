@@ -5,7 +5,7 @@ import { mkCloud } from './gen.js';
 import { calcTerr } from './render.js';
 import { treeSprite } from './sprites.js';
 import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
-import { H, W, activateAll, bg, colorOf, img, mat, px, ri, rnd, shade, surf, wctx } from './world.js';
+import { H, W, activateAll, bg, mat, paintAll, ri, rnd, shade, surf } from './world.js';
 
 // ---- Save / load (per browser) ----
 const SAVEKEY = 'wuehlwelt-save-v1';
@@ -112,8 +112,7 @@ function loadGame() {
     for (let x = 0; x < W; x++) surf[x] = d.surf[x];
     for (const a of [meteors, items, parts, flashes, builds, trees, crew, animals, lorries, birds, clouds])
       a.length = 0;
-    for (let j = 0; j < W * H; j++) px[j] = colorOf(j);
-    wctx.putImageData(img, 0, 0);
+    paintAll();
     activateAll();
     G.money = d.money;
     G.earned = d.earned || 0;

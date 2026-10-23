@@ -1,4 +1,5 @@
 import { builds } from './state.js';
+import { T, TEX, TUNNEL, setTopSoil, topTex, worldShade } from './tex.js';
 
 // ---- World & materials ----
 const W = 1400,
@@ -76,30 +77,77 @@ function setGroundTop(cols) {
     PAL_LIT[EARTH][4 + k] = tint(hex(c), 1.12);
     PAL_DARK[EARTH][4 + k] = tint(hex(c), 0.8);
   });
+  setTopSoil(cols);
 }
-const TUN_DARK = TUN.map(c => tint(c, 0.62));
 
-// Pixel colour with simple lighting: lit top edges, shaded ceilings, dark tunnel corners
-const colorOf = i => {
+// The world image has double resolution: every landscape cell is painted as 2×2 texels taken
+// from the material texture, with a one-texel rim light on top edges and shade under ceilings.
+const RES = 2,
+  PW = W * RES;
+const WSH = worldShade(W, H);
+const solidAt = j => j >= 0 && j < W * H && SOLID[mat[j]] === 1;
+function texel(i, sx, sy) {
   const m = mat[i];
-  const k = m === EARTH ? shade[i] : shade[i] & 3;
+  const x = (i % W) * 2 + sx,
+    y = ((i / W) | 0) * 2 + sy,
+    ti = (y & (T - 1)) * T + (x & (T - 1));
   if (m === AIR) {
     if (!bg[i]) return 0;
-    const wall =
-      (i >= W && SOLID[mat[i - W]]) || (i < W * (H - 1) && SOLID[mat[i + W]]) || SOLID[mat[i - 1]] || SOLID[mat[i + 1]];
-    return wall ? TUN_DARK[k] : TUN[k];
+    // tunnel back wall, darker the more rock surrounds it (soft ambient occlusion)
+    let n = 0;
+    if (solidAt(i - 1)) n += 2;
+    if (solidAt(i + 1)) n += 2;
+    if (solidAt(i - W)) n += 2;
+    if (solidAt(i + W)) n += 2;
+    if (solidAt(i - 2)) n++;
+    if (solidAt(i + 2)) n++;
+    if (solidAt(i - 2 * W)) n++;
+    if (solidAt(i + 2 * W)) n++;
+    let k = 1 - n * 0.055;
+    if ((sx === 0 && solidAt(i - 1)) || (sx === 1 && solidAt(i + 1)) || (sy === 0 && solidAt(i - W))) k *= 0.72;
+    return tint(TUNNEL[ti], k * WSH[i]);
   }
-  if (i >= W && mat[i - W] === AIR) return PAL_LIT[m][k];
-  if (SOLID[m] && i < W * (H - 1) && !SOLID[mat[i + W]]) return PAL_DARK[m][k];
-  return PAL[m][k];
+  const tex = m === EARTH && shade[i] & 4 ? topTex() : TEX[m];
+  let c = tex ? tex[ti] : PAL[m][shade[i] & 3];
+  if (tex) c = tint(c, WSH[i]);
+  if (LIQ[m]) {
+    // a bright line on open liquid surfaces
+    if (sy === 0 && i >= W && mat[i - W] === AIR) c = tint(c, 1.35);
+    return c;
+  }
+  const up = i >= W ? mat[i - W] : AIR;
+  if (sy === 0 && (up === AIR || LIQ[up])) return tint(c, 1.3);
+  if (sy === 1 && i < W * (H - 1) && !SOLID[mat[i + W]]) return tint(c, 0.62);
+  if (sx === 0 && i % W > 0 && mat[i - 1] === AIR) return tint(c, 1.1);
+  if (sx === 1 && i % W < W - 1 && mat[i + 1] === AIR) return tint(c, 0.82);
+  return c;
+}
+function paintCell(i) {
+  const x = (i % W) * 2,
+    y = ((i / W) | 0) * 2,
+    o = y * PW + x;
+  px[o] = texel(i, 0, 0);
+  px[o + 1] = texel(i, 1, 0);
+  px[o + PW] = texel(i, 0, 1);
+  px[o + PW + 1] = texel(i, 1, 1);
+}
+// old single-colour lookup, still used for flat previews
+const colorOf = i => {
+  const m = mat[i];
+  if (m === AIR) return bg[i] ? TUN[shade[i] & 3] : 0;
+  return PAL[m][m === EARTH ? shade[i] : shade[i] & 3];
 };
 
 const wc = document.createElement('canvas');
-wc.width = W;
-wc.height = H;
+wc.width = PW;
+wc.height = H * RES;
 const wctx = wc.getContext('2d');
-const img = wctx.createImageData(W, H);
+const img = wctx.createImageData(PW, H * RES);
 const px = new Uint32Array(img.data.buffer);
+function paintAll() {
+  for (let i = 0; i < W * H; i++) paintCell(i);
+  wctx.putImageData(img, 0, 0);
+}
 // dirty rectangle of the world image, flushed once per frame
 let dx0 = W,
   dy0 = H,
@@ -134,22 +182,26 @@ function activate(x, y) {
 }
 function paint(i) {
   // neighbours change their lighting too
-  px[i] = colorOf(i);
-  if (i >= W) px[i - W] = colorOf(i - W);
-  if (i < W * (H - 1)) px[i + W] = colorOf(i + W);
-  if (i % W > 0) px[i - 1] = colorOf(i - 1);
-  if (i % W < W - 1) px[i + 1] = colorOf(i + 1);
   const x = i % W,
     y = (i / W) | 0;
-  if (x - 1 < dx0) dx0 = Math.max(0, x - 1);
-  if (x + 1 > dx1) dx1 = Math.min(W - 1, x + 1);
-  if (y - 1 < dy0) dy0 = Math.max(0, y - 1);
-  if (y + 1 > dy1) dy1 = Math.min(H - 1, y + 1);
+  paintCell(i);
+  if (y > 0) paintCell(i - W);
+  if (y > 1) paintCell(i - 2 * W);
+  if (y < H - 1) paintCell(i + W);
+  if (y < H - 2) paintCell(i + 2 * W);
+  if (x > 0) paintCell(i - 1);
+  if (x > 1) paintCell(i - 2);
+  if (x < W - 1) paintCell(i + 1);
+  if (x < W - 2) paintCell(i + 2);
+  if (x - 2 < dx0) dx0 = Math.max(0, x - 2);
+  if (x + 2 > dx1) dx1 = Math.min(W - 1, x + 2);
+  if (y - 2 < dy0) dy0 = Math.max(0, y - 2);
+  if (y + 2 > dy1) dy1 = Math.min(H - 1, y + 2);
   activate(x, y);
 }
 function flush() {
   if (dx1 < 0) return;
-  wctx.putImageData(img, 0, 0, dx0, dy0, dx1 - dx0 + 1, dy1 - dy0 + 1);
+  wctx.putImageData(img, 0, 0, dx0 * RES, dy0 * RES, (dx1 - dx0 + 1) * RES, (dy1 - dy0 + 1) * RES);
   dx0 = W;
   dy0 = H;
   dx1 = -1;
@@ -207,6 +259,8 @@ const rnd = seedParam === null ? Math.random : seeded,
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
 export {
+  RES,
+  paintAll,
   GEM,
   setGroundTop,
   activateAll,

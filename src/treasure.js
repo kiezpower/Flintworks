@@ -3,7 +3,7 @@ import { spawnItem } from './entities.js';
 import { addFloat } from './floats.js';
 import { track } from './profile.js';
 import { sfx } from './sound.js';
-import { outlined, sp } from './sprites.js';
+import { drawHi, sp } from './sprites.js';
 import { G } from './state.js';
 import { toast } from './ui.js';
 import { AIR, GRANITE, H, ROCK, W, bg, mat, rnd, surf } from './world.js';
@@ -13,29 +13,25 @@ const CW = 8,
 const wood = '#8b5e34',
   woodD = '#5a3a1e',
   band = '#c9a43a';
-const CLOSED = outlined(
-  sp(CW, CH, R => {
-    R(0, 1, 8, 5, wood);
-    R(0, 0, 8, 2, '#a8743e');
-    R(0, 2, 8, 1, woodD);
-    R(0, 0, 1, 6, band);
-    R(7, 0, 1, 6, band);
-    R(3, 2, 2, 2, '#f2c230');
-    R(3, 3, 2, 1, '#2a1a10');
-  }),
-);
-const OPEN = outlined(
-  sp(CW, CH + 3, R => {
-    R(0, 0, 8, 3, '#a8743e');
-    R(0, 0, 1, 3, band);
-    R(7, 0, 1, 3, band);
-    R(1, 3, 6, 1, '#ffe066');
-    R(0, 4, 8, 5, wood);
-    R(0, 4, 1, 5, band);
-    R(7, 4, 1, 5, band);
-    R(1, 4, 6, 1, '#2a1a10');
-  }),
-);
+const CLOSED = sp(CW, CH, R => {
+  R(0, 1, 8, 5, wood);
+  R(0, 0, 8, 2, '#a8743e');
+  R(0, 2, 8, 1, woodD);
+  R(0, 0, 1, 6, band);
+  R(7, 0, 1, 6, band);
+  R(3, 2, 2, 2, '#f2c230');
+  R(3, 3, 2, 1, '#2a1a10');
+});
+const OPEN = sp(CW, CH + 3, R => {
+  R(0, 0, 8, 3, '#a8743e');
+  R(0, 0, 1, 3, band);
+  R(7, 0, 1, 3, band);
+  R(1, 3, 6, 1, '#ffe066');
+  R(0, 4, 8, 5, wood);
+  R(0, 4, 1, 5, band);
+  R(7, 4, 1, 5, band);
+  R(1, 4, 6, 1, '#2a1a10');
+});
 
 // carve a little cave with a rock floor for each chest; called by gen() before the world is painted
 function placeChests(n = 6) {
@@ -87,9 +83,9 @@ function drawChests(ctx, cx, cy) {
     const sx = Math.round(ch.x - cx),
       sy = Math.round(ch.y - cy);
     if (sx < -12 || sy < -12 || sx > G.VW || sy > G.VH) continue;
-    if (ch.open) ctx.drawImage(OPEN, sx - 1, sy - 4);
+    if (ch.open) drawHi(ctx, OPEN, sx, sy - 3);
     else {
-      ctx.drawImage(CLOSED, sx - 1, sy - 1);
+      drawHi(ctx, CLOSED, sx, sy);
       // a glint now and then so chests are spotted in the dark
       if ((G.frame + ch.x * 7) % 120 < 8) {
         ctx.fillStyle = '#ffffff';

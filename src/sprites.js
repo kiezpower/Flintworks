@@ -287,13 +287,13 @@ function itemArt(t, blink) {
       }),
     ),
   );
-  return (artCache[key] = outlined(c));
+  return (artCache[key] = c);
 }
 // draws an item onto g so that it sits on the bottom edge of its w×h box
 function drawItemBig(g, t, x, y, w, h, blink) {
   if (!ITEM_ART[t]) return drawItemPx(g, t, x, y, blink);
   const a = itemArt(t, blink);
-  g.drawImage(a, x + Math.floor((w - a.width) / 2), y + h - a.height + 1);
+  drawHi(g, a, x + Math.floor((w - a.width) / 2), y + h - a.height);
 }
 const iconCache = {};
 function itemIcon(t) {
@@ -303,7 +303,7 @@ function itemIcon(t) {
   c.height = 10;
   const g = c.getContext('2d');
   if (ITEM_ART[t]) {
-    const a = itemArt(t, false);
+    const a = outlined(itemArt(t, false));
     g.drawImage(a, Math.floor((10 - a.width) / 2), Math.floor((10 - a.height) / 2));
   } else {
     const [w, h] = ITEM[t].s;
@@ -469,4 +469,74 @@ function outlined(spr, col = '#24160c') {
   return o;
 }
 
-export { outlined, toolIcon, ICOL, ITEM, SPR, drawItemBig, drawItemPx, iconCache, itemIcon, padIcon, sp, treeSprite };
+// Double-resolution copy for the landscape view: Scale2x rounds off diagonal steps, then a
+// thin one-texel outline. Drawn with drawHi at half size, so it lines up with the 1× sprite.
+const hiCache = new WeakMap();
+function scale2x(spr) {
+  const w = spr.width,
+    h = spr.height;
+  const src = new Uint32Array(spr.getContext('2d').getImageData(0, 0, w, h).data.buffer);
+  const out = document.createElement('canvas');
+  out.width = w * 2;
+  out.height = h * 2;
+  const og = out.getContext('2d');
+  const id = og.createImageData(w * 2, h * 2);
+  const dst = new Uint32Array(id.data.buffer);
+  const at = (x, y) => (x < 0 || y < 0 || x >= w || y >= h ? 0 : src[y * w + x]);
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const E = at(x, y),
+        B = at(x, y - 1),
+        D = at(x - 1, y),
+        F = at(x + 1, y),
+        H = at(x, y + 1);
+      let e0 = E,
+        e1 = E,
+        e2 = E,
+        e3 = E;
+      if (B !== H && D !== F) {
+        if (D === B) e0 = D;
+        if (B === F) e1 = F;
+        if (D === H) e2 = D;
+        if (H === F) e3 = F;
+      }
+      const o = y * 2 * w * 2 + x * 2;
+      dst[o] = e0;
+      dst[o + 1] = e1;
+      dst[o + w * 2] = e2;
+      dst[o + w * 2 + 1] = e3;
+    }
+  og.putImageData(id, 0, 0);
+  return out;
+}
+function hiRes(spr, col = '#24160c') {
+  let o = hiCache.get(spr);
+  if (!o) {
+    o = outlined(scale2x(spr), col);
+    hiCache.set(spr, o);
+  }
+  return o;
+}
+// draw a 1× sprite through its smoothed double-resolution copy (ctx is in landscape units)
+function drawHi(ctx, spr, x, y) {
+  const o = hiRes(spr);
+  ctx.drawImage(o, x - 0.5, y - 0.5, o.width / 2, o.height / 2);
+}
+
+export {
+  drawHi,
+  hiRes,
+  scale2x,
+  outlined,
+  toolIcon,
+  ICOL,
+  ITEM,
+  SPR,
+  drawItemBig,
+  drawItemPx,
+  iconCache,
+  itemIcon,
+  padIcon,
+  sp,
+  treeSprite,
+};

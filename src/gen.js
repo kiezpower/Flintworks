@@ -28,18 +28,15 @@ import {
   WATER,
   activateAll,
   bg,
-  colorOf,
   flush,
-  img,
   mat,
   paint,
-  px,
+  paintAll,
   ri,
   rnd,
   shade,
   solid,
   surf,
-  wctx,
 } from './world.js';
 
 // ---- Generation ----
@@ -181,8 +178,7 @@ function gen() {
       const i = y * W + x;
       if (mat[i] === EARTH) shade[i] |= 4;
     }
-  for (let i = 0; i < W * H; i++) px[i] = colorOf(i);
-  wctx.putImageData(img, 0, 0);
+  paintAll();
   activateAll();
   for (let k = 0; k < 60; k++) simulate();
   flush();

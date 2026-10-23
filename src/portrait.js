@@ -74,4 +74,4 @@ function drawPortrait(g, X, Y, f, cap, hat, blink) {
   }
 }
 
-export { drawPortrait };
+export { ART, FIXED, drawPortrait, hatRects };

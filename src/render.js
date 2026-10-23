@@ -1,3 +1,5 @@
+import { drawClonkHi } from './clonkhi.js';
+import { drawBackdrop } from './backdrop.js';
 import { hasTool } from './tools.js';
 import { drawHazards } from './hazards.js';
 import { drawChests } from './treasure.js';
@@ -5,13 +7,13 @@ import { drawBuildFx, drawWindowGlow } from './bfx.js';
 import { drawFloats } from './floats.js';
 import { drawDecor } from './decor.js';
 import { biome } from './biomes.js';
-import { drawGemSparkles, drawLavaGlow, drawMountains, drawWaterGlints, scanLava } from './effects.js';
+import { drawGemSparkles, drawLavaGlow, drawWaterGlints, scanLava } from './effects.js';
 import { drawTutorial } from './tutorial.js';
 import { arrows, lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
 import { topSolid } from './gen.js';
 import { game, joyHome } from './input.js';
-import { ICOL, SPR, drawItemBig, outlined } from './sprites.js';
+import { ICOL, SPR, drawHi, drawItemBig } from './sprites.js';
 import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
 import { darkness, skyCols } from './weather.js';
 import { H, W, clamp, flush, rnd, wc } from './world.js';
@@ -48,8 +50,9 @@ function resize() {
   );
   G.VW = Math.min(W, Math.ceil(r.width / s));
   G.VH = Math.min(H, Math.ceil(r.height / s));
-  cv.width = G.VW;
-  cv.height = G.VH;
+  // the canvas has twice the landscape resolution; all drawing code keeps landscape units
+  cv.width = G.VW * 2;
+  cv.height = G.VH * 2;
   cv.style.width = G.VW * s + 'px';
   cv.style.height = G.VH * s + 'px';
   lc.width = G.VW;
@@ -100,121 +103,37 @@ function shade(hex, k) {
   const ch = s => Math.max(0, Math.min(255, Math.round(((n >> s) & 255) * k)));
   return (shadeCache[key] = `rgb(${ch(16)},${ch(8)},${ch(0)})`);
 }
-// The Wühler: 7×10 pixel sprite (facing right, mirrored for left) with a soft dark outline.
-// Rects are collected first so the outline can be drawn underneath in one pass.
-const rects = [];
-function drawClonkPx(c, ox, oy, f, g = ctx) {
-  rects.length = 0;
-  const put = (x, y, w, h, col) => rects.push(f > 0 ? ox + x : ox + 6 - x - w, oy + y, w, h, col);
-  const abs = (x, y, w, h, col) => rects.push(x, y, w, h, col);
-  const hurtF = c.hurt > 0 && c.hurt & 2;
-  const grey = c.dead,
-    red = !grey && hurtF;
-  const skin = grey ? '#9a8f84' : red ? '#ff6a5a' : '#f0c49a',
-    skinD = grey ? '#7a7068' : red ? '#d84a3a' : '#d49a72',
-    tun = grey ? '#6a6a72' : red ? '#ff6a5a' : '#3f5f9a',
-    tunL = grey ? '#7a7a82' : red ? '#ff8a7a' : '#5578b8',
-    tunD = grey ? '#55555c' : red ? '#c84a3a' : '#2c4677',
-    cap = grey ? '#77777f' : c.cap,
-    pants = '#5a3a22',
-    boot = '#2e1d12',
-    hair = '#6a4022';
-  // cap with highlight and a brim pointing forward
-  put(1, 0, 4, 1, cap);
-  put(2, 0, 1, 1, shade(cap, 1.35));
-  put(0, 1, 5, 1, cap);
-  put(0, 1, 1, 1, shade(cap, 0.7));
-  put(5, 1, 2, 1, shade(cap, 0.75));
-  if (c.hat && c.hat !== 'none') drawHat(put, c.hat);
-  // head: hair at the back, big Clonk nose in front
-  put(1, 2, 4, 2, skin);
-  put(0, 2, 1, 2, hair);
-  put(1, 3, 1, 1, skinD);
-  put(5, 2, 1, 2, skin);
-  put(6, 3, 1, 1, skinD);
-  const blink = !grey && (G.frame + c.x * 7) % 240 < 6;
-  put(4, 2, 1, 1, grey ? '#5a5048' : blink ? skinD : '#1a120c');
-  put(4, 3, 1, 1, skinD);
-  // tunic: lit top row, shaded back, belt with buckle
-  put(1, 4, 4, 3, tun);
-  put(2, 4, 3, 1, tunL);
-  put(1, 4, 1, 4, tunD);
-  put(2, 7, 3, 1, tun);
-  put(1, 6, 4, 1, '#3a2616');
-  put(3, 6, 1, 1, grey ? '#8a8a8a' : '#e0b844');
-  const walking = Math.abs(c.vx || 0) > 0.15;
-  const ph = Math.floor(((c.anim % (Math.PI * 2)) + Math.PI * 2) / (Math.PI / 2)) % 4;
-  if (c.hangle) {
-    put(1, -2, 1, 2, skin);
-    put(4, -2, 1, 2, skin);
-    put(1, 8, 1, 1, pants);
-    put(4, 8, 1, 1, pants);
-    put(1, 9, 1, 1, boot);
-    put(4, 9, 1, 1, boot);
-  } else if (c.climb) {
-    const up = ph < 2;
-    put(5, up ? 1 : 3, 1, 2, tunD);
-    put(5, up ? 0 : 2, 1, 1, skin);
-    put(2, 8, 1, 1, pants);
-    put(4, 8, 1, 1, pants);
-    put(2, up ? 9 : 8, 2, 1, boot);
-    put(4, up ? 8 : 9, 2, 1, boot);
-  } else {
-    // legs: four-step walk cycle, boots with toes pointing forward
-    const front = walking ? [3, 4, 3, 2][ph] : 3,
-      back = walking ? [1, 0, 1, 2][ph] : 1;
-    put(back, 8, 1, 1, shade(pants, 0.8));
-    put(back, 9, 2, 1, boot);
-    put(front, 8, 1, 1, pants);
-    put(front, 9, 2, 1, boot);
-  }
-  if (!c.hangle && !c.climb) {
-    if (c.digging) {
-      const [dx, dy] = c.digDir;
-      const wob = Math.sin(c.anim * 2) * 0.7;
-      put(4, 4, 1, 2, tunD);
-      abs(Math.round(ox + 3 + dx * 3 + wob * 0.5), Math.round(oy + 5 + dy * 3), 1, 1, '#8b5e34');
-      abs(Math.round(ox + 2.5 + dx * 5 + wob), Math.round(oy + 4.5 + dy * 5), 2, 2, '#aab0b6');
-      abs(Math.round(ox + 2.5 + dx * 5 + wob), Math.round(oy + 4.5 + dy * 5), 1, 1, '#e4e8ec');
-    } else if (c.hammer || c.chop || c.bridge) {
-      const up = Math.sin(c.anim * 2) > 0;
-      put(4, up ? 3 : 4, 1, 2, tunD);
-      put(5, up ? 2 : 5, 1, 1, skin);
-      put(5, up ? 1 : 5, 2, 1, '#8b5e34');
-      put(6, up ? 0 : 4, 1, 2, c.chop ? '#c0c6cc' : '#9a948c');
-    } else {
-      // arm swings with the step
-      const sw = walking ? [0, 1, 0, -1][ph] : 0;
-      put(4, 4, 1, 2, tunD);
-      put(4 + Math.max(0, sw), 6, 1, 1, skin);
-      const t = c.inv[c.isel];
-      if (t && !grey) put(4 + Math.max(0, sw), 6, 2, 2, ICOL[t]);
-    }
-  }
-  // outline pass, then colours
-  g.fillStyle = '#24160c';
-  for (let k = 0; k < rects.length; k += 5) {
-    g.fillRect(rects[k] - 1, rects[k + 1], rects[k + 2] + 2, rects[k + 3]);
-    g.fillRect(rects[k], rects[k + 1] - 1, rects[k + 2], rects[k + 3] + 2);
-  }
-  for (let k = 0; k < rects.length; k += 5) {
-    g.fillStyle = rects[k + 4];
-    g.fillRect(rects[k], rects[k + 1], rects[k + 2], rects[k + 3]);
-  }
-  if (c.burn > 0) {
-    for (let k = 0; k < 2; k++) {
-      g.fillStyle = rnd() < 0.5 ? '#ffcf4a' : '#ff7a2f';
-      g.fillRect(ox + Math.floor(rnd() * 6), oy - 1 + Math.floor(rnd() * 8), 1, 1);
-    }
-  }
-}
 // Animals: shaded pixel sprites with the same dark outline as the Wühler
 function drawAnimal(a, sx, sy) {
   const f = a.face || 1,
     hurtF = a.hurt > 0 && a.hurt & 2;
-  rects.length = 0;
-  const put = (x, y, w, h, col) => rects.push(f > 0 ? sx + x : sx + a.w - x - w, sy + y, w, h, hurtF ? '#ff6a5a' : col);
   const ph = Math.sin(a.anim) > 0;
+  const glow = a.kind === 'monster' && Math.sin(G.frame * 0.15) > 0;
+  const key = `${a.kind}${ph}${hurtF}${glow}`;
+  let spr = animalCache[key];
+  if (!spr) {
+    spr = animalCache[key] = animalSprite(a, ph, hurtF, glow);
+  }
+  if (f > 0) drawHi(ctx, spr, sx - 2, sy - 2);
+  else {
+    ctx.save();
+    ctx.translate(sx - 2 + spr.width, 0);
+    ctx.scale(-1, 1);
+    drawHi(ctx, spr, 0, sy - 2);
+    ctx.restore();
+  }
+}
+// animal frames are painted once into small canvases (2px margin) and drawn smoothed at 2×
+const animalCache = {};
+function animalSprite(a, ph, hurtF, glowOn) {
+  const c = document.createElement('canvas');
+  c.width = a.w + 4;
+  c.height = a.h + 4;
+  const g = c.getContext('2d');
+  const put = (x, y, w, h, col) => {
+    g.fillStyle = hurtF ? '#ff6a5a' : col;
+    g.fillRect(2 + x, 2 + y, w, h);
+  };
   if (a.kind === 'bat') {
     const up = ph;
     put(2, 0, 1, 1, '#2a2235');
@@ -246,32 +165,26 @@ function drawAnimal(a, sx, sy) {
     put(3, 0, 1, 1, '#1a120c');
   } else {
     // cave monster: hunched back with spikes, glowing eye, teeth
-    const glow = 0.6 + Math.sin(G.frame * 0.15) * 0.4;
     put(1, 2, 10, 6, '#3d3a6b');
     put(2, 1, 7, 1, '#3d3a6b');
     put(2, 6, 7, 2, '#5a56a0');
     put(1, 2, 2, 5, '#2e2b55');
     for (let k = 0; k < 4; k++) put(2 + k * 2, 0, 1, 1, '#2a2850');
     put(8, 3, 3, 2, '#f4ead2');
-    put(10, 3, 1, 1, glow > 0.5 ? '#ff3a2a' : '#c8302c');
+    put(10, 3, 1, 1, glowOn ? '#ff3a2a' : '#c8302c');
     put(7, 7, 4, 1, '#f4ead2');
     put(8, 7, 1, 1, '#3d3a6b');
     put(10, 7, 1, 1, '#3d3a6b');
     put(ph ? 2 : 3, 8, 2, 1, '#2a2850');
     put(ph ? 7 : 6, 8, 2, 1, '#2a2850');
   }
-  ctx.fillStyle = a.kind === 'fish' ? 'rgba(20,12,6,0.5)' : '#24160c';
-  for (let k = 0; k < rects.length; k += 5) {
-    ctx.fillRect(rects[k] - 1, rects[k + 1], rects[k + 2] + 2, rects[k + 3]);
-    ctx.fillRect(rects[k], rects[k + 1] - 1, rects[k + 2], rects[k + 3] + 2);
-  }
-  for (let k = 0; k < rects.length; k += 5) {
-    ctx.fillStyle = rects[k + 4];
-    ctx.fillRect(rects[k], rects[k + 1], rects[k + 2], rects[k + 3]);
-  }
+  return c;
 }
+
 function render() {
   flush();
+  ctx.setTransform(2, 0, 0, 2, 0, 0);
+  ctx.imageSmoothingEnabled = false;
   const s = sel_() || crew[0];
   const fx = s ? s.x + 3 : W / 2,
     fy = s ? s.y + 5 : H / 2;
@@ -330,9 +243,7 @@ function render() {
     ctx.fillStyle = 'rgba(80,90,100,.18)';
     ctx.fillRect(0, 0, G.VW, G.VH);
   }
-  drawMountains(ctx, cx, cy, dark);
-  hills(cx, cy, 0.25, 92, 14, dark > 0.3 ? '#33405e' : biome().hills[0], 1.3);
-  hills(cx, cy, 0.45, 108, 12, dark > 0.3 ? '#2a3a44' : biome().hills[1], 4.1);
+  drawBackdrop(ctx, cx, cy);
   for (const b of birds) {
     const x = Math.round(b.x - cx * 0.9),
       y = Math.round(b.y - cy * 0.9);
@@ -343,7 +254,7 @@ function render() {
     ctx.fillRect(x - 1, up ? y - 1 : y + 1, 1, 1);
     ctx.fillRect(x + 1, up ? y - 1 : y + 1, 1, 1);
   }
-  ctx.drawImage(wc, cx, cy, G.VW, G.VH, 0, 0, G.VW, G.VH);
+  ctx.drawImage(wc, cx * 2, cy * 2, G.VW * 2, G.VH * 2, 0, 0, G.VW, G.VH);
   drawDecor(ctx, cx, cy);
   const lava = scanLava(cx, cy);
   drawLavaGlow(ctx);
@@ -361,7 +272,7 @@ function render() {
       sy = b.gy - b.h - cy,
       spr = SPR[b.type];
     if (sx < G.VW && sx + b.w > 0 && sy < G.VH + 40 && sy + b.h > -20) {
-      if (b.done && b.type !== 'flag' && b.type !== 'gate') ctx.drawImage(outlined(spr), sx - 1, sy - 1);
+      if (b.done && b.type !== 'flag' && b.type !== 'gate') drawHi(ctx, spr, sx, sy);
       else {
         const vh = Math.ceil(b.h * b.prog);
         ctx.globalAlpha = 0.3;
@@ -475,7 +386,7 @@ function render() {
       ctx.save();
       ctx.translate(sx, sy);
       ctx.rotate(Math.sin(G.frame * 0.025 + t.x * 0.13) * 0.025 * (0.4 + G.wind));
-      ctx.drawImage(outlined(t.spr), -Math.floor(w / 2) - 1, -h - 1);
+      drawHi(ctx, t.spr, -Math.floor(w / 2), -h);
       if (t.char) {
         ctx.globalAlpha = clamp(1 - t.burn / 700, 0, 1);
         ctx.drawImage(t.char, -Math.floor(w / 2), -h);
@@ -486,7 +397,7 @@ function render() {
       ctx.save();
       ctx.translate(sx, sy);
       ctx.rotate(t.ang);
-      ctx.drawImage(outlined(t.spr), -Math.floor(w / 2) - 1, -h - 1);
+      drawHi(ctx, t.spr, -Math.floor(w / 2), -h);
       ctx.restore();
     }
   }
@@ -563,7 +474,7 @@ function render() {
       ctx.save();
       ctx.translate(x + 3, y + 8);
       ctx.rotate((Math.PI / 2) * c.face);
-      drawClonkPx(c, -3, -5, c.face);
+      drawClonkHi(c, -3, -5, c.face, ctx);
       ctx.restore();
       ctx.globalAlpha = 1;
       return;
@@ -572,9 +483,9 @@ function render() {
       ctx.save();
       ctx.translate(x + 3, y + 5);
       ctx.rotate(c.rot);
-      drawClonkPx(c, -3, -5, c.face);
+      drawClonkHi(c, -3, -5, c.face, ctx);
       ctx.restore();
-    } else drawClonkPx(c, x, y, c.face);
+    } else drawClonkHi(c, x, y, c.face, ctx);
     if (n === G.sel && (G.frame >> 4) % 3) {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(x + 2, y - 4, 3, 1);
@@ -637,7 +548,9 @@ function render() {
     for (const t of trees) if (t.burn > 0) light(t.x - cx, t.gy - t.spr.height / 2 - cy, 36, 0.9);
     for (const c of crew) if (c.burn > 0) light(c.x + 3 - cx, c.y + 4 - cy, 24, 0.9);
     for (let k = 0; k < lava.length; k += 8) light(lava[k], lava[k + 1], 16, 0.7);
+    ctx.imageSmoothingEnabled = true;
     ctx.drawImage(lc, 0, 0);
+    ctx.imageSmoothingEnabled = false;
     drawWindowGlow(ctx, cx, cy, dark);
   }
   drawFloats(ctx, cx, cy);
@@ -652,33 +565,5 @@ function drawFlag(x, y, pole, len) {
     ctx.fillRect(x + 1 + k, y + 1 + o, 1, 4);
   }
 }
-function hills(cx, cy, par, base0, amp, col, ph) {
-  ctx.fillStyle = col;
-  ctx.beginPath();
-  ctx.moveTo(0, G.VH);
-  for (let sx = 0; sx <= G.VW + 3; sx += 3) {
-    const wx = sx + cx * par,
-      hy = base0 + amp * Math.sin(wx * 0.012 + ph) + amp * 0.5 * Math.sin(wx * 0.033 + ph * 2);
-    ctx.lineTo(sx, Math.round(hy - cy * 0.85));
-  }
-  ctx.lineTo(G.VW, G.VH);
-  ctx.fill();
-}
 
-export {
-  calcTerr,
-  cam,
-  ctx,
-  cv,
-  drawAnimal,
-  drawClonkPx,
-  drawHat,
-  shade,
-  drawFlag,
-  hills,
-  lc,
-  lctx,
-  render,
-  resize,
-  stars,
-};
+export { calcTerr, cam, ctx, cv, drawAnimal, drawHat, shade, drawFlag, lc, lctx, render, resize, stars };
