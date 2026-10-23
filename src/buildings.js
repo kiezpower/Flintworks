@@ -1,3 +1,4 @@
+import { sold, track } from './profile.js';
 import { tr } from './i18n.js';
 import { digCell, lorryNear, onCase, spawnFromDig } from './clonk.js';
 import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './entities.js';
@@ -8,27 +9,24 @@ import { sfx } from './sound.js';
 import { ITEM } from './sprites.js';
 import { G, animals, builds, crew, items, lorries, parts, trees } from './state.js';
 import { closePanel, toast } from './ui.js';
-import {
-  AIR,
-  GRANITE,
-  H,
-  LIQ,
-  ROCK,
-  W,
-  boxFree,
-  clamp,
-  free,
-  mat,
-  matAt,
-  paint,
-  rnd,
-  solid,
-} from './world.js';
+import { AIR, GRANITE, H, LIQ, ROCK, W, boxFree, clamp, free, mat, matAt, paint, rnd, solid } from './world.js';
 
 // ---- Buildings & economy ----
 const BT = {
-  hut: { name: 'Hütte', w: 22, h: 16, cost: { wood: 2, rock: 1 }, info: 'Heilt die Crew' },
-  flag: { name: 'Flagge', w: 6, h: 18, cost: { wood: 2 }, info: 'Erweitert dein Baugebiet' },
+  hut: {
+    name: 'Hütte',
+    w: 22,
+    h: 16,
+    cost: { wood: 2, rock: 1 },
+    info: 'Heilt die Crew',
+  },
+  flag: {
+    name: 'Flagge',
+    w: 6,
+    h: 18,
+    cost: { wood: 2 },
+    info: 'Erweitert dein Baugebiet',
+  },
   shop: {
     name: 'Werkstatt',
     w: 26,
@@ -50,8 +48,20 @@ const BT = {
     cost: { plank: 2, wood: 1, rock: 1 },
     info: 'Erzeugt Strom aus Wind',
   },
-  lift: { name: 'Fahrstuhl', w: 16, h: 22, cost: { wood: 3, rock: 1 }, info: 'Kabine gräbt Schacht · Strom' },
-  pump: { name: 'Pumpe', w: 16, h: 16, cost: { wood: 2, rock: 3 }, info: 'Pumpt Flüssigkeit · Strom' },
+  lift: {
+    name: 'Fahrstuhl',
+    w: 16,
+    h: 22,
+    cost: { wood: 3, rock: 1 },
+    info: 'Kabine gräbt Schacht · Strom',
+  },
+  pump: {
+    name: 'Pumpe',
+    w: 16,
+    h: 16,
+    cost: { wood: 2, rock: 3 },
+    info: 'Pumpt Flüssigkeit · Strom',
+  },
   furnace: {
     name: 'Hochofen',
     w: 18,
@@ -73,7 +83,13 @@ const BT = {
     cost: { plank: 2, rock: 2, metal: 1 },
     info: 'Schießt auf Monster, weite Sicht',
   },
-  gate: { name: 'Tor', w: 8, h: 16, cost: { plank: 2, metal: 1 }, info: 'Öffnet nur für deine Crew' },
+  gate: {
+    name: 'Tor',
+    w: 8,
+    h: 16,
+    cost: { plank: 2, metal: 1 },
+    info: 'Öffnet nur für deine Crew',
+  },
 };
 const PROD = {
   shop: [
@@ -105,12 +121,7 @@ const BASELV = [
   { sell: 1.2, crew: 7, power: 1.5, terr: 330 },
   { sell: 1.4, crew: 9, power: 2.5, terr: 430 },
 ];
-const UPG = [
-  null,
-  null,
-  { money: 80, need: { plank: 3, metal: 2 } },
-  { money: 160, need: { plank: 4, metal: 4 } },
-];
+const UPG = [null, null, { money: 80, need: { plank: 3, metal: 2 } }, { money: 160, need: { plank: 4, metal: 4 } }];
 G.wind = 0.6;
 G.windT = 0.6;
 G.power = { sup: 1, dem: 0, ratio: 1 };
@@ -120,8 +131,7 @@ const lvl = () => (G.base && G.base.lvl) || 1;
 const sellVal = items_ => Math.round(items_.reduce((s, t) => s + ITEM[t].val, 0) * BASELV[lvl()].sell);
 function terrOK(x, extra = 0) {
   if (Math.abs(x - (G.base.x + G.base.w / 2)) < BASELV[lvl()].terr + extra) return true;
-  for (const b of builds)
-    if (b.type === 'flag' && b.done && Math.abs(x - (b.x + 3)) < 150 + extra) return true;
+  for (const b of builds) if (b.type === 'flag' && b.done && Math.abs(x - (b.x + 3)) < 150 + extra) return true;
   return false;
 }
 const resName = t => tr(t === 'lorry' ? 'Lore' : t === 'clonk' ? 'Wühler' : ITEM[t].name);
@@ -129,8 +139,7 @@ function resSources(c) {
   const src = [c.inv];
   const L = lorryNear(c);
   if (L) src.push(L.items);
-  for (const o of crew)
-    if (o !== c && !o.dead && Math.abs(o.x - c.x) < 26 && Math.abs(o.y - c.y) < 14) src.push(o.inv);
+  for (const o of crew) if (o !== c && !o.dead && Math.abs(o.x - c.x) < 26 && Math.abs(o.y - c.y) < 14) src.push(o.inv);
   return src;
 }
 function countRes(c, t) {
@@ -175,9 +184,7 @@ function tryBuild(type) {
     bx = Math.round(c.x + 3 - T.w / 2);
   if (!terrOK(bx + T.w / 2, type === 'flag' ? 110 : 0)) {
     toast(
-      type === 'flag'
-        ? 'Zu weit weg von deinem Gebiet'
-        : 'Außerhalb deines Gebiets – stell zuerst eine Flagge auf',
+      type === 'flag' ? 'Zu weit weg von deinem Gebiet' : 'Außerhalb deines Gebiets – stell zuerst eine Flagge auf',
     );
     return;
   }
@@ -262,8 +269,7 @@ function liftUpd(b) {
           return;
         }
       }
-    for (let y = Math.floor(c.y) + 2; y <= Math.floor(ny) + 1; y++)
-      for (let x = c.x; x < c.x + 12; x++) digCell(x, y);
+    for (let y = Math.floor(c.y) + 2; y <= Math.floor(ny) + 1; y++) for (let x = c.x; x < c.x + 12; x++) digCell(x, y);
     spawnFromDig(c.x + 6, c.y - 4);
     c.y = ny;
     for (const e of riders) e.y = c.y - e.h;
@@ -360,6 +366,7 @@ function updBuilds() {
         if (b.prog >= 1) {
           b.prog = 1;
           b.done = true;
+          track('build');
           toast('{name} fertig', { name: tr(BT[b.type].name) });
           sfx('done', b.x, b.gy);
           if (b.type === 'flag') calcTerr();
@@ -493,6 +500,7 @@ function updLorry(L) {
   ) {
     const v = sellVal(L.items);
     G.money += v;
+    sold(L.items, v);
     toast('Lore verkauft: +{v} Taler', { v });
     sfx('coin', L.x, L.y);
     L.items = [];

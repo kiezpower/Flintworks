@@ -5,20 +5,7 @@ import { addClonk, mkAnimal, spawnItem } from './entities.js';
 import { calcTerr } from './render.js';
 import { simulate } from './sim.js';
 import { sp, treeSprite } from './sprites.js';
-import {
-  G,
-  animals,
-  birds,
-  builds,
-  clouds,
-  crew,
-  flashes,
-  items,
-  lorries,
-  meteors,
-  parts,
-  trees,
-} from './state.js';
+import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
 import {
   ACID,
   AIR,
@@ -79,11 +66,11 @@ function topSolid(x) {
   return H;
 }
 function gen() {
-  setBiome(['meadow', 'desert', 'winter'][ri(0, 2)]);
+  setBiome(G.nextBiome || ['meadow', 'desert', 'winter'][ri(0, 2)]);
+  G.earned = 0;
   mat.fill(0);
   bg.fill(0);
-  for (const a of [meteors, items, parts, flashes, builds, trees, crew, animals, lorries, birds, clouds])
-    a.length = 0;
+  for (const a of [meteors, items, parts, flashes, builds, trees, crew, animals, lorries, birds, clouds]) a.length = 0;
   G.meteorNext = 15000 + rnd() * 8000;
   G.goldDust = G.earthDug = G.loamDug = G.oreDug = G.coalDug = 0;
   G.hintsSeen = new Set();
@@ -139,14 +126,7 @@ function gen() {
   caves.forEach((c, k) => {
     const liquid = k < 2 ? LAVA : k === 2 ? ACID : k < 7 ? WATER : 0;
     if (liquid)
-      blob(
-        c.x,
-        c.y,
-        c.rx,
-        c.ry,
-        liquid,
-        (i, xx, yy) => mat[i] === AIR && yy > c.y - (liquid === WATER ? 1 : 3),
-      );
+      blob(c.x, c.y, c.rx, c.ry, liquid, (i, xx, yy) => mat[i] === AIR && yy > c.y - (liquid === WATER ? 1 : 3));
   });
   for (let k = 0; k < 16; k++) {
     const x = ri(150, W - 15);
@@ -301,8 +281,7 @@ function canPlantAt(x) {
   return true;
 }
 function plantTree(x, stage) {
-  const type =
-    G.biome === 'desert' ? 'cactus' : G.biome === 'winter' ? 'snowpine' : rnd() < 0.5 ? 'pine' : 'oak';
+  const type = G.biome === 'desert' ? 'cactus' : G.biome === 'winter' ? 'snowpine' : rnd() < 0.5 ? 'pine' : 'oak';
   trees.push({
     x,
     gy: topSolid(x),

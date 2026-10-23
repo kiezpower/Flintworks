@@ -1,3 +1,4 @@
+import { sold } from './profile.js';
 import {
   BASELV,
   BT,
@@ -45,8 +46,7 @@ const mapView = $('mapView'),
   mini = $('mini'),
   mctx = mini.getContext('2d'),
   mimg = mctx.createImageData(350, 100);
-for (const el of document.querySelectorAll('[data-ico]'))
-  el.style.backgroundImage = `url(${padIcon(el.dataset.ico)})`;
+for (const el of document.querySelectorAll('[data-ico]')) el.style.backgroundImage = `url(${padIcon(el.dataset.ico)})`;
 mapView.addEventListener('pointerdown', e => {
   e.stopPropagation();
   toggleMap();
@@ -141,12 +141,7 @@ function drawMini(full) {
   mctx.putImageData(mimg, 0, 0);
   mctx.strokeStyle = 'rgba(255,255,255,.8)';
   mctx.lineWidth = 1;
-  mctx.strokeRect(
-    Math.floor(cam.x / K) + 0.5,
-    Math.floor(cam.y / K) + 0.5,
-    Math.ceil(G.VW / K),
-    Math.ceil(G.VH / K),
-  );
+  mctx.strokeRect(Math.floor(cam.x / K) + 0.5, Math.floor(cam.y / K) + 0.5, Math.ceil(G.VW / K), Math.ceil(G.VH / K));
   for (const b of builds) {
     mctx.fillStyle = '#c9b89a';
     mctx.fillRect(Math.floor(b.x / K), Math.floor((b.gy - b.h) / K), Math.ceil(b.w / K), Math.ceil(b.h / K));
@@ -236,12 +231,9 @@ function openBuild() {
   const p = openPanel('Bauen');
   const l = sec(
     p,
-    tr(
-      'Bezahlt aus dem Gepäck, einer Lore und von Wühlern daneben. Der Bau entsteht dort, wo {name} steht.',
-      {
-        name: c.name,
-      },
-    ),
+    tr('Bezahlt aus dem Gepäck, einer Lore und von Wühlern daneben. Der Bau entsteht dort, wo {name} steht.', {
+      name: c.name,
+    }),
   );
   for (const t in BT) {
     const T = BT[t];
@@ -303,6 +295,7 @@ function openBase() {
   sb.onclick = () => {
     if (performance.now() - G.panelT < 450) return;
     G.money += val;
+    sold(c.inv, val);
     c.inv = [];
     c.isel = 0;
     sfx('coin');
@@ -385,8 +378,7 @@ const HINTS = [
   {
     id: 'rock',
     test: c =>
-      c.digging &&
-      matAt(Math.floor(c.x + 3 + c.digDir[0] * 9), Math.floor(c.y + 5 + c.digDir[1] * 10)) === ROCK,
+      c.digging && matAt(Math.floor(c.x + 3 + c.digDir[0] * 9), Math.floor(c.y + 5 + c.digDir[1] * 10)) === ROCK,
     text: 'Fels ist zu hart. Wirf einen Feuerstein darauf',
   },
   { id: 'loam', test: c => c.inv[c.isel] === 'loam', text: 'Lehm in der Hand: Aktion baut eine Brücke' },
@@ -395,11 +387,7 @@ const HINTS = [
     test: c => c.inv.includes('ore') || c.inv.includes('coal'),
     text: 'Erz und Kohle schmilzt der Hochofen zu Metall',
   },
-  {
-    id: 'plank',
-    test: c => c.inv.includes('plank'),
-    text: 'Bretter: für Gebäude oder als Holzbrücke (Aktion)',
-  },
+  { id: 'plank', test: c => c.inv.includes('plank'), text: 'Bretter: für Gebäude oder als Holzbrücke (Aktion)' },
   { id: 'power', test: () => G.power.ratio < 1, text: 'Zu wenig Strom – bau ein Windrad' },
   { id: 'terr', test: c => !terrOK(c.x), text: 'Du bist außerhalb deines Gebiets. Flaggen erweitern es' },
   { id: 'hang', test: c => c.hangle, text: 'Du hängst an der Decke. Runter lässt los' },

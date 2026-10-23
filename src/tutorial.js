@@ -1,3 +1,4 @@
+import { P, saveProfile, track } from './profile.js';
 // Guided first game: short tasks with a pointer to the next goal.
 import { countRes } from './buildings.js';
 import { sel_ } from './entities.js';
@@ -109,6 +110,9 @@ function endTutorial(finished) {
     G.money += 20;
     sfx('done');
     toast('Tutorial geschafft! +20 Taler');
+    track('tutorial');
+    P.tutorialDone = true;
+    saveProfile();
   }
 }
 function updTutorial() {

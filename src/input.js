@@ -1,6 +1,5 @@
 import { NOIN } from './clonk.js';
 import { midMat, sel_ } from './entities.js';
-import { startGame } from './main.js';
 import { cam, cv } from './render.js';
 import { audioInit } from './sound.js';
 import { G, crew } from './state.js';
@@ -63,7 +62,8 @@ addEventListener('keydown', e => {
     const n = +e.code.slice(5) - 1;
     if (n < c.inv.length) c.isel = n;
   }
-  if (e.code === 'Enter' && G.state !== 'play') startGame(false);
+  if (e.code === 'Enter' && G.state !== 'play')
+    document.getElementById(G.state === 'menu' ? 'lbPlay' : 'goBtn')?.click();
 });
 addEventListener('keyup', e => {
   if (e.code in KEYMAP) keys[KEYMAP[e.code]] = 0;

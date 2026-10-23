@@ -33,7 +33,9 @@
             <div class="who" id="whoTxt"></div>
             <div class="who pwr" id="pwrTxt" hidden></div>
             <div class="money"><span class="coin"></span><span id="moneyTxt">0</span></div>
-            <div class="bar" title="Energie" data-i18n-title="Energie"><b id="hpBar"></b></div>
+            <div class="bar" title="Energie" data-i18n-title="Energie">
+              <b id="hpBar"></b>
+            </div>
             <div class="bar air" id="airWrap" hidden title="Luft" data-i18n-title="Luft">
               <b id="airBar"></b>
             </div>
@@ -55,7 +57,7 @@
             <button class="small" id="zoomBtn" title="Zoom">Zoom</button>
             <button class="small" id="mapBtn" data-i18n="Karte">Karte</button>
             <button class="small" id="sndBtn" data-i18n="Ton">Ton</button>
-            <button class="small" id="newBtn" data-i18n="Neu">Neu</button>
+            <button class="small" id="newBtn" data-i18n="Lobby">Lobby</button>
           </div>
         </div>
       </div>
@@ -63,9 +65,7 @@
       <div id="pads">
         <div id="joy"><div id="knob"></div></div>
         <div id="btns">
-          <button class="pad act" data-b="act">
-            <i class="ico" data-ico="act"></i><span id="actBtn">Bauen</span>
-          </button>
+          <button class="pad act" data-b="act"><i class="ico" data-ico="act"></i><span id="actBtn">Bauen</span></button>
           <button class="pad jump" data-b="jump">
             <i class="ico" data-ico="jump"></i><span data-i18n="Sprung">Sprung</span>
           </button>
@@ -80,17 +80,14 @@
 
       <div id="mapView" class="panel" hidden>
         <div class="ph">
-          <span style="color: var(--gold)" data-i18n="Karte · Antippen schließt"
-            >Karte · Antippen schließt</span
-          >
+          <span style="color: var(--gold)" data-i18n="Karte · Antippen schließt">Karte · Antippen schließt</span>
         </div>
         <canvas id="mini" width="350" height="100"></canvas>
         <div class="legend">
           <span><i style="background: #fff"></i><span data-i18n="gewählt">gewählt</span></span
           ><span><i style="background: #3f9e4a"></i>Crew</span
           ><span><i style="background: #c9b89a"></i><span data-i18n="Gebäude">Gebäude</span></span
-          ><span><i style="background: #ff4040"></i>Monster</span
-          ><span><i style="background: #f2c230"></i>Gold</span
+          ><span><i style="background: #ff4040"></i>Monster</span><span><i style="background: #f2c230"></i>Gold</span
           ><span><i style="background: #ff7a2a"></i>Lava</span
           ><span><i style="background: #7ed957"></i><span data-i18n="Säure">Säure</span></span>
         </div>
@@ -111,8 +108,55 @@
         <div id="pBody"></div>
       </div>
 
-      <div id="overlay">
+      <div id="overlay" hidden>
         <div class="card panel" id="card"></div>
+      </div>
+
+      <div id="lobby" hidden>
+        <div class="lb-top">
+          <div class="lb-lvl">
+            <b id="lbLvl">1</b>
+            <div class="lb-xp"><i id="lbXp"></i><span id="lbXpTxt"></span></div>
+          </div>
+          <div class="lb-title" id="lbTitle">Flintworks</div>
+          <div class="lb-chips">
+            <span class="chip"><i class="ico" data-ico="trophy"></i><b id="lbTro">0</b></span>
+            <span class="chip"><i class="ico" data-ico="crystal"></i><b id="lbCr">0</b></span>
+            <button class="chip lb-opt" id="lbOpt" aria-label="Optionen" data-i18n-aria="Optionen">
+              <i class="ico" data-ico="gear"></i>
+            </button>
+          </div>
+        </div>
+        <div class="lb-side">
+          <button class="lb-b" id="lbShop">
+            <i class="ico" data-ico="shop"></i><span data-i18n="Shop">Shop</span>
+          </button>
+          <button class="lb-b" id="lbWho">
+            <i class="ico" data-ico="crew"></i><span data-i18n="Wühler">Wühler</span>
+          </button>
+          <button class="lb-b" id="lbQuest">
+            <i class="ico" data-ico="quest"></i><span data-i18n="Aufgaben">Aufgaben</span>
+          </button>
+          <button class="lb-b" id="lbChest">
+            <i class="ico" data-ico="chest"></i><span data-i18n="Truhe">Truhe</span>
+          </button>
+        </div>
+        <div class="lb-stage">
+          <canvas id="lbCv" width="44" height="28" aria-label="Dein Wühler" data-i18n-aria="Dein Wühler"></canvas>
+          <div class="lb-name"><span id="lbHat"></span></div>
+        </div>
+        <button class="lb-road" id="lbRoad">
+          <i class="ico" data-ico="trophy"></i>
+          <span class="lb-roadtrack"><i id="lbRoadBar"></i></span>
+          <span id="lbRoadTxt"></span>
+        </button>
+        <div class="lb-play">
+          <button class="lb-mode" id="lbMode"><small data-i18n="Welt">Welt</small><b id="lbModeTxt">Zufall</b></button>
+          <button class="lb-go" id="lbPlay">
+            <span id="lbPlayTxt">Spielen</span>
+          </button>
+          <button class="ghost lb-new" id="lbNew" data-i18n="Neue Welt">Neue Welt</button>
+        </div>
       </div>
     </div>
     <script type="module" src="/src/main.js"></script>

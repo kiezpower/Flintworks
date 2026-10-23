@@ -1,3 +1,4 @@
+import { track } from './profile.js';
 import { dust, splash } from './effects.js';
 import { PROD } from './buildings.js';
 import { insideB, midMat, moveBody, overlap, spawnItem, unstuck } from './entities.js';
@@ -123,6 +124,7 @@ function spawnFromDig(cx, cy) {
   if (G.gemDug >= 24) {
     G.gemDug = 0;
     spawnItem('gem', cx - 1, cy - 2, rnd() - 0.5, -1.2, 10);
+    track('gem');
     sfx('coin', cx, cy);
   }
   if (G.loamDug >= 90) {
@@ -190,15 +192,7 @@ function updClonk(c, I) {
       c.burn = 0;
       sfx('hiss', c.x, c.y);
       for (let q = 0; q < 6; q++)
-        parts.push({
-          x: c.x + 3,
-          y: c.y + 2,
-          vx: (rnd() - 0.5) * 0.5,
-          vy: -0.6,
-          l: 30,
-          c: '#e8eef2',
-          g: -0.004,
-        });
+        parts.push({ x: c.x + 3, y: c.y + 2, vx: (rnd() - 0.5) * 0.5, vy: -0.6, l: 30, c: '#e8eef2', g: -0.004 });
     }
     if (G.frame % 40 === 0) sfx('crackle', c.x, c.y);
   }
@@ -288,6 +282,7 @@ function updClonk(c, I) {
       }
       if (t.hp <= 0) {
         t.fall = c.face;
+        track('chop');
         c.chop = null;
         sfx('creak', t.x, t.gy);
       }

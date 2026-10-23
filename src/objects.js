@@ -1,3 +1,4 @@
+import { track } from './profile.js';
 import { splash } from './effects.js';
 import { arrows } from './buildings.js';
 import { hurt, startTumble } from './clonk.js';
@@ -201,8 +202,7 @@ function updTrees() {
           g: -0.003,
         });
       if (G.frame % 20 === k % 20)
-        for (const o of trees)
-          if (o !== t && !o.burn && !o.fall && Math.abs(o.x - t.x) < 16 && rnd() < 0.22) ignite(o);
+        for (const o of trees) if (o !== t && !o.burn && !o.fall && Math.abs(o.x - t.x) < 16 && rnd() < 0.22) ignite(o);
       for (const c of crew)
         if (
           !c.dead &&
@@ -309,8 +309,7 @@ function updAnimal(a) {
       a.vy = (rnd() - 0.5) * 0.9;
     }
     a.vy += Math.sin(G.frame * 0.3 + a.x) * 0.03;
-    if (free(a.x + a.vx, a.y, a.w, a.h) && !LIQ[matAt(Math.floor(a.x + a.vx + 2), Math.floor(a.y + 1))])
-      a.x += a.vx;
+    if (free(a.x + a.vx, a.y, a.w, a.h) && !LIQ[matAt(Math.floor(a.x + a.vx + 2), Math.floor(a.y + 1))]) a.x += a.vx;
     else a.vx *= -1;
     if (free(a.x, a.y + a.vy, a.w, a.h)) a.y += a.vy;
     else a.vy *= -1;
@@ -420,18 +419,11 @@ function killAnimal(a) {
     spawnItem('nug', a.x + 3, a.y, -0.6, -1.5, 10);
     spawnItem('nug', a.x + 6, a.y, 0.6, -1.5, 10);
     toast('Monster besiegt');
+    track('monster');
     sfx('growl', a.x, a.y);
   }
 }
-const DEBRIS = {
-  [EARTH]: EARTH,
-  [ROCK]: ROCK,
-  [SAND]: SAND,
-  [LOAM]: LOAM,
-  [ORE]: ORE,
-  [COAL]: COAL,
-  [PLANK]: PLANK,
-};
+const DEBRIS = { [EARTH]: EARTH, [ROCK]: ROCK, [SAND]: SAND, [LOAM]: LOAM, [ORE]: ORE, [COAL]: COAL, [PLANK]: PLANK };
 const DEBCOL = {
   [EARTH]: '#7d5230',
   [ROCK]: '#7b766f',

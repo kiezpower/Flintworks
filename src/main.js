@@ -1,8 +1,10 @@
 import { updDecor } from './decor.js';
+import { chosenBiome, hideLobby, lobbyFrame, lobbyOpen, showLobby } from './lobby.js';
+import { P, finishGame } from './profile.js';
 import { biome } from './biomes.js';
 import { updAmbience } from './ambience.js';
 import { endTutorial, startTutorial, updTutorial } from './tutorial.js';
-import { applyStatic, getLang, setLang, tr } from './i18n.js';
+import { applyStatic, tr } from './i18n.js';
 import './style.css';
 import { updBuilds, updLorry } from './buildings.js';
 import { NOIN, context, doThrow, updClonk } from './clonk.js';
@@ -15,18 +17,7 @@ import { clearSave, hasSave, loadGame, saveGame } from './save.js';
 import { simulate } from './sim.js';
 import { audioInit } from './sound.js';
 import { G, animals, builds, crew, lorries } from './state.js';
-import {
-  $,
-  checkHints,
-  closePanel,
-  drawMini,
-  hud,
-  openBuild,
-  panelEl,
-  toast,
-  toastEl,
-  toggleMap,
-} from './ui.js';
+import { $, checkHints, closePanel, drawMini, hud, openBuild, panelEl, toast, toastEl, toggleMap } from './ui.js';
 import { updWeather } from './weather.js';
 import { GOAL, H, W, clamp } from './world.js';
 
@@ -50,90 +41,72 @@ const DESK_KEYS = [
 ];
 const keyList = (cls, rows) =>
   `<dl class="keys ${cls}">${rows.map(([k, v]) => `<dt>${tr(k)}</dt><dd>${tr(v)}</dd>`).join('')}</dl>`;
-function menu() {
-  const buttons = hasSave()
-    ? `<button class="go" id="contBtn">${tr('Weiterspielen')}</button><button class="ghost" id="goBtn">${tr('Neue Welt')}</button>`
-    : `<button class="go" id="tutBtn">${tr('Mit Tutorial starten')}</button><button class="ghost" id="goBtn">${tr('Losgraben')}</button>`;
-  card.innerHTML = `<h1>Flintworks</h1>
-  <p>${tr('Führe deine Crew: fällt Bäume, grabt nach Gold, baut Gebäude und verkauft alles an der Heimatbasis. Ziel sind {goal} Taler.', { goal: GOAL })}</p>
-  ${keyList('touchonly', TOUCH_KEYS)}
-  ${keyList('keyonly', DESK_KEYS)}
-  <p class="hint">${tr('Baue eine Produktionskette: Holz → Bretter, Erz + Kohle → Metall, Windräder für Strom. Feuersteine sprengen Fels. Lehm baut Brücken. Lava und Säure meiden, Monster lauern in der Tiefe.')}</p>
-  <p class="hint touchonly">${tr('Im Querformat spielt es sich am besten.')}</p>
-  <div class="btnrow">${buttons}<button class="ghost" id="langBtn">${getLang() === 'de' ? 'English' : 'Deutsch'}</button></div>
-  <p class="hint">${tr('Der Spielstand wird in diesem Browser gespeichert.')}</p>`;
-  if ($('tutBtn')) $('tutBtn').onclick = () => startGame(true);
-  $('langBtn').onclick = () => {
-    setLang(getLang() === 'de' ? 'en' : 'de');
-    G.crewKey = G.invKey = '';
-    menu();
-  };
-  $('goBtn').onclick = () => {
-    if (hasSave()) {
-      if (performance.now() - G.newArmed > 3000) {
-        G.newArmed = performance.now();
-        $('goBtn').textContent = tr('Sicher? Nochmal tippen');
-        return;
-      }
-      clearSave();
+const keysHtml = () => `${keyList('touchonly', TOUCH_KEYS)}${keyList('keyonly', DESK_KEYS)}`;
+// A run is in progress when a world is loaded or a save is waiting
+const hasRun = () => G.inRun || hasSave();
+function play(withTutorial) {
+  if (withTutorial) {
+    clearSave();
+    G.inRun = false;
+  }
+  if (!G.inRun) {
+    if (hasSave() && loadGame()) {
+      G.crewKey = G.invKey = '';
+    } else {
+      G.nextBiome = chosenBiome();
       gen();
-      resetCam();
+      if (!P.tutorialDone) withTutorial = true;
     }
-    startGame(false);
-  };
-  if ($('contBtn'))
-    $('contBtn').onclick = () => {
-      if (loadGame()) {
-        resetCam();
-        G.crewKey = '';
-        G.invKey = '';
-      }
-      startGame();
-    };
-  overlay.hidden = false;
+    resetCam();
+    G.inRun = true;
+    startGame(withTutorial);
+    return;
+  }
+  startGame('resume');
+}
+function discard() {
+  clearSave();
+  G.inRun = false;
+}
+const lobbyHooks = { play, discard, hasRun, keysHtml };
+function menu() {
+  showLobby(lobbyHooks);
 }
 function startGame(withTutorial = false) {
   if (withTutorial === true) startTutorial();
-  else endTutorial(false);
+  else if (withTutorial !== 'resume') endTutorial(false);
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
-  if (G.state === 'won' || G.state === 'lost') {
-    gen();
-    resetCam();
-  }
+  crew[0] && Object.assign(crew[0], { hat: P.hat, cap: P.cap });
+  G.crewKey = '';
   G.state = 'play';
+  hideLobby();
   overlay.hidden = true;
-  G.startT = performance.now();
-  if (!G.tut) toast('Welt: {name}', { name: tr(biome().name) });
+  if (withTutorial !== 'resume') G.startT = performance.now();
+  if (!G.tut && withTutorial !== 'resume') toast('Welt: {name}', { name: tr(biome().name) });
 }
 function endScreen(won) {
   G.state = won ? 'won' : 'lost';
   closePanel();
   clearSave();
+  G.inRun = false;
+  const tro = finishGame(won, G.earned || 0);
   const s = Math.round((performance.now() - G.startT) / 1000);
   const time = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   card.innerHTML = won
     ? `<h1>${tr('Geschafft')}</h1><p>${tr('{goal} Taler in {time} Minuten.', { goal: GOAL, time })}</p>`
     : `<h1>${tr('Crew verloren')}</h1><p>${tr('Alle Wühler sind erschöpft und die Kasse reicht für keinen neuen.')}</p>`;
-  card.innerHTML += `<button class="go" id="goBtn">${tr('Neue Welt')}</button>`;
-  $('goBtn').onclick = () => startGame(false);
+  card.innerHTML += `<p class="trophy-gain">${tr('{n} Trophäen', { n: (tro >= 0 ? '+' : '') + tro })}</p><button class="go" id="goBtn">${tr('Zur Lobby')}</button>`;
+  $('goBtn').onclick = () => {
+    overlay.hidden = true;
+    menu();
+  };
   overlay.hidden = false;
 }
-G.newArmed = 0;
 $('newBtn').addEventListener('click', () => {
-  if (performance.now() - G.newArmed > 3000) {
-    G.newArmed = performance.now();
-    toast('Nochmal tippen: neue Welt starten, Fortschritt geht verloren');
-    return;
-  }
-  G.newArmed = 0;
-  clearSave();
-  gen();
-  G.state = 'play';
-  overlay.hidden = true;
-  G.startT = performance.now();
-  resetCam();
-  toast('Welt: {name}', { name: tr(biome().name) });
+  saveGame();
+  closePanel();
+  menu();
 });
 $('buildBtn').addEventListener('click', openBuild);
 $('mapBtn').addEventListener('click', toggleMap);
@@ -240,7 +213,8 @@ function loop(t) {
     n++;
   }
   if (n === 4) G.acc = 0;
-  render();
+  if (lobbyOpen()) lobbyFrame();
+  else render();
   G.tick++;
   if (G.tick % 5 === 0) hud();
   if (G.tick % 10 === 0) drawMini(G.tick % 60 === 0);
@@ -251,6 +225,7 @@ gen();
 resize();
 resetCam();
 hud();
+overlay.hidden = true;
 menu();
 requestAnimationFrame(loop);
 

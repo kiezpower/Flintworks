@@ -4,28 +4,14 @@ import { arrows } from './buildings.js';
 import { mkCloud } from './gen.js';
 import { calcTerr } from './render.js';
 import { treeSprite } from './sprites.js';
-import {
-  G,
-  animals,
-  birds,
-  builds,
-  clouds,
-  crew,
-  flashes,
-  items,
-  lorries,
-  meteors,
-  parts,
-  trees,
-} from './state.js';
+import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
 import { H, W, activateAll, bg, colorOf, img, mat, px, ri, rnd, shade, surf, wctx } from './world.js';
 
 // ---- Save / load (per browser) ----
 const SAVEKEY = 'wuehlwelt-save-v1';
 function b64(u8) {
   let s = '';
-  for (let i = 0; i < u8.length; i += 0x8000)
-    s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+  for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
   return btoa(s);
 }
 function unb64(str) {
@@ -55,8 +41,7 @@ function saveGame() {
       const r = {};
       for (const k in o) {
         const v = o[k];
-        if (v instanceof HTMLCanvasElement || k === 'chop' || k === 'thrower' || k === 'spr' || k === 'char')
-          continue;
+        if (v instanceof HTMLCanvasElement || k === 'chop' || k === 'thrower' || k === 'spr' || k === 'char') continue;
         r[k] = v;
       }
       return r;
@@ -66,6 +51,7 @@ function saveGame() {
       world: b64(new Uint8Array(u16.buffer)),
       surf: [...surf],
       money: G.money,
+      earned: G.earned || 0,
       biome: G.biome,
       sel: G.sel,
       dayT: G.dayT,
@@ -124,6 +110,7 @@ function loadGame() {
     wctx.putImageData(img, 0, 0);
     activateAll();
     G.money = d.money;
+    G.earned = d.earned || 0;
     G.sel = d.sel;
     G.dayT = d.dayT;
     G.hintsSeen = new Set(d.hints || []);

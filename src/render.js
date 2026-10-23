@@ -7,20 +7,7 @@ import { sel_ } from './entities.js';
 import { topSolid } from './gen.js';
 import { game, joyHome } from './input.js';
 import { ICOL, SPR, drawItemPx } from './sprites.js';
-import {
-  G,
-  animals,
-  birds,
-  builds,
-  clouds,
-  crew,
-  flashes,
-  items,
-  lorries,
-  meteors,
-  parts,
-  trees,
-} from './state.js';
+import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
 import { darkness, skyCols } from './weather.js';
 import { H, W, clamp, flush, rnd, wc } from './world.js';
 
@@ -52,10 +39,7 @@ function resize() {
   const r = game.getBoundingClientRect();
   const s = Math.max(
     2,
-    Math.min(
-      8,
-      Math.round(Math.sqrt((r.width * r.height) / (260 * 150))) + G.zoomAdj - (G.towerView ? 2 : 0),
-    ),
+    Math.min(8, Math.round(Math.sqrt((r.width * r.height) / (260 * 150))) + G.zoomAdj - (G.towerView ? 2 : 0)),
   );
   G.VW = Math.min(W, Math.ceil(r.width / s));
   G.VH = Math.min(H, Math.ceil(r.height / s));
@@ -69,10 +53,43 @@ function resize() {
   joyHome();
 }
 addEventListener('resize', resize);
-function drawClonkPx(c, ox, oy, f) {
+// Hats from the lobby shop, drawn on top of the cap (pixel offsets relative to the head)
+function drawHat(put, hat) {
+  if (hat === 'helm' || hat === 'viking') {
+    put(1, -1, 4, 1, '#9aa3ad');
+    put(0, 0, 6, 2, '#7d8792');
+    put(1, 0, 2, 1, '#c9d0d8');
+    if (hat === 'viking') {
+      put(-1, -2, 1, 2, '#f3ead8');
+      put(6, -2, 1, 2, '#f3ead8');
+    } else put(5, 0, 1, 1, '#ffe27a');
+  } else if (hat === 'cowboy') {
+    put(1, -2, 4, 2, '#8a5a2e');
+    put(1, -1, 4, 1, '#5a3418');
+    put(-1, 0, 8, 1, '#a06a38');
+  } else if (hat === 'wizard') {
+    put(2, -4, 1, 1, '#6a3fb0');
+    put(2, -3, 2, 1, '#6a3fb0');
+    put(1, -2, 3, 1, '#6a3fb0');
+    put(1, -1, 4, 1, '#7d4fc8');
+    put(0, 0, 6, 1, '#5a3296');
+    put(3, -2, 1, 1, '#ffe27a');
+  } else if (hat === 'crown') {
+    put(1, -2, 1, 1, '#ffd84a');
+    put(3, -2, 1, 1, '#ffd84a');
+    put(5, -2, 1, 1, '#ffd84a');
+    put(1, -1, 5, 2, '#f2b51e');
+    put(3, -1, 1, 1, '#e8394a');
+  } else if (hat === 'flower') {
+    put(3, -1, 1, 1, '#ff7eb6');
+    put(2, -2, 3, 1, '#ff7eb6');
+    put(3, -2, 1, 1, '#ffe27a');
+  }
+}
+function drawClonkPx(c, ox, oy, f, g = ctx) {
   const put = (x, y, w, h, col) => {
-    ctx.fillStyle = col;
-    ctx.fillRect(f > 0 ? ox + x : ox + 6 - x - w, oy + y, w, h);
+    g.fillStyle = col;
+    g.fillRect(f > 0 ? ox + x : ox + 6 - x - w, oy + y, w, h);
   };
   const hurtF = c.hurt > 0 && c.hurt & 2;
   const skin = c.dead ? '#9a8f84' : hurtF ? '#ff6a5a' : '#f0c49a',
@@ -80,6 +97,7 @@ function drawClonkPx(c, ox, oy, f) {
     leg = '#4a2f1c';
   put(1, 0, 4, 1, c.cap);
   put(0, 1, 5, 1, c.cap);
+  if (c.hat && c.hat !== 'none') drawHat(put, c.hat);
   put(1, 2, 4, 2, skin);
   const blink = !c.dead && (G.frame + c.x * 7) % 240 < 6;
   put(4, 2, 1, 1, c.dead ? '#5a5048' : blink ? skin : '#1a120c');
@@ -111,13 +129,8 @@ function drawClonkPx(c, ox, oy, f) {
   }
   if (c.digging) {
     const [dx, dy] = c.digDir;
-    ctx.fillStyle = '#b8b2a8';
-    ctx.fillRect(
-      Math.round(ox + 2.5 + dx * 5 + Math.sin(c.anim * 2) * 0.7),
-      Math.round(oy + 4.5 + dy * 5),
-      2,
-      2,
-    );
+    g.fillStyle = '#b8b2a8';
+    g.fillRect(Math.round(ox + 2.5 + dx * 5 + Math.sin(c.anim * 2) * 0.7), Math.round(oy + 4.5 + dy * 5), 2, 2);
   } else if (c.hammer || c.chop || c.bridge) {
     const up = Math.sin(c.anim * 2) > 0;
     put(4, up ? 2 : 4, 1, 2, skin);
@@ -130,8 +143,8 @@ function drawClonkPx(c, ox, oy, f) {
   }
   if (c.burn > 0) {
     for (let k = 0; k < 2; k++) {
-      ctx.fillStyle = rnd() < 0.5 ? '#ffcf4a' : '#ff7a2f';
-      ctx.fillRect(ox + Math.floor(rnd() * 6), oy - 1 + Math.floor(rnd() * 8), 1, 1);
+      g.fillStyle = rnd() < 0.5 ? '#ffcf4a' : '#ff7a2f';
+      g.fillRect(ox + Math.floor(rnd() * 6), oy - 1 + Math.floor(rnd() * 8), 1, 1);
     }
   }
 }
@@ -409,8 +422,7 @@ function render() {
     ctx.fillRect(x + 10, y + 2, 1, 3);
     if (L.items.length) {
       ctx.fillStyle = '#f2c230';
-      for (let k = 0; k < Math.min(5, Math.ceil(L.items.length / 5)); k++)
-        ctx.fillRect(x + 2 + k * 2, y, 2, 1);
+      for (let k = 0; k < Math.min(5, Math.ceil(L.items.length / 5)); k++) ctx.fillRect(x + 2 + k * 2, y, 2, 1);
     }
     const wr = Math.floor(L.x / 2) & 1;
     ctx.fillStyle = '#2a2a2a';
@@ -503,9 +515,7 @@ function render() {
     ctx.strokeStyle = '#fffbe0';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    G.bolt.pts.forEach(([x, y], k) =>
-      k ? ctx.lineTo(x - cx + 0.5, y - cy) : ctx.moveTo(x - cx + 0.5, y - cy),
-    );
+    G.bolt.pts.forEach(([x, y], k) => (k ? ctx.lineTo(x - cx + 0.5, y - cy) : ctx.moveTo(x - cx + 0.5, y - cy)));
     ctx.stroke();
     if (--G.bolt.l <= 0) G.bolt = null;
   }
@@ -525,7 +535,13 @@ function render() {
       lctx.fillRect(x - r, y - r, r * 2, r * 2);
     };
     crew.forEach((c, n) => {
-      if (!c.dead) light(c.x + 3 - cx, c.y + 4 - cy, n === G.sel ? 44 : 22, n === G.sel ? 0.95 : 0.7);
+      if (!c.dead)
+        light(
+          c.x + 3 - cx,
+          c.y + 4 - cy,
+          (n === G.sel ? 44 : 22) * (c.hat === 'helm' ? 1.5 : 1),
+          n === G.sel ? 0.95 : 0.7,
+        );
     });
     for (const b of builds)
       if (b.done) light(b.x + b.w / 2 - cx, b.gy - b.h / 2 - cy, b.type === 'base' ? 40 : 24, 0.8);
