@@ -6,7 +6,7 @@ import { arrows, lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
 import { topSolid } from './gen.js';
 import { game, joyHome } from './input.js';
-import { ICOL, SPR, drawItemPx } from './sprites.js';
+import { ICOL, SPR, drawItemPx, outlined } from './sprites.js';
 import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
 import { darkness, skyCols } from './weather.js';
 import { H, W, clamp, flush, rnd, wc } from './world.js';
@@ -203,45 +203,66 @@ function drawClonkPx(c, ox, oy, f, g = ctx) {
     }
   }
 }
+// Animals: shaded pixel sprites with the same dark outline as the Wühler
 function drawAnimal(a, sx, sy) {
   const f = a.face || 1,
     hurtF = a.hurt > 0 && a.hurt & 2;
-  const put = (x, y, w, h, col) => {
-    ctx.fillStyle = hurtF ? '#ff6a5a' : col;
-    ctx.fillRect(f > 0 ? sx + x : sx + a.w - x - w, sy + y, w, h);
-  };
+  rects.length = 0;
+  const put = (x, y, w, h, col) => rects.push(f > 0 ? sx + x : sx + a.w - x - w, sy + y, w, h, hurtF ? '#ff6a5a' : col);
   const ph = Math.sin(a.anim) > 0;
   if (a.kind === 'bat') {
-    const up = Math.sin(a.anim) > 0;
-    put(2, 1, 1, 2, '#2a2235');
-    put(0, up ? 0 : 2, 2, 1, '#3a2f45');
-    put(3, up ? 0 : 2, 2, 1, '#3a2f45');
-    put(2, 1, 1, 1, '#ff5050');
-    return;
-  }
-  if (a.kind === 'wipf') {
+    const up = ph;
+    put(2, 0, 1, 1, '#2a2235');
+    put(1, 1, 3, 2, '#3a2f45');
+    put(-1, up ? -1 : 2, 3, 1, '#4a3d58');
+    put(3, up ? -1 : 2, 3, 1, '#4a3d58');
+    put(0, up ? 0 : 1, 1, 1, '#3a2f45');
+    put(4, up ? 0 : 1, 1, 1, '#3a2f45');
+    put(3, 1, 1, 1, '#ff5050');
+  } else if (a.kind === 'wipf') {
+    // fluffy Wipf with a ginger stripe, pointy ear and bushy tail
     put(0, 1, 5, 2, '#f2e6d0');
-    put(3, 0, 2, 2, '#f2e6d0');
+    put(1, 0, 3, 1, '#fbf4e6');
+    put(4, 0, 2, 2, '#f6ecd8');
+    put(4, -1, 1, 1, '#d08a5a');
     put(1, 1, 2, 1, '#d08a5a');
-    put(4, 0, 1, 1, '#d08a5a');
-    put(4, 1, 1, 1, '#1a120c');
+    put(1, 2, 3, 1, '#e2d2b6');
+    put(5, 0, 1, 1, '#1a120c');
+    put(6, 1, 1, 1, '#e88a8a');
+    put(-1, ph ? 0 : 1, 1, 2, '#d08a5a');
     put(ph ? 0 : 1, 3, 1, 1, '#b8a68c');
     put(ph ? 3 : 4, 3, 1, 1, '#b8a68c');
   } else if (a.kind === 'fish') {
-    put(1, 0, 3, 2, '#e0a13a');
-    put(0, ph ? 0 : 1, 1, 1, '#c47f22');
+    put(1, 0, 3, 2, '#e8a83c');
+    put(1, 1, 3, 1, '#f6cf7a');
+    put(2, -1, 1, 1, '#c47f22');
+    put(-1, ph ? -1 : 0, 2, 1, '#c47f22');
+    put(-1, ph ? 1 : 2, 1, 1, '#c47f22');
     put(3, 0, 1, 1, '#1a120c');
   } else {
+    // cave monster: hunched back with spikes, glowing eye, teeth
+    const glow = 0.6 + Math.sin(G.frame * 0.15) * 0.4;
     put(1, 2, 10, 6, '#3d3a6b');
+    put(2, 1, 7, 1, '#3d3a6b');
     put(2, 6, 7, 2, '#5a56a0');
-    for (let k = 0; k < 4; k++) put(2 + k * 2, 1, 1, 1, '#2a2850');
+    put(1, 2, 2, 5, '#2e2b55');
+    for (let k = 0; k < 4; k++) put(2 + k * 2, 0, 1, 1, '#2a2850');
     put(8, 3, 3, 2, '#f4ead2');
-    put(10, 3, 1, 1, '#c8302c');
+    put(10, 3, 1, 1, glow > 0.5 ? '#ff3a2a' : '#c8302c');
     put(7, 7, 4, 1, '#f4ead2');
     put(8, 7, 1, 1, '#3d3a6b');
     put(10, 7, 1, 1, '#3d3a6b');
     put(ph ? 2 : 3, 8, 2, 1, '#2a2850');
     put(ph ? 7 : 6, 8, 2, 1, '#2a2850');
+  }
+  ctx.fillStyle = a.kind === 'fish' ? 'rgba(20,12,6,0.5)' : '#24160c';
+  for (let k = 0; k < rects.length; k += 5) {
+    ctx.fillRect(rects[k] - 1, rects[k + 1], rects[k + 2] + 2, rects[k + 3]);
+    ctx.fillRect(rects[k], rects[k + 1] - 1, rects[k + 2], rects[k + 3] + 2);
+  }
+  for (let k = 0; k < rects.length; k += 5) {
+    ctx.fillStyle = rects[k + 4];
+    ctx.fillRect(rects[k], rects[k + 1], rects[k + 2], rects[k + 3]);
   }
 }
 function render() {
@@ -335,7 +356,7 @@ function render() {
       sy = b.gy - b.h - cy,
       spr = SPR[b.type];
     if (sx < G.VW && sx + b.w > 0 && sy < G.VH + 40 && sy + b.h > -20) {
-      if (b.done && b.type !== 'flag' && b.type !== 'gate') ctx.drawImage(spr, sx, sy);
+      if (b.done && b.type !== 'flag' && b.type !== 'gate') ctx.drawImage(outlined(spr), sx - 1, sy - 1);
       else {
         const vh = Math.ceil(b.h * b.prog);
         ctx.globalAlpha = 0.3;
@@ -448,7 +469,7 @@ function render() {
       ctx.save();
       ctx.translate(sx, sy);
       ctx.rotate(Math.sin(G.frame * 0.025 + t.x * 0.13) * 0.025 * (0.4 + G.wind));
-      ctx.drawImage(t.spr, -Math.floor(w / 2), -h);
+      ctx.drawImage(outlined(t.spr), -Math.floor(w / 2) - 1, -h - 1);
       if (t.char) {
         ctx.globalAlpha = clamp(1 - t.burn / 700, 0, 1);
         ctx.drawImage(t.char, -Math.floor(w / 2), -h);
@@ -459,7 +480,7 @@ function render() {
       ctx.save();
       ctx.translate(sx, sy);
       ctx.rotate(t.ang);
-      ctx.drawImage(t.spr, -Math.floor(w / 2), -h);
+      ctx.drawImage(outlined(t.spr), -Math.floor(w / 2) - 1, -h - 1);
       ctx.restore();
     }
   }

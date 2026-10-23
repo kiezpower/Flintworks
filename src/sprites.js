@@ -390,4 +390,29 @@ const PAD_ICONS = {
 };
 const padIcon = kind => sp(12, 12, PAD_ICONS[kind]).toDataURL();
 
-export { ICOL, ITEM, SPR, drawItemPx, iconCache, itemIcon, padIcon, sp, treeSprite };
+// Copy of a sprite with a 1px dark outline (canvas grows by 1px on each side), cached per sprite
+const outCache = new WeakMap();
+function outlined(spr, col = '#24160c') {
+  let o = outCache.get(spr);
+  if (o) return o;
+  o = document.createElement('canvas');
+  o.width = spr.width + 2;
+  o.height = spr.height + 2;
+  const g = o.getContext('2d');
+  for (const [dx, dy] of [
+    [0, 1],
+    [2, 1],
+    [1, 0],
+    [1, 2],
+  ])
+    g.drawImage(spr, dx, dy);
+  g.globalCompositeOperation = 'source-in';
+  g.fillStyle = col;
+  g.fillRect(0, 0, o.width, o.height);
+  g.globalCompositeOperation = 'source-over';
+  g.drawImage(spr, 1, 1);
+  outCache.set(spr, o);
+  return o;
+}
+
+export { outlined, ICOL, ITEM, SPR, drawItemPx, iconCache, itemIcon, padIcon, sp, treeSprite };
