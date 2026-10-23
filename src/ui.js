@@ -1,3 +1,4 @@
+import { toolSection } from './tools.js';
 const depthEl = document.getElementById('depthTxt');
 import { GAME_MODES, mode } from './modes.js';
 const goalWrap = document.getElementById('goalWrap'),
@@ -365,6 +366,7 @@ function openBase() {
       },
     });
   }
+  toolSection(p, c, { opt, sec, toast, reopen: openBase });
   const l = sec(p, tr('Kaufen · Kasse: {m} Taler', { m: G.money }));
   for (const o of BUY) {
     const icon = ITEM[o.t] ? itemIcon(o.t) : o.t === 'lorry' ? SPR.lorryIcon : SPR.clonkIcon;

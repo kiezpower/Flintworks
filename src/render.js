@@ -1,3 +1,4 @@
+import { hasTool } from './tools.js';
 import { drawHazards } from './hazards.js';
 import { drawChests } from './treasure.js';
 import { drawBuildFx, drawWindowGlow } from './bfx.js';
@@ -623,7 +624,7 @@ function render() {
         light(
           c.x + 3 - cx,
           c.y + 4 - cy,
-          (n === G.sel ? 44 : 22) * (c.hat === 'helm' ? 1.5 : 1),
+          (n === G.sel ? 44 : 22) * (c.hat === 'helm' ? 1.5 : 1) * (hasTool('lamp') ? 1.4 : 1),
           n === G.sel ? 0.95 : 0.7,
         );
     });

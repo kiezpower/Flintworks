@@ -1,3 +1,4 @@
+import { hasTool } from './tools.js';
 import { onDig } from './hazards.js';
 import { buzz } from './sound.js';
 import { chestNear, openChest } from './treasure.js';
@@ -23,6 +24,7 @@ import {
   LOAM,
   ORE,
   PLANK,
+  ROCK,
   SAND,
   W,
   WATER,
@@ -95,11 +97,15 @@ const CRUMB = {
   [COAL]: '#3b3735',
   [GEM]: '#b6f6ff',
   [GOLD]: '#ffe066',
+  [ROCK]: '#8a847c',
 };
 function digCell(x, y) {
   const i = y * W + x,
     m = mat[i];
-  if (m !== EARTH && m !== SAND && m !== GOLD && m !== LOAM && m !== ORE && m !== COAL && m !== GEM) return;
+  if (m === ROCK) {
+    // the steel pick chips slowly through rock
+    if (!hasTool('pick') || rnd() > 0.3) return;
+  } else if (m !== EARTH && m !== SAND && m !== GOLD && m !== LOAM && m !== ORE && m !== COAL && m !== GEM) return;
   if (rnd() < 0.06) parts.push({ x, y, vx: (rnd() - 0.5) * 1.2, vy: -rnd(), l: 20, c: CRUMB[m] });
   if (m === GOLD) {
     G.goldDust++;
@@ -313,7 +319,8 @@ function updClonk(c, I) {
     c.digDir = [dxv, dyv];
     digAt(c.x + 3 + dxv * 5, c.y + 5 + dyv * 6, 5.5);
     c.vx = c.vy = 0;
-    moveBody(c, dxv * 0.55, dyv * 0.55, 3);
+    const sp = hasTool('pick') ? 0.8 : 0.55;
+    moveBody(c, dxv * sp, dyv * sp, 3);
     c.anim += 0.3;
     if (G.frame % 9 === 0) sfx('dig', c.x, c.y);
     return;

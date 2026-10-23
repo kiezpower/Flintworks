@@ -1,3 +1,5 @@
+import { sel_ } from './entities.js';
+import { hasTool } from './tools.js';
 // Cave hazards that grow with depth: cave-ins after a warning rumble, and hidden pockets of
 // mine gas that poison the air and explode when fire gets near.
 import { hurt } from './clonk.js';
@@ -126,6 +128,17 @@ function lavaNear(x, y, r) {
 
 // greenish swirling haze
 function drawHazards(ctx, cx, cy) {
+  const s = sel_();
+  if (hasTool('lamp') && s && G.gas)
+    for (const g of G.gas)
+      if (!g.done && Math.hypot(g.x - s.x, g.y - s.y) < 70) {
+        ctx.strokeStyle = `rgba(150,215,80,${0.35 + Math.sin(G.frame * 0.1) * 0.15})`;
+        ctx.setLineDash([2, 2]);
+        ctx.beginPath();
+        ctx.arc(Math.round(g.x - cx), Math.round(g.y - cy), g.r, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
   const clouds = G.gasClouds;
   if (!clouds || !clouds.length) return;
   for (const cl of clouds) {

@@ -2,6 +2,13 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  Werkzeug: 'Tools',
+  Stahlhacke: 'Steel pick',
+  'Gräbt schneller und kommt auch durch Fels': 'Digs faster and gets through rock',
+  Grubenlampe: 'Miner lamp',
+  'Helleres Licht, zeigt Grubengas in der Nähe': 'Brighter light, shows mine gas nearby',
+  '{name} braucht {m} Taler + {cost}': '{name} needs {m} coins + {cost}',
+  '{name} gekauft': '{name} bought',
   'Tiefe {d} m': 'Depth {d} m',
   'Grubengas! Kein Feuer – und schnell raus hier': 'Mine gas! No fire – get out fast',
   'Es knirscht über dir … Vorsicht!': 'The ceiling creaks … watch out!',

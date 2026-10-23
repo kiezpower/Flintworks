@@ -433,7 +433,16 @@ const PAD_ICONS = {
     R(4, 4, 4, 4, '#3a2a1e');
   },
 };
+PAD_ICONS.lamp = R => {
+  R(5, 0, 2, 1, '#6f767c');
+  R(4, 1, 4, 1, '#3a3a3a');
+  R(3, 2, 6, 7, '#3a3a3a');
+  R(4, 3, 4, 5, '#ffd84a');
+  R(5, 4, 2, 2, '#fff6c0');
+  R(3, 9, 6, 1, '#6f767c');
+};
 const padIcon = kind => sp(12, 12, PAD_ICONS[kind]).toDataURL();
+const toolIcon = kind => sp(12, 12, PAD_ICONS[kind]);
 
 // Copy of a sprite with a 1px dark outline (canvas grows by 1px on each side), cached per sprite
 const outCache = new WeakMap();
@@ -460,4 +469,4 @@ function outlined(spr, col = '#24160c') {
   return o;
 }
 
-export { outlined, ICOL, ITEM, SPR, drawItemBig, drawItemPx, iconCache, itemIcon, padIcon, sp, treeSprite };
+export { outlined, toolIcon, ICOL, ITEM, SPR, drawItemBig, drawItemPx, iconCache, itemIcon, padIcon, sp, treeSprite };

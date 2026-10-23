@@ -70,6 +70,7 @@ function topSolid(x) {
 function gen() {
   setBiome(G.nextBiome || ['meadow', 'desert', 'winter'][ri(0, 2)]);
   G.earned = 0;
+  G.tools = {};
   G.mode = G.nextMode || 'gold';
   mat.fill(0);
   bg.fill(0);
