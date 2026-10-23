@@ -21,7 +21,7 @@ import { addClonk, sel_, spawnItem } from './entities.js';
 import { held, joy, keys, selectCrew } from './input.js';
 import { calcTerr, cam } from './render.js';
 import { sfx } from './sound.js';
-import { ITEM, SPR, itemIcon } from './sprites.js';
+import { ITEM, SPR, itemIcon, padIcon } from './sprites.js';
 import { tr } from './i18n.js';
 import { G, animals, builds, crew, lorries } from './state.js';
 import { darkness } from './weather.js';
@@ -45,6 +45,8 @@ const mapView = $('mapView'),
   mini = $('mini'),
   mctx = mini.getContext('2d'),
   mimg = mctx.createImageData(350, 100);
+for (const el of document.querySelectorAll('[data-ico]'))
+  el.style.backgroundImage = `url(${padIcon(el.dataset.ico)})`;
 mapView.addEventListener('pointerdown', e => {
   e.stopPropagation();
   toggleMap();

@@ -59,10 +59,31 @@ const MINI = [
   '#2a2626',
   '#a0703f',
 ];
+// brighter / darker copies of a packed colour (alpha kept)
+const tint = (c, f) => {
+  const ch = s => Math.min(255, Math.round(((c >>> s) & 255) * f)) << s;
+  return (((c >>> 24) << 24) | ch(16) | ch(8) | ch(0)) >>> 0;
+};
+const PAL_LIT = PAL.map(a => a.map(c => tint(c, 1.2)));
+const PAL_DARK = PAL.map(a => a.map(c => tint(c, 0.72)));
+const TUN_DARK = TUN.map(c => tint(c, 0.62));
+
+// Pixel colour with simple lighting: lit top edges, shaded ceilings, dark tunnel corners
 const colorOf = i => {
   const m = mat[i];
-  if (m === AIR) return bg[i] ? TUN[shade[i] & 3] : 0;
-  return m === EARTH ? PAL[1][shade[i]] : PAL[m][shade[i] & 3];
+  const k = m === EARTH ? shade[i] : shade[i] & 3;
+  if (m === AIR) {
+    if (!bg[i]) return 0;
+    const wall =
+      (i >= W && SOLID[mat[i - W]]) ||
+      (i < W * (H - 1) && SOLID[mat[i + W]]) ||
+      SOLID[mat[i - 1]] ||
+      SOLID[mat[i + 1]];
+    return wall ? TUN_DARK[k] : TUN[k];
+  }
+  if (i >= W && mat[i - W] === AIR) return PAL_LIT[m][k];
+  if (SOLID[m] && i < W * (H - 1) && !SOLID[mat[i + W]]) return PAL_DARK[m][k];
+  return PAL[m][k];
 };
 
 const wc = document.createElement('canvas');
@@ -104,13 +125,18 @@ function activate(x, y) {
   }
 }
 function paint(i) {
+  // neighbours change their lighting too
   px[i] = colorOf(i);
+  if (i >= W) px[i - W] = colorOf(i - W);
+  if (i < W * (H - 1)) px[i + W] = colorOf(i + W);
+  if (i % W > 0) px[i - 1] = colorOf(i - 1);
+  if (i % W < W - 1) px[i + 1] = colorOf(i + 1);
   const x = i % W,
     y = (i / W) | 0;
-  if (x < dx0) dx0 = x;
-  if (x > dx1) dx1 = x;
-  if (y < dy0) dy0 = y;
-  if (y > dy1) dy1 = y;
+  if (x - 1 < dx0) dx0 = Math.max(0, x - 1);
+  if (x + 1 > dx1) dx1 = Math.min(W - 1, x + 1);
+  if (y - 1 < dy0) dy0 = Math.max(0, y - 1);
+  if (y + 1 > dy1) dy1 = Math.min(H - 1, y + 1);
   activate(x, y);
 }
 function flush() {

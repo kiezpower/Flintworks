@@ -299,4 +299,39 @@ function treeSprite(type, stage) {
   });
 }
 
-export { ICOL, ITEM, SPR, drawItemPx, iconCache, itemIcon, sp, treeSprite };
+// 12×12 pixel icons for the touch buttons
+const PAD_ICONS = {
+  dig: R => {
+    R(2, 9, 1, 1, '#6a4526');
+    R(3, 8, 1, 1, '#8b5e34');
+    R(4, 7, 1, 1, '#8b5e34');
+    R(5, 6, 1, 1, '#8b5e34');
+    R(6, 3, 4, 4, '#c0c6cc');
+    R(7, 2, 3, 1, '#e4e8ec');
+    R(9, 6, 1, 1, '#8a929a');
+  },
+  jump: R => {
+    R(5, 1, 2, 1, '#f4ead2');
+    R(4, 2, 4, 1, '#f4ead2');
+    R(3, 3, 6, 1, '#f4ead2');
+    R(5, 4, 2, 4, '#f4ead2');
+    R(2, 10, 8, 1, '#8b5e34');
+  },
+  throw: R => {
+    R(1, 9, 1, 1, '#ffb08f');
+    R(2, 6, 1, 1, '#ffb08f');
+    R(4, 4, 1, 1, '#ffb08f');
+    R(6, 3, 1, 1, '#ffb08f');
+    R(8, 4, 3, 3, '#e0572f');
+    R(8, 4, 1, 1, '#ff9a6a');
+  },
+  act: R => {
+    R(2, 2, 6, 3, '#9aa4ae');
+    R(2, 2, 6, 1, '#d4dbe2');
+    R(5, 5, 2, 6, '#8b5e34');
+    R(5, 5, 1, 6, '#a0703f');
+  },
+};
+const padIcon = kind => sp(12, 12, PAD_ICONS[kind]).toDataURL();
+
+export { ICOL, ITEM, SPR, drawItemPx, iconCache, itemIcon, padIcon, sp, treeSprite };

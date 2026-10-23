@@ -1,0 +1,75 @@
+// Visual extras: distant mountains, glowing lava, dust and splashes.
+import { G, parts } from './state.js';
+import { LAVA, W, mat, rnd } from './world.js';
+
+// Far mountain range with snow caps, drawn behind the hills
+function drawMountains(ctx, cx, cy, dark) {
+  const night = dark > 0.3;
+  const rock = night ? '#27324d' : '#a9bed3',
+    snow = night ? '#8d9bb8' : '#f4f8fb';
+  for (let sx = 0; sx < G.VW; sx += 2) {
+    const wx = sx + cx * 0.12;
+    const r = Math.abs(Math.sin(wx * 0.0065 + 1.7)) * 0.7 + Math.abs(Math.sin(wx * 0.017 + 0.4)) * 0.3;
+    const y = Math.round(104 - r * 44 - cy * 0.8);
+    if (y >= G.VH) continue;
+    ctx.fillStyle = rock;
+    ctx.fillRect(sx, y, 2, G.VH - y);
+    if (r > 0.72) {
+      ctx.fillStyle = snow;
+      ctx.fillRect(sx, y, 2, Math.round((r - 0.72) * 34));
+    }
+  }
+}
+
+// Lava pixels on screen, sampled on a coarse grid (reused for glow and night light)
+const lavaSpots = [];
+function scanLava(cx, cy) {
+  lavaSpots.length = 0;
+  for (let y = 1; y < G.VH && lavaSpots.length < 160; y += 3)
+    for (let x = 1; x < G.VW; x += 3) {
+      const i = (cy + y) * W + cx + x;
+      if (mat[i] !== LAVA) continue;
+      lavaSpots.push(x, y);
+      if (mat[i - W] !== LAVA && rnd() < 0.004)
+        parts.push({ x: cx + x, y: cy + y - 1, vx: 0, vy: -0.4, l: 25, c: '#ffcf4a', g: -0.004 });
+    }
+  return lavaSpots;
+}
+function drawLavaGlow(ctx) {
+  const pulse = 0.09 + Math.sin(G.frame * 0.08) * 0.03;
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.fillStyle = `rgba(255,110,30,${pulse})`;
+  for (let k = 0; k < lavaSpots.length; k += 2) ctx.fillRect(lavaSpots[k] - 3, lavaSpots[k + 1] - 3, 7, 7);
+  ctx.fillStyle = '#ffe08a';
+  for (let k = 0; k < 4 && lavaSpots.length; k++) {
+    const j = (Math.floor(rnd() * lavaSpots.length) >> 1) << 1;
+    ctx.fillRect(lavaSpots[j], lavaSpots[j + 1], 1, 1);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+const dust = (x, y, n, col) => {
+  for (let k = 0; k < n; k++)
+    parts.push({
+      x: x + rnd() * 6,
+      y,
+      vx: (rnd() - 0.5) * 0.8,
+      vy: -rnd() * 0.6,
+      l: 14 + rnd() * 8,
+      c: col,
+      g: 0.02,
+    });
+};
+const splash = (x, y, n) => {
+  for (let k = 0; k < n; k++)
+    parts.push({
+      x: x + rnd() * 4,
+      y,
+      vx: (rnd() - 0.5) * 1.6,
+      vy: -0.8 - rnd() * 1.4,
+      l: 22,
+      c: rnd() < 0.5 ? '#9fd0ff' : '#e6f4ff',
+    });
+};
+
+export { drawLavaGlow, drawMountains, dust, scanLava, splash };

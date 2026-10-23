@@ -1,3 +1,4 @@
+import { dust, splash } from './effects.js';
 import { PROD } from './buildings.js';
 import { insideB, midMat, moveBody, overlap, spawnItem, unstuck } from './entities.js';
 import { inp } from './input.js';
@@ -139,6 +140,11 @@ function updClonk(c, I) {
     mFeet = midMat(c, 0.95);
   const inLiq = LIQ[mBody],
     headLiq = LIQ[mHead];
+  if (inLiq && !c.wasLiq && c.vy > 1) {
+    splash(c.x + 1, c.y + 5, 10);
+    sfx('splash', c.x, c.y);
+  }
+  c.wasLiq = inLiq;
   if (mBody === LAVA || mFeet === LAVA) {
     hurt(c, 1.1, true);
     if (G.frame % 20 === 0) sfx('hurt', c.x, c.y);
@@ -325,6 +331,7 @@ function updClonk(c, I) {
   }
   const fallV = c.vy;
   const [bx, by] = moveBody(c, c.vx, c.vy, onG ? 3 : 0);
+  if (by && fallV > 2.4) dust(c.x, c.y + 9, Math.round(fallV * 2), '#b89a76');
   if (by) {
     if (fallV > 3.9) {
       const d = (fallV - 3.9) * 22;
@@ -354,6 +361,7 @@ function updClonk(c, I) {
   }
   if (onG) c.anim += Math.abs(c.vx) * 0.35;
   else if (inLiq) c.anim += 0.12;
+  if (onG && Math.abs(c.vx) > 0.8 && G.frame % 12 === 0) dust(c.x, c.y + 9, 1, '#b89a76');
 }
 function climbUpd(c, I) {
   const f = c.face,

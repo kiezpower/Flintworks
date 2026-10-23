@@ -1,3 +1,4 @@
+import { drawLavaGlow, drawMountains, scanLava } from './effects.js';
 import { drawTutorial } from './tutorial.js';
 import { arrows, lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
@@ -222,6 +223,7 @@ function render() {
     ctx.fillStyle = 'rgba(80,90,100,.18)';
     ctx.fillRect(0, 0, G.VW, G.VH);
   }
+  drawMountains(ctx, cx, cy, dark);
   hills(cx, cy, 0.25, 92, 14, dark > 0.3 ? '#33405e' : '#b7cddc', 1.3);
   hills(cx, cy, 0.45, 108, 12, dark > 0.3 ? '#2a3a44' : '#8fb0a6', 4.1);
   for (const b of birds) {
@@ -235,6 +237,8 @@ function render() {
     ctx.fillRect(x + 1, up ? y - 1 : y + 1, 1, 1);
   }
   ctx.drawImage(wc, cx, cy, G.VW, G.VH, 0, 0, G.VW, G.VH);
+  const lava = scanLava(cx, cy);
+  drawLavaGlow(ctx);
   // pump pipes
   for (const b of builds)
     if (b.type === 'pump' && b.done && b.pipe) {
@@ -510,6 +514,7 @@ function render() {
     for (const it of items) if (it.fuse > 0) light(it.x - cx, it.y - cy, 10, 0.6);
     for (const t of trees) if (t.burn > 0) light(t.x - cx, t.gy - t.spr.height / 2 - cy, 36, 0.9);
     for (const c of crew) if (c.burn > 0) light(c.x + 3 - cx, c.y + 4 - cy, 24, 0.9);
+    for (let k = 0; k < lava.length; k += 8) light(lava[k], lava[k + 1], 16, 0.7);
     ctx.drawImage(lc, 0, 0);
   }
   drawTutorial(ctx, cx, cy);

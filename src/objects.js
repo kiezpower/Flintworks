@@ -1,3 +1,4 @@
+import { splash } from './effects.js';
 import { arrows } from './buildings.js';
 import { hurt, startTumble } from './clonk.js';
 import { midMat, moveBody, overlap, spawnItem, unstuck } from './entities.js';
@@ -89,6 +90,8 @@ function updItems() {
       continue;
     }
     const inW = LIQ[inL];
+    if (inW && !it.wasLiq && it.vy > 1.5) splash(it.x, it.y, 5);
+    it.wasLiq = inW;
     const floats = it.t === 'wood';
     if (inW && floats) {
       it.vy -= 0.08;

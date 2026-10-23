@@ -597,3 +597,21 @@ button:focus-visible {
     max-width: calc(100% - 32px);
   }
 }
+
+.pad {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 2px;
+}
+.ico {
+  display: block;
+  width: 24px;
+  height: 24px;
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+}
+.pad.big .ico {
+  width: 32px;
+  height: 32px;
+}
