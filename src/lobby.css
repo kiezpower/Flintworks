@@ -399,3 +399,70 @@
   font-size: 10px;
   font-family: var(--font-ui);
 }
+
+/* team row: invite slots left and right of the stage (multiplayer groundwork) */
+.lb-team {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.lb-slot {
+  position: absolute;
+  bottom: 22%;
+  width: clamp(44px, 9vw, 64px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 14, 40, 0.45);
+  border: 3px dashed rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  z-index: 1;
+}
+#lbSlot1 {
+  left: 18%;
+}
+#lbSlot2 {
+  right: 18%;
+}
+.lb-slot b {
+  font-size: clamp(26px, 5vw, 38px);
+  line-height: 1;
+  color: #fff;
+  text-shadow: 2px 2px 0 #0d1840;
+}
+.lb-slot:active {
+  transform: scale(0.92);
+}
+.lb-slot.waiting {
+  border-color: var(--gold);
+  animation: lb-bounce 1.6s ease-in-out infinite;
+}
+.lb-invite {
+  display: grid;
+  gap: 10px;
+}
+.lb-invite p {
+  margin: 0;
+}
+.lb-code {
+  display: grid;
+  justify-items: center;
+  padding: 8px;
+  border: 2px dashed var(--edge);
+  border-radius: 6px;
+}
+.lb-code small {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  opacity: 0.7;
+}
+.lb-code b {
+  font-size: 28px;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+}
+.lb-link {
+  word-break: break-all;
+  margin: 0;
+}

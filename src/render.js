@@ -1,3 +1,4 @@
+import { drawBuildFx, drawWindowGlow } from './bfx.js';
 import { drawFloats } from './floats.js';
 import { drawDecor } from './decor.js';
 import { biome } from './biomes.js';
@@ -369,6 +370,7 @@ function render() {
         ctx.fillRect(sx + b.w - 1, sy, 1, b.h);
         for (let yy = sy + b.h - 1; yy >= sy; yy -= 5) ctx.fillRect(sx, yy, b.w, 1);
       }
+      drawBuildFx(ctx, b, sx, sy);
       if (b.type === 'base') {
         drawFlag(sx + 4, sy - 10, 14, 7);
       }
@@ -579,7 +581,7 @@ function render() {
       y = Math.floor(p.y - cy);
     if (x < 0 || y < 0 || x >= G.VW || y >= G.VH) continue;
     ctx.fillStyle = p.c;
-    ctx.fillRect(x, y, 1, p.rain ? 2 : 1);
+    ctx.fillRect(x, y, p.s || 1, p.rain ? 2 : p.s || 1);
   }
   for (const f of flashes) {
     ctx.fillStyle = `rgba(255,${180 + f.l * 10},90,${f.l / 8})`;
@@ -631,6 +633,7 @@ function render() {
     for (const c of crew) if (c.burn > 0) light(c.x + 3 - cx, c.y + 4 - cy, 24, 0.9);
     for (let k = 0; k < lava.length; k += 8) light(lava[k], lava[k + 1], 16, 0.7);
     ctx.drawImage(lc, 0, 0);
+    drawWindowGlow(ctx, cx, cy, dark);
   }
   drawFloats(ctx, cx, cy);
   drawTutorial(ctx, cx, cy);

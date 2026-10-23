@@ -1,3 +1,4 @@
+import { updBuildFx } from './bfx.js';
 import { updMusic } from './music.js';
 import { updFloats } from './floats.js';
 import { updDecor } from './decor.js';
@@ -156,6 +157,7 @@ function step() {
       }
     });
     updBuilds();
+    updBuildFx();
     updArrows();
     updItems();
     for (const L of lorries) updLorry(L);

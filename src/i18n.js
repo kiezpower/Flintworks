@@ -2,6 +2,16 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'Mitspieler einladen': 'Invite players',
+  'Grabt bald zu dritt in einer Welt. Der Multiplayer ist in Arbeit – dein Raum ist schon reserviert.':
+    'Soon you can dig together, three in one world. Multiplayer is in the works – your room is already reserved.',
+  'Raum-Code': 'Room code',
+  Einladen: 'Invite',
+  'Link teilen': 'Share link',
+  'Schicke deinen Freunden den Einladungslink': 'Send your friends the invite link',
+  'Grab mit mir in Flintworks!': 'Dig with me in Flintworks!',
+  'Link kopiert': 'Link copied',
+  'Teilen nicht möglich': 'Sharing not possible',
   Musik: 'Music',
   'Musik an': 'Music on',
   'Musik aus': 'Music off',
