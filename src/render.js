@@ -6,7 +6,7 @@ import { arrows, lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
 import { topSolid } from './gen.js';
 import { game, joyHome } from './input.js';
-import { ICOL, SPR, drawItemPx, outlined } from './sprites.js';
+import { ICOL, SPR, drawItemBig, outlined } from './sprites.js';
 import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
 import { darkness, skyCols } from './weather.js';
 import { H, W, clamp, flush, rnd, wc } from './world.js';
@@ -513,7 +513,8 @@ function render() {
     const x = Math.floor(it.x - cx),
       y = Math.floor(it.y - cy);
     if (x < -6 || y < -6 || x > G.VW || y > G.VH) continue;
-    drawItemPx(ctx, it.t, x, y, (G.frame >> 3) & 1);
+    const shine = (it.t === 'nug' || it.t === 'gem') && (G.frame + it.x * 13) % 90 < 6;
+    drawItemBig(ctx, it.t, x, y, it.w, it.h, shine);
     if (it.fuse > 0 && (G.frame >> 2) & 1) {
       ctx.fillStyle = '#ffe066';
       ctx.fillRect(x + 1, y - 1, 1, 1);

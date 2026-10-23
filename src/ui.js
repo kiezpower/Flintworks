@@ -100,8 +100,7 @@ function hud() {
       b.title = t ? resName(t) : '';
       if (t) {
         const cvs = document.createElement('canvas');
-        cvs.width = 8;
-        cvs.height = 8;
+        cvs.width = cvs.height = 10;
         cvs.getContext('2d').drawImage(itemIcon(t), 0, 0);
         b.appendChild(cvs);
       }

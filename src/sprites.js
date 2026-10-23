@@ -255,15 +255,60 @@ function drawItemPx(g, t, x, y, blink) {
     R(1, 2, 1, 1, '#2f8fb0');
   }
 }
+// Bigger outlined item art (drawn bottom-centred over the item's physics box)
+const ITEM_ART = {
+  rock: [['.LLg.', 'LgGgd', 'gGgdd', '.ddd.'], { L: '#b4ada3', g: '#8a847c', G: '#9a948b', d: '#5d5852' }],
+  flint: [['.hO.', 'hOOo', 'OOod', '.od.'], { h: '#ffb08a', O: '#e0572f', o: '#c0401f', d: '#8b2a12' }],
+  nug: [['.wy.', 'wyYy', 'yYbb'], { w: '#fff6c0', y: '#f2c230', Y: '#ffd84a', b: '#b8860b' }],
+  wood: [['rWWWWWW', 'Rwwwwww', 'rbbbbbb'], { r: '#e8c896', R: '#c9a070', W: '#a8763f', w: '#8b5e34', b: '#6a4526' }],
+  loam: [['.lll.', 'lLLLc', 'LLLcc', '.ccc.'], { l: '#d8a874', L: '#b07a45', c: '#8a5a32' }],
+  tnt: [
+    ['.f..', '.k..', 'rRRr', 'wwww', 'rRRr'],
+    { f: '#ffcf4a', k: '#2a1a10', r: '#a8241f', R: '#d8403a', w: '#f4ead2' },
+  ],
+  plank: [['LLLLLLd', 'ppppppd'], { L: '#e0ae74', p: '#c08a50', d: '#8b5e34' }],
+  ore: [['.aa.', 'aOrO', 'OrOa', '.OO.'], { a: '#a86a52', O: '#7a3e30', r: '#ff9a6a' }],
+  coal: [['.gc.', 'gccc', 'cckc', '.kk.'], { g: '#6a6560', c: '#2e2a2a', k: '#161414' }],
+  metal: [['.hhh.', 'hmmmd', 'mmmdd'], { h: '#e4e8ec', m: '#aab0b6', d: '#6f767c' }],
+  gem: [['.wc.', 'wcCc', 'cCcd', '.dd.'], { w: '#e8ffff', c: '#5ae0f0', C: '#2fa8d8', d: '#1f6fa8' }],
+};
+const artCache = {};
+function itemArt(t, blink) {
+  const key = t + (blink ? 1 : 0);
+  if (artCache[key]) return artCache[key];
+  const [rows, pal] = ITEM_ART[t];
+  const c = sp(rows[0].length, rows.length, R =>
+    rows.forEach((row, y) =>
+      [...row].forEach((ch, x) => {
+        if (ch === '.') return;
+        let col = pal[ch];
+        if (blink && (t === 'nug' || t === 'gem') && ch !== 'b' && ch !== 'd') col = pal.w;
+        R(x, y, 1, 1, col);
+      }),
+    ),
+  );
+  return (artCache[key] = outlined(c));
+}
+// draws an item onto g so that it sits on the bottom edge of its w×h box
+function drawItemBig(g, t, x, y, w, h, blink) {
+  if (!ITEM_ART[t]) return drawItemPx(g, t, x, y, blink);
+  const a = itemArt(t, blink);
+  g.drawImage(a, x + Math.floor((w - a.width) / 2), y + h - a.height + 1);
+}
 const iconCache = {};
 function itemIcon(t) {
   if (iconCache[t]) return iconCache[t];
   const c = document.createElement('canvas');
-  c.width = 8;
-  c.height = 8;
+  c.width = 10;
+  c.height = 10;
   const g = c.getContext('2d');
-  const [w, h] = ITEM[t].s;
-  drawItemPx(g, t, Math.floor((8 - w) / 2), Math.floor((8 - h) / 2), false);
+  if (ITEM_ART[t]) {
+    const a = itemArt(t, false);
+    g.drawImage(a, Math.floor((10 - a.width) / 2), Math.floor((10 - a.height) / 2));
+  } else {
+    const [w, h] = ITEM[t].s;
+    drawItemPx(g, t, Math.floor((10 - w) / 2), Math.floor((10 - h) / 2), false);
+  }
   return (iconCache[t] = c);
 }
 function cactusSprite(stage) {
@@ -415,4 +460,4 @@ function outlined(spr, col = '#24160c') {
   return o;
 }
 
-export { outlined, ICOL, ITEM, SPR, drawItemPx, iconCache, itemIcon, padIcon, sp, treeSprite };
+export { outlined, ICOL, ITEM, SPR, drawItemBig, drawItemPx, iconCache, itemIcon, padIcon, sp, treeSprite };
