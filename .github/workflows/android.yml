@@ -22,7 +22,12 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - uses: android-actions/setup-android@v3
+      - name: Android SDK vorbereiten
+        # Das SDK ist auf dem Runner vorinstalliert; nur Lizenzen und die benötigte Plattform ergänzen
+        run: |
+          SDKM=$(ls -d "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager | sort -V | tail -1)
+          yes | "$SDKM" --licenses > /dev/null
+          "$SDKM" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
       - run: npm ci
       - run: npm run android
       - name: APK bauen
