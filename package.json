@@ -7,8 +7,7 @@
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview --host",
-    "android": "vite build && cap sync android",
-    "test": "playwright test"
+    "android": "vite build && cap sync android"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.3",

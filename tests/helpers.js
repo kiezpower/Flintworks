@@ -7,6 +7,7 @@ export async function startGame(page, button = '#goBtn') {
   await page.goto('/?seed=7');
   await page.click(button);
   await expect(page.locator('#overlay')).toBeHidden();
+  await page.evaluate(() => window.__ww.freeze());
   return errors;
 }
 
