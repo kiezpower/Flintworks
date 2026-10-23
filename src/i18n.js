@@ -184,6 +184,12 @@ const EN = {
   Luft: 'Air',
   Spielwelt: 'Game world',
   Sprache: 'Language',
+  // world types
+  'Welt: {name}': 'World: {name}',
+  Wiese: 'Meadow',
+  Wüste: 'Desert',
+  Winter: 'Winter',
+  'Es fängt an zu schneien': 'It starts to snow',
   // tutorial
   Überspringen: 'Skip',
   'Gepäck voll: wirf etwas mit Wurf weg': 'Pack is full: throw something away with Throw',

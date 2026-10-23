@@ -1,3 +1,4 @@
+import { biome } from './biomes.js';
 // Visual extras: distant mountains, glowing lava, dust and splashes.
 import { G, parts } from './state.js';
 import { AIR, LAVA, W, WATER, mat, rnd } from './world.js';
@@ -5,7 +6,7 @@ import { AIR, LAVA, W, WATER, mat, rnd } from './world.js';
 // Far mountain range with snow caps, drawn behind the hills
 function drawMountains(ctx, cx, cy, dark) {
   const night = dark > 0.3;
-  const rock = night ? '#27324d' : '#a9bed3',
+  const rock = night ? '#27324d' : biome().rock,
     snow = night ? '#8d9bb8' : '#f4f8fb';
   for (let sx = 0; sx < G.VW; sx += 2) {
     const wx = sx + cx * 0.12;
@@ -14,9 +15,10 @@ function drawMountains(ctx, cx, cy, dark) {
     if (y >= G.VH) continue;
     ctx.fillStyle = rock;
     ctx.fillRect(sx, y, 2, G.VH - y);
-    if (r > 0.72) {
+    const line = biome().snowLine;
+    if (r > line) {
       ctx.fillStyle = snow;
-      ctx.fillRect(sx, y, 2, Math.round((r - 0.72) * 34));
+      ctx.fillRect(sx, y, 2, Math.round((r - line) * 34));
     }
   }
 }

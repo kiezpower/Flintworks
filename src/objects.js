@@ -257,7 +257,14 @@ function updTrees() {
           vx: rnd() - 0.5,
           vy: -rnd() * 1.5,
           l: 30,
-          c: t.type === 'pine' ? '#2f6b3a' : '#4f9a3c',
+          c:
+            t.type === 'snowpine'
+              ? '#e8eef4'
+              : t.type === 'cactus'
+                ? '#4f8a3c'
+                : t.type === 'pine'
+                  ? '#2f6b3a'
+                  : '#4f9a3c',
         });
       sfx('thud', t.x, t.gy);
       G.shake = Math.max(G.shake, 2);
@@ -549,7 +556,9 @@ function updParts() {
         const cx = Math.floor(p.x),
           cy = Math.floor(p.y);
         const ok = cy >= 0 && cy < H && cx >= 0 && cx < W && mat[cy * W + cx] === AIR;
-        if (p.rain) {
+        if (p.snow) {
+          // flakes just melt away
+        } else if (p.rain) {
           if (ok && rnd() < 0.07) setMat(cx, cy, WATER);
           else if (rnd() < 0.4)
             parts.push({ x: p.x, y: p.y - 1, vx: (rnd() - 0.5) * 0.6, vy: -0.5, l: 6, c: '#cfe6fa' });

@@ -1,3 +1,4 @@
+import { biome } from './biomes.js';
 import { drawLavaGlow, drawMountains, drawWaterGlints, scanLava } from './effects.js';
 import { drawTutorial } from './tutorial.js';
 import { arrows, lvl, terrOK } from './buildings.js';
@@ -227,8 +228,8 @@ function render() {
     ctx.fillRect(0, 0, G.VW, G.VH);
   }
   drawMountains(ctx, cx, cy, dark);
-  hills(cx, cy, 0.25, 92, 14, dark > 0.3 ? '#33405e' : '#b7cddc', 1.3);
-  hills(cx, cy, 0.45, 108, 12, dark > 0.3 ? '#2a3a44' : '#8fb0a6', 4.1);
+  hills(cx, cy, 0.25, 92, 14, dark > 0.3 ? '#33405e' : biome().hills[0], 1.3);
+  hills(cx, cy, 0.45, 108, 12, dark > 0.3 ? '#2a3a44' : biome().hills[1], 4.1);
   for (const b of birds) {
     const x = Math.round(b.x - cx * 0.9),
       y = Math.round(b.y - cy * 0.9);

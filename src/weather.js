@@ -1,3 +1,4 @@
+import { biome } from './biomes.js';
 import { hurt, startTumble } from './clonk.js';
 import { spawnItem } from './entities.js';
 import { topSolid } from './gen.js';
@@ -69,7 +70,21 @@ function updWeather() {
           y = Math.max(0, Math.floor(cam.y) - 2);
         if (x < 0 || x >= W) continue;
         if (mat[y * W + x] === AIR && bg[y * W + x] === 0)
-          parts.push({ x, y, vx: -0.35, vy: 2.5 + rnd(), l: 400, c: '#a9cdee', rain: true });
+          parts.push(
+            G.biome === 'winter'
+              ? {
+                  x,
+                  y,
+                  vx: (rnd() - 0.5) * 0.5,
+                  vy: 0.6 + rnd() * 0.4,
+                  g: 0,
+                  l: 900,
+                  c: '#ffffff',
+                  rain: true,
+                  snow: true,
+                }
+              : { x, y, vx: -0.35, vy: 2.5 + rnd(), l: 400, c: '#a9cdee', rain: true },
+          );
       }
     }
     if (rnd() < 1 / 700) lightning();
@@ -77,8 +92,8 @@ function updWeather() {
       G.rainNext = 4000 + rnd() * 5000;
     }
   } else if (--G.rainNext <= 0) {
-    G.rainT = 1300 + rnd() * 900;
-    toast('Es fängt an zu regnen');
+    G.rainT = (1300 + rnd() * 900) * biome().rain;
+    toast(G.biome === 'winter' ? 'Es fängt an zu schneien' : 'Es fängt an zu regnen');
   }
 }
 function lightning() {
@@ -135,13 +150,14 @@ const SKY = {
 function skyCols() {
   const s = sunAlt();
   let top, bot;
+  const day = biome().sky;
   if (s > 0.25) {
-    top = SKY.day[0];
-    bot = SKY.day[1];
+    top = day[0];
+    bot = day[1];
   } else if (s > -0.05) {
     const t = (s + 0.05) / 0.3;
-    top = mixC(SKY.dusk[0], SKY.day[0], t);
-    bot = mixC(SKY.dusk[1], SKY.day[1], t);
+    top = mixC(SKY.dusk[0], day[0], t);
+    bot = mixC(SKY.dusk[1], day[1], t);
   } else {
     const t = clamp((s + 0.35) / 0.3, 0, 1);
     top = mixC(SKY.night[0], SKY.dusk[0], t);

@@ -1,3 +1,4 @@
+import { setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
 import { mkCloud } from './gen.js';
 import { calcTerr } from './render.js';
@@ -64,6 +65,7 @@ function saveGame() {
       world: b64(new Uint8Array(u16.buffer)),
       surf: [...surf],
       money: G.money,
+      biome: G.biome,
       sel: G.sel,
       dayT: G.dayT,
       frame: G.frame,
@@ -101,6 +103,7 @@ function loadGame() {
   }
   if (!d || d.v !== 1) return false;
   try {
+    setBiome(d.biome || 'meadow');
     const u8 = unb64(d.world),
       u16 = new Uint16Array(u8.buffer);
     let i = 0;

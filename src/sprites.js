@@ -263,8 +263,28 @@ function itemIcon(t) {
   drawItemPx(g, t, Math.floor((8 - w) / 2), Math.floor((8 - h) / 2), false);
   return (iconCache[t] = c);
 }
+function cactusSprite(stage) {
+  const h = 8 + stage * 4,
+    w = 9;
+  return sp(w, h, R => {
+    R(3, 0, 3, h, '#4f8a3c');
+    R(4, 0, 1, h, '#6fae4a');
+    R(3, 0, 3, 1, '#79b955');
+    if (stage > 1) {
+      R(0, Math.floor(h * 0.35), 2, Math.floor(h * 0.25), '#4f8a3c');
+      R(1, Math.floor(h * 0.55), 2, 2, '#4f8a3c');
+    }
+    if (stage > 2) {
+      R(7, Math.floor(h * 0.2), 2, Math.floor(h * 0.25), '#4f8a3c');
+      R(6, Math.floor(h * 0.42), 2, 2, '#4f8a3c');
+    }
+    if (stage > 3) R(4, 0, 1, 1, '#e86fa0');
+  });
+}
 function treeSprite(type, stage) {
-  const pine = type === 'pine';
+  if (type === 'cactus') return cactusSprite(stage);
+  const snowy = type === 'snowpine';
+  const pine = type === 'pine' || snowy;
   const h = pine ? 12 + stage * 6 : 11 + stage * 5,
     w = pine ? 5 + stage * 3 : 7 + stage * 3;
   return sp(w, h, R => {
@@ -276,6 +296,8 @@ function treeSprite(type, stage) {
         const t = r / ch,
           lw = Math.max(1, Math.round(w * (((r % 5) / 5) * 0.3 + t * 0.7)));
         R(tx - Math.floor(lw / 2), r, lw, 1, r % 5 === 4 ? '#245230' : r % 2 ? '#2f6b3a' : '#3a7d44');
+        // snow lies on the upper edge of every branch layer
+        if (snowy && r % 5 < 2) R(tx - Math.floor(lw / 2), r, lw, 1, r % 5 ? '#e8eef4' : '#ffffff');
       }
     } else {
       R(tx - 1, h - 8, 3, 8, '#6a4526');

@@ -66,6 +66,14 @@ const tint = (c, f) => {
 };
 const PAL_LIT = PAL.map(a => a.map(c => tint(c, 1.2)));
 const PAL_DARK = PAL.map(a => a.map(c => tint(c, 0.72)));
+// the top layer of earth (shade 4-7) depends on the world type
+function setGroundTop(cols) {
+  cols.forEach((c, k) => {
+    PAL[EARTH][4 + k] = hex(c);
+    PAL_LIT[EARTH][4 + k] = tint(hex(c), 1.12);
+    PAL_DARK[EARTH][4 + k] = tint(hex(c), 0.8);
+  });
+}
 const TUN_DARK = TUN.map(c => tint(c, 0.62));
 
 // Pixel colour with simple lighting: lit top edges, shaded ceilings, dark tunnel corners
@@ -199,6 +207,7 @@ const rnd = seedParam === null ? Math.random : seeded,
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
 export {
+  setGroundTop,
   activateAll,
   markActive,
   swapActive,

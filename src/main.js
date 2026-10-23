@@ -1,3 +1,4 @@
+import { biome } from './biomes.js';
 import { updAmbience } from './ambience.js';
 import { endTutorial, startTutorial, updTutorial } from './tutorial.js';
 import { applyStatic, getLang, setLang, tr } from './i18n.js';
@@ -102,6 +103,7 @@ function startGame(withTutorial = false) {
   G.state = 'play';
   overlay.hidden = true;
   G.startT = performance.now();
+  if (!G.tut) toast('Welt: {name}', { name: tr(biome().name) });
 }
 function endScreen(won) {
   G.state = won ? 'won' : 'lost';
@@ -130,6 +132,7 @@ $('newBtn').addEventListener('click', () => {
   overlay.hidden = true;
   G.startT = performance.now();
   resetCam();
+  toast('Welt: {name}', { name: tr(biome().name) });
 });
 $('buildBtn').addEventListener('click', openBuild);
 $('mapBtn').addEventListener('click', toggleMap);

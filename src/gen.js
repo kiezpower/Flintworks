@@ -1,3 +1,4 @@
+import { biome, setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
 import { addClonk, mkAnimal, spawnItem } from './entities.js';
 import { calcTerr } from './render.js';
@@ -76,6 +77,7 @@ function topSolid(x) {
   return H;
 }
 function gen() {
+  setBiome(['meadow', 'desert', 'winter'][ri(0, 2)]);
   mat.fill(0);
   bg.fill(0);
   for (const a of [meteors, items, parts, flashes, builds, trees, crew, animals, lorries, birds, clouds])
@@ -156,6 +158,13 @@ function gen() {
     const x = ri(160, W - 15);
     blob(x, deep(x, 22), ri(3, 7), ri(2, 5), GOLD);
   }
+  // desert: thick sand cover (not under the home base)
+  if (G.biome === 'desert')
+    for (let x = 0; x < W; x++) {
+      if (x > 55 && x < 125) continue;
+      const d = 6 + Math.round(3 * Math.sin(x * 0.05) + 3);
+      for (let y = surf[x] + 1; y <= surf[x] + d; y++) if (mat[y * W + x] === EARTH) mat[y * W + x] = SAND;
+    }
   // balancing: one shallow gold vein close to the base for the first sale
   {
     const x = ri(135, 165);
@@ -197,7 +206,7 @@ function gen() {
       n++;
     }
   let tries = 0;
-  while (trees.length < 28 && tries++ < 500) {
+  while (trees.length < biome().trees && tries++ < 500) {
     const x = ri(10, W - 10);
     if (x > G.base.x - 8 && x < G.base.x + G.base.w + 8) continue;
     if (!canPlantAt(x)) continue;
@@ -276,14 +285,15 @@ function clearFoot(bx, gy, w, h) {
 }
 function canPlantAt(x) {
   const y = topSolid(x);
-  if (y >= H - 20 || mat[y * W + x] !== EARTH) return false;
+  if (y >= H - 20 || (mat[y * W + x] !== EARTH && mat[y * W + x] !== SAND)) return false;
   for (let k = -2; k <= 2; k++) if (!solid(x + k, y) || solid(x + k, y - 1)) return false;
   for (const t of trees) if (Math.abs(t.x - x) < 11) return false;
   for (const b of builds) if (x > b.x - 4 && x < b.x + b.w + 4) return false;
   return true;
 }
 function plantTree(x, stage) {
-  const type = rnd() < 0.5 ? 'pine' : 'oak';
+  const type =
+    G.biome === 'desert' ? 'cactus' : G.biome === 'winter' ? 'snowpine' : rnd() < 0.5 ? 'pine' : 'oak';
   trees.push({
     x,
     gy: topSolid(x),
