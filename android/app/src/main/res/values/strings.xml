@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Flintworks</string>
+    <string name="title_activity_main">Flintworks</string>
+    <string name="package_name">de.kiezpower.flintworks</string>
+    <string name="custom_url_scheme">de.kiezpower.flintworks</string>
+</resources>

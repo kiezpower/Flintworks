@@ -2,22 +2,13 @@
 
 Ein Aufbau- und Grabespiel mit Pixel-Physik im Stil der Klassiker, inspiriert von den Clonk-Spielen: Führe deine Crew, grabe nach Gold, fälle Bäume, baue eine Produktionskette und verkaufe alles an der Heimatbasis.
 
-Läuft komplett im Browser – auf dem Handy (Touch) und am PC (Tastatur). Eine einzige HTML-Datei, keine Abhängigkeiten, kein Build-Schritt.
+Läuft im Browser, als installierbare Web-App und als Android-App.
 
 ## Spielen
 
-Nach dem Einrichten von GitHub Pages (siehe unten) läuft das Spiel unter:
-
-```
-https://kiezpower.github.io/Flintworks/
-```
-
-### Auf dem Handy als App
-
-- **iPhone:** Seite in Safari öffnen → Teilen → „Zum Home-Bildschirm“
-- **Android:** Seite in Chrome öffnen → Menü → „App installieren“ bzw. „Zum Startbildschirm hinzufügen“
-
-Danach startet Flintworks im Vollbild, mit eigenem Icon und funktioniert auch offline. Der Spielstand wird im Browser gespeichert.
+- **Browser:** https://kiezpower.github.io/Flintworks/
+- **Handy als Web-App:** Adresse öffnen → iPhone: Teilen → „Zum Home-Bildschirm“ · Android: Menü → „App installieren“
+- **Android-App:** Unter [Releases](https://github.com/kiezpower/Flintworks/releases/latest) `flintworks.apk` herunterladen und öffnen (einmalig „Installation aus unbekannten Quellen“ erlauben)
 
 ## Steuerung
 
@@ -32,44 +23,54 @@ Danach startet Flintworks im Vollbild, mit eigenem Icon und funktioniert auch of
 | Wühler wechseln | Porträt oben links oder Wühler antippen | Tab |
 | Karte | „Karte“ | M |
 
-## Inhalte
+## Entwickeln
 
-- Zerstörbare Pixel-Landschaft: Erde, Fels, Sand, Lehm, Erz, Kohle, Gold, Wasser, Lava, Säure
-- Lava + Wasser wird Fels, Säure frisst Erde, Explosionstrümmer landen als Material
-- Crew aus mehreren Wühlern, Folgen-Modus, Nachkauf an der Basis
-- Gebäude: Hütte, Flagge, Werkstatt, Sägewerk, Windrad, Fahrstuhl, Pumpe, Hochofen, Chemiefabrik, Wachturm, Tor
-- Strom aus Windrädern, Baugebiet durch Flaggen, Burg-Ausbau in drei Stufen
-- Wipfe, Fische, Vögel, Höhlenmonster
-- Tag und Nacht, Regen, Gewitter, Meteore, Feuer
-- Synthetisierte Soundeffekte (Web Audio)
-
-## GitHub Pages einrichten
-
-1. Repository auf GitHub öffnen → **Settings** → **Pages**
-2. Unter **Build and deployment**: Source **Deploy from a branch**
-3. Branch **main**, Ordner **/ (root)** → **Save**
-4. Nach ca. einer Minute ist das Spiel unter der oben genannten Adresse erreichbar
-
-## Lokal starten
+Voraussetzung: Node.js 22 oder neuer.
 
 ```
-python3 -m http.server 8000
+npm install
+npm run dev        # Entwicklungsserver mit Live-Reload, auch im WLAN fürs Handy erreichbar
+npm run build      # fertige Web-Version in dist/
+npm run preview    # gebaute Version lokal testen
+npm run android    # Web-Version bauen und ins Android-Projekt kopieren
 ```
 
-Dann `http://localhost:8000` öffnen. (Die Datei lässt sich auch direkt per Doppelklick öffnen; Offline-Modus und App-Installation funktionieren dann aber nicht.)
+Die Android-App lässt sich lokal mit Android Studio aus dem Ordner `android/` bauen. Normalerweise ist das nicht nötig: GitHub baut sie automatisch.
 
-## Updates veröffentlichen
+## Automatische Builds
 
-1. `index.html` ändern
-2. In `sw.js` die Konstante `VERSION` erhöhen (z. B. `flintworks-v2`), damit Handys die neue Version laden
-3. Committen und pushen – GitHub Pages aktualisiert automatisch
+| Workflow | Auslöser | Ergebnis |
+|---|---|---|
+| `pages.yml` | Push auf `main` | Web-Version auf GitHub Pages |
+| `android.yml` | Push auf `main` | `flintworks.apk` als neues Release |
+
+Einmalig einrichten: **Settings → Pages → Source: GitHub Actions**.
 
 ## Projektstruktur
 
 ```
-index.html             Das komplette Spiel (HTML, CSS, JavaScript)
-manifest.webmanifest   App-Beschreibung für „Zum Startbildschirm“
-sw.js                  Service Worker für Offline-Betrieb
-icons/                 App-Icons
-.nojekyll              GitHub Pages ohne Jekyll ausliefern
+index.html            Seitengerüst (HUD, Knöpfe, Dialoge)
+src/
+  main.js             Start, Spielschleife, Start-/Endbildschirm
+  state.js            Gemeinsamer Spielzustand (Objekt G, Listen)
+  world.js            Materialien, Pixel-Welt, Kollision
+  sim.js              Fallende Pixel: Sand, Wasser, Lava, Säure
+  gen.js              Weltgenerator
+  entities.js         Wühler, Tiere, Gegenstände anlegen; Bewegung
+  clonk.js            Wühler-Steuerung, Graben, Klettern, Aktionen
+  buildings.js        Gebäude, Produktion, Strom, Gebiet
+  objects.js          Gegenstände, Bäume, Tiere, Explosionen, Partikel
+  weather.js          Tag/Nacht, Regen, Gewitter, Meteore
+  sound.js            Synthetisierte Soundeffekte
+  input.js            Tastatur, Touch-Stick, Knöpfe
+  render.js           Zeichnen der Spielwelt
+  ui.js               HUD, Menüs, Karte, Tipps
+  save.js             Spielstand im Browser speichern
+  sprites.js          Pixel-Grafiken
+  debug.js            Test-Zugang, nur im Entwicklungsmodus
+  style.css           Gestaltung
+public/icons/         App-Icons
+android/              Android-Projekt (Capacitor)
 ```
+
+Regel: keine Datei über 1000 Zeilen.

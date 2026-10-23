@@ -1,0 +1,44 @@
+# Baut bei jedem Push eine installierbare Android-App (APK) und hängt sie an ein Release.
+name: Android-App bauen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - run: npm ci
+      - run: npm run android
+      - name: APK bauen
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk flintworks.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flintworks-apk
+          path: flintworks.apk
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-${{ github.run_number }}
+          name: Flintworks Android ${{ github.run_number }}
+          body: APK zum Installieren auf Android. Automatisch gebaut aus ${{ github.sha }}.
+          files: flintworks.apk
+          make_latest: true
