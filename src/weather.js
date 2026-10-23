@@ -121,8 +121,7 @@ function lightning() {
       startTumble(c, (rnd() - 0.5) * 3, -2);
       c.burn = 120;
     }
-  for (let q = 0; q < 10; q++)
-    parts.push({ x, y: gy - 1, vx: (rnd() - 0.5) * 2, vy: -rnd() * 2, l: 15, c: '#fff6c0' });
+  for (let q = 0; q < 10; q++) parts.push({ x, y: gy - 1, vx: (rnd() - 0.5) * 2, vy: -rnd() * 2, l: 15, c: '#fff6c0' });
 }
 function sunAlt() {
   return Math.sin(2 * Math.PI * G.dayT);

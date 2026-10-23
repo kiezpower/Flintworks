@@ -86,10 +86,7 @@ const colorOf = i => {
   if (m === AIR) {
     if (!bg[i]) return 0;
     const wall =
-      (i >= W && SOLID[mat[i - W]]) ||
-      (i < W * (H - 1) && SOLID[mat[i + W]]) ||
-      SOLID[mat[i - 1]] ||
-      SOLID[mat[i + 1]];
+      (i >= W && SOLID[mat[i - W]]) || (i < W * (H - 1) && SOLID[mat[i + W]]) || SOLID[mat[i - 1]] || SOLID[mat[i + 1]];
     return wall ? TUN_DARK[k] : TUN[k];
   }
   if (i >= W && mat[i - W] === AIR) return PAL_LIT[m][k];

@@ -147,8 +147,7 @@ function simulate() {
             hasAcid = true;
             if (rnd() < 0.03) {
               const r = (rnd() * 4) | 0,
-                j =
-                  r === 0 ? i - W : r === 1 ? i + W : r === 2 ? (x > 0 ? i - 1 : -1) : x < W - 1 ? i + 1 : -1;
+                j = r === 0 ? i - W : r === 1 ? i + W : r === 2 ? (x > 0 ? i - 1 : -1) : x < W - 1 ? i + 1 : -1;
               if (j >= 0 && j < W * H) {
                 const mj = mat[j];
                 if (mj === EARTH || mj === SAND || mj === LOAM) {

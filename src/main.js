@@ -1,3 +1,5 @@
+import { updMusic } from './music.js';
+import { updFloats } from './floats.js';
 import { updDecor } from './decor.js';
 import { chosenBiome, hideLobby, lobbyFrame, lobbyOpen, showLobby } from './lobby.js';
 import { P, finishGame } from './profile.js';
@@ -19,7 +21,7 @@ import { audioInit } from './sound.js';
 import { G, animals, builds, crew, lorries } from './state.js';
 import { $, checkHints, closePanel, drawMini, hud, openBuild, panelEl, toast, toastEl, toggleMap } from './ui.js';
 import { updWeather } from './weather.js';
-import { GOAL, H, W, clamp } from './world.js';
+import { GOAL, H, W, clamp, surf } from './world.js';
 
 // ---- Screens & loop ----
 const overlay = $('overlay'),
@@ -163,6 +165,7 @@ function step() {
         animals.splice(k, 1);
       }
     updTrees();
+    updFloats();
     for (let k = crew.length - 1; k >= 0; k--)
       if (crew[k].dead && crew[k].deadT > 620) {
         crew.splice(k, 1);
@@ -215,6 +218,12 @@ function loop(t) {
   if (n === 4) G.acc = 0;
   if (lobbyOpen()) lobbyFrame();
   else render();
+  {
+    const s = sel_();
+    updMusic(
+      lobbyOpen() ? 'lobby' : s && s.y > surf[Math.max(0, Math.min(W - 1, Math.floor(s.x)))] + 30 ? 'cave' : 'game',
+    );
+  }
   G.tick++;
   if (G.tick % 5 === 0) hud();
   if (G.tick % 10 === 0) drawMini(G.tick % 60 === 0);

@@ -1,3 +1,4 @@
+import { drawFloats } from './floats.js';
 import { drawDecor } from './decor.js';
 import { biome } from './biomes.js';
 import { drawGemSparkles, drawLavaGlow, drawMountains, drawWaterGlints, scanLava } from './effects.js';
@@ -631,6 +632,7 @@ function render() {
     for (let k = 0; k < lava.length; k += 8) light(lava[k], lava[k + 1], 16, 0.7);
     ctx.drawImage(lc, 0, 0);
   }
+  drawFloats(ctx, cx, cy);
   drawTutorial(ctx, cx, cy);
 }
 function drawFlag(x, y, pole, len) {

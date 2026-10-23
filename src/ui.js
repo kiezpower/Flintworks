@@ -1,3 +1,4 @@
+import { addFloat } from './floats.js';
 import { sold } from './profile.js';
 import {
   BASELV,
@@ -295,6 +296,7 @@ function openBase() {
     if (performance.now() - G.panelT < 450) return;
     G.money += val;
     sold(c.inv, val);
+    addFloat(G.base.x + G.base.w / 2, G.base.gy - G.base.h - 4, '+' + val, '#f2c230');
     c.inv = [];
     c.isel = 0;
     sfx('coin');

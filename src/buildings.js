@@ -1,3 +1,4 @@
+import { addFloat } from './floats.js';
 import { sold, track } from './profile.js';
 import { tr } from './i18n.js';
 import { digCell, lorryNear, onCase, spawnFromDig } from './clonk.js';
@@ -501,6 +502,7 @@ function updLorry(L) {
     const v = sellVal(L.items);
     G.money += v;
     sold(L.items, v);
+    addFloat(G.base.x + G.base.w / 2, G.base.gy - G.base.h - 4, '+' + v, '#f2c230');
     toast('Lore verkauft: +{v} Taler', { v });
     sfx('coin', L.x, L.y);
     L.items = [];

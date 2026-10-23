@@ -1,3 +1,4 @@
+import { addFloat } from './floats.js';
 import { track } from './profile.js';
 import { dust, splash } from './effects.js';
 import { PROD } from './buildings.js';
@@ -35,6 +36,7 @@ import {
 function hurt(c, a, silent) {
   if (c.dead) return;
   c.energy -= a;
+  if (a >= 5) addFloat(c.x + 3, c.y - 3, '-' + Math.round(a), '#ff6a5a');
   c.hurt = 12;
   if (!silent && a > 3) sfx('hurt', c.x, c.y);
   if (c.energy <= 0) killClonk(c);

@@ -2,6 +2,9 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  Musik: 'Music',
+  'Musik an': 'Music on',
+  'Musik aus': 'Music off',
   Lobby: 'Lobby',
   Aufgaben: 'Quests',
   Welt: 'World',

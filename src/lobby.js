@@ -260,6 +260,15 @@ function openOptions() {
     },
   });
   opt(l, {
+    title: tr(P.music === false ? 'Musik aus' : 'Musik an'),
+    sub: tr('Musik'),
+    onClick: () => {
+      P.music = P.music === false;
+      saveProfile();
+      openOptions();
+    },
+  });
+  opt(l, {
     title: tr('Tutorial spielen'),
     sub: tr('Neue Welt mit Anleitung'),
     onClick: () => {

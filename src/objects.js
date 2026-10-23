@@ -1,3 +1,4 @@
+import { addFloat } from './floats.js';
 import { track } from './profile.js';
 import { splash } from './effects.js';
 import { arrows } from './buildings.js';
@@ -162,13 +163,21 @@ function updItems() {
       }
       if (items[k] !== it) continue;
     }
-    // pickup
+    // pickup: items roll towards a Wühler standing close by, then get collected
     if (it.pd <= 0 && sp < 1.5 && it.fuse < 0) {
       for (const c of crew) {
-        if (c.dead || c.tumble || c.inv.length >= 5 || !overlap(it, c, 1)) continue;
+        if (c.dead || c.tumble || c.inv.length >= 5) continue;
+        const dx = c.x + 3 - (it.x + it.w / 2),
+          dy = c.y + 5 - (it.y + it.h / 2);
+        if (Math.abs(dx) < 12 && Math.abs(dy) < 10 && !overlap(it, c, 1)) {
+          it.vx += Math.max(-0.25, Math.min(0.25, dx * 0.05));
+          continue;
+        }
+        if (!overlap(it, c, 1)) continue;
         items.splice(k, 1);
         c.inv.push(it.t);
         sfx('pick', c.x, c.y);
+        addFloat(c.x + 3, c.y - 4, '+1', '#ffffff', it.t);
         break;
       }
     }

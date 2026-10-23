@@ -36,11 +36,7 @@ function updAmbience() {
   const outside = !!c && c.y < surf[clamp(Math.floor(c.x), 0, W - 1)] + 12;
   const on = G.muted ? 0 : 1,
     t = G.AC.currentTime;
-  loops.rain.gain.setTargetAtTime(
-    on * (G.rainT > 0 && G.biome !== 'winter' ? (outside ? 0.12 : 0.035) : 0),
-    t,
-    0.8,
-  );
+  loops.rain.gain.setTargetAtTime(on * (G.rainT > 0 && G.biome !== 'winter' ? (outside ? 0.12 : 0.035) : 0), t, 0.8);
   loops.wind.gain.setTargetAtTime(on * (outside ? 0.012 + G.wind * 0.03 : 0.004), t, 1.5);
   if (!on || !outside) return;
   const dark = darkness();
