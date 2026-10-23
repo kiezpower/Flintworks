@@ -1,3 +1,4 @@
+import { chestNear, openChest } from './treasure.js';
 import { addFloat } from './floats.js';
 import { track } from './profile.js';
 import { dust, splash } from './effects.js';
@@ -496,6 +497,8 @@ function context(c) {
         },
       };
   }
+  const ch = chestNear(c);
+  if (ch) return { label: 'Öffnen', fn: () => openChest(ch) };
   const L = lorryNear(c);
   if (L) return { label: 'Lore', fn: () => lorryAct(c, L) };
   const t = nearTree(c);

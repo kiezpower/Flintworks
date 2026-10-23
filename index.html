@@ -33,6 +33,9 @@
             <div class="who" id="whoTxt"></div>
             <div class="who pwr" id="pwrTxt" hidden></div>
             <div class="money"><span class="coin"></span><span id="moneyTxt">0</span></div>
+            <div class="goal" id="goalWrap" hidden>
+              <span id="goalTxt"></span><span class="gbar"><b id="goalBar"></b></span>
+            </div>
             <div class="bar" title="Energie" data-i18n-title="Energie">
               <b id="hpBar"></b>
             </div>
@@ -152,6 +155,9 @@
           <span id="lbRoadTxt"></span>
         </button>
         <div class="lb-play">
+          <button class="lb-mode lb-gmode" id="lbGMode">
+            <small data-i18n="Modus">Modus</small><b id="lbGModeTxt">Goldrausch</b><em id="lbGModeDesc"></em>
+          </button>
           <button class="lb-mode" id="lbMode"><small data-i18n="Welt">Welt</small><b id="lbModeTxt">Zufall</b></button>
           <button class="lb-go" id="lbPlay">
             <span id="lbPlayTxt">Spielen</span>

@@ -53,6 +53,9 @@ function saveGame() {
       money: G.money,
       earned: G.earned || 0,
       biome: G.biome,
+      mode: G.mode,
+      chests: G.chests,
+      chestsFound: G.chestsFound,
       sel: G.sel,
       dayT: G.dayT,
       frame: G.frame,
@@ -113,6 +116,9 @@ function loadGame() {
     G.earned = d.earned || 0;
     G.sel = d.sel;
     G.dayT = d.dayT;
+    G.mode = d.mode || 'gold';
+    G.chests = d.chests || [];
+    G.chestsFound = d.chestsFound || 0;
     G.hintsSeen = new Set(d.hints || []);
     crew.push(...d.crew.map(c => ({ ...c, chop: null, bridge: null })));
     items.push(...d.items.map(it => ({ ...it, thrower: null })));

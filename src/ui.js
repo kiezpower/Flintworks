@@ -1,3 +1,7 @@
+import { GAME_MODES, mode } from './modes.js';
+const goalWrap = document.getElementById('goalWrap'),
+  goalTxt = document.getElementById('goalTxt'),
+  goalBar = document.getElementById('goalBar');
 import { addFloat } from './floats.js';
 import { sold } from './profile.js';
 import {
@@ -27,7 +31,7 @@ import { ITEM, SPR, itemIcon, padIcon } from './sprites.js';
 import { tr } from './i18n.js';
 import { G, animals, builds, crew, lorries } from './state.js';
 import { darkness } from './weather.js';
-import { AIR, GOAL, GOLD, H, MINI, ROCK, W, bg, hex, mat, matAt } from './world.js';
+import { AIR, GOLD, H, MINI, ROCK, W, bg, hex, mat, matAt } from './world.js';
 
 // ---- HUD, panels, minimap ----
 const $ = id => document.getElementById(id);
@@ -56,7 +60,17 @@ G.invKey = '';
 G.crewKey = '';
 function hud() {
   const c = sel_();
-  moneyTxt.textContent = tr('{money} / {goal} Taler', { money: G.money, goal: GOAL });
+  const M = mode();
+  const goldMode = M === GAME_MODES.gold;
+  moneyTxt.textContent = goldMode
+    ? tr('{money} / {goal} Taler', { money: G.money, goal: M.goal })
+    : tr('{money} Taler', { money: G.money });
+  goalWrap.hidden = goldMode;
+  if (!goldMode) {
+    const p = Math.min(M.goal, M.prog());
+    goalTxt.textContent = `${tr(M.name)} ${p}/${M.goal}`;
+    goalBar.style.width = (p / M.goal) * 100 + '%';
+  }
   const hasPwr = builds.some(b => b.done && (b.type === 'wind' || PWR[b.type]));
   pwrTxt.hidden = !hasPwr;
   if (hasPwr) {
@@ -151,6 +165,13 @@ function drawMini(full) {
       mctx.fillStyle = '#ff4040';
       mctx.fillRect(Math.floor(a.x / K) - 1, Math.floor(a.y / K) - 1, 4, 4);
     }
+  // treasure hunt: closed chests are marked on the map
+  if (G.mode === 'treasure' && G.chests)
+    for (const ch of G.chests)
+      if (!ch.open) {
+        mctx.fillStyle = (G.tick >> 4) & 1 ? '#ffe066' : '#b8860b';
+        mctx.fillRect(Math.floor(ch.x / K) - 1, Math.floor(ch.y / K) - 1, 5, 4);
+      }
   crew.forEach((c, n) => {
     if (c.dead) return;
     mctx.fillStyle = n === G.sel ? '#ffffff' : c.cap;

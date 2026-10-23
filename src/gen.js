@@ -1,3 +1,4 @@
+import { placeChests } from './treasure.js';
 import { scatterDecor } from './decor.js';
 import { biome, setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
@@ -68,6 +69,7 @@ function topSolid(x) {
 function gen() {
   setBiome(G.nextBiome || ['meadow', 'desert', 'winter'][ri(0, 2)]);
   G.earned = 0;
+  G.mode = G.nextMode || 'gold';
   mat.fill(0);
   bg.fill(0);
   for (const a of [meteors, items, parts, flashes, builds, trees, crew, animals, lorries, birds, clouds]) a.length = 0;
@@ -170,6 +172,7 @@ function gen() {
       }
     }
   }
+  placeChests();
   for (let x = 0; x < W; x++)
     for (let y = surf[x] + 1; y <= surf[x] + 3; y++) {
       const i = y * W + x;

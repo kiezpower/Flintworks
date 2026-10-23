@@ -615,3 +615,21 @@ button:focus-visible {
   width: 32px;
   height: 32px;
 }
+
+.goal {
+  display: grid;
+  gap: 2px;
+  font-size: 11px;
+  color: #ffe39a;
+}
+.gbar {
+  height: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.gbar b {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}

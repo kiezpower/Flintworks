@@ -21,11 +21,12 @@ const QUESTS = {
   chop: { text: 'Fälle {n} Bäume', n: [4, 6, 8], xp: 40 },
   monster: { text: 'Besiege {n} Monster', n: [1, 2], xp: 80 },
   gem: { text: 'Finde {n} Edelsteine', n: [1, 2, 3], xp: 80 },
+  chest: { text: 'Öffne {n} Schatztruhen', n: [1, 2], xp: 80 },
   gold: { text: 'Verkaufe {n} Goldnuggets', n: [4, 6, 10], xp: 60 },
 };
 // hats unlock by level or trophies
 const unlockText = h => (h.lvl ? `Level ${h.lvl}` : h.t ? `${h.t} 🏆` : '');
-const XP = { sell: 0.2, build: 25, chop: 8, monster: 40, gem: 20, gold: 0, tutorial: 60 };
+const XP = { sell: 0.2, build: 25, chop: 8, monster: 40, gem: 20, gold: 0, tutorial: 60, chest: 30 };
 
 const today = () => new Date().toISOString().slice(0, 10);
 const P = {
@@ -120,13 +121,13 @@ function sold(list, v) {
   if (n) track('gold', n);
 }
 // End of a run: trophies for wins, a few for every 50 Taler earned
-function finishGame(won, earned) {
+function finishGame(won, earned, stars = 1) {
   P.games++;
   let t = Math.floor(earned / 50);
   if (won) {
     P.wins++;
-    t += 30;
-    addXp(150);
+    t += 10 + stars * 10;
+    addXp(100 + stars * 50);
   } else t -= 3;
   P.trophies = Math.max(0, P.trophies + t);
   unlockHats();

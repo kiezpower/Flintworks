@@ -1,3 +1,4 @@
+import { GAME_MODES, MODE_IDS, mode } from './modes.js';
 // Lobby between games: the player's Wühler on a stage, resources on top, menus left, play button right.
 import { BIOMES } from './biomes.js';
 import './lobby.css';
@@ -150,6 +151,11 @@ function refresh() {
   setTxt('lbPlayTxt', tr(run ? 'Weiterspielen' : 'Spielen'));
   $('lbNew').hidden = !run;
   $('lbMode').disabled = run;
+  const GM = GAME_MODES[P.gmode || 'gold'];
+  $('lbGMode').disabled = run;
+  setTxt('lbGModeTxt', tr(run ? mode().name : GM.name));
+  const gm = run ? mode() : GM;
+  setTxt('lbGModeDesc', tr(gm.desc, { goal: gm.goal }));
   setTxt('lbModeTxt', tr(run ? BIOMES[G.biome].name : MODE_NAME[P.mode || 'random']));
 }
 
@@ -324,6 +330,12 @@ tap('lbSlot2', openInvite);
 tap('lbQuest', openQuests);
 tap('lbRoad', openWho);
 tap('lbOpt', openOptions);
+tap('lbGMode', () => {
+  const m = P.gmode || 'gold';
+  P.gmode = MODE_IDS[(MODE_IDS.indexOf(m) + 1) % MODE_IDS.length];
+  saveProfile();
+  refresh();
+});
 tap('lbMode', () => {
   const m = P.mode || 'random';
   P.mode = MODES[(MODES.indexOf(m) + 1) % MODES.length];

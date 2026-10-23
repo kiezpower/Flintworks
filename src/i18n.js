@@ -2,6 +2,19 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  Modus: 'Mode',
+  Goldrausch: 'Gold rush',
+  Siedler: 'Settler',
+  Schatzsucher: 'Treasure hunter',
+  'Verdiene {goal} Taler': 'Earn {goal} coins',
+  'Errichte {goal} verschiedene Gebäude': 'Put up {goal} different buildings',
+  'Finde {goal} Schatztruhen': 'Find {goal} treasure chests',
+  'Zeit {time}': 'Time {time}',
+  '3 Sterne unter {a} Min., 2 Sterne unter {b} Min.': '3 stars under {a} min, 2 stars under {b} min',
+  '{money} Taler': '{money} coins',
+  Öffnen: 'Open',
+  'Schatztruhe geöffnet!': 'Treasure chest opened!',
+  'Öffne {n} Schatztruhen': 'Open {n} treasure chests',
   'Mitspieler einladen': 'Invite players',
   'Grabt bald zu dritt in einer Welt. Der Multiplayer ist in Arbeit – dein Raum ist schon reserviert.':
     'Soon you can dig together, three in one world. Multiplayer is in the works – your room is already reserved.',

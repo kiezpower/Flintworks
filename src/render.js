@@ -1,3 +1,4 @@
+import { drawChests } from './treasure.js';
 import { drawBuildFx, drawWindowGlow } from './bfx.js';
 import { drawFloats } from './floats.js';
 import { drawDecor } from './decor.js';
@@ -511,6 +512,7 @@ function render() {
     ctx.fillRect(x + 2 + wr, y + 5, 1, 1);
     ctx.fillRect(x + 9 + wr, y + 5, 1, 1);
   }
+  drawChests(ctx, cx, cy);
   // items
   for (const it of items) {
     const x = Math.floor(it.x - cx),

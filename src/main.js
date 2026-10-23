@@ -1,3 +1,4 @@
+import { goalReached, mode, starsFor } from './modes.js';
 import { updBuildFx } from './bfx.js';
 import { updMusic } from './music.js';
 import { updFloats } from './floats.js';
@@ -22,7 +23,7 @@ import { audioInit } from './sound.js';
 import { G, animals, builds, crew, lorries } from './state.js';
 import { $, checkHints, closePanel, drawMini, hud, openBuild, panelEl, toast, toastEl, toggleMap } from './ui.js';
 import { updWeather } from './weather.js';
-import { GOAL, H, W, clamp, surf } from './world.js';
+import { H, W, clamp, surf } from './world.js';
 
 // ---- Screens & loop ----
 const overlay = $('overlay'),
@@ -57,6 +58,7 @@ function play(withTutorial) {
       G.crewKey = G.invKey = '';
     } else {
       G.nextBiome = chosenBiome();
+      G.nextMode = P.gmode || 'gold';
       gen();
       if (!P.tutorialDone) withTutorial = true;
     }
@@ -65,6 +67,7 @@ function play(withTutorial) {
     startGame(withTutorial);
     return;
   }
+  G.startT += performance.now() - (G.pauseAt || performance.now());
   startGame('resume');
 }
 function discard() {
@@ -93,11 +96,15 @@ function endScreen(won) {
   closePanel();
   clearSave();
   G.inRun = false;
-  const tro = finishGame(won, G.earned || 0);
   const s = Math.round((performance.now() - G.startT) / 1000);
+  const stars = won ? starsFor(s) : 0;
+  const tro = finishGame(won, G.earned || 0, stars);
   const time = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  const M = mode();
   card.innerHTML = won
-    ? `<h1>${tr('Geschafft')}</h1><p>${tr('{goal} Taler in {time} Minuten.', { goal: GOAL, time })}</p>`
+    ? `<h1>${tr('Geschafft')}</h1><p class="stars">${'★'.repeat(stars)}<span>${'★'.repeat(3 - stars)}</span></p>
+       <p>${tr(M.name)} · ${tr(M.desc, { goal: M.goal })} · ${tr('Zeit {time}', { time })}</p>
+       <p class="hint">${tr('3 Sterne unter {a} Min., 2 Sterne unter {b} Min.', { a: M.stars[0], b: M.stars[1] })}</p>`
     : `<h1>${tr('Crew verloren')}</h1><p>${tr('Alle Wühler sind erschöpft und die Kasse reicht für keinen neuen.')}</p>`;
   card.innerHTML += `<p class="trophy-gain">${tr('{n} Trophäen', { n: (tro >= 0 ? '+' : '') + tro })}</p><button class="go" id="goBtn">${tr('Zur Lobby')}</button>`;
   $('goBtn').onclick = () => {
@@ -108,6 +115,7 @@ function endScreen(won) {
 }
 $('newBtn').addEventListener('click', () => {
   saveGame();
+  G.pauseAt = performance.now();
   closePanel();
   menu();
 });
@@ -179,7 +187,7 @@ function step() {
     if (G.frame % 30 === 0) updDecor();
     if (G.frame % 60 === 0) checkHints();
     if (G.frame % 3600 === 0) saveGame();
-    if (G.money >= GOAL) endScreen(true);
+    if (goalReached()) endScreen(true);
     else if (!crew.some(c => !c.dead)) {
       if (G.money >= 60) {
         G.money -= 60;
