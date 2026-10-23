@@ -1,5 +1,5 @@
-// Offline-Cache für Wühlwelt. Bei neuen Versionen VERSION erhöhen.
-const VERSION = 'wuehlwelt-v1';
+// Offline-Cache für Flintworks. Bei neuen Versionen VERSION erhöhen.
+const VERSION = 'flintworks-v1';
 const ASSETS = [
   './',
   './index.html',

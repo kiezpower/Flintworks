@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>Wühlwelt</title>
+<title>Flintworks</title>
 <meta name="description" content="Grabe, baue und sprenge dich durch eine Pixelwelt – ein Aufbauspiel im Stil der Klassiker.">
 <meta name="theme-color" content="#1a120c">
 <link rel="manifest" href="manifest.webmanifest">
@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Wühlwelt">
+<meta name="apple-mobile-web-app-title" content="Flintworks">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Silkscreen&display=swap">
@@ -630,7 +630,7 @@ function addClonk(x,y){
   const n=crew.length;
   const c={kind:'clonk',name:NAMES[n%NAMES.length],cap:CAPS[n%CAPS.length],x,y,w:6,h:10,vx:0,vy:0,face:1,
     energy:100,breath:100,inv:[],isel:0,anim:0,hurt:0,climb:false,hangle:false,tumble:false,rot:0,getup:0,
-    digging:false,digDir:[0,1],chop:null,bridge:null,hammer:false,dead:false,deadT:0,fallV:0,burn:0};
+    digging:false,digDir:[0,1],chop:null,bridge:null,hammer:false,dead:false,deadT:0,burn:0};
   crew.push(c);return c;
 }
 function mkAnimal(kind,x,y){
@@ -1685,8 +1685,7 @@ function render(){
         for(let yy=sy+b.h-1;yy>=sy;yy-=5)ctx.fillRect(sx,yy,b.w,1);
       }
       if(b.type==='base'){
-        const fx0=sx+4,fy0=sy-10;ctx.fillStyle='#4a3a2a';ctx.fillRect(fx0,fy0,1,14);
-        for(let k=0;k<7;k++){const o=Math.round(Math.sin(frame*.12+k*.8)*1);ctx.fillStyle=k%2?'#c8402c':'#d8553c';ctx.fillRect(fx0+1+k,fy0+o,1,4);}
+        drawFlag(sx+4,sy-10,14,7);
       }
       if(b.type==='shop'&&b.busy){ctx.fillStyle=(frame>>3)&1?'#ffe066':'#ff9a3a';ctx.fillRect(sx+15,sy+9,6,3);}
       if(b.type==='base'&&lvl()>=2){
@@ -1708,8 +1707,7 @@ function render(){
         ctx.fillStyle='#a69e92';ctx.fillRect(sx,sy,2,16);ctx.fillRect(sx+6,sy,2,16);
       }
       if(b.done&&b.type==='flag'){
-        ctx.fillStyle='#4a3a2a';ctx.fillRect(sx,sy,1,18);
-        for(let k=0;k<6;k++){const o=Math.round(Math.sin(frame*.12+k*.8));ctx.fillStyle=k%2?'#c8402c':'#d8553c';ctx.fillRect(sx+1+k,sy+1+o,1,4);}
+        drawFlag(sx,sy,18,6);
       }
       if(b.done&&(b.type==='furnace')&&b.busy){ctx.fillStyle=(frame>>2)&1?'#ffcf4a':'#ff7a2a';ctx.fillRect(sx+6,sy+15,6,7);}
     }
@@ -1786,6 +1784,10 @@ function render(){
     for(const c of crew)if(c.burn>0)light(c.x+3-cx,c.y+4-cy,24,.9);
     ctx.drawImage(lc,0,0);
   }
+}
+function drawFlag(x,y,pole,len){
+  ctx.fillStyle='#4a3a2a';ctx.fillRect(x,y,1,pole);
+  for(let k=0;k<len;k++){const o=Math.round(Math.sin(frame*.12+k*.8));ctx.fillStyle=k%2?'#c8402c':'#d8553c';ctx.fillRect(x+1+k,y+1+o,1,4);}
 }
 function hills(cx,cy,par,base0,amp,col,ph){
   ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,VH);
@@ -2004,7 +2006,7 @@ addEventListener('pagehide',saveGame);
 // =====================================================================
 const overlay=$('overlay'),card=$('card');
 function menu(){
-  card.innerHTML=`<h1>Wühlwelt</h1>
+  card.innerHTML=`<h1>Flintworks</h1>
   <p>Führe deine Crew: fällt Bäume, grabt nach Gold, baut Gebäude und verkauft alles an der Heimatbasis. Ziel sind ${GOAL} Taler.</p>
   <dl class="keys touchonly"><dt>Stick links</dt><dd>laufen, klettern, Grabrichtung; nach oben schnippen = springen</dd><dt>Graben</dt><dd>halten oder kurz tippen zum Dauergraben; gräbt gerade; Stick schräg runter/hoch gräbt schräg</dd><dt>Wurf</dt><dd>Stick hoch = Bogen, runter = ablegen</dd><dt>Aktion</dt><dd>Fällen, Basis, Lore, Brücke, Bauen</dd><dt>Oben links</dt><dd>Wühler wechseln</dd></dl>
   <dl class="keys keyonly"><dt>Pfeile / WASD</dt><dd>laufen, klettern, hangeln, schwimmen</dd><dt>Leertaste</dt><dd>springen</dd><dt>Shift / X</dt><dd>graben: gerade, mit ↓/↑ schräg</dd><dt>E</dt><dd>werfen (Q wechselt, 1–5 wählt)</dd><dt>F</dt><dd>Aktion: Fällen, Basis, Lore, Brücke</dd><dt>B · Tab · M</dt><dd>Bauen · Wühler wechseln · Karte</dd></dl>
@@ -2012,7 +2014,13 @@ function menu(){
   <p class="hint touchonly">Im Querformat spielt es sich am besten.</p>
   <div class="btnrow">${hasSave()?'<button class="go" id="contBtn">Weiterspielen</button><button class="ghost" id="goBtn">Neue Welt</button>':'<button class="go" id="goBtn">Losgraben</button>'}</div>
   <p class="hint">Der Spielstand wird in diesem Browser gespeichert.</p>`;
-  $('goBtn').onclick=()=>{if(hasSave()){clearSave();gen();resetCam();}startGame();};
+  $('goBtn').onclick=()=>{
+    if(hasSave()){
+      if(performance.now()-newArmed>3000){newArmed=performance.now();$('goBtn').textContent='Sicher? Nochmal tippen';return;}
+      clearSave();gen();resetCam();
+    }
+    startGame();
+  };
   if($('contBtn'))$('contBtn').onclick=()=>{if(loadGame()){resetCam();crewKey='';invKey='';}startGame();};
   overlay.hidden=false;
 }
@@ -2028,7 +2036,10 @@ function endScreen(won){
     :`<h1>Crew verloren</h1><p>Alle Wühler sind erschöpft und die Kasse reicht für keinen neuen.</p><button class="go" id="goBtn">Neue Welt</button>`;
   $('goBtn').onclick=startGame;overlay.hidden=false;
 }
-$('newBtn').addEventListener('click',()=>{clearSave();gen();state='play';overlay.hidden=true;startT=performance.now();resetCam();});
+let newArmed=0;
+$('newBtn').addEventListener('click',()=>{
+  if(performance.now()-newArmed>3000){newArmed=performance.now();toast('Nochmal tippen: neue Welt starten, Fortschritt geht verloren');return;}
+  newArmed=0;clearSave();gen();state='play';overlay.hidden=true;startT=performance.now();resetCam();});
 $('buildBtn').addEventListener('click',openBuild);
 $('mapBtn').addEventListener('click',toggleMap);
 $('zoomBtn').addEventListener('click',()=>{zoomAdj=zoomAdj>=1?-1:zoomAdj+1;try{localStorage.setItem('wuehlwelt-zoom',zoomAdj);}catch(_){}resize();toast(zoomAdj>0?'Nah':zoomAdj<0?'Weit':'Normal');});
@@ -2079,7 +2090,6 @@ function loop(t){
   if(tick%10===0)drawMini(tick%60===0);
   requestAnimationFrame(loop);
 }
-window.__ww={solidAt:(x,y)=>solid(x,y)||LIQ[matAt(x,y)]===1,power:()=>power,get base(){return base},calcTerr,terrOK,meteor:()=>{meteorNext=1},step:n=>{for(let i=0;i<n;i++)step();},save:()=>saveGame(),load:()=>loadGame(),hasSave,ignite,get crew(){return crew},get items(){return items},get builds(){return builds},get trees(){return trees},get animals(){return animals},get lorries(){return lorries},get money(){return money},set money(v){money=v},get state(){return state},inp,edge,keys,held,explode,tryBuild,openBase,frame:()=>frame,setDay:v=>{dayT=v},rain:()=>{rainT=600},bolt:()=>lightning()};
 gen();resize();resetCam();hud();menu();
 requestAnimationFrame(loop);
 })();

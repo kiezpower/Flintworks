@@ -1,6 +1,6 @@
-# Wühlwelt
+# Flintworks
 
-Ein Aufbau- und Grabespiel mit Pixel-Physik im Stil der Klassiker: Führe deine Crew, grabe nach Gold, fälle Bäume, baue eine Produktionskette und verkaufe alles an der Heimatbasis.
+Ein Aufbau- und Grabespiel mit Pixel-Physik im Stil der Klassiker, inspiriert von den Clonk-Spielen: Führe deine Crew, grabe nach Gold, fälle Bäume, baue eine Produktionskette und verkaufe alles an der Heimatbasis.
 
 Läuft komplett im Browser – auf dem Handy (Touch) und am PC (Tastatur). Eine einzige HTML-Datei, keine Abhängigkeiten, kein Build-Schritt.
 
@@ -9,7 +9,7 @@ Läuft komplett im Browser – auf dem Handy (Touch) und am PC (Tastatur). Eine 
 Nach dem Einrichten von GitHub Pages (siehe unten) läuft das Spiel unter:
 
 ```
-https://<dein-github-name>.github.io/wuehlwelt/
+https://kiezpower.github.io/Flintworks/
 ```
 
 ### Auf dem Handy als App
@@ -17,7 +17,7 @@ https://<dein-github-name>.github.io/wuehlwelt/
 - **iPhone:** Seite in Safari öffnen → Teilen → „Zum Home-Bildschirm“
 - **Android:** Seite in Chrome öffnen → Menü → „App installieren“ bzw. „Zum Startbildschirm hinzufügen“
 
-Danach startet Wühlwelt im Vollbild, mit eigenem Icon und funktioniert auch offline. Der Spielstand wird im Browser gespeichert.
+Danach startet Flintworks im Vollbild, mit eigenem Icon und funktioniert auch offline. Der Spielstand wird im Browser gespeichert.
 
 ## Steuerung
 
@@ -61,7 +61,7 @@ Dann `http://localhost:8000` öffnen. (Die Datei lässt sich auch direkt per Dop
 ## Updates veröffentlichen
 
 1. `index.html` ändern
-2. In `sw.js` die Konstante `VERSION` erhöhen (z. B. `wuehlwelt-v2`), damit Handys die neue Version laden
+2. In `sw.js` die Konstante `VERSION` erhöhen (z. B. `flintworks-v2`), damit Handys die neue Version laden
 3. Committen und pushen – GitHub Pages aktualisiert automatisch
 
 ## Projektstruktur
