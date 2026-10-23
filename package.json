@@ -7,10 +7,12 @@
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview --host",
-    "android": "vite build && cap sync android"
+    "android": "vite build && cap sync android",
+    "test": "playwright test"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.3",
+    "@playwright/test": "^1.64.1",
     "vite": "^8.3.5",
     "vite-plugin-pwa": "^2.0.0"
   },

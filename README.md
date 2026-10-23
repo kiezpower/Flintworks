@@ -33,7 +33,10 @@ npm run dev        # Entwicklungsserver mit Live-Reload, auch im WLAN fürs Hand
 npm run build      # fertige Web-Version in dist/
 npm run preview    # gebaute Version lokal testen
 npm run android    # Web-Version bauen und ins Android-Projekt kopieren
+npm test           # Browser-Tests (Playwright); einmalig: npx playwright install chromium
 ```
+
+Die Tests nutzen feste Welten über `?seed=7` in der Adresse; so ist jede Testwelt gleich.
 
 Die Android-App lässt sich lokal mit Android Studio aus dem Ordner `android/` bauen. Normalerweise ist das nicht nötig: GitHub baut sie automatisch.
 
@@ -47,6 +50,7 @@ Texte werden mit `tr('Deutscher Text', { platzhalter })` ausgegeben bzw. direkt 
 |---|---|---|
 | `pages.yml` | Push auf `main` | Web-Version auf GitHub Pages |
 | `android.yml` | Push auf `main` | `flintworks.apk` als neues Release |
+| `tests.yml` | Push und Pull Request | Spielt Start, Gebäude, Speichern, Tutorial und Sprachen automatisch durch |
 
 Einmalig einrichten: **Settings → Pages → Source: GitHub Actions**.
 
@@ -69,12 +73,15 @@ src/
   input.js            Tastatur, Touch-Stick, Knöpfe
   render.js           Zeichnen der Spielwelt
   ui.js               HUD, Menüs, Karte, Tipps
+  effects.js          Berge, Lava-Glühen, Wasserglitzern, Staub, Spritzer
+  ambience.js         Regen, Wind, Vögel, Grillen
   save.js             Spielstand im Browser speichern
   sprites.js          Pixel-Grafiken
   tutorial.js         Geführtes Tutorial mit Zielpfeil
   i18n.js             Übersetzungen (Deutsch ist der Schlüssel, Englisch die Übersetzung)
   debug.js            Test-Zugang, nur im Entwicklungsmodus
   style.css           Gestaltung
+tests/                Browser-Tests
 public/icons/         App-Icons
 android/              Android-Projekt (Capacitor)
 ```

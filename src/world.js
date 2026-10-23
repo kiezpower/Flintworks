@@ -184,7 +184,17 @@ function free(x, y, w, h) {
   }
   return true;
 }
-const rnd = Math.random,
+// ?seed=123 in the address makes worlds reproducible (used by the tests)
+const seedParam = new URLSearchParams(location.search).get('seed');
+let seed = seedParam === null ? 0 : Number(seedParam) >>> 0;
+const seeded = () => {
+  seed = (seed + 0x6d2b79f5) >>> 0;
+  let t = seed;
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+const rnd = seedParam === null ? Math.random : seeded,
   ri = (a, b) => a + Math.floor(rnd() * (b - a + 1));
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
