@@ -2,6 +2,7 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'Neues Spiel': 'New game',
   '1 Brett oder 1 Holz': '1 plank or 1 wood',
   'Treppe braucht 1 Brett oder 1 Holz': 'Stairs need 1 plank or 1 wood',
   'Zurück zur Basis': 'Back to base',

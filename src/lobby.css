@@ -1,102 +1,138 @@
-/* Lobby: bright arcade look — chunky outlines, deep blue backdrop, big yellow play button */
+/* Lobby in the style of the classic Clonk menus: a painted cut through the landscape fills the
+   screen; wooden signs, parchment and gold on top of it. */
 #lobby {
+  --wood: #7a4e2c;
+  --wood-hi: #a06c3e;
+  --wood-lo: #4e3018;
+  --line: #24160c;
+  --parch: #ecdcae;
+  --parch-lo: #d6c08a;
+  --inkb: #3a2414;
   position: absolute;
   inset: 0;
   z-index: 10;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-rows: auto 1fr auto;
-  grid-template-areas:
-    "top top top"
-    "side stage play"
-    "road stage play";
-  gap: 8px 12px;
-  padding: max(10px, env(safe-area-inset-top, 0px))
-    max(14px, env(safe-area-inset-right, 0px))
-    max(10px, env(safe-area-inset-bottom, 0px))
-    max(14px, env(safe-area-inset-left, 0px));
-  background:
-    radial-gradient(ellipse at 50% 55%, #3f7fe0 0%, #2549a8 45%, #15265e 100%),
-    #15265e;
-  font-family: var(--font-display);
-  color: #fff;
   overflow: hidden;
+  background: #2a1a10;
+  font-family: var(--font-display);
+  color: var(--parch);
   user-select: none;
-}
-#lobby::before {
-  /* soft rays behind the stage */
-  content: "";
-  position: absolute;
-  inset: -40%;
-  background: repeating-conic-gradient(
-    from 0deg at 50% 50%,
-    rgba(255, 255, 255, 0.05) 0 10deg,
-    transparent 10deg 20deg
-  );
-  animation: lb-spin 60s linear infinite;
-  pointer-events: none;
-}
-@keyframes lb-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-#lobby > * {
-  position: relative;
 }
 #lobby button {
   font-family: inherit;
-  color: inherit;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 #lobby .ico {
   display: inline-block;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   background-size: contain;
   image-rendering: pixelated;
   flex: none;
 }
+#lbCv {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  cursor: pointer;
+}
+/* wooden sign look */
+.lb-b,
+.lb-opt,
+.lb-new {
+  background: linear-gradient(var(--wood-hi), var(--wood) 45%, var(--wood-lo));
+  border: 3px solid var(--line);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 230, 180, 0.35),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.3),
+    0 3px 0 rgba(0, 0, 0, 0.45);
+  color: var(--parch);
+  text-shadow: 1px 2px 0 var(--line);
+}
+.lb-b:active,
+.lb-go:active,
+.lb-sel:active,
+.lb-opt:active {
+  transform: translateY(2px);
+}
 
+/* top: carved logo left, level, trophies and options right */
 .lb-top {
-  grid-area: top;
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top, 0px));
+  left: max(12px, env(safe-area-inset-left, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 10px;
+  pointer-events: none;
+}
+.lb-top > * {
+  pointer-events: auto;
+}
+.lb-logo {
+  display: grid;
+  padding: 4px 14px 6px;
+  background: linear-gradient(var(--wood-hi), var(--wood) 50%, var(--wood-lo));
+  border: 3px solid var(--line);
+  border-radius: 4px 4px 12px 12px;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.45);
+}
+.lb-logo b {
+  font-size: clamp(20px, 3.6vw, 32px);
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.03em;
+  text-shadow:
+    2px 2px 0 var(--line),
+    -1px -1px 0 #ffe9a0;
+}
+.lb-version {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--parch);
+  opacity: 0.85;
+  text-align: right;
+}
+.lb-chips {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 .lb-lvl {
   display: flex;
   align-items: center;
-  gap: 0;
 }
 .lb-lvl b {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
-  font-size: 20px;
-  background: #6a3fd0;
-  border: 3px solid #1a0f3a;
-  border-radius: 8px;
-  box-shadow: 0 3px 0 #1a0f3a;
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
+  color: var(--inkb);
+  background: radial-gradient(circle at 35% 30%, #ffe680, var(--gold) 55%, #b8860b);
+  border: 3px solid var(--line);
+  border-radius: 50%;
   z-index: 1;
 }
 .lb-xp {
   position: relative;
-  width: 110px;
-  height: 18px;
-  margin-left: -8px;
-  background: #1a1640;
-  border: 3px solid #0d0b26;
-  border-radius: 0 9px 9px 0;
+  width: 96px;
+  height: 16px;
+  margin-left: -6px;
+  background: var(--parch-lo);
+  border: 3px solid var(--line);
+  border-radius: 0 8px 8px 0;
   overflow: hidden;
 }
 .lb-xp i {
   position: absolute;
   inset: 0 auto 0 0;
-  background: linear-gradient(#7fe0ff, #2a90c8);
+  background: linear-gradient(#9fd96a, #4e9a32);
   transition: width 0.4s;
 }
 .lb-xp span {
@@ -104,137 +140,59 @@
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: 11px;
-  text-shadow: 1px 1px 0 #000;
-}
-.lb-title {
-  font-size: clamp(20px, 4vw, 34px);
-  font-weight: 700;
-  color: var(--gold);
-  text-shadow:
-    3px 3px 0 #5b3a22,
-    -1px -1px 0 #5b3a22;
-  letter-spacing: 0.03em;
-}
-.lb-chips {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+  font-family: var(--font-ui);
+  font-size: 9px;
+  color: var(--inkb);
 }
 .chip {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 12px 3px 5px;
-  background: rgba(10, 14, 40, 0.7);
-  border: 3px solid #0d0b26;
-  border-radius: 20px;
-  font-size: 17px;
+  gap: 4px;
+  padding: 2px 10px 2px 4px;
+  background: var(--parch);
+  border: 3px solid var(--line);
+  border-radius: 6px;
+  color: var(--inkb);
+  font-size: 16px;
   font-weight: 700;
 }
 .lb-opt {
-  padding: 3px 6px;
-  background: #3a4a7a;
+  padding: 3px 5px;
 }
 
+/* left: wooden signposts */
 .lb-side {
-  grid-area: side;
+  position: absolute;
+  left: max(12px, env(safe-area-inset-left, 0px));
+  top: 78px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  align-self: start;
+  width: min(190px, 26vw);
 }
-.lb-b,
-.lb-road {
+.lb-b {
   position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 128px;
-  padding: 7px 12px 7px 8px;
+  padding: 6px 10px 6px 8px;
   font-size: 15px;
   font-weight: 700;
-  background: linear-gradient(#4f8ff0, #2f62c8);
-  border: 3px solid #0d1840;
-  border-radius: 10px;
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.35),
-    0 4px 0 #0d1840;
-  text-shadow: 1px 2px 0 #0d1840;
+  text-align: left;
 }
-.lb-b:active,
-.lb-road:active,
-.lb-go:active,
-.lb-mode:active {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 #0d1840;
-}
-#lbWho {
-  background: linear-gradient(#ffcf4a, #e89a1c);
-}
-.alert::after {
-  content: "!";
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 22px;
-  height: 22px;
-  display: grid;
-  place-items: center;
-  font-size: 14px;
-  background: #e8394a;
-  border: 2px solid #3a0a10;
-  border-radius: 50%;
-  animation: lb-bounce 0.9s ease-in-out infinite;
-}
-@keyframes lb-bounce {
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-.lb-stage {
-  grid-area: stage;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 6px;
-  min-height: 0;
-}
-#lbCv {
-  width: min(100%, calc((100vh - 150px) * 1.57));
-  max-height: calc(100vh - 150px);
-  aspect-ratio: 44 / 28;
-  image-rendering: pixelated;
-  border: 4px solid #0d1840;
-  border-radius: 14px;
-  box-shadow:
-    0 6px 0 #0d1840,
-    0 0 40px rgba(127, 224, 255, 0.25);
-  cursor: pointer;
-}
-.lb-name {
-  font-size: 15px;
-  padding: 2px 12px;
-  background: rgba(10, 14, 40, 0.6);
-  border-radius: 10px;
-}
-
 .lb-road {
-  grid-area: road;
-  align-self: end;
-  min-width: 0;
-  width: 170px;
-  flex-wrap: wrap;
-  gap: 4px 6px;
   font-size: 11px;
-  background: linear-gradient(#3a4a7a, #24305a);
+}
+.lb-roadbox {
+  display: grid;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
 }
 .lb-roadtrack {
-  flex: 1;
-  height: 10px;
-  background: #0d1030;
-  border-radius: 5px;
+  height: 8px;
+  background: var(--line);
+  border-radius: 4px;
   overflow: hidden;
 }
 .lb-roadtrack i {
@@ -242,123 +200,230 @@
   height: 100%;
   background: linear-gradient(#ffe27a, #f2a51e);
 }
-#lbRoadTxt {
-  flex-basis: 100%;
-}
-
-.lb-play {
-  grid-area: play;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: stretch;
-  gap: 10px;
-}
-.lb-mode {
+.alert::after {
+  content: '!';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
   display: grid;
-  padding: 6px 14px;
-  text-align: left;
-  background: linear-gradient(#5fd06a, #2f9a3c);
-  border: 3px solid #0d2a10;
-  border-radius: 10px;
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.35),
-    0 4px 0 #0d2a10;
-  text-shadow: 1px 2px 0 #0d2a10;
+  place-items: center;
+  font-size: 13px;
+  color: #fff;
+  background: #c8402c;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  animation: lb-bounce 0.9s ease-in-out infinite;
 }
-.lb-mode small {
-  font-size: 11px;
-  opacity: 0.85;
-}
-.lb-mode b {
-  font-size: 18px;
-}
-.lb-mode[disabled] {
-  filter: saturate(0.4);
-  cursor: default;
-}
-.lb-go {
-  min-width: 170px;
-  padding: 16px 22px;
-  font-size: 26px;
-  font-weight: 700;
-  color: #3a2200 !important;
-  background: linear-gradient(#ffe36a, #f6b51c);
-  border: 4px solid #3a2200;
-  border-radius: 14px;
-  box-shadow:
-    inset 0 3px 0 rgba(255, 255, 255, 0.6),
-    0 6px 0 #3a2200;
-  animation: lb-breathe 2.4s ease-in-out infinite;
-}
-@keyframes lb-breathe {
+@keyframes lb-bounce {
   50% {
-    transform: scale(1.04);
+    transform: translateY(-3px);
   }
 }
-.lb-new {
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.4);
-  font-size: 11px;
-  padding: 6px 10px;
+
+/* invite slots and the name tag are placed next to the hero by lobby.js */
+.lb-slot {
+  position: absolute;
+  width: clamp(36px, 6vw, 52px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  background: rgba(236, 220, 174, 0.25);
+  border: 3px dashed rgba(236, 220, 174, 0.85);
+  border-radius: 50%;
+  transform: translate(-50%, -100%);
 }
+.lb-slot b {
+  font-size: clamp(22px, 4vw, 32px);
+  line-height: 1;
+  color: var(--parch);
+  text-shadow: 2px 2px 0 var(--line);
+}
+.lb-slot.waiting {
+  border-color: var(--gold);
+  animation: lb-bounce 1.6s ease-in-out infinite;
+}
+.lb-name {
+  position: absolute;
+  transform: translate(-50%, 6px);
+  padding: 1px 10px;
+  font-size: 13px;
+  color: var(--inkb);
+  background: var(--parch);
+  border: 2px solid var(--line);
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* right: parchment scroll with the game setup and the play button */
+.lb-play {
+  position: absolute;
+  right: max(12px, env(safe-area-inset-right, 0px));
+  bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  width: min(300px, 38vw);
+  display: grid;
+  gap: 7px;
+  padding: 10px 12px 12px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.35), transparent 60%),
+    linear-gradient(var(--parch), var(--parch-lo));
+  border: 3px solid var(--line);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 2px #f6ead0,
+    0 4px 0 rgba(0, 0, 0, 0.45);
+  color: var(--inkb);
+}
+.lb-play::before,
+.lb-play::after {
+  /* scroll rods top and bottom */
+  content: '';
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  height: 7px;
+  background: linear-gradient(var(--wood-hi), var(--wood-lo));
+  border: 2px solid var(--line);
+  border-radius: 4px;
+}
+.lb-play::before {
+  top: -6px;
+}
+.lb-play::after {
+  bottom: -6px;
+}
+.lb-play h2 {
+  margin: 0;
+  font-size: 16px;
+  text-align: center;
+  color: var(--inkb);
+}
+.lb-sel {
+  display: grid;
+  text-align: left;
+  padding: 4px 26px 5px 10px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.35);
+  border: 2px solid var(--wood);
+  border-radius: 4px;
+  color: var(--inkb);
+  min-width: 0;
+}
+.lb-sel::after {
+  /* "next" arrow: tapping cycles through the choices */
+  content: '›';
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 22px;
+  color: var(--wood);
+}
+.lb-sel small {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  color: var(--wood);
+}
+.lb-sel b {
+  font-size: min(17px, 3.4vw);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+}
+.lb-sel em {
+  font-style: normal;
+  font-size: 11px;
+}
+.lb-sel[disabled] {
+  opacity: 0.55;
+  cursor: default;
+}
+.lb-sel[disabled]::after {
+  content: '';
+}
+.lb-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.lb-go {
+  padding: 10px 14px;
+  font-size: clamp(20px, 3vw, 26px);
+  font-weight: 700;
+  color: var(--inkb);
+  background: linear-gradient(#ffe36a, #f2c230 55%, #c9952a);
+  border: 3px solid var(--line);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.6),
+    0 4px 0 var(--line);
+  text-shadow: 1px 1px 0 #fff3b0;
+}
+.lb-new {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+/* tall phone screens: setup scroll at the bottom, signposts in a row above it */
+@media (max-aspect-ratio: 1/1) {
+  .lb-side {
+    top: 78px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: auto;
+    right: 12px;
+  }
+  .lb-b {
+    font-size: 12px;
+    flex: 1 1 30%;
+  }
+  .lb-play {
+    left: 12px;
+    width: auto;
+  }
+  .lb-xp {
+    width: 64px;
+  }
+}
+@media (max-height: 420px) {
+  .lb-side {
+    top: 64px;
+  }
+  .lb-b {
+    padding: 4px 8px 4px 6px;
+    font-size: 13px;
+  }
+  .lb-play {
+    gap: 5px;
+    padding: 8px 10px 10px;
+  }
+  .lb-play h2 {
+    font-size: 13px;
+  }
+  .lb-go {
+    padding: 7px 12px;
+  }
+}
+
 .trophy-gain {
   font-size: 22px;
   color: var(--gold);
 }
 
-/* panels opened from the lobby sit above it */
 #panel {
   z-index: 20;
 }
+
 .inlobby #panel {
   background: #1f160f;
   border-color: #0d0b26;
 }
+
 #toast,
 #overlay {
   z-index: 30;
-}
-
-/* narrow portrait screens: stack the columns */
-@media (max-aspect-ratio: 1/1) {
-  #lobby {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto 1fr auto auto;
-    grid-template-areas:
-      "top top"
-      "stage stage"
-      "side play"
-      "road play";
-  }
-  .lb-side {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-  .lb-b {
-    min-width: 0;
-  }
-  #lbCv {
-    width: 100%;
-    max-height: none;
-  }
-  .lb-title {
-    display: none;
-  }
-}
-@media (max-height: 420px) {
-  .lb-b {
-    padding: 4px 10px 4px 6px;
-    font-size: 13px;
-  }
-  .lb-go {
-    padding: 10px 18px;
-    font-size: 22px;
-  }
-  #lbCv {
-    width: min(100%, calc((100vh - 110px) * 1.57));
-    max-height: calc(100vh - 110px);
-  }
 }
 
 /* daily quest rows */
@@ -372,16 +437,31 @@
   border: 2px solid var(--edge);
   border-radius: 6px;
 }
+
+.lb-q {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 4px 12px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 2px solid var(--edge);
+  border-radius: 6px;
+}
+
 .lb-q b {
   font-size: 15px;
 }
+
 .lb-q button {
   grid-row: 1 / 3;
   grid-column: 2;
 }
+
 .lb-q.done {
   opacity: 0.55;
 }
+
 .lb-qbar {
   position: relative;
   height: 14px;
@@ -389,11 +469,13 @@
   border-radius: 7px;
   overflow: hidden;
 }
+
 .lb-qbar i {
   position: absolute;
   inset: 0 auto 0 0;
   background: linear-gradient(#7fe0ff, #2a90c8);
 }
+
 .lb-qbar em {
   position: absolute;
   inset: 0;
@@ -404,51 +486,15 @@
   font-family: var(--font-ui);
 }
 
-/* team row: invite slots left and right of the stage (multiplayer groundwork) */
-.lb-team {
-  position: relative;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-.lb-slot {
-  position: absolute;
-  bottom: 22%;
-  width: clamp(44px, 9vw, 64px);
-  aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  background: rgba(10, 14, 40, 0.45);
-  border: 3px dashed rgba(255, 255, 255, 0.7);
-  border-radius: 50%;
-  z-index: 1;
-}
-#lbSlot1 {
-  left: 18%;
-}
-#lbSlot2 {
-  right: 18%;
-}
-.lb-slot b {
-  font-size: clamp(26px, 5vw, 38px);
-  line-height: 1;
-  color: #fff;
-  text-shadow: 2px 2px 0 #0d1840;
-}
-.lb-slot:active {
-  transform: scale(0.92);
-}
-.lb-slot.waiting {
-  border-color: var(--gold);
-  animation: lb-bounce 1.6s ease-in-out infinite;
-}
 .lb-invite {
   display: grid;
   gap: 10px;
 }
+
 .lb-invite p {
   margin: 0;
 }
+
 .lb-code {
   display: grid;
   justify-items: center;
@@ -456,90 +502,32 @@
   border: 2px dashed var(--edge);
   border-radius: 6px;
 }
+
 .lb-code small {
   font-family: var(--font-ui);
   font-size: 10px;
   opacity: 0.7;
 }
+
 .lb-code b {
   font-size: 28px;
   letter-spacing: 0.2em;
   color: var(--gold);
 }
+
 .lb-link {
   word-break: break-all;
   margin: 0;
 }
 
-.lb-gmode {
-  background: linear-gradient(#5fa8f0, #2f6fc8);
-  border-color: #0d1840;
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.35),
-    0 4px 0 #0d1840;
-}
-.lb-gmode em {
-  font-style: normal;
-  font-size: 11px;
-  opacity: 0.9;
-}
 .stars {
   font-size: 34px;
   color: var(--gold);
   letter-spacing: 0.1em;
   text-shadow: 2px 2px 0 #5b3a22;
 }
+
 .stars span {
   color: rgba(255, 255, 255, 0.2);
   text-shadow: none;
-}
-
-.lb-row {
-  display: flex;
-  gap: 8px;
-}
-.lb-row .lb-mode {
-  flex: 1;
-  min-width: 0;
-}
-.lb-diff {
-  background: linear-gradient(#f08a5f, #c8502f);
-  border-color: #3a120a;
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.35),
-    0 4px 0 #3a120a;
-}
-
-.lb-row .lb-mode b {
-  font-size: min(15px, 3.4vw);
-  white-space: nowrap;
-}
-.lb-row .lb-mode {
-  overflow: hidden;
-}
-
-/* version always visible next to the level, in both orientations */
-.lb-version {
-  margin-left: 8px;
-  font-family: var(--font-ui);
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.85);
-  text-shadow: 1px 1px 0 #0d1840;
-  white-space: nowrap;
-}
-
-@media (max-aspect-ratio: 1/1) {
-  #lobby {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
-  }
-  .lb-b {
-    font-size: 12px;
-    gap: 5px;
-    padding: 6px 8px 6px 6px;
-    overflow: hidden;
-  }
-  .lb-b .ico {
-    width: 20px !important;
-    height: 20px !important;
-  }
 }

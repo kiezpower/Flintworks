@@ -99,6 +99,7 @@
       </div>
 
       <div id="toast" class="panel" hidden></div>
+      <a id="updateLink" class="go" hidden target="_blank" rel="noopener"></a>
       <button id="updateBtn" class="go" hidden data-i18n="Neue Version – tippen zum Laden">
         Neue Version – tippen zum Laden
       </button>
@@ -116,62 +117,58 @@
       </div>
 
       <div id="lobby" hidden>
+        <canvas id="lbCv" width="400" height="220" aria-label="Dein Wühler" data-i18n-aria="Dein Wühler"></canvas>
         <div class="lb-top">
-          <div class="lb-lvl">
-            <b id="lbLvl">1</b>
-            <div class="lb-xp"><i id="lbXp"></i><span id="lbXpTxt"></span></div>
+          <div class="lb-logo">
+            <b id="lbTitle">Flintworks</b>
             <span class="lb-version" id="lbVersion"></span>
           </div>
-          <div class="lb-title" id="lbTitle">Flintworks</div>
           <div class="lb-chips">
+            <div class="lb-lvl">
+              <b id="lbLvl">1</b>
+              <div class="lb-xp"><i id="lbXp"></i><span id="lbXpTxt"></span></div>
+            </div>
             <span class="chip"><i class="ico" data-ico="trophy"></i><b id="lbTro">0</b></span>
             <button class="chip lb-opt" id="lbOpt" aria-label="Optionen" data-i18n-aria="Optionen">
               <i class="ico" data-ico="gear"></i>
             </button>
           </div>
         </div>
-        <div class="lb-side">
+        <nav class="lb-side">
           <button class="lb-b" id="lbWho">
             <i class="ico" data-ico="crew"></i><span data-i18n="Wühler">Wühler</span>
           </button>
           <button class="lb-b" id="lbQuest">
             <i class="ico" data-ico="quest"></i><span data-i18n="Aufgaben">Aufgaben</span>
           </button>
-        </div>
-        <div class="lb-stage">
-          <div class="lb-team">
-            <button class="lb-slot" id="lbSlot1" aria-label="Mitspieler einladen" data-i18n-aria="Mitspieler einladen">
-              <b>+</b>
-            </button>
-            <canvas id="lbCv" width="88" height="56" aria-label="Dein Wühler" data-i18n-aria="Dein Wühler"></canvas>
-            <button class="lb-slot" id="lbSlot2" aria-label="Mitspieler einladen" data-i18n-aria="Mitspieler einladen">
-              <b>+</b>
-            </button>
-          </div>
-          <div class="lb-name"><span id="lbHat"></span></div>
-        </div>
-        <button class="lb-road" id="lbRoad">
-          <i class="ico" data-ico="trophy"></i>
-          <span class="lb-roadtrack"><i id="lbRoadBar"></i></span>
-          <span id="lbRoadTxt"></span>
+          <button class="lb-b lb-road" id="lbRoad">
+            <i class="ico" data-ico="trophy"></i>
+            <span class="lb-roadbox"
+              ><span class="lb-roadtrack"><i id="lbRoadBar"></i></span><span id="lbRoadTxt"></span
+            ></span>
+          </button>
+        </nav>
+        <button class="lb-slot" id="lbSlot1" aria-label="Mitspieler einladen" data-i18n-aria="Mitspieler einladen">
+          <b>+</b>
         </button>
-        <div class="lb-play">
-          <button class="lb-mode lb-gmode" id="lbGMode">
+        <button class="lb-slot" id="lbSlot2" aria-label="Mitspieler einladen" data-i18n-aria="Mitspieler einladen">
+          <b>+</b>
+        </button>
+        <div class="lb-name"><span id="lbHat"></span></div>
+        <section class="lb-play">
+          <h2 data-i18n="Neues Spiel">Neues Spiel</h2>
+          <button class="lb-sel" id="lbGMode">
             <small data-i18n="Modus">Modus</small><b id="lbGModeTxt">Goldrausch</b><em id="lbGModeDesc"></em>
           </button>
           <div class="lb-row">
-            <button class="lb-mode" id="lbMode">
-              <small data-i18n="Welt">Welt</small><b id="lbModeTxt">Zufall</b>
-            </button>
-            <button class="lb-mode lb-diff" id="lbDiff">
+            <button class="lb-sel" id="lbMode"><small data-i18n="Welt">Welt</small><b id="lbModeTxt">Zufall</b></button>
+            <button class="lb-sel" id="lbDiff">
               <small data-i18n="Gefahr">Gefahr</small><b id="lbDiffTxt">Abenteuer</b>
             </button>
           </div>
-          <button class="lb-go" id="lbPlay">
-            <span id="lbPlayTxt">Spielen</span>
-          </button>
-          <button class="ghost lb-new" id="lbNew" data-i18n="Neue Welt">Neue Welt</button>
-        </div>
+          <button class="lb-go" id="lbPlay"><span id="lbPlayTxt">Spielen</span></button>
+          <button class="lb-new" id="lbNew" data-i18n="Neue Welt">Neue Welt</button>
+        </section>
       </div>
     </div>
     <script type="module" src="/src/main.js"></script>

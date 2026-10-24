@@ -6,8 +6,9 @@ import { getLang, setLang, tr } from './i18n.js';
 import { CAPS, HATS, P, QUESTS, claimQuest, saveProfile, unlockText, xpNeed } from './profile.js';
 import { NET, ensureRoom, inviteLink, shareInvite } from './net.js';
 import { drawPortrait } from './portrait.js';
+import { drawScene, heroOrigin, heroScreen, sizeScene } from './lobbyscene.js';
 import { audioInit, sfx } from './sound.js';
-import { padIcon, treeSprite } from './sprites.js';
+import { padIcon } from './sprites.js';
 import { G } from './state.js';
 import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
 
@@ -53,96 +54,36 @@ let t = 0,
   jumpY = 0,
   spin = 0;
 const sparks = [];
-const treeCache = {};
-function stageTrees(b) {
-  const type = b === BIOMES.desert ? 'cactus' : b === BIOMES.winter ? 'snowpine' : 'oak';
-  return (treeCache[type] ||= [treeSprite(type, 1), treeSprite(type === 'oak' ? 'pine' : type, 0)]);
-}
-const look = () => ({
-  cap: P.cap,
-  hat: P.hat,
-  hurt: 0,
-  dead: false,
-  x: 3,
-  anim: jumpY < 0 ? t * 0.4 : 0,
-  inv: [],
-  isel: 0,
-});
-
 // Lobby sky follows the chosen world type; random cycles through all three
-function stageSky() {
-  if (hooks.hasRun?.()) return BIOMES[G.biome] || BIOMES.meadow;
-  const m = P.mode && P.mode !== 'random' ? P.mode : MODES[1 + (Math.floor(t / 300) % 3)];
-  return BIOMES[m];
+function stageBiome() {
+  if (hooks.hasRun?.()) return G.biome || 'meadow';
+  return P.mode && P.mode !== 'random' ? P.mode : MODES[1 + (Math.floor(t / 600) % 3)];
+}
+// keep the invite slots and the name tag next to the hero in the painted scene
+function placeOverlay() {
+  const h = heroScreen(cv);
+  const r = cv.getBoundingClientRect();
+  const put = (id, dx, dy) => {
+    const e = $(id);
+    e.style.left = r.left - el.getBoundingClientRect().left + h.x + dx * h.k + 'px';
+    e.style.top = h.y + dy * h.k + 'px';
+  };
+  put('lbSlot1', -16, -2);
+  put('lbSlot2', 16, -2);
+  put('lbHat', 0, 0);
+  $('lbHat').parentElement.style.left = $('lbHat').style.left;
+  $('lbHat').parentElement.style.top = $('lbHat').style.top;
 }
 function drawStage() {
-  const W = cv.width / 2,
-    H = cv.height / 2;
-  g.setTransform(2, 0, 0, 2, 0, 0);
-  g.imageSmoothingEnabled = false;
-  const b = stageSky();
-  const sk = g.createLinearGradient(0, 0, 0, H);
-  sk.addColorStop(0, `rgb(${b.sky[0]})`);
-  sk.addColorStop(1, `rgb(${b.sky[1]})`);
-  g.fillStyle = sk;
-  g.fillRect(0, 0, W, H);
-  // hills and ground
-  for (let x = 0; x < W; x++) {
-    const h1 = Math.round(14 + Math.sin(x * 0.18 + 1) * 3 + Math.sin(x * 0.07) * 2);
-    g.fillStyle = b.hills[0];
-    g.fillRect(x, H - h1, 1, h1);
-    const h2 = Math.round(9 + Math.sin(x * 0.27 + 3) * 2);
-    g.fillStyle = b.hills[1];
-    g.fillRect(x, H - h2, 1, h2);
-  }
-  g.fillStyle = b.top[1];
-  g.fillRect(0, H - 6, W, 1);
-  g.fillStyle = b.top[0];
-  g.fillRect(0, H - 5, W, 1);
-  g.fillStyle = '#7a5232';
-  g.fillRect(0, H - 4, W, 4);
-  // clouds and trees around the stage
-  g.fillStyle = 'rgba(255,255,255,0.85)';
-  for (let k = 0; k < 3; k++) {
-    const cx = ((t * (0.04 + k * 0.015) + k * 19) % (W + 16)) - 8,
-      cy = 3 + k * 4;
-    g.fillRect(Math.round(cx), cy, 8, 2);
-    g.fillRect(Math.round(cx) + 2, cy - 1, 4, 1);
-  }
-  const tr0 = stageTrees(b);
-  g.drawImage(tr0[0], 4, H - 5 - tr0[0].height);
-  g.drawImage(tr0[1], W - 4 - tr0[1].width, H - 5 - tr0[1].height);
-  // stone podium
-  const px = (W >> 1) - 7;
-  g.fillStyle = '#5b5f68';
-  g.fillRect(px, H - 9, 14, 4);
-  g.fillStyle = '#8a909a';
-  g.fillRect(px, H - 9, 14, 1);
-  g.fillStyle = '#f2c230';
-  g.fillRect(px + 6, H - 7, 2, 1);
-  // shadow, then the Wühler
-  g.fillStyle = 'rgba(0,0,0,0.25)';
-  g.fillRect((W >> 1) - 3 + Math.round(jumpY / 6), H - 10, 6 - Math.round(-jumpY / 4), 1);
-  const bob = jumpY < 0 ? 0 : Math.floor(t / 30) % 2;
-  const f = spin > 0 ? (Math.floor(spin / 6) % 2 ? 1 : -1) : 1;
-  g.setTransform(1, 0, 0, 1, 0, 0);
-  drawPortrait(g, W - 8, H * 2 - 38 + bob + Math.round(jumpY * 2), f, P.cap, P.hat, (G.frame + 21) % 240 < 6);
-  g.setTransform(2, 0, 0, 2, 0, 0);
-  for (let k = sparks.length - 1; k >= 0; k--) {
-    const s = sparks[k];
-    s.x += s.vx;
-    s.y += s.vy;
-    s.vy += 0.03;
-    if (--s.l <= 0) sparks.splice(k, 1);
-    g.fillStyle = s.c;
-    g.fillRect(Math.round(s.x), Math.round(s.y), 1, 1);
-  }
+  if (sizeScene(cv)) placeOverlay();
+  drawScene(g, { t, biome: stageBiome(), cap: P.cap, hat: P.hat, jumpY, spin, sparks });
 }
 function burst(n, cols) {
+  const o = heroOrigin();
   for (let k = 0; k < n; k++)
     sparks.push({
-      x: cv.width / 4,
-      y: cv.height / 2 - 16,
+      x: o.x,
+      y: o.y,
       vx: (Math.random() - 0.5) * 1.4,
       vy: -Math.random() * 1.4,
       l: 30 + Math.random() * 20,
@@ -424,7 +365,10 @@ tap('lbNew', () => {
   hooks.discard();
   refresh();
 });
-cv.addEventListener('pointerdown', () => {
+cv.addEventListener('pointerdown', e => {
+  const h = heroScreen(cv),
+    r = cv.getBoundingClientRect();
+  if (Math.abs(e.clientX - r.left - h.x) > 14 * h.k || Math.abs(e.clientY - r.top - h.y + 10 * h.k) > 14 * h.k) return;
   if (jumpY < 0) return;
   jumpV = -1.9;
   jumpY = -0.01;
@@ -439,6 +383,10 @@ function showLobby(h) {
   G.state = 'menu';
   el.hidden = false;
   $('game').classList.add('inlobby');
+  requestAnimationFrame(() => {
+    sizeScene(cv);
+    placeOverlay();
+  });
   refresh();
 }
 function hideLobby() {
@@ -447,6 +395,11 @@ function hideLobby() {
   closePanel();
 }
 const lobbyOpen = () => !el.hidden;
+addEventListener('resize', () => {
+  if (el.hidden) return;
+  sizeScene(cv);
+  placeOverlay();
+});
 G.nextBiome = null;
 const chosenBiome = () => (P.mode && P.mode !== 'random' ? P.mode : null);
 
