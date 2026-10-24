@@ -1,6 +1,6 @@
 # Flintworks – Multiplayer-Plan
 
-Stand: v1.2.3 · Planungsdokument, noch kein Code
+Stand: v1.10.0 · Phasen 0–7 umgesetzt (✅ in 5.2). Server: `server/` → `wss://play.kiez-power.de` (Einrichtung siehe `server/README.md`)
 
 **Entscheidungen:**
 - Koop und Versus kommen gleichzeitig.
@@ -190,7 +190,7 @@ GitHub Pages liefert nur statische Dateien. Signaling und Relay müssen deshalb 
 | **4 Koop** ✅ v1.8.0 | Gemeinsame Kasse und gemeinsames Lager, jeder steuert Helfer, Mitspieler auf der Minikarte, Namen über den Köpfen, Emotes (👋 ⛏ 🆘) | `players.js`, `ui.js`, `crewui.js`, `render.js`, `modes.js` | 1–1,5 Tage | UI-Platz auf kleinen Handys |
 | **5 Robustheit** ✅ v1.7.0 | Funkloch und Hintergrund überstehen, Reconnect, Host-Wechsel, Join im laufenden Spiel | `net/*`, `server/relay.js`, `save.js` | 2 Tage | Host-Wechsel ist der heikelste Teil. Vorher manuell mit 3 Geräten testen. |
 | **6 Versus** ✅ v1.9.0 | 1:1 und 2:2 mit getrennten Basen, Kassen und Helfern, Siegerbildschirm | `players.js`, `gen.js`, `modes.js`, `store.js`, `buildings.js`, `helpers.js`, `ui.js` | 2 Tage | Balance zwischen den Basen. Weltbreite reicht nur für 2 Basen. |
-| **7 Android und Feinschliff** | `flintworks://`-Links öffnen die App, Datenanzeige, Verbindungsqualität im HUD | `AndroidManifest.xml`, `main.js`, `net/room.js` | 0,5–1 Tag | App Links nur mit eigenem `kiezpower.github.io`-Repo |
+| **7 Android und Feinschliff** ✅ v1.10.0 | `flintworks://`-Links öffnen die App, Datenanzeige, Verbindungsqualität im HUD | `AndroidManifest.xml`, `main.js`, `net/room.js` | 0,5–1 Tag | App Links nur mit eigenem `kiezpower.github.io`-Repo |
 
 **Gesamt:** ca. 11–13 Arbeitstage. Ab Phase 1 gibt es nach jeder Phase etwas zum Anfassen.
 

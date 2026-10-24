@@ -48,6 +48,7 @@ import { clientStep } from './net/client.js';
 import { hostEnd, hostTick } from './net/host.js';
 import { teamOf, useMine, useTeam } from './teams.js';
 import { updEmoBtn } from './net/emotes.js';
+import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
 import { H, W, clamp, surf } from './world.js';

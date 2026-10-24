@@ -23,6 +23,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- invitations: flintworks://join/CODE opens the app in the room -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="flintworks" android:host="join" />
+            </intent-filter>
+
+            <!-- the web invite link can open the app too (Android asks which app to use) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="kiezpower.github.io" android:pathPrefix="/Flintworks" />
+            </intent-filter>
+
         </activity>
 
         <provider

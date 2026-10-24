@@ -118,8 +118,12 @@ function sendTo(to, d) {
 const inRoom = () => !!NET.room && NET.status === 'waiting';
 const others = () => NET.players.filter(p => p.pid !== NET.pid);
 
+// in the Android app the page runs on localhost: invite with the public web address
+const LIVE = 'https://kiezpower.github.io/Flintworks/';
+const isApp = () => !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 function inviteLink() {
-  return NET.room ? `${location.origin}${location.pathname}?room=${NET.room}` : '';
+  if (!NET.room) return '';
+  return `${isApp() || location.hostname === 'localhost' ? LIVE : location.origin + location.pathname}?room=${NET.room}`;
 }
 // share sheet on phones, clipboard elsewhere; resolves to 'shared' | 'copied' | 'failed'
 async function shareInvite(text) {

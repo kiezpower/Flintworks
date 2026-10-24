@@ -2,6 +2,8 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'getrennt …': 'disconnected …',
+  Verbindung: 'Connection',
   'Gegner {v}/{g}': 'Rivals {v}/{g}',
   Spielart: 'Game type',
   Koop: 'Co-op',
