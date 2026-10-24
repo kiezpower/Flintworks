@@ -84,30 +84,46 @@ const diggable = m =>
   m === GEM ||
   (m === ROCK && hasTool('pick'));
 const digAtPx = (x, y) => diggable(mat[Math.floor(y) * W + Math.floor(x)]);
-// automatic digging: walking into earth digs, stick down digs down-slanted, stick up into
-// earth digs up-slanted. Returns 'up' for upward digging so the jump can be suppressed.
+// automatic digging: walking into earth digs, stick down digs down-slanted, stick up under an
+// earth ceiling digs up-slanted. The test looks at exactly the area the next dig stroke would
+// remove (same centre and radius as in updClonk), so digging continues as long as there is
+// earth in that direction. Returns 'up' or 'side' when climbing/hanging must be ended.
+function digZone(c, dir, ang, yMax) {
+  const cx = c.x + 3 + dir * Math.cos(ang) * 5,
+    cy = c.y + 5 + Math.sin(ang) * 6;
+  let n = 0;
+  for (let y = Math.floor(cy - 6); y <= cy + 6; y++) {
+    if (y > c.y + yMax) break;
+    for (let x = Math.floor(cx - 6); x <= cx + 6; x++) {
+      const dx = x + 0.5 - cx,
+        dy = y + 0.5 - cy;
+      if (dx * dx + dy * dy <= 30.25 && digAtPx(x, y)) n++;
+    }
+  }
+  return n;
+}
 function wantsDig(c, I) {
   if (c.tumble || c.bridge || c.chop || c.dead) return false;
   if (builds.some(b => b.cs && b.done && onCase(c, b.cs))) return false;
+  const grounded = !free(c.x, c.y + 2, 6, 10);
+  const hold = grounded || c.climb || c.hangle;
+  const dir = Math.abs(I.ax) > 0.3 ? Math.sign(I.ax) : c.face;
   if (I.ay < -0.4) {
-    // only under a ceiling of earth (in a tunnel, also when hanging or climbing):
+    // only under an earth ceiling (in a tunnel, also when hanging or climbing):
     // out in the open, up still means jump
-    for (let dy = 1; dy <= 4; dy++) for (const dx of [1, 3, 5]) if (digAtPx(c.x + dx, c.y - dy)) return 'up';
-    return false;
+    let ceiling = false;
+    for (let dy = 1; dy <= 4 && !ceiling; dy++)
+      for (const dx of [1, 3, 5]) if (digAtPx(c.x + dx, c.y - dy)) ceiling = true;
+    // keep digging upwards once started, and dig instead of climbing up an earth wall
+    const go = ceiling || c.digging || (c.climb && Math.abs(I.ax) > 0.3);
+    return go && hold && digZone(c, dir, -0.55, 4) >= (c.digging ? 1 : 3) ? 'up' : false;
   }
-  if (c.hangle || c.climb) return false;
-  if (free(c.x, c.y + 1, 6, 10)) return false;
-  if (I.ay > 0.6) {
-    const dir = Math.abs(I.ax) > 0.3 ? Math.sign(I.ax) : c.face;
-    return digAtPx(c.x + 3 + dir * 3, c.y + 12) || digAtPx(c.x + 3 + dir * 6, c.y + 10);
-  }
-  if (Math.abs(I.ax) > 0.5) {
-    const dir = Math.sign(I.ax);
-    // only a wall too high to step up on gets dug
-    if (free(c.x + dir * 1.5, c.y - 3, 6, 10)) return false;
-    return (
-      digAtPx(c.x + 3 + dir * 6, c.y + 5) || digAtPx(c.x + 3 + dir * 6, c.y + 1) || digAtPx(c.x + 3 + dir * 6, c.y + 8)
-    );
+  // keep going while the last stroke still finds earth (no flicker on/off)
+  const need = c.digging ? 1 : 3;
+  if (I.ay > 0.6) return grounded && !c.hangle && digZone(c, dir, 0.78, 99) >= need;
+  if (Math.abs(I.ax) > 0.5 && hold) {
+    // a real wall (not a small step the Wühler simply walks up): earth above the feet
+    return digZone(c, dir, 0, 7) >= (c.digging ? 2 : 8) ? 'side' : false;
   }
   return false;
 }
@@ -201,10 +217,9 @@ function updClonk(c, I) {
     if (d) {
       I.dig = true;
       // pushing up into earth digs upwards instead of jumping or grabbing the ceiling
-      if (d === 'up') {
-        I.jumpP = I.jumpUp = false;
-        c.hangle = c.climb = false;
-      }
+      if (d === 'up') I.jumpP = I.jumpUp = false;
+      // digging wins over climbing or hanging when you push into earth
+      if (d === 'up' || d === 'side') c.hangle = c.climb = false;
     }
   }
   if (c.dead) {
@@ -365,6 +380,13 @@ function updClonk(c, I) {
     c.digging = true;
     c.digDir = [dxv, dyv];
     digAt(c.x + 3 + dxv * 5, c.y + 5 + dyv * 6, 5.5);
+    // digging down-slanted: also clear the path for head and shoulders, or the body gets stuck
+    if (dyv > 0.3) digAt(c.x + 3 + dxv * 4.5, c.y + 3.5, 4.2);
+    // digging up-slanted: room for the head and a ramp for the feet
+    if (dyv < -0.3) {
+      digAt(c.x + 3 + dxv * 2.5, c.y + 1.5, 4.5);
+      digAt(c.x + 3 + dxv * 5, c.y + 7, 3.2);
+    }
     c.vx = c.vy = 0;
     const sp = hasTool('pick') ? 0.8 : 0.55;
     moveBody(c, dxv * sp, dyv * sp, 3);
@@ -608,6 +630,8 @@ function lorryAct(c, L) {
 }
 
 export {
+  digZone,
+  wantsDig,
   NOIN,
   climbUpd,
   context,
