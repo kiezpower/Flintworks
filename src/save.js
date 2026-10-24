@@ -41,7 +41,16 @@ function saveGame() {
       const r = {};
       for (const k in o) {
         const v = o[k];
-        if (v instanceof HTMLCanvasElement || k === 'chop' || k === 'thrower' || k === 'spr' || k === 'char') continue;
+        if (
+          v instanceof HTMLCanvasElement ||
+          k === 'chop' ||
+          k === 'job' ||
+          k === 'path' ||
+          k === 'thrower' ||
+          k === 'spr' ||
+          k === 'char'
+        )
+          continue;
         r[k] = v;
       }
       return r;
@@ -129,7 +138,7 @@ function loadGame() {
     G.gas = d.gas || [];
     G.gasClouds = d.gasClouds || [];
     G.hintsSeen = new Set(d.hints || []);
-    crew.push(...d.crew.map(c => ({ ...c, chop: null, bridge: null })));
+    crew.push(...d.crew.map(c => ({ ...c, chop: null, bridge: null, job: null, path: null })));
     items.push(...d.items.map(it => ({ ...it, thrower: null })));
     builds.push(...d.builds);
     G.base = builds.find(b => b.type === 'base');

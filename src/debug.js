@@ -14,10 +14,14 @@ import { setGoal } from './tapgo.js';
 import { foundation } from './buildings.js';
 import * as world from './world.js';
 import { gen } from './gen.js';
+import { addClonk } from './entities.js';
+import * as helpers from './helpers.js';
 import { digZone, wantsDig } from './clonk.js';
 import { LIQ, matAt, solid } from './world.js';
 
 window.__ww = {
+  helpers,
+  addClonk,
   step: n => {
     for (let i = 0; i < n; i++) step();
   },

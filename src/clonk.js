@@ -412,7 +412,8 @@ function updClonk(c, I) {
     // snap to three directions: straight, slanted down, slanted up (same steepness)
     const mag = Math.hypot(I.ax, I.ay);
     const raw = mag < 0.3 ? 0 : Math.atan2(I.ay, Math.max(0.001, Math.abs(I.ax)));
-    const slope = raw > 0.45 ? SLOPE_DOWN : raw < -0.45 ? -SLOPE_UP : 0;
+    // (helpers pass their own slope: they may dig down more steeply to reach ore)
+    const slope = I.slope !== undefined ? I.slope : raw > 0.45 ? SLOPE_DOWN : raw < -0.45 ? -SLOPE_UP : 0;
     const len = Math.hypot(1, slope);
     c.digging = true;
     c.digDir = [c.face / len, slope / len];
@@ -661,6 +662,7 @@ function lorryAct(c, L) {
 }
 
 export {
+  diggable,
   digZone,
   wantsDig,
   NOIN,

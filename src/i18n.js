@@ -23,8 +23,8 @@ const EN = {
   'Schnell läuft flüssiger auf älteren Handys': 'Fast runs smoother on older phones',
   'Kommt nicht weiter': 'Cannot get there',
   'Neue Version – tippen zum Laden': 'New version – tap to load',
-  'Deine Helfer sammeln von selbst und bringen alles zur Basis':
-    'Your helpers collect by themselves and bring everything to the base',
+  'Deine Helfer arbeiten von selbst: sie sammeln, fällen Bäume, graben Erz und bringen alles zur Basis':
+    'Your helpers work on their own: they collect, fell trees, dig ore and bring everything to the base',
   'Tipp rechts ins Gelände: dein Wühler läuft (und gräbt) dorthin':
     'Tap the ground on the right: your digger walks (and digs) there',
   'laufen, klettern, nach oben schnippen = springen; gegen Erde laufen oder runter drücken = graben':

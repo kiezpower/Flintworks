@@ -421,7 +421,11 @@ function openBase() {
 // ---- Hints ----
 G.hintsSeen = new Set();
 const HINTS = [
-  { id: 'crew', test: () => G.frame > 600, text: 'Deine Helfer sammeln von selbst und bringen alles zur Basis' },
+  {
+    id: 'crew',
+    test: () => G.frame > 600,
+    text: 'Deine Helfer arbeiten von selbst: sie sammeln, fällen Bäume, graben Erz und bringen alles zur Basis',
+  },
   { id: 'tap', test: () => G.frame > 1500, text: 'Tipp rechts ins Gelände: dein Wühler läuft (und gräbt) dorthin' },
   { id: 'tree', test: c => nearTree(c), text: 'Aktion fällt den Baum. Holz brauchst du zum Bauen' },
   {
