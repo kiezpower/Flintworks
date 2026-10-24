@@ -3,14 +3,16 @@
 import { addFloat } from './floats.js';
 import { tr } from './i18n.js';
 import { sfx } from './sound.js';
+import { sel_ } from './entities.js';
+import { isPlayer } from './players.js';
 import { G, builds, crew } from './state.js';
 import { stock } from './store.js';
 import { toast } from './ui.js';
 import { W, surf } from './world.js';
 
-const helpers = () => crew.filter((c, k) => k > 0 && !c.dead);
+const helpers = () => crew.filter(c => !isPlayer(c) && !c.dead);
 const deepest = () => {
-  const c = crew[0];
+  const c = sel_();
   return c ? Math.round((c.y + 10 - surf[Math.max(0, Math.min(W - 1, Math.floor(c.x + 3)))]) / 4) : 0;
 };
 // prog() → current value; goal; reward in Taler. "base" values are taken when the mission starts.
@@ -61,7 +63,7 @@ function updMissions() {
   if (value(m) >= m.goal) {
     G.money += m.pay;
     G.earned = (G.earned || 0) + m.pay;
-    const c = crew[0];
+    const c = sel_();
     if (c) addFloat(c.x + 3, c.y - 6, '+' + m.pay, '#f2c230');
     sfx('fanfare');
     toast('Auftrag erfüllt: +{pay} Taler', { pay: m.pay });

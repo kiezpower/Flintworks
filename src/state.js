@@ -13,7 +13,6 @@ const meteors = [],
   birds = [],
   clouds = [];
 G.money = 0;
-G.sel = 0;
 G.state = 'menu';
 G.startT = 0;
 G.shake = 0;

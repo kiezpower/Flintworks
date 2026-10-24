@@ -16,10 +16,12 @@ import * as world from './world.js';
 import { gen } from './gen.js';
 import { addClonk } from './entities.js';
 import * as helpers from './helpers.js';
+import { send } from './commands.js';
 import { digZone, wantsDig } from './clonk.js';
 import { LIQ, matAt, solid } from './world.js';
 
 window.__ww = {
+  send,
   helpers,
   addClonk,
   step: n => {

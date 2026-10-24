@@ -12,6 +12,7 @@
 import { NOIN, diggable, nearTree } from './clonk.js';
 import { midMat } from './entities.js';
 import { jobBubble, tryBeam } from './mine.js';
+import { clonkOf, isPlayer } from './players.js';
 import { DIG, JUMP, mkNav } from './pathfind.js';
 import { ITEM } from './sprites.js';
 import { stock } from './store.js';
@@ -49,6 +50,8 @@ function block(ref) {
   else tooHard.set(ref, G.frame + 1800);
 }
 const takenBy = (c, ref) => crew.some(o => o !== c && !o.dead && o.job && o.job.ref === ref);
+// the player a helper follows (whoever gave the order; else your own Wühler)
+const leader = c => clonkOf(c.followPid ?? G.myId) || crew.find(isPlayer) || c;
 const baseX = () => G.base.x + G.base.w / 2;
 // helpers work within reach of the base
 const far = x => Math.abs(x - baseX()) > 560;
@@ -146,7 +149,7 @@ function target(c, n) {
     };
   }
   if (j.type === 'follow') {
-    const me = crew[0];
+    const me = leader(c);
     j.gx = me.x;
     j.gy = me.y;
     return { x: me.x, y: me.y, r: 14, ry: 10 };
@@ -276,7 +279,7 @@ function helperAI(c, n) {
     else if (
       j.type === 'follow' &&
       c.path &&
-      Math.hypot(crew[0].x - j.gx, crew[0].y - j.gy) > 24 &&
+      Math.hypot(leader(c).x - j.gx, leader(c).y - j.gy) > 24 &&
       G.frame - c.pt > 20
     )
       c.path = null;

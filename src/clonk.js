@@ -6,10 +6,10 @@ import { addFloat } from './floats.js';
 import { track } from './profile.js';
 import { dust, splash } from './effects.js';
 import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './entities.js';
-import { inp } from './input.js';
+import { inputOf } from './players.js';
 import { sfx } from './sound.js';
 import { G, builds, crew, lorries, parts, trees } from './state.js';
-import { openBase, openBuild, toast } from './ui.js';
+import { toast } from './ui.js';
 import {
   ACID,
   AIR,
@@ -59,10 +59,6 @@ function killClonk(c) {
   c.inv = [];
   toast('{name} ist erschöpft', { name: c.name });
   sfx('hurt', c.x, c.y);
-  if (crew[G.sel] === c) {
-    const nx = crew.findIndex(o => !o.dead);
-    if (nx >= 0) G.sel = nx;
-  }
 }
 function startTumble(c, vx, vy) {
   if (c.dead) return;
@@ -256,7 +252,8 @@ function nearTree(c) {
 }
 const NOIN = { ax: 0, ay: 0, dig: false, jumpP: false, jumpUp: false, throwP: false, actP: false };
 function updClonk(c, I) {
-  if (I === inp && G.autoDig && !I.dig && !c.dead) {
+  // (automatic digging is part of a player's input; helpers dig on purpose)
+  if (I.auto && !I.dig && !c.dead) {
     const d = wantsDig(c, I);
     if (d) {
       I.dig = true;
@@ -608,7 +605,8 @@ function lorryNear(c) {
 }
 function context(c) {
   if (!c || c.dead) return { label: '—' };
-  if (insideB(c, G.base)) return { label: 'Basis', fn: () => openBase() };
+  // (ui: a panel that opens on the device of the player who pressed the button)
+  if (insideB(c, G.base)) return { label: 'Basis', ui: 'base' };
   const ch = chestNear(c);
   if (ch) return { label: 'Öffnen', fn: () => openChest(ch) };
   const L = lorryNear(c);
@@ -635,13 +633,14 @@ function context(c) {
         sfx('fuse', c.x, c.y);
       },
     };
-  return { label: 'Bauen', fn: () => openBuild() };
+  return { label: 'Bauen', ui: 'build' };
 }
 function startBridge(c, m) {
   if (c.climb || c.hangle || c.tumble) return;
   c.inv.splice(c.isel, 1);
   if (c.isel >= c.inv.length) c.isel = Math.max(0, c.inv.length - 1);
-  const dy = inp.ay < -0.4 ? -0.5 : inp.ay > 0.4 ? 0.5 : 0;
+  const I = inputOf(c.pid);
+  const dy = I.ay < -0.4 ? -0.5 : I.ay > 0.4 ? 0.5 : 0;
   c.bridge = {
     n: 0,
     x0: c.x + 3 + c.face * 4,

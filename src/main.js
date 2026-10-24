@@ -18,7 +18,7 @@ import { updBuilds, updLorry } from './buildings.js';
 import { NOIN, context, doThrow, updClonk } from './clonk.js';
 import { addClonk, insideB, sel_ } from './entities.js';
 import { gen } from './gen.js';
-import { cycleCrew, inp, readInput } from './input.js';
+import { cycleCrew, readInput } from './input.js';
 import { helperAI } from './helpers.js';
 import { updBeams } from './mine.js';
 import { updMissions } from './missions.js';
@@ -28,7 +28,21 @@ import { clearSave, hasSave, loadGame, saveGame } from './save.js';
 import { simulate } from './sim.js';
 import { audioInit, sfx } from './sound.js';
 import { G, animals, builds, crew, lorries } from './state.js';
-import { $, checkHints, closePanel, drawMini, hud, openBuild, panelEl, toast, toastEl, toggleMap } from './ui.js';
+import {
+  $,
+  checkHints,
+  closePanel,
+  drawMini,
+  hud,
+  openBase,
+  openBuild,
+  panelEl,
+  toast,
+  toastEl,
+  toggleMap,
+} from './ui.js';
+import { register, send } from './commands.js';
+import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
 import { H, W, clamp, surf } from './world.js';
 
@@ -93,7 +107,8 @@ function startGame(withTutorial = false) {
   else if (withTutorial !== 'resume') endTutorial(false);
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
-  crew[0] && Object.assign(crew[0], { hat: P.hat, cap: P.cap });
+  const mine = sel_();
+  if (mine) Object.assign(mine, { hat: P.hat, cap: P.cap });
   G.autoDig = P.autodig !== false;
   G.climbOn = !!P.climbing;
   G.jumpBtn = P.jumpbtn !== false;
@@ -104,14 +119,16 @@ function startGame(withTutorial = false) {
     G.res = res;
     resize();
   }
-  G.sel = 0;
   G.territory = !!P.territory;
   calcTerr();
   G.crewKey = '';
   G.state = 'play';
   hideLobby();
   overlay.hidden = true;
-  if (withTutorial !== 'resume') G.startT = performance.now();
+  if (withTutorial !== 'resume') {
+    G.startT = performance.now();
+    G.playTicks = 0;
+  }
   if (!G.tut && withTutorial !== 'resume') toast('Welt: {name}', { name: tr(biome().name) });
 }
 function endScreen(won) {
@@ -120,8 +137,8 @@ function endScreen(won) {
   closePanel();
   clearSave();
   G.inRun = false;
-  // (in game time: a slower tempo does not cost stars)
-  const s = Math.round(((performance.now() - G.startT) / 1000) * (G.speed || 1));
+  // counted in game ticks: a slower tempo or a pause does not cost stars
+  const s = Math.round((G.playTicks || 0) / 60);
   const stars = won ? starsFor(s) : 0;
   const tro = finishGame(won, G.earned || 0, stars);
   const time = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -218,14 +235,19 @@ function openMenu() {
   });
   item('Zurück zur Basis', 'Wenn du feststeckst: dein Wühler geht nach Hause', () => {
     closePanel();
-    const c = crew[0];
-    if (!c || c.dead) return;
-    Object.assign(c, { x: G.base.x + 10, y: G.base.gy - 10, vx: 0, vy: 0, climb: false, hangle: false, tumble: false });
-    resetCam();
-    toast('{name} ist zurück in der Basis', { name: c.name });
+    send('home');
   });
   item('Lobby', 'Spiel speichern und zur Lobby', () => $('newBtn').click());
 }
+// "back to base" when stuck
+register('home', c => {
+  if (c.dead) return;
+  Object.assign(c, { x: G.base.x + 10, y: G.base.gy - 10, vx: 0, vy: 0, climb: false, hangle: false, tumble: false });
+  if (c === sel_()) {
+    resetCam();
+    toast('{name} ist zurück in der Basis', { name: c.name });
+  }
+});
 $('sndBtn').addEventListener('click', () => {
   G.muted = !G.muted;
   $('sndBtn').classList.toggle('off', G.muted);
@@ -247,10 +269,11 @@ function respawn(c) {
     y: G.base.gy - 10,
   });
   G.crewKey = '';
-  if (c === crew[0]) toast('{name} ist wieder fit', { name: c.name });
+  if (c === sel_()) toast('{name} ist wieder fit', { name: c.name });
 }
 function resetCam() {
-  const s = crew[0];
+  const s = sel_();
+  if (!s) return;
   cam.x = clamp(s.x - G.VW / 2, 0, W - G.VW);
   cam.y = clamp(s.y - G.VH / 2, 0, H - G.VH);
 }
@@ -259,17 +282,19 @@ function step() {
   readInput();
   const paused = !panelEl.hidden;
   if (G.state === 'play' && !paused) {
-    G.sel = 0; // you always play your own Wühler; the others work by themselves
-    tapGotoInput(crew[0]);
+    G.playTicks = (G.playTicks || 0) + 1;
+    tapGotoInput(sel_());
+    // players are steered by their input (yours from this device), helpers by their own AI
     crew.forEach((c, n) => {
-      let I = n === G.sel ? inp : NOIN;
-      if (n !== G.sel && !c.dead) I = helperAI(c, n);
+      const I = isPlayer(c) ? inputOf(c.pid) : c.dead ? NOIN : helperAI(c, n);
       updClonk(c, I);
-      if (n === G.sel && !c.dead) {
+      if (isPlayer(c) && !c.dead) {
         doThrow(c, I);
         if (I.actP) {
           const cx = context(c);
-          if (cx.fn) cx.fn();
+          if (cx.ui) {
+            if (c.pid === G.myId) (cx.ui === 'base' ? openBase : openBuild)();
+          } else if (cx.fn) cx.fn();
         }
       }
     });

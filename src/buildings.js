@@ -2,9 +2,10 @@ import { arriveAtBase, stock, takeStock, unload, updProduction } from './store.j
 import { track } from './profile.js';
 import { tr } from './i18n.js';
 import { digCell, lorryNear, onCase, spawnFromDig } from './clonk.js';
-import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './entities.js';
+import { register } from './commands.js';
+import { inputOf, isPlayer } from './players.js';
+import { insideB, midMat, moveBody, newId, overlap, sel_, spawnItem, unstuck } from './entities.js';
 import { clearFoot } from './gen.js';
-import { inp } from './input.js';
 import { calcTerr } from './render.js';
 import { sfx } from './sound.js';
 import { ITEM } from './sprites.js';
@@ -193,9 +194,9 @@ const costTxt = need =>
   Object.entries(need)
     .map(([t, n]) => `${n}× ${resName(t)}`)
     .join(' + ');
-function tryBuild(type) {
-  const T = BT[type],
-    c = sel_();
+function tryBuild(type, c = sel_()) {
+  const T = BT[type];
+  if (!T) return;
   closePanel();
   if (!c || c.dead || G.state !== 'play') return;
   if (c.climb || c.hangle || c.tumble || free(c.x, c.y + 1, 6, 10)) {
@@ -248,6 +249,7 @@ function tryBuild(type) {
       t.fall = 1;
     }
   const b = {
+    id: newId(),
     type,
     x: bx,
     gy,
@@ -267,13 +269,17 @@ function tryBuild(type) {
   builds.push(b);
   toast('{name}: Wühler drin stehen lassen zum Bauen', { name: tr(T.name) });
 }
+register('build', (c, { type }) => tryBuild(type, c));
 function liftUpd(b) {
-  const c = b.cs,
-    s = sel_();
+  const c = b.cs;
   let dir = 0;
-  if (s && !s.dead && onCase(s, c) && !inp.dig) {
-    if (inp.ay > 0.4) dir = 1;
-    else if (inp.ay < -0.4) dir = -1;
+  // any player standing on the platform steers it with the stick
+  for (const s of crew) {
+    if (!isPlayer(s) || s.dead || !onCase(s, c)) continue;
+    const I = inputOf(s.pid);
+    if (I.dig) continue;
+    if (I.ay > 0.4) dir = 1;
+    else if (I.ay < -0.4) dir = -1;
   }
   b.moving = 0;
   b.want = !!dir;
@@ -477,7 +483,7 @@ function smoke(x, y) {
   });
 }
 function mkLorry(x, y) {
-  return { x, y, w: 12, h: 7, vx: 0, vy: 0, items: [] };
+  return { id: newId(), x, y, w: 12, h: 7, vx: 0, vy: 0, items: [] };
 }
 function gdist(x, y) {
   for (let d = 0; d < 5; d++) if (!free(x, y + d, 1, 1)) return d;

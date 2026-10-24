@@ -3,7 +3,7 @@ import { placeChests } from './treasure.js';
 import { scatterDecor } from './decor.js';
 import { biome, setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
-import { addClonk, mkAnimal, spawnItem } from './entities.js';
+import { addClonk, mkAnimal, newId, spawnItem } from './entities.js';
 import { calcTerr } from './render.js';
 import { simulate } from './sim.js';
 import { sp, treeSprite } from './sprites.js';
@@ -37,6 +37,8 @@ import {
   shade,
   solid,
   surf,
+  getSeed,
+  setSeed,
 } from './world.js';
 
 // ---- Generation ----
@@ -65,6 +67,10 @@ function topSolid(x) {
   return H;
 }
 function gen() {
+  // multiplayer: everybody builds the same world from the host's seed
+  if (G.nextSeed != null) setSeed(G.nextSeed);
+  G.seed = getSeed();
+  G.nextId = 0;
   setBiome(G.nextBiome || ['meadow', 'desert', 'winter'][ri(0, 2)]);
   G.earned = 0;
   G.tools = {};
@@ -194,7 +200,7 @@ function gen() {
   flush();
   parts.length = 0;
   // home base
-  G.base = { type: 'base', x: 72, gy: surf[90] + 1, w: 36, h: 30, prog: 1, done: true, busy: 0, lvl: 1 };
+  G.base = { id: newId(), type: 'base', x: 72, gy: surf[90] + 1, w: 36, h: 30, prog: 1, done: true, busy: 0, lvl: 1 };
   G.base.gy = surf[90] + 1;
   clearFoot(G.base.x, G.base.gy, G.base.w, G.base.h);
   builds.push(G.base);
@@ -222,8 +228,8 @@ function gen() {
   }
   // crew
   G.money = 40;
-  G.sel = 0;
   for (let k = 0; k < 3; k++) addClonk(G.base.x + 10 + k * 6, G.base.gy - 10);
+  crew[0].pid = G.myId; // your own Wühler; the other two are helpers
   crew[0].inv = ['flint', 'rock'];
   crew[1].inv = ['loam'];
   crew[2].inv = ['rock'];
@@ -296,6 +302,7 @@ function canPlantAt(x) {
 function plantTree(x, stage) {
   const type = G.biome === 'desert' ? 'cactus' : G.biome === 'winter' ? 'snowpine' : rnd() < 0.5 ? 'pine' : 'oak';
   trees.push({
+    id: newId(),
     x,
     gy: topSolid(x),
     type,

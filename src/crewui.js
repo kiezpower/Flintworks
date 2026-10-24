@@ -3,6 +3,9 @@
 import { tr } from './i18n.js';
 import { sfx } from './sound.js';
 import { SPR, itemIcon } from './sprites.js';
+import { register, send } from './commands.js';
+import { sel_ } from './entities.js';
+import { isPlayer } from './players.js';
 import { G, crew } from './state.js';
 import { closePanel, openPanel, opt, sec, toast } from './ui.js';
 
@@ -17,11 +20,26 @@ const FOCUS = [
 const icon = t => (t === 'clonk' ? SPR.clonkIcon : itemIcon(t));
 const focusOf = c => FOCUS.find(f => f.id === (c.focus || 'all'));
 
-function setFocus(c, id) {
+function setFocus(c, id, pid) {
   c.focus = id;
+  c.followPid = pid; // "follow me" follows whoever gave the order
   c.job = c.path = c.plan = null;
   G.crewKey = '';
 }
+const helperList = () => crew.filter(o => !isPlayer(o) && !o.dead);
+// the orders, run for the player who gave them
+register('focus', (me, { id, f }, pid) => {
+  const c = crew.find(o => o.id === id);
+  if (c && !isPlayer(c) && FOCUS.some(x => x.id === f)) setFocus(c, f, pid);
+});
+register('focusAll', (me, { f }, pid) => {
+  if (FOCUS.some(x => x.id === f)) for (const o of helperList()) setFocus(o, f, pid);
+});
+register('mark', me => {
+  G.mineMark = { x: Math.round(me.x + 3), y: Math.round(me.y + 10) };
+  for (const o of helperList()) if ((o.focus || 'all') === 'all' || o.focus === 'ore') o.job = o.path = o.plan = null;
+});
+register('unmark', () => (G.mineMark = null));
 // small badge on the crew bar button
 function focusBadge(c) {
   const f = c.focus || 'all';
@@ -34,9 +52,11 @@ function focusBadge(c) {
 function openCrew(n) {
   const c = crew[n];
   if (!c || G.state !== 'play') return;
-  const helpers = crew.filter((o, k) => k > 0 && !o.dead);
-  const p = openPanel(n === 0 ? 'Mannschaft' : c.name);
-  if (n > 0) {
+  const mine = c === sel_();
+  if (isPlayer(c) && !mine) return; // other players steer themselves
+  const helpers = helperList();
+  const p = openPanel(mine ? 'Mannschaft' : c.name);
+  if (!mine) {
     const l = sec(p, tr('Aufgabe für {name}', { name: c.name }));
     for (const f of FOCUS)
       opt(l, {
@@ -45,38 +65,36 @@ function openCrew(n) {
         sub: tr(f.sub),
         cost: f.id === (c.focus || 'all') ? '✓' : '',
         onClick: () => {
-          setFocus(c, f.id);
+          send('focus', { id: c.id, f: f.id });
           sfx('pick');
           openCrew(n);
         },
       });
   }
   if (helpers.length) {
-    const l = sec(p, n === 0 ? 'Aufgabe für alle Helfer' : 'Für alle Helfer');
+    const l = sec(p, mine ? 'Aufgabe für alle Helfer' : 'Für alle Helfer');
     for (const f of FOCUS)
       opt(l, {
         icon: icon(f.icon),
         title: tr(f.title),
-        sub: n === 0 ? tr(f.sub) : '',
-        short: n > 0,
+        sub: mine ? tr(f.sub) : '',
+        short: !mine,
         cost: helpers.every(o => (o.focus || 'all') === f.id) ? '✓' : '',
         onClick: () => {
-          for (const o of helpers) setFocus(o, f.id);
+          send('focusAll', { f: f.id });
           sfx('pick');
           openCrew(n);
         },
       });
   } else sec(p, 'Noch keine Helfer – in der Heimatbasis kannst du welche anheuern');
   // mining area: where the miners should dig
-  const me = crew[0];
   const m = sec(p, 'Abbaugebiet');
   opt(m, {
     icon: itemIcon('nug'),
     title: tr('Hier abbauen'),
     sub: tr('Die Bergleute graben rund um diese Stelle'),
     onClick: () => {
-      G.mineMark = { x: Math.round(me.x + 3), y: Math.round(me.y + 10) };
-      for (const o of helpers) if ((o.focus || 'all') === 'all' || o.focus === 'ore') o.job = o.path = null;
+      send('mark');
       toast('Abbaugebiet markiert');
       closePanel();
     },
@@ -87,7 +105,7 @@ function openCrew(n) {
       title: tr('Markierung entfernen'),
       sub: tr('Die Bergleute suchen wieder selbst'),
       onClick: () => {
-        G.mineMark = null;
+        send('unmark');
         openCrew(n);
       },
     });

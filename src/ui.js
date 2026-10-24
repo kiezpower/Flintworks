@@ -30,6 +30,8 @@ import { sfx } from './sound.js';
 import { ITEM, SPR, itemIcon, padIcon, toolIcon } from './sprites.js';
 import { tr } from './i18n.js';
 import { focusBadge, openCrew } from './crewui.js';
+import { register, send } from './commands.js';
+import { isPlayer } from './players.js';
 import { missionText } from './missions.js';
 import { G, INV_MAX, animals, builds, crew, lorries } from './state.js';
 import { darkness } from './weather.js';
@@ -117,16 +119,16 @@ function hud() {
   btnsEl.classList.toggle('auto', !!G.autoDig);
   btnsEl.classList.toggle('jumpon', !!G.jumpBtn);
   btnsEl.classList.toggle('noitem', !(c && !c.dead && c.inv[c.isel]));
-  const ck = crew.map((o, n) => `${n === G.sel}${o.dead}${Math.round(o.energy / 10)}${o.focus}`).join();
+  const ck = crew.map(o => `${o === c}${o.dead}${Math.round(o.energy / 10)}${o.focus}`).join();
   if (ck !== G.crewKey) {
     G.crewKey = ck;
     crewEl.innerHTML = '';
     crew.forEach((o, n) => {
       const b = document.createElement('button');
-      b.className = 'cbtn' + (n === G.sel ? ' sel' : '') + (o.dead ? ' dead' : '');
+      b.className = 'cbtn' + (o === c ? ' sel' : '') + (o.dead ? ' dead' : '');
       b.setAttribute('aria-label', o.name);
       b.title = o.name;
-      b.innerHTML = `<span class="cap" style="background:${o.cap}"></span><span class="face"></span><span class="hp"><b style="width:${Math.max(0, o.energy)}%"></b></span>${n ? focusBadge(o) : ''}`;
+      b.innerHTML = `<span class="cap" style="background:${o.cap}"></span><span class="face"></span><span class="hp"><b style="width:${Math.max(0, o.energy)}%"></b></span>${isPlayer(o) ? '' : focusBadge(o)}`;
       // tap a Wühler: give out jobs (your own one: for everybody)
       b.addEventListener('click', () => openCrew(n));
       crewEl.appendChild(b);
@@ -152,7 +154,7 @@ function hud() {
       }
       b.addEventListener('pointerdown', e => {
         e.stopPropagation();
-        if (t) c.isel = s;
+        if (t) send('isel', { i: s });
       });
       invEl.appendChild(b);
     }
@@ -182,8 +184,7 @@ function openBag() {
       cost: k === c.isel ? '✓' : '',
       short: true,
       onClick: () => {
-        c.isel = k;
-        G.invKey = '';
+        send('isel', { i: k });
         closePanel();
       },
     }),
@@ -255,7 +256,7 @@ function drawMini(full) {
       }
   crew.forEach((c, n) => {
     if (c.dead) return;
-    mctx.fillStyle = n === G.sel ? '#ffffff' : c.cap;
+    mctx.fillStyle = c === sel_() ? '#ffffff' : c.cap;
     mctx.fillRect(Math.floor(c.x / K) - 1, Math.floor(c.y / K) - 1, 4, 4);
   });
   // the small always-visible map in the corner
@@ -350,11 +351,7 @@ function openBuild() {
     short: !hasRes(c, stairCost),
     onClick: () => {
       closePanel();
-      if (!hasRes(c, stairCost)) return toast('Treppe braucht 1 Brett oder 1 Holz');
-      if (c.climb || c.hangle || c.tumble || c.bridge) return;
-      payRes(c, stairCost);
-      c.bridge = { n: 0, x0: c.x + 3 + c.face * 4, y0: c.y + 10, dy: -0.62, m: PLANK, len: 70, th: 2 };
-      sfx('hammer');
+      send('stairs');
     },
   });
   for (const t in BT) {
@@ -366,7 +363,10 @@ function openBuild() {
       sub: tr(T.info),
       cost: costTxt(T.cost),
       short: !hasRes(c, T.cost),
-      onClick: () => tryBuild(t),
+      onClick: () => {
+        closePanel();
+        send('build', { type: t });
+      },
     });
   }
 }
@@ -391,11 +391,7 @@ function openBase() {
       short: true,
       disabled: c.inv.length >= INV_MAX,
       onClick: () => {
-        if (c.inv.length >= INV_MAX || !takeStock(t)) return;
-        c.inv.push(t);
-        c.isel = c.inv.length - 1;
-        G.invKey = '';
-        sfx('pick');
+        send('take', { t });
         openBase();
       },
     });
@@ -412,22 +408,48 @@ function openBase() {
       cost: tr('{p} Taler', { p: o.price }),
       disabled: dis,
       onClick: () => {
-        if (G.money < o.price) return;
-        G.money -= o.price;
-        sfx('coin');
-        if (o.t === 'clonk') {
-          const n = addClonk(G.base.x + 15, G.base.gy - 10);
-          toast('{name} ist da', { name: n.name });
-        } else if (o.t === 'lorry') {
-          lorries.push(mkLorry(G.base.x + 12, G.base.gy - 8));
-          toast('Lore steht bereit');
-        } else if (c.inv.length < INV_MAX) c.inv.push(o.t);
-        else spawnItem(o.t, G.base.x + 16, G.base.gy - 6, 0, 0, 20);
+        send('buy', { t: o.t });
         openBase();
       },
     });
   }
 }
+
+// ---- Commands from the panels above (run for the player who sent them) ----
+register('isel', (c, { i }) => {
+  if (c.inv[i] !== undefined) c.isel = i;
+  G.invKey = '';
+});
+register('stairs', c => {
+  const cost = hasRes(c, { plank: 1 }) ? { plank: 1 } : { wood: 1 };
+  if (!hasRes(c, cost)) return toast('Treppe braucht 1 Brett oder 1 Holz');
+  if (c.climb || c.hangle || c.tumble || c.bridge) return;
+  payRes(c, cost);
+  c.bridge = { n: 0, x0: c.x + 3 + c.face * 4, y0: c.y + 10, dy: -0.62, m: PLANK, len: 70, th: 2 };
+  sfx('hammer');
+});
+register('take', (c, { t }) => {
+  if (c.inv.length >= INV_MAX || !takeStock(t)) return;
+  c.inv.push(t);
+  c.isel = c.inv.length - 1;
+  G.invKey = '';
+  sfx('pick');
+});
+register('buy', (c, { t }) => {
+  const o = BUY.find(b => b.t === t);
+  if (!o || G.money < o.price) return;
+  if (t === 'clonk' && crew.filter(x => !x.dead).length >= BASELV[lvl()].crew) return;
+  G.money -= o.price;
+  sfx('coin');
+  if (t === 'clonk') {
+    const n = addClonk(G.base.x + 15, G.base.gy - 10);
+    toast('{name} ist da', { name: n.name });
+  } else if (t === 'lorry') {
+    lorries.push(mkLorry(G.base.x + 12, G.base.gy - 8));
+    toast('Lore steht bereit');
+  } else if (c.inv.length < INV_MAX) c.inv.push(t);
+  else spawnItem(t, G.base.x + 16, G.base.gy - 6, 0, 0, 20);
+});
 
 // ---- Hints ----
 G.hintsSeen = new Set();

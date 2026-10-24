@@ -23,6 +23,8 @@ const TOOLS = {
 };
 const hasTool = id => !!(G.tools && G.tools[id]);
 
+import { register, send } from './commands.js';
+import { toast as toastMsg } from './ui.js';
 // adds the tool section to the base panel; opt/sec/toast come from ui.js to avoid a cycle at load
 function toolSection(p, c, { opt, sec, toast, reopen }) {
   const open = Object.keys(TOOLS).filter(id => !hasTool(id));
@@ -42,15 +44,22 @@ function toolSection(p, c, { opt, sec, toast, reopen }) {
           toast('{name} braucht {m} Taler + {cost}', { name: tr(T.name), m: T.money, cost: costTxt(T.need) });
           return;
         }
-        G.money -= T.money;
-        payRes(c, T.need);
-        G.tools = { ...(G.tools || {}), [id]: true };
-        sfx('done');
-        toast('{name} gekauft', { name: tr(T.name) });
+        send('tool', { id });
         reopen();
       },
     });
   }
 }
+
+// buying a tool (run for the player who sent it)
+register('tool', (c, { id }) => {
+  const T = TOOLS[id];
+  if (!T || hasTool(id) || G.money < T.money || !hasRes(c, T.need)) return;
+  G.money -= T.money;
+  payRes(c, T.need);
+  G.tools = { ...(G.tools || {}), [id]: true };
+  sfx('done');
+  toastMsg('{name} gekauft', { name: tr(T.name) });
+});
 
 export { TOOLS, hasTool, toolSection };

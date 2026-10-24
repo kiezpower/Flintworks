@@ -190,6 +190,7 @@ function readInput() {
   inp.ax = kx || joy.x;
   inp.ay = ky || joy.y;
   inp.dig = !!(keys.dig || held.dig || G.digLatch);
+  inp.auto = !!G.autoDig;
   inp.jumpP = edge.jump || edge.jumpUp;
   inp.jumpUp = edge.jumpUp && !edge.jump;
   inp.throwP = edge.throw;

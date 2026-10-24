@@ -74,7 +74,7 @@ GitHub Pages liefert nur statische Dateien. Signaling und Relay müssen deshalb 
 | Entscheidung | Empfehlung | Begründung |
 |---|---|---|
 | Modell | **State-Sync, Host-autoritativ** (das Gerät des Einladenden simuliert) | Kleinster Umbau, kein Desync-Risiko, und die Helfer-KI bleibt wie sie ist |
-| Transport | **Option B: WebSocket-Relay auf Hetzner CX22 (ca. 4–5 €)** | Im Budget. Funktioniert in jedem Mobilfunknetz. Der Server hält das letzte Vollbild für Beitritt, Reconnect und Host-Wechsel. Am wenigsten Fehlerquellen. |
+| Transport | **Option B: WebSocket-Relay auf dem vorhandenen dogado-vServer, `wss://play.kiez-power.de`** | Im Budget. Funktioniert in jedem Mobilfunknetz. Der Server hält das letzte Vollbild für Beitritt, Reconnect und Host-Wechsel. Am wenigsten Fehlerquellen. |
 | Später optional | WebRTC-DataChannel als Direktweg mit dem Relay als Ersatz | Erst, wenn die Latenz wirklich stört |
 | Cheat-Schutz | Bewusst niedrig | Spiel unter Freunden, keine Ranglisten, keine Währung zum Kaufen |
 
@@ -183,7 +183,7 @@ GitHub Pages liefert nur statische Dateien. Signaling und Relay müssen deshalb 
 
 | Phase | Sichtbares Ergebnis | Betroffene / neue Dateien | Aufwand | Risiken |
 |---|---|---|---|---|
-| **0 Vorbereitung** | Einzelspiel läuft wie vorher (Umbau U1–U8) | `players.js`, `commands.js`, `input.js`, `tapgo.js`, `main.js`, `ui.js`, `render.js`, `helpers.js`, `crewui.js`, `store.js`, `buildings.js`, `save.js`, `world.js`, `entities.js` | 1,5–2 Tage | Viele kleine Stellen mit `crew[0]`. Danach ein Durchlauf durchs Einzelspiel. |
+| **0 Vorbereitung** ✅ v1.3.0 | Einzelspiel läuft wie vorher (U1–U3, U5–U8; U4 Teams kommt mit Phase 6) | `players.js`, `commands.js`, `input.js`, `tapgo.js`, `main.js`, `ui.js`, `render.js`, `helpers.js`, `crewui.js`, `store.js`, `buildings.js`, `save.js`, `world.js`, `entities.js` | 1,5–2 Tage | Viele kleine Stellen mit `crew[0]`. Danach ein Durchlauf durchs Einzelspiel. |
 | **1 Zwei Geräte sehen sich bewegen** | Zwei Handys im selben Raum, gleiche Welt per Seed, jeder sieht den anderen Wühler laufen (nur Positionen, Terrain lokal) | `server/relay.js`, `net/transport.js`, `net/room.js`, `net/protocol.js`, `lobby.js` | 1 Tag + Server-Setup (2 h) | Domain/TLS für `wss://` (Caddy plus eine Subdomain nötig) |
 | **2 Host-autoritativ** | Host simuliert, der Freund gräbt, beide sehen dieselben Löcher, Items und Helfer | `net/host.js`, `net/client.js`, `net/terrain.js`, `main.js` | 2–3 Tage | Bandbreite bei Wasser. Wie sich die Vorhersage anfühlt. |
 | **3 Lobby und Einladen** | Freunde erscheinen in den „+“-Plätzen, Bereit-Haken, gemeinsamer Start, Link öffnet den Raum | `net/room.js`, `lobby.js`, `lobbyscene.js`, `lobby.css`, `i18n.js` | 1 Tag | – |
@@ -198,8 +198,8 @@ GitHub Pages liefert nur statische Dateien. Signaling und Relay müssen deshalb 
 
 | Posten | Kosten |
 |---|---|
-| Hetzner CX22 (2 vCPU, 4 GB, 20 TB) | ca. 4–5 €/Monat |
-| Domain für `wss://` (Subdomain einer vorhandenen Domain) | 0 € |
+| dogado-vServer (vorhanden) | 0 € zusätzlich |
+| Subdomain `play.kiez-power.de` | 0 € |
 | TLS (Caddy und Let's Encrypt) | 0 € |
 | **Summe** | **≤ 5 €/Monat** ✅ |
 
@@ -219,6 +219,5 @@ GitHub Pages liefert nur statische Dateien. Signaling und Relay müssen deshalb 
 
 | # | Frage | Vorschlag |
 |---|---|---|
-| 1 | Subdomain für den Server, z. B. `play.kiezpower.de` | Wird für `wss://` gebraucht |
-| 2 | Hetzner-Konto vorhanden? | Sonst Alternative D (Cloudflare) |
+| 1 | Server und Subdomain | ✅ dogado-vServer, `play.kiez-power.de` |
 | 3 | Gilt das Spieltempo für alle? | Ja, der Host bestimmt es |

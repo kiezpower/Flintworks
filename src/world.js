@@ -272,7 +272,10 @@ function free(x, y, w, h) {
 }
 // ?seed=123 in the address makes worlds reproducible (used by the tests)
 const seedParam = new URLSearchParams(location.search).get('seed');
-let seed = seedParam === null ? 0 : Number(seedParam) >>> 0;
+// (otherwise a random start; multiplayer sets the host's seed with setSeed before gen)
+let seed = seedParam === null ? (Math.random() * 4294967296) >>> 0 : Number(seedParam) >>> 0;
+const setSeed = n => (seed = n >>> 0);
+const getSeed = () => seed;
 const seeded = () => {
   seed = (seed + 0x6d2b79f5) >>> 0;
   let t = seed;
@@ -280,7 +283,7 @@ const seeded = () => {
   t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 };
-const rnd = seedParam === null ? Math.random : seeded,
+const rnd = seeded,
   ri = (a, b) => a + Math.floor(rnd() * (b - a + 1));
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
@@ -335,6 +338,8 @@ export {
   rgba,
   ri,
   rnd,
+  getSeed,
+  setSeed,
   setMat,
   shade,
   solid,

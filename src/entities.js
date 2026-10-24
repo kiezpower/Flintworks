@@ -6,6 +6,7 @@ import { free, matAt, ri } from './world.js';
 function addClonk(x, y) {
   const n = crew.length;
   const c = {
+    id: newId(),
     kind: 'clonk',
     name: NAMES[n % NAMES.length],
     cap: CAPS[n % CAPS.length],
@@ -42,6 +43,7 @@ function addClonk(x, y) {
 function mkAnimal(kind, x, y) {
   const sz = { wipf: [5, 4], fish: [4, 2], monster: [12, 9], bat: [5, 3] }[kind];
   return {
+    id: newId(),
     kind,
     x,
     y,
@@ -60,7 +62,7 @@ function mkAnimal(kind, x, y) {
 }
 function spawnItem(t, x, y, vx, vy, pd = 0, thrower = null) {
   const [w, h] = ITEM[t].s;
-  const it = { t, x, y, vx, vy, w, h, pd, armed: false, fuse: -1, thrower };
+  const it = { id: newId(), t, x, y, vx, vy, w, h, pd, armed: false, fuse: -1, thrower };
   items.push(it);
   return it;
 }
@@ -126,6 +128,9 @@ const overlap = (a, b, m = 0) =>
   a.x + a.w > b.x - m && a.x < b.x + b.w + m && a.y + a.h > b.y - m && a.y < b.y + b.h + m;
 const midMat = (e, fy) => matAt(Math.floor(e.x + e.w / 2), Math.floor(e.y + e.h * fy));
 const insideB = (c, b) => c.x + 6 > b.x && c.x < b.x + b.w && c.y + 10 > b.gy - b.h && c.y < b.gy + 1;
-const sel_ = () => crew[G.sel];
+// your own Wühler (the one with your player id)
+const sel_ = () => crew.find(c => c.pid === G.myId) || null;
+// every entity gets a stable id (the network refers to things by it)
+const newId = () => (G.nextId = (G.nextId || 0) + 1);
 
-export { addClonk, insideB, midMat, mkAnimal, moveBody, overlap, sel_, spawnItem, unstuck };
+export { addClonk, insideB, midMat, mkAnimal, moveBody, newId, overlap, sel_, spawnItem, unstuck };

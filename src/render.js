@@ -13,6 +13,7 @@ import { drawGemSparkles, drawLavaGlow, drawWaterGlints, scanLava } from './effe
 import { drawTutorial } from './tutorial.js';
 import { arrows, lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
+import { isPlayer } from './players.js';
 import { topSolid } from './gen.js';
 import { game, joyHome } from './input.js';
 import { ICOL, SPR, drawHi, drawItemBig } from './sprites.js';
@@ -190,6 +191,7 @@ function render() {
   ctx.setTransform(G.res, 0, 0, G.res, 0, 0);
   ctx.imageSmoothingEnabled = false;
   const s = sel_() || crew[0];
+  const mine = sel_();
   const fx = s ? s.x + 3 : W / 2,
     fy = s ? s.y + 5 : H / 2;
   const tx = clamp(fx - G.VW / 2, 0, W - G.VW),
@@ -492,7 +494,7 @@ function render() {
       drawClonkHi(c, -3, -5, c.face, ctx);
       ctx.restore();
     } else drawClonkHi(c, x, y, c.face, ctx);
-    if (n === G.sel && (G.frame >> 4) % 3) {
+    if (c === mine && (G.frame >> 4) % 3) {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(x + 2, y - 4, 3, 1);
       ctx.fillRect(x + 3, y - 3, 1, 1);
@@ -541,8 +543,8 @@ function render() {
         light(
           c.x + 3 - cx,
           c.y + 4 - cy,
-          (n === G.sel ? 44 : 22) * (c.hat === 'helm' ? 1.5 : 1) * (hasTool('lamp') ? 1.4 : 1),
-          n === G.sel ? 0.95 : 0.7,
+          (isPlayer(c) ? 44 : 22) * (c.hat === 'helm' ? 1.5 : 1) * (hasTool('lamp') ? 1.4 : 1),
+          isPlayer(c) ? 0.95 : 0.7,
         );
     });
     for (const b of builds)

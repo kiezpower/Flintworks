@@ -20,9 +20,9 @@ function unb64(str) {
   for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
   return u;
 }
-function saveGame() {
-  if (G.state !== 'play') return;
-  try {
+// the whole game as plain data (also used as a network snapshot for joining players)
+function serialize() {
+  {
     const runs = [];
     let prev = -1,
       run = 0;
@@ -75,7 +75,6 @@ function saveGame() {
       chestsFound: G.chestsFound,
       gas: G.gas,
       gasClouds: G.gasClouds,
-      sel: G.sel,
       dayT: G.dayT,
       frame: G.frame,
       hints: [...G.hintsSeen],
@@ -87,8 +86,17 @@ function saveGame() {
       animals: animals.map(strip),
       lorries: lorries.map(strip),
       play: performance.now() - G.startT,
+      playTicks: G.playTicks || 0,
+      nextId: G.nextId || 0,
+      seed: G.seed,
     };
-    localStorage.setItem(SAVEKEY, JSON.stringify(data));
+    return data;
+  }
+}
+function saveGame() {
+  if (G.state !== 'play') return;
+  try {
+    localStorage.setItem(SAVEKEY, JSON.stringify(serialize()));
   } catch {}
 }
 function hasSave() {
@@ -110,6 +118,9 @@ function loadGame() {
   } catch {
     return false;
   }
+  return deserialize(d);
+}
+function deserialize(d) {
   if (!d || d.v !== 1) return false;
   try {
     setBiome(d.biome || 'meadow');
@@ -132,7 +143,6 @@ function loadGame() {
     activateAll();
     G.money = d.money;
     G.earned = d.earned || 0;
-    G.sel = d.sel;
     G.dayT = d.dayT;
     G.mode = d.mode || 'gold';
     G.relaxed = !!d.relaxed;
@@ -170,14 +180,17 @@ function loadGame() {
         birds.push({ x: bx + k * 6, y: by + (k % 2) * 4, vx: dir * (0.5 + rnd() * 0.15), ph: rnd() * 6 });
     }
     for (let k = 0; k < 9; k++) clouds.push(mkCloud(rnd() * W));
-    if (!crew[G.sel] || crew[G.sel].dead) {
-      const n = crew.findIndex(c => !c.dead);
-      G.sel = n < 0 ? 0 : n;
-    }
+    // old saves without player ids: the first Wühler is yours
+    if (!crew.some(c => c.pid === G.myId) && crew[0]) crew[0].pid = G.myId;
     arrows.length = 0;
     scatterDecor();
     calcTerr();
     G.startT = performance.now() - (d.play || 0);
+    G.playTicks = d.playTicks || 0;
+    G.nextId = d.nextId || 0;
+    G.seed = d.seed;
+    // old saves: give every entity an id
+    for (const a of [crew, items, builds, trees, animals, lorries]) for (const e of a) e.id ??= G.nextId = G.nextId + 1;
     return true;
   } catch {
     return false;
@@ -188,4 +201,4 @@ addEventListener('visibilitychange', () => {
 });
 addEventListener('pagehide', saveGame);
 
-export { SAVEKEY, b64, clearSave, hasSave, loadGame, saveGame, unb64 };
+export { SAVEKEY, b64, clearSave, deserialize, hasSave, loadGame, saveGame, serialize, unb64 };
