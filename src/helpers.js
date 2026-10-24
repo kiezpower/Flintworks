@@ -51,7 +51,7 @@ function block(ref) {
 }
 const takenBy = (c, ref) => crew.some(o => o !== c && !o.dead && o.job && o.job.ref === ref);
 // the player a helper follows (whoever gave the order; else your own Wühler)
-const leader = c => clonkOf(c.followPid ?? G.myId) || crew.find(isPlayer) || c;
+const leader = c => clonkOf(c.followPid ?? -1) || crew.find(p => isPlayer(p) && (p.team || 0) === (c.team || 0)) || c;
 const baseX = () => G.base.x + G.base.w / 2;
 // helpers work within reach of the base
 const far = x => Math.abs(x - baseX()) > 560;

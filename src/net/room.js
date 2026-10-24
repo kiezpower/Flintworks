@@ -12,6 +12,7 @@ const NET = {
   players: [], // [{pid, name, cap, hat, ready, online}]
   status: 'offline', // offline | connecting | waiting (in a room) | error
   error: null,
+  versus: false, // the host's choice: together (Koop) or against each other
 };
 const MAX_PLAYERS = 4;
 const listeners = [];
@@ -54,6 +55,7 @@ on('players', m => {
   NET.players = m.players;
   NET.hostPid = m.host;
   NET.host = m.host === NET.pid;
+  if (NET.host) sendTo('all', { k: 'cfg', versus: !!NET.versus });
   changed();
 });
 on('error', m => {
@@ -66,6 +68,16 @@ on('status', () => {
   if (transport.status !== 'open' && NET.room) NET.status = 'connecting';
   changed();
 });
+// the host's choice Koop/Versus, shown to everybody in the room
+onGameMsg('cfg', d => {
+  NET.versus = !!d.versus;
+  changed();
+});
+function setVersus(v) {
+  NET.versus = v;
+  sendTo('all', { k: 'cfg', versus: v });
+  changed();
+}
 on('msg', m => {
   const fn = m.d && msgHandlers.get(m.d.k);
   if (fn) fn(m.d, m.from);
@@ -145,6 +157,7 @@ export {
   MAX_PLAYERS,
   NET,
   createRoom,
+  setVersus,
   inRoom,
   inviteLink,
   joinRoom,

@@ -11,6 +11,7 @@ import {
   onRoomChange,
   others,
   setReady,
+  setVersus,
   shareInvite,
 } from './net/room.js';
 import { G } from './state.js';
@@ -65,6 +66,20 @@ function openInvite() {
       onClick: () => {},
     });
   }
+  // Koop or Versus: the host chooses, everybody sees it
+  const m = sec(p, 'Spielart');
+  for (const [v, title, sub] of [
+    [false, 'Koop', 'Zusammen: eine Burg, eine Kasse, ein Ziel'],
+    [true, 'Versus', 'Gegeneinander: rote gegen blaue Burg – wer zuerst das Ziel schafft'],
+  ])
+    opt(m, {
+      title: tr(title),
+      sub: tr(sub),
+      short: true,
+      cost: !!NET.versus === v ? '✓' : '',
+      disabled: !NET.host && !!NET.versus !== v,
+      onClick: () => NET.host && setVersus(v),
+    });
   const a = sec(p, 'Einladen');
   if (NET.players.length < MAX_PLAYERS)
     opt(a, {

@@ -3,6 +3,7 @@ import { track } from './profile.js';
 import { tr } from './i18n.js';
 import { digCell, lorryNear, onCase, spawnFromDig } from './clonk.js';
 import { register } from './commands.js';
+import { teamOf, useMine, useTeam } from './teams.js';
 import { inputOf, isPlayer } from './players.js';
 import { insideB, midMat, moveBody, newId, overlap, sel_, spawnItem, unstuck } from './entities.js';
 import { clearFoot } from './gen.js';
@@ -264,6 +265,7 @@ function tryBuild(type, c = sel_()) {
     rot: 0,
     cd: 0,
     open: 0,
+    team: G.curTeam || 0,
   };
   if (type === 'lift') b.cs = { x: bx + 2, y: gy - 2, home: gy - 2 };
   builds.push(b);
@@ -357,17 +359,22 @@ function updBuilds() {
   if (G.frame % 120 === 0) for (const b of builds) if (b.done && b.type !== 'base') foundation(b);
   // the castle grows by itself with what you earned
   const grow = [0, 0, 150, 350];
-  if (lvl() < 3 && (G.earned || 0) >= grow[lvl() + 1]) {
-    G.base.lvl = lvl() + 1;
-    calcTerr();
-    sfx('fanfare');
-    toast('Deine Burg wächst: Stufe {n} – bessere Preise, mehr Wühler', { n: G.base.lvl });
+  for (let t = 0; t < (G.teams ? G.teams.length : 1); t++) {
+    useTeam(t);
+    if (lvl() < 3 && (G.earned || 0) >= grow[lvl() + 1]) {
+      G.base.lvl = lvl() + 1;
+      calcTerr();
+      sfx('fanfare');
+      if (t === G.myTeam) toast('Deine Burg wächst: Stufe {n} – bessere Preise, mehr Wühler', { n: G.base.lvl });
+    }
   }
   for (const b of builds) {
+    useTeam(teamOf(b)); // Versus: a building works for its own team
     if (!b.done) {
       const helpers = crew.filter(
         c =>
           !c.dead &&
+          teamOf(c) === teamOf(b) &&
           insideB(c, b) &&
           !c.digging &&
           !c.climb &&
@@ -410,12 +417,13 @@ function updBuilds() {
       continue;
     }
     if (b.type === 'hut' || b.type === 'base') {
-      for (const c of crew) if (!c.dead && insideB(c, b)) c.energy = Math.min(100, c.energy + 0.3);
+      for (const c of crew)
+        if (!c.dead && teamOf(c) === teamOf(b) && insideB(c, b)) c.energy = Math.min(100, c.energy + 0.3);
       if (b.type === 'hut' && G.frame % 22 === 0) smoke(b.x + 15, b.gy - b.h - 1);
     }
     updProduction(b);
     if (b.type === 'base' && G.frame % 12 === 0)
-      for (const c of crew) if (!c.dead && !c.puppet && insideB(c, b)) arriveAtBase(c);
+      for (const c of crew) if (!c.dead && teamOf(c) === teamOf(b) && insideB(c, b)) arriveAtBase(c);
     if (b.type === 'wind') {
       b.rot = (b.rot || 0) + G.wind * 0.07;
     }
@@ -456,6 +464,7 @@ function updBuilds() {
     }
     if (b.type === 'lift') liftUpd(b);
   }
+  useMine();
 }
 // Every building stands on a wooden floor that hand digging cannot remove. If the ground
 // below is dug away, the floor stays as a platform you can jump onto or reach by stairs.

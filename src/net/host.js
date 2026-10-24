@@ -112,8 +112,8 @@ function sendSnapshot(full) {
   sendTo('all', snap);
 }
 // the round is over for everybody
-function hostEnd(won) {
-  if (G.netHost) sendTo('all', { k: 'end', won });
+function hostEnd(won, winner) {
+  if (G.netHost) sendTo('all', { k: 'end', won, winner });
 }
 
 // a player joins late or comes back: same world, the whole landscape, then a full snapshot

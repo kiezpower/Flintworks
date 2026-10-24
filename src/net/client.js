@@ -46,7 +46,7 @@ onGameMsg('ter', d => {
   if (G.netClient) applyChunks(d.c);
 });
 onGameMsg('toast', d => toast(d.key, d.params));
-onGameMsg('end', d => G.netClient && G.onNetEnd?.(d.won));
+onGameMsg('end', d => G.netClient && G.onNetEnd?.(d.won, d.winner));
 
 const OWN = ['x', 'y', 'vx', 'vy', 'face', 'digging', 'digDir', 'climb', 'hangle'];
 function applySnap(d) {

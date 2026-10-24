@@ -46,6 +46,7 @@ import { NET, inRoom, onGameMsg, sendTo } from './net/room.js';
 import { beginNet, endNet, startMessage } from './net/session.js';
 import { clientStep } from './net/client.js';
 import { hostEnd, hostTick } from './net/host.js';
+import { teamOf, useMine, useTeam } from './teams.js';
 import { updEmoBtn } from './net/emotes.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
@@ -96,6 +97,7 @@ function play(withTutorial) {
       G.nextBiome = chosenBiome();
       G.nextMode = P.gmode || 'gold';
       G.nextDiff = P.diff || 'adventure';
+      G.nextVersus = false;
       gen();
       if (!P.tutorialDone) withTutorial = true;
     }
@@ -115,8 +117,10 @@ function playNet(d) {
   G.nextBiome = d.biome;
   G.nextMode = d.gmode;
   G.nextDiff = d.diff;
+  G.nextVersus = !!d.versus;
   gen();
   G.nextSeed = null;
+  G.nextVersus = false;
   beginNet(d);
   resetCam();
   G.inRun = true;
@@ -166,10 +170,29 @@ function startGame(withTutorial = false) {
   }
   if (!G.tut && withTutorial !== 'resume') toast('Welt: {name}', { name: tr(biome().name) });
 }
-// a client hears from the host that the round is over
-G.onNetEnd = won => G.state === 'play' && endScreen(won);
+// a client hears from the host that the round is over (Versus: which team won)
+G.onNetEnd = (won, winner) => G.state === 'play' && endScreen(winner == null ? won : winner === G.myTeam);
+// the goal: in Versus the first team to reach it wins
+function checkGoal() {
+  if (!G.teams) {
+    if (goalReached()) endScreen(true);
+    return;
+  }
+  let winner = -1;
+  G.vs = [];
+  for (let t = 0; t < G.teams.length; t++) {
+    useTeam(t);
+    G.vs[t] = mode().prog();
+    if (winner < 0 && goalReached()) winner = t;
+  }
+  useMine();
+  if (winner >= 0) {
+    hostEnd(winner === G.myTeam, winner);
+    endScreen(winner === G.myTeam);
+  }
+}
 function endScreen(won) {
-  hostEnd(won);
+  if (!G.teams) hostEnd(won);
   G.state = won ? 'won' : 'lost';
   if (won) sfx('fanfare');
   closePanel();
@@ -330,6 +353,7 @@ function step() {
     tapGotoInput(sel_());
     // players are steered by their input (yours from this device), helpers by their own AI
     crew.forEach((c, n) => {
+      useTeam(teamOf(c)); // Versus: castle, cash and store of this Wühler's team
       const I = isPlayer(c) ? inputOf(c.pid) : c.dead ? NOIN : helperAI(c, n);
       updClonk(c, I);
       if (isPlayer(c) && !c.dead) {
@@ -344,6 +368,7 @@ function step() {
         G.cmdPid = null;
       }
     });
+    useMine();
     updBuilds();
     updBuildFx();
     updHazards();
@@ -360,13 +385,18 @@ function step() {
     updTrees();
     updFloats();
     // exhausted Wühler wake up again in the base after a short while
-    for (const c of crew) if (c.dead && c.deadT > 200) respawn(c);
+    for (const c of crew)
+      if (c.dead && c.deadT > 200) {
+        useTeam(teamOf(c));
+        respawn(c);
+      }
+    useMine();
     updTutorial();
     if (G.frame % 15 === 0) updAmbience();
     if (G.frame % 30 === 0) updDecor();
     if (G.frame % 60 === 0) checkHints();
     if (G.frame % 3600 === 0 && !G.net) saveGame();
-    if (goalReached()) endScreen(true);
+    checkGoal();
   }
   if (!paused) {
     updWeather();

@@ -26,18 +26,20 @@ function setFocus(c, id, pid) {
   c.job = c.path = c.plan = null;
   G.crewKey = '';
 }
-const helperList = () => crew.filter(o => !isPlayer(o) && !o.dead);
+// your team's helpers (Versus: the other team's helpers do not take your orders)
+const helperList = (team = G.myTeam) => crew.filter(o => !isPlayer(o) && !o.dead && (o.team || 0) === team);
 // the orders, run for the player who gave them
 register('focus', (me, { id, f }, pid) => {
   const c = crew.find(o => o.id === id);
-  if (c && !isPlayer(c) && FOCUS.some(x => x.id === f)) setFocus(c, f, pid);
+  if (c && !isPlayer(c) && (c.team || 0) === (me.team || 0) && FOCUS.some(x => x.id === f)) setFocus(c, f, pid);
 });
 register('focusAll', (me, { f }, pid) => {
-  if (FOCUS.some(x => x.id === f)) for (const o of helperList()) setFocus(o, f, pid);
+  if (FOCUS.some(x => x.id === f)) for (const o of helperList(me.team || 0)) setFocus(o, f, pid);
 });
 register('mark', me => {
   G.mineMark = { x: Math.round(me.x + 3), y: Math.round(me.y + 10) };
-  for (const o of helperList()) if ((o.focus || 'all') === 'all' || o.focus === 'ore') o.job = o.path = o.plan = null;
+  for (const o of helperList(me.team || 0))
+    if ((o.focus || 'all') === 'all' || o.focus === 'ore') o.job = o.path = o.plan = null;
 });
 register('unmark', () => (G.mineMark = null));
 // small badge on the crew bar button

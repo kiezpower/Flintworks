@@ -2,6 +2,7 @@
 // game runs the command for the player who sent it. In a single game that happens right away;
 // in multiplayer a client hands the command to the network and the host runs it.
 import { G, crew } from './state.js';
+import { teamOf, useMine, useTeam } from './teams.js';
 
 const CMD = {};
 // fn(c, args, pid): c is the sending player's Wühler
@@ -13,10 +14,12 @@ function exec(pid, name, args = {}) {
   const c = crew.find(o => o.pid === pid);
   if (!fn || !c) return;
   G.cmdPid = pid; // whose order this is (messages go to that player)
+  useTeam(teamOf(c)); // Versus: that player's castle, cash and store
   try {
     fn(c, args, pid);
   } finally {
     G.cmdPid = null;
+    useMine();
   }
 }
 // the network replaces this while you are a client (net/client.js)

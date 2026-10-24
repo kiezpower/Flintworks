@@ -4,7 +4,9 @@
 import { mkLorry } from '../buildings.js';
 import { mkAnimal } from '../entities.js';
 import { ITEM, treeSprite } from '../sprites.js';
+import { mode } from '../modes.js';
 import { CAPS, G, NAMES, animals, builds, crew, items, lorries, trees } from '../state.js';
+import { syncTeams, useMine, useTeam } from '../teams.js';
 
 const r4 = v => Math.round(v * 4) / 4;
 const r2 = v => Math.round(v * 100) / 100;
@@ -39,6 +41,7 @@ const KINDS = {
       fo: c.focus,
       bu: c.burn > 0 ? 1 : 0,
       sq: c.netSeq,
+      te: c.team || 0,
     }),
     create: d => ({
       id: d.id,
@@ -84,6 +87,7 @@ const KINDS = {
         energy: d.e,
         hammer: !!d.hm,
         focus: d.fo,
+        team: d.te,
         burn: d.bu ? 30 : 0,
         netBusy: !!(d.ch || d.br || d.tm || d.dead),
       });
@@ -149,9 +153,10 @@ const KINDS = {
       mv: b.moving,
       on: b.on ? 1 : 0,
       pp: b.pipe,
+      te: b.team || 0,
     }),
     create: d => {
-      const b = { id: d.id, type: d.ty, x: d.x, gy: d.gy, w: d.w, h: d.h, prog: 0, done: false, busy: 0 };
+      const b = { id: d.id, type: d.ty, x: d.x, gy: d.gy, w: d.w, h: d.h, prog: 0, done: false, busy: 0, team: d.te };
       if (d.cs != null) b.cs = { x: d.x + 2, y: d.cs, home: d.cs };
       return b;
     },
@@ -159,7 +164,7 @@ const KINDS = {
       Object.assign(b, { prog: d.pr, done: !!d.dn, busy: d.bs, out: d.out, lvl: d.lv, open: d.op, moving: d.mv });
       Object.assign(b, { on: !!d.on, pipe: d.pp });
       if (b.cs && d.cs != null) b.cs.y = d.cs;
-      if (b.type === 'base') G.base = b;
+      if (b.type === 'base' && (b.team || 0) === G.myTeam) G.base = b;
     },
   },
   trees: {
@@ -186,7 +191,27 @@ const MOVING = new Set(['crew', 'items', 'animals', 'lorries']);
 
 // ---- shared game values ----
 function packGame() {
+  syncTeams();
+  let vs = null;
+  if (G.teams) {
+    vs = G.teams.map((t, k) => (useTeam(k), mode().prog()));
+    useMine();
+  }
   return {
+    // Versus: every team's own values, and how far each team is
+    teams:
+      G.teams &&
+      G.teams.map(t => ({
+        money: t.money,
+        earned: t.earned,
+        store: t.store,
+        tools: t.tools,
+        mark: t.mineMark,
+        gold: t.goldSold,
+        chf: t.chestsFound,
+        base: t.base && t.base.id,
+      })),
+    vs,
     money: G.money,
     earned: G.earned,
     store: G.store,
@@ -213,6 +238,13 @@ function applyGame(d) {
     rainT: d.rainT,
     playTicks: d.ticks,
   });
+  G.vs = d.vs || null;
+  const own = d.teams && d.teams[G.myTeam];
+  if (own) {
+    Object.assign(G, { money: own.money, earned: own.earned, store: own.store, tools: own.tools });
+    Object.assign(G, { mineMark: own.mark, goldSold: own.gold, chestsFound: own.chf });
+    G.base = builds.find(b => b.id === own.base) || G.base;
+  }
   if (G.chests && d.chests) G.chests.forEach((c, k) => (c.open = !!d.chests[k]));
 }
 

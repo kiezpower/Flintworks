@@ -13,7 +13,9 @@ const GAME_MODES = {
     name: 'Siedler',
     desc: 'Errichte {goal} verschiedene Gebäude',
     goal: 6,
-    prog: () => new Set(builds.filter(b => b.done && b.type !== 'base').map(b => b.type)).size,
+    prog: () =>
+      new Set(builds.filter(b => b.done && b.type !== 'base' && (b.team || 0) === (G.curTeam || 0)).map(b => b.type))
+        .size,
     stars: [10, 16],
   },
   treasure: {

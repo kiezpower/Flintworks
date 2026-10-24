@@ -15,6 +15,7 @@ import { arrows, lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
 import { isPlayer } from './players.js';
 import { drawEmotes } from './net/emotes.js';
+import { TEAM_COLS } from './teams.js';
 import { topSolid } from './gen.js';
 import { game, joyHome } from './input.js';
 import { ICOL, SPR, drawHi, drawItemBig } from './sprites.js';
@@ -307,7 +308,8 @@ function render() {
       }
       drawBuildFx(ctx, b, sx, sy);
       if (b.type === 'base') {
-        drawFlag(sx + 4, sy - 10, 14, 7);
+        // (Versus: the team colour)
+        drawFlag(sx + 4, sy - 10, 14, 7, TEAM_COLS[b.team || 0]);
       }
       if (b.type === 'shop' && b.busy) {
         ctx.fillStyle = (G.frame >> 3) & 1 ? '#ffe066' : '#ff9a3a';
@@ -582,12 +584,12 @@ function render() {
   drawFloats(ctx, cx, cy);
   drawTutorial(ctx, cx, cy);
 }
-function drawFlag(x, y, pole, len) {
+function drawFlag(x, y, pole, len, col = '#c8402c') {
   ctx.fillStyle = '#4a3a2a';
   ctx.fillRect(x, y, 1, pole);
   for (let k = 0; k < len; k++) {
     const o = Math.round(Math.sin(G.frame * 0.12 + k * 0.8));
-    ctx.fillStyle = k % 2 ? '#c8402c' : '#d8553c';
+    ctx.fillStyle = k % 2 ? col : shade(col, 1.12);
     ctx.fillRect(x + 1 + k, y + 1 + o, 1, 4);
   }
 }

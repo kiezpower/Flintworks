@@ -2,6 +2,13 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'Gegner {v}/{g}': 'Rivals {v}/{g}',
+  Spielart: 'Game type',
+  Koop: 'Co-op',
+  Versus: 'Versus',
+  'Zusammen: eine Burg, eine Kasse, ein Ziel': 'Together: one castle, one purse, one goal',
+  'Gegeneinander: rote gegen blaue Burg – wer zuerst das Ziel schafft':
+    'Against each other: red castle vs blue castle – first to the goal wins',
   Zuruf: 'Call',
   'Alle sehen es über deinem Wühler': 'Everybody sees it over your digger',
   'Hallo!': 'Hello!',

@@ -2,6 +2,7 @@
 // the game (giving helpers jobs, mining areas, beams, buildings) and pays a bonus.
 import { addFloat } from './floats.js';
 import { tr } from './i18n.js';
+import { mode } from './modes.js';
 import { sfx } from './sound.js';
 import { sel_ } from './entities.js';
 import { isPlayer } from './players.js';
@@ -56,7 +57,7 @@ function startMission(i) {
   G.mis = { i, base: m && m.count ? m.count() : 0 };
 }
 function updMissions() {
-  if (G.frame % 30) return;
+  if (G.frame % 30 || G.teams) return; // no tasks in Versus
   if (!G.mis) startMission(0);
   const m = cur();
   if (!m) return;
@@ -72,6 +73,12 @@ function updMissions() {
 }
 // text for the HUD (empty when all are done)
 function missionText() {
+  // Versus: how far the other team is instead of a task
+  if (G.vs)
+    return G.vs
+      .map((v, t) => (t === G.myTeam ? null : tr('Gegner {v}/{g}', { v, g: mode().goal })))
+      .filter(Boolean)
+      .join(' · ');
   const m = cur();
   if (!m) return '';
   const v = Math.min(m.goal, value(m));

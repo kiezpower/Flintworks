@@ -124,6 +124,7 @@ function hud() {
     G.crewKey = ck;
     crewEl.innerHTML = '';
     crew.forEach((o, n) => {
+      if ((o.team || 0) !== G.myTeam) return; // Versus: only your team
       const b = document.createElement('button');
       b.className = 'cbtn' + (o === c ? ' sel' : '') + (o.dead ? ' dead' : '');
       b.setAttribute('aria-label', o.name);

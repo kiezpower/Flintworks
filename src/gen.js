@@ -1,5 +1,6 @@
 import { placeGas } from './hazards.js';
 import { placeChests } from './treasure.js';
+import { endTeams, setupTeams } from './teams.js';
 import { scatterDecor } from './decor.js';
 import { biome, setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
@@ -67,6 +68,7 @@ function topSolid(x) {
   return H;
 }
 function gen() {
+  endTeams();
   // multiplayer: everybody builds the same world from the host's seed
   if (G.nextSeed != null) setSeed(G.nextSeed);
   G.seed = getSeed();
@@ -172,6 +174,8 @@ function gen() {
   {
     const x = ri(135, 165);
     blob(x, surf[x] + 16, 5, 3, GOLD);
+    // Versus: the same for the second castle on the right
+    if (G.nextVersus) blob(W - x, surf[W - x] + 16, 5, 3, GOLD);
   }
   // surface pond
   const x0 = ri(Math.floor(W * 0.45), Math.floor(W * 0.75));
@@ -233,6 +237,7 @@ function gen() {
   crew[0].inv = ['flint', 'rock'];
   crew[1].inv = ['loam'];
   crew[2].inv = ['rock'];
+  if (G.nextVersus) genSecondBase();
   // animals
   for (let k = 0; k < 6; k++) {
     const x = ri(200, W - 20);
@@ -267,6 +272,26 @@ function gen() {
   arrows.length = 0;
   calcTerr();
   scatterDecor();
+}
+// Versus: a second castle at the right edge with its own two helpers and trees
+function genSecondBase() {
+  const bx = W - 72 - 36;
+  const b = { id: newId(), type: 'base', x: bx, gy: surf[bx + 18] + 1, w: 36, h: 30, prog: 1, done: true, busy: 0 };
+  Object.assign(b, { lvl: 1, team: 1 });
+  clearFoot(b.x, b.gy, b.w, b.h);
+  for (let k = trees.length - 1; k >= 0; k--)
+    if (trees[k].x > b.x - 8 && trees[k].x < b.x + b.w + 8) trees.splice(k, 1);
+  builds.push(b);
+  for (let x = bx - 20, n = 0; x > bx - 95 && n < 2; x -= 3)
+    if (canPlantAt(x)) {
+      plantTree(x, 4);
+      n++;
+    }
+  for (let k = 0; k < 2; k++) {
+    const c = addClonk(b.x + 16 + k * 6, b.gy - 10);
+    Object.assign(c, { team: 1, inv: [k ? 'rock' : 'loam'] });
+  }
+  setupTeams([G.base, b]);
 }
 function clearFoot(bx, gy, w, h) {
   for (let y = gy - h; y < gy; y++)
