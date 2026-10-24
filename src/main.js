@@ -189,6 +189,14 @@ function openMenu() {
     saveProfile();
     openMenu();
   });
+  item('Zurück zur Basis', 'Wenn du feststeckst: dein Wühler geht nach Hause', () => {
+    closePanel();
+    const c = crew[0];
+    if (!c || c.dead) return;
+    Object.assign(c, { x: G.base.x + 10, y: G.base.gy - 10, vx: 0, vy: 0, climb: false, hangle: false, tumble: false });
+    resetCam();
+    toast('{name} ist zurück in der Basis', { name: c.name });
+  });
   item('Lobby', 'Spiel speichern und zur Lobby', () => $('newBtn').click());
 }
 $('sndBtn').addEventListener('click', () => {

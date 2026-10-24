@@ -329,16 +329,17 @@ function openBuild() {
       name: c.name,
     }),
   );
-  const stairCost = { plank: 2 };
+  // stairs: one plank, or plain wood if there are no planks
+  const stairCost = hasRes(c, { plank: 1 }) ? { plank: 1 } : { wood: 1 };
   opt(l, {
     icon: toolIcon('stairs'),
     title: tr('Treppe'),
     sub: tr('Holztreppe schräg nach oben in Blickrichtung – auch zu Gebäuden, unter denen gegraben wurde'),
-    cost: costTxt(stairCost),
+    cost: tr('1 Brett oder 1 Holz'),
     short: !hasRes(c, stairCost),
     onClick: () => {
       closePanel();
-      if (!hasRes(c, stairCost)) return toast('Treppe braucht {cost}', { cost: costTxt(stairCost) });
+      if (!hasRes(c, stairCost)) return toast('Treppe braucht 1 Brett oder 1 Holz');
       if (c.climb || c.hangle || c.tumble || c.bridge) return;
       payRes(c, stairCost);
       c.bridge = { n: 0, x0: c.x + 3 + c.face * 4, y0: c.y + 10, dy: -0.62, m: PLANK, len: 70, th: 2 };

@@ -2,6 +2,11 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  '1 Brett oder 1 Holz': '1 plank or 1 wood',
+  'Treppe braucht 1 Brett oder 1 Holz': 'Stairs need 1 plank or 1 wood',
+  'Zurück zur Basis': 'Back to base',
+  'Wenn du feststeckst: dein Wühler geht nach Hause': 'If you are stuck: your digger goes home',
+  '{name} ist zurück in der Basis': '{name} is back at the base',
   'Sägewerk fertig: macht Bretter, sobald Holz im Lager ist':
     'Sawmill done: makes planks as soon as there is wood in the store',
   'Hochofen fertig: macht Metall aus Erz und Kohle im Lager':
