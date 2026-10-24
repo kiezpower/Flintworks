@@ -124,9 +124,44 @@ function takeChunks(frame) {
   }
   return out;
 }
+// client: what the host sent replaces the own ground (that is no change of our own)
 function applyChunks(list) {
-  for (let k = 0; k < list.length; k += 2) decodeChunk(list[k], list[k + 1]);
+  for (let k = 0; k < list.length; k += 2) {
+    decodeChunk(list[k], list[k + 1]);
+    netDirty[list[k]] = 0;
+  }
 }
+// host: the chunks a client asks for
+function chunksOf(ids) {
+  const out = [];
+  for (const c of ids.slice(0, 32)) if (c >= 0 && c < CWn * CHn) out.push(c, encodeChunk(c));
+  return out;
+}
+// client: chunks changed here (own digging ahead of the host) that the host has not confirmed
+// within a second get asked for again, so a guess that went wrong does not stay
+const guessed = new Map();
+// (right where the Wühler digs, the host is just a moment behind: wait longer there)
+function staleGuesses(frame, me) {
+  const busy = c =>
+    me &&
+    Math.abs((c % CWn) * CS + CS / 2 - me.x) < CS + 16 &&
+    Math.abs(((c / CWn) | 0) * CS + CS / 2 - me.y) < CS + 16;
+  for (let c = 0; c < netDirty.length; c++)
+    if (netDirty[c]) {
+      netDirty[c] = 0;
+      if (!guessed.has(c)) guessed.set(c, frame);
+    }
+  const ask = [];
+  for (const [c, t] of guessed)
+    if (frame - t > (busy(c) ? 240 : 60) && ask.length < 16) {
+      ask.push(c);
+      guessed.delete(c);
+    }
+  return ask;
+}
+const confirmChunks = list => {
+  for (let k = 0; k < list.length; k += 2) guessed.delete(list[k]);
+};
 
 // the whole landscape (for a player who joins late or comes back)
 function allChunks() {
@@ -135,4 +170,4 @@ function allChunks() {
   return out;
 }
 
-export { allChunks, applyChunks, resetSent, takeChunks };
+export { allChunks, applyChunks, chunksOf, confirmChunks, resetSent, staleGuesses, takeChunks };

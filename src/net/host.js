@@ -6,7 +6,7 @@ import { clonkOf, consumeEdges, setInput } from '../players.js';
 import { G } from '../state.js';
 import { onGameMsg, sendTo } from './room.js';
 import { KINDS, packGame } from './sync.js';
-import { allChunks, resetSent, takeChunks } from './terrain.js';
+import { allChunks, chunksOf, resetSent, takeChunks } from './terrain.js';
 
 const last = {}; // kind → Map(id → last sent JSON)
 let lastGame = null,
@@ -47,6 +47,10 @@ onGameMsg('in', (d, from) => {
   });
   const c = clonkOf(from);
   if (c) c.netSeq = d.sq;
+});
+// a client is unsure about some ground: send it again
+onGameMsg('rq', (d, from) => {
+  if (G.netHost && Array.isArray(d.c)) sendTo(from, { k: 'ter', c: chunksOf(d.c) });
 });
 onGameMsg('cmd', (d, from) => {
   if (G.netHost) exec(from, d.n, d.a || {});

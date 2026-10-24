@@ -16,7 +16,7 @@ import { openBase, openBuild, toast } from '../ui.js';
 import { updWeather } from '../weather.js';
 import { onGameMsg, sendTo } from './room.js';
 import { KINDS, MOVING, applyGame } from './sync.js';
-import { applyChunks } from './terrain.js';
+import { applyChunks, confirmChunks, staleGuesses } from './terrain.js';
 
 let seq = 0,
   gameRaw = {},
@@ -46,7 +46,9 @@ onGameMsg('snap', d => {
   applySnap(d);
 });
 onGameMsg('ter', d => {
-  if (G.netClient) applyChunks(d.c);
+  if (!G.netClient) return;
+  applyChunks(d.c);
+  confirmChunks(d.c);
 });
 onGameMsg('toast', d => toast(d.key, d.params));
 onGameMsg('end', d => G.netClient && G.onNetEnd?.(d.won, d.winner));
@@ -145,6 +147,10 @@ function clientStep(paused) {
     }
     sendInput(me);
     ease();
+    if (G.frame % 30 === 0) {
+      const ask = staleGuesses(G.frame, me);
+      if (ask.length) sendTo('host', { k: 'rq', c: ask });
+    }
     // nothing from the host for a while (app in the background, dead spot)
     if (performance.now() - lastSnap > 3000 && G.frame % 180 === 0) toast('Warte auf den Host …');
     updFloats();
