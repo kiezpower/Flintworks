@@ -43,6 +43,39 @@ import {
 } from './world.js';
 
 // ---- Generation ----
+// how much of a treasure lies around a castle (x = castle centre), from dy0 to dy1 below the
+// surface: too much is turned back into earth (far side first), too little gets extra veins
+const TREASURE = [
+  [GOLD, 0, 130, 230],
+  [GOLD, 130, 240, 170],
+  [GEM, 60, 240, 45],
+];
+function balanceAround(cx) {
+  const x0 = Math.max(4, cx - 300),
+    x1 = Math.min(W - 4, cx + 300);
+  for (const [m, dy0, dy1, target] of TREASURE) {
+    const cells = [];
+    const scan = () => {
+      cells.length = 0;
+      for (let x = x0; x < x1; x++)
+        for (let y = surf[x] + dy0; y < Math.min(H - 8, surf[x] + dy1); y++)
+          if (mat[y * W + x] === m) cells.push(y * W + x);
+    };
+    scan();
+    for (let tries = 0; cells.length < target && tries < 40; tries++) {
+      const side = rnd() < 0.5 ? -1 : 1,
+        x = Math.round(cx + side * (60 + rnd() * 230));
+      if (x < x0 || x >= x1) continue;
+      const small = m === GEM;
+      blob(x, surf[x] + dy0 + 6 + rnd() * (dy1 - dy0 - 12), small ? ri(2, 3) : ri(3, 6), small ? 2 : ri(2, 4), m);
+      scan();
+    }
+    if (cells.length > target) {
+      cells.sort((a, b) => Math.abs((b % W) - cx) - Math.abs((a % W) - cx));
+      for (let k = 0; k < cells.length - target; k++) mat[cells[k]] = EARTH;
+    }
+  }
+}
 function blob(cx, cy, rx, ry, m, cond) {
   const ph1 = rnd() * 9,
     ph2 = rnd() * 9;
@@ -177,6 +210,9 @@ function gen() {
     // Versus: the same for the second castle on the right
     if (G.nextVersus) blob(W - x, surf[W - x] + 16, 5, 3, GOLD);
   }
+  // fair worlds: every castle gets about the same treasure within the helpers' reach
+  balanceAround(90);
+  if (G.nextVersus) balanceAround(W - 90);
   // surface pond
   const x0 = ri(Math.floor(W * 0.45), Math.floor(W * 0.75));
   for (let x = x0 - 50; x <= x0 + 50; x++) {
