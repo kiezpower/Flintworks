@@ -414,7 +414,8 @@ function updBuilds() {
       if (b.type === 'hut' && G.frame % 22 === 0) smoke(b.x + 15, b.gy - b.h - 1);
     }
     updProduction(b);
-    if (b.type === 'base' && G.frame % 12 === 0) for (const c of crew) if (!c.dead && insideB(c, b)) arriveAtBase(c);
+    if (b.type === 'base' && G.frame % 12 === 0)
+      for (const c of crew) if (!c.dead && !c.puppet && insideB(c, b)) arriveAtBase(c);
     if (b.type === 'wind') {
       b.rot = (b.rot || 0) + G.wind * 0.07;
     }

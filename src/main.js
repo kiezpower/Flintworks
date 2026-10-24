@@ -42,6 +42,8 @@ import {
   toggleMap,
 } from './ui.js';
 import { register, send } from './commands.js';
+import { NET, inRoom, onGameMsg, sendTo } from './net/room.js';
+import { addNetPlayers, endNet, netTick, startMessage, updPuppet } from './net/session.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
 import { H, W, clamp, surf } from './world.js';
@@ -69,6 +71,17 @@ const keysHtml = () => `${keyList('touchonly', TOUCH_KEYS)}${keyList('keyonly', 
 // A run is in progress when a world is loaded or a save is waiting
 const hasRun = () => G.inRun || hasSave();
 function play(withTutorial) {
+  // in a room: the host starts the round for everybody, the others wait for the host
+  if (inRoom() && !G.inRun) {
+    if (!NET.host) return toast('Warte auf den Host');
+    const d = startMessage();
+    d.biome = chosenBiome() || ['meadow', 'desert', 'winter'][Math.floor(Math.random() * 3)];
+    d.gmode = P.gmode || 'gold';
+    d.diff = P.diff || 'adventure';
+    sendTo('all', d);
+    playNet(d);
+    return;
+  }
   if (withTutorial) {
     clearSave();
     G.inRun = false;
@@ -91,8 +104,28 @@ function play(withTutorial) {
   G.startT += performance.now() - (G.pauseAt || performance.now());
   startGame('resume');
 }
+// a network round: same seed and settings on every device
+function playNet(d) {
+  clearSave();
+  endNet();
+  G.nextSeed = d.seed;
+  G.nextBiome = d.biome;
+  G.nextMode = d.gmode;
+  G.nextDiff = d.diff;
+  gen();
+  G.nextSeed = null;
+  addNetPlayers(d.players);
+  G.net = true;
+  resetCam();
+  G.inRun = true;
+  startGame(false);
+}
+onGameMsg('start', d => {
+  if (!NET.host) playNet(d);
+});
 function discard() {
   clearSave();
+  endNet();
   G.inRun = false;
 }
 const lobbyHooks = { play, discard, hasRun, keysHtml };
@@ -108,7 +141,7 @@ function startGame(withTutorial = false) {
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   const mine = sel_();
-  if (mine) Object.assign(mine, { hat: P.hat, cap: P.cap });
+  if (mine) Object.assign(mine, { hat: P.hat, cap: P.cap, name: P.name || mine.name });
   G.autoDig = P.autodig !== false;
   G.climbOn = !!P.climbing;
   G.jumpBtn = P.jumpbtn !== false;
@@ -286,6 +319,7 @@ function step() {
     tapGotoInput(sel_());
     // players are steered by their input (yours from this device), helpers by their own AI
     crew.forEach((c, n) => {
+      if (c.puppet) return updPuppet(c); // another player's Wühler (network)
       const I = isPlayer(c) ? inputOf(c.pid) : c.dead ? NOIN : helperAI(c, n);
       updClonk(c, I);
       if (isPlayer(c) && !c.dead) {
@@ -319,7 +353,8 @@ function step() {
     if (G.frame % 15 === 0) updAmbience();
     if (G.frame % 30 === 0) updDecor();
     if (G.frame % 60 === 0) checkHints();
-    if (G.frame % 3600 === 0) saveGame();
+    if (G.frame % 3600 === 0 && !G.net) saveGame();
+    netTick();
     if (goalReached()) endScreen(true);
   }
   if (!paused) {

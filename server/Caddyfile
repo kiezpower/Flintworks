@@ -1,0 +1,4 @@
+# TLS for wss://play.kiez-power.de (certificate from Let's Encrypt, automatic)
+play.kiez-power.de {
+	reverse_proxy 127.0.0.1:8787
+}

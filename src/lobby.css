@@ -531,3 +531,42 @@
   color: rgba(255, 255, 255, 0.2);
   text-shadow: none;
 }
+
+/* playing together */
+.lb-slot.filled {
+  border-style: solid;
+  border-color: var(--line);
+}
+.lb-slot.filled b {
+  font-size: clamp(16px, 3vw, 22px);
+}
+#lbPlay.wait {
+  filter: grayscale(0.7);
+}
+.lb-join {
+  display: flex;
+  gap: 8px;
+  margin: 6px 0 4px;
+}
+.lb-join input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 18px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border: 2px solid var(--edge);
+  border-radius: 6px;
+  background: #1c120b;
+  color: var(--gold);
+}
+.lb-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border: 1px solid #24160c;
+  border-radius: 2px;
+  vertical-align: middle;
+}

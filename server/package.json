@@ -1,0 +1,13 @@
+{
+  "name": "flintworks-relay",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "main": "relay.js",
+  "scripts": {
+    "start": "node relay.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

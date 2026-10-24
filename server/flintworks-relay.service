@@ -1,0 +1,14 @@
+[Unit]
+Description=Flintworks multiplayer relay
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/flintworks-relay
+ExecStart=/usr/bin/node relay.js
+Environment=PORT=8787
+Restart=always
+RestartSec=2
+User=www-data
+
+[Install]
+WantedBy=multi-user.target

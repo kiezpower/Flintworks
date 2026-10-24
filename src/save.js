@@ -94,7 +94,7 @@ function serialize() {
   }
 }
 function saveGame() {
-  if (G.state !== 'play') return;
+  if (G.state !== 'play' || G.net) return; // network rounds are not saved (yet)
   try {
     localStorage.setItem(SAVEKEY, JSON.stringify(serialize()));
   } catch {}

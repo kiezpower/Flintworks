@@ -39,7 +39,7 @@ import {
 
 // ---- Clonk ----
 function hurt(c, a, silent) {
-  if (c.dead) return;
+  if (c.dead || c.puppet) return; // another player's Wühler takes damage on its own device
   c.energy -= a;
   if (a >= 5) {
     addFloat(c.x + 3, c.y - 3, '-' + Math.round(a), '#ff6a5a');

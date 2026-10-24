@@ -4,7 +4,8 @@ import { BIOMES } from './biomes.js';
 import './lobby.css';
 import { getLang, setLang, tr } from './i18n.js';
 import { CAPS, HATS, P, QUESTS, claimQuest, saveProfile, unlockText, xpNeed } from './profile.js';
-import { NET, ensureRoom, inviteLink, shareInvite } from './net.js';
+import { openInvite, refreshSlots } from './lobbyinvite.js';
+import { NET, inRoom } from './net/room.js';
 import { drawPortrait } from './portrait.js';
 import { drawScene, heroOrigin, heroScreen, sizeScene } from './lobbyscene.js';
 import { audioInit, sfx } from './sound.js';
@@ -101,7 +102,8 @@ function refresh() {
   $('lbXp').style.width = Math.round((P.xp / xpNeed()) * 100) + '%';
   setTxt('lbXpTxt', `${P.xp}/${xpNeed()}`);
   setTxt('lbTro', P.trophies);
-  setTxt('lbHat', P.hat === 'none' ? `Kurt · ${tr('Level')} ${P.level}` : `Kurt · ${tr(HATS[P.hat].name)}`);
+  const nm = P.name || 'Kurt';
+  setTxt('lbHat', P.hat === 'none' ? `${nm} · ${tr('Level')} ${P.level}` : `${nm} · ${tr(HATS[P.hat].name)}`);
   $('lbQuest').classList.toggle(
     'alert',
     P.quests.some(q => !q.done && q.have >= q.goal),
@@ -118,9 +120,17 @@ function refresh() {
   const r = next && HATS[next];
   $('lbRoadBar').style.width = r ? Math.min(100, ((P.trophies - prev) / (r.t - prev)) * 100) + '%' : '100%';
   setTxt('lbRoadTxt', r ? `${P.trophies}/${r.t} · ${tr(r.name)}` : tr('Alles freigeschaltet'));
-  for (const id of ['lbSlot1', 'lbSlot2']) $(id).classList.toggle('waiting', NET.status === 'waiting');
+  refreshSlots();
   const run = hooks.hasRun();
-  setTxt('lbPlayTxt', tr(run ? 'Weiterspielen' : 'Spielen'));
+  // in a room only the host starts; the others wait
+  const wait = inRoom() && !NET.host && !run;
+  setTxt(
+    'lbPlayTxt',
+    tr(run ? 'Weiterspielen' : wait ? 'Warte auf Host' : inRoom() ? 'Spielen ({n})' : 'Spielen', {
+      n: NET.players.length,
+    }),
+  );
+  $('lbPlay').classList.toggle('wait', wait);
   $('lbNew').hidden = !run;
   $('lbMode').disabled = run;
   const GM = GAME_MODES[P.gmode || 'gold'];
@@ -162,6 +172,21 @@ function hatIcon(hat, cap = P.cap) {
 }
 function openWho() {
   const p = openPanel('Dein Wühler');
+  // the name others see in a shared game
+  opt(sec(p, 'Name'), {
+    title: P.name || 'Kurt',
+    sub: tr('Tippen zum Ändern'),
+    short: true,
+    onClick: () => {
+      const n = (prompt(tr('Wie heißt dein Wühler?'), P.name || 'Kurt') || '').trim().slice(0, 12);
+      if (n) {
+        P.name = n.replace(/[<>&"]/g, '');
+        saveProfile();
+        refresh();
+      }
+      openWho();
+    },
+  });
   const l = sec(p, 'Hut');
   for (const id in HATS) {
     const own = P.hats.includes(id);
@@ -315,32 +340,6 @@ function openOptions() {
   p.appendChild(k);
 }
 
-function openInvite() {
-  const p = openPanel('Mitspieler einladen');
-  const box = document.createElement('div');
-  box.className = 'lb-invite';
-  box.innerHTML = `<p>${tr('Grabt bald zu dritt in einer Welt. Der Multiplayer ist in Arbeit – dein Raum ist schon reserviert.')}</p>
-    <div class="lb-code"><small>${tr('Raum-Code')}</small><b>${ensureRoom()}</b></div>`;
-  p.appendChild(box);
-  const l = sec(p, 'Einladen');
-  opt(l, {
-    title: tr('Link teilen'),
-    sub: tr('Schicke deinen Freunden den Einladungslink'),
-    onClick: async () => {
-      const r = await shareInvite(tr('Grab mit mir in Flintworks!'));
-      if (r === 'copied') toast('Link kopiert');
-      else if (r === 'failed') toast('Teilen nicht möglich');
-      openInvite();
-    },
-  });
-  if (NET.room) {
-    const link = document.createElement('p');
-    link.className = 'hint lb-link';
-    link.textContent = inviteLink();
-    p.appendChild(link);
-  }
-}
-
 // ---- Wiring ----
 function tap(id, fn) {
   $(id).addEventListener('click', () => {
@@ -424,6 +423,11 @@ addEventListener('resize', () => {
   placeOverlay();
 });
 G.nextBiome = null;
+G.onRoomChange = () => !el.hidden && refresh();
+G.onLeaveRoom = () => {
+  if (G.net) hooks.discard?.();
+  if (!el.hidden) refresh();
+};
 const chosenBiome = () => (P.mode && P.mode !== 'random' ? P.mode : null);
 
 export { chosenBiome, frame as lobbyFrame, hideLobby, lobbyOpen, showLobby };
