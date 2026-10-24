@@ -14,6 +14,7 @@ import {
   setVersus,
   shareInvite,
 } from './net/room.js';
+import { netSaveInfo } from './net/netsave.js';
 import { G } from './state.js';
 import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
 
@@ -98,7 +99,19 @@ function openInvite() {
       sub: tr('Der Host startet das Spiel'),
       onClick: () => setReady(!(mine && mine.ready)),
     });
-  } else
+  } else {
+    // a saved shared round: carry on with it
+    const sv = netSaveInfo();
+    if (sv)
+      opt(a, {
+        title: tr('Gespeicherte Runde fortsetzen'),
+        sub: `${new Date(sv.t).toLocaleString()} · ${sv.names.map(esc).join(', ')}${sv.versus ? ' · Versus' : ''}`,
+        onClick: () => {
+          G.resumeNet = true;
+          closePanel();
+          $('lbPlay').click();
+        },
+      });
     opt(a, {
       title: tr('Spiel starten'),
       sub: tr('Mit „Spielen“ in der Lobby geht es für alle los'),
@@ -107,6 +120,7 @@ function openInvite() {
         $('lbPlay').click();
       },
     });
+  }
   const link = document.createElement('p');
   link.className = 'hint lb-link';
   link.textContent = inviteLink();

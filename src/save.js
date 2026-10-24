@@ -4,6 +4,7 @@ import { arrows } from './buildings.js';
 import { mkCloud } from './gen.js';
 import { calcTerr } from './render.js';
 import { treeSprite } from './sprites.js';
+import { useTeam } from './teams.js';
 import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
 import { H, W, activateAll, bg, mat, paintAll, ri, rnd, shade, surf } from './world.js';
 
@@ -22,7 +23,10 @@ function unb64(str) {
 }
 // the whole game as plain data (also used as a network snapshot for joining players)
 function serialize() {
-  {
+  // Versus: write with team 0 in place, the other teams in "teams"
+  const cur = G.curTeam || 0;
+  useTeam(0);
+  try {
     const runs = [];
     let prev = -1,
       run = 0;
@@ -89,8 +93,11 @@ function serialize() {
       playTicks: G.playTicks || 0,
       nextId: G.nextId || 0,
       seed: G.seed,
+      teams: G.teams && G.teams.map(t => ({ ...t, base: t.base && t.base.id })),
     };
     return data;
+  } finally {
+    useTeam(cur);
   }
 }
 function saveGame() {
@@ -181,7 +188,7 @@ function deserialize(d) {
     }
     for (let k = 0; k < 9; k++) clouds.push(mkCloud(rnd() * W));
     // old saves without player ids: the first Wühler is yours
-    if (!crew.some(c => c.pid === G.myId) && crew[0]) crew[0].pid = G.myId;
+    if (!crew.some(c => c.pid != null) && crew[0]) crew[0].pid = G.myId;
     arrows.length = 0;
     scatterDecor();
     calcTerr();
@@ -189,6 +196,9 @@ function deserialize(d) {
     G.playTicks = d.playTicks || 0;
     G.nextId = d.nextId || 0;
     G.seed = d.seed;
+    G.teams = d.teams ? d.teams.map(t => ({ ...t, base: builds.find(b => b.id === t.base) })) : null;
+    G.curTeam = 0;
+    if (G.teams) G.teams[0].base = G.base = builds.find(b => b.type === 'base' && !b.team) || G.base;
     // old saves: give every entity an id
     for (const a of [crew, items, builds, trees, animals, lorries]) for (const e of a) e.id ??= G.nextId = G.nextId + 1;
     return true;

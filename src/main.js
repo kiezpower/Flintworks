@@ -43,7 +43,8 @@ import {
 } from './ui.js';
 import { register, send } from './commands.js';
 import { NET, inRoom, onGameMsg, sendTo } from './net/room.js';
-import { beginNet, endNet, startMessage } from './net/session.js';
+import { beginNet, endNet, resumeNet, startMessage } from './net/session.js';
+import { clearNetSave, loadNetSave, saveNet } from './net/netsave.js';
 import { clientStep } from './net/client.js';
 import { hostEnd, hostTick } from './net/host.js';
 import { teamOf, useMine, useTeam } from './teams.js';
@@ -79,6 +80,17 @@ function play(withTutorial) {
   // in a room: the host starts the round for everybody, the others wait for the host
   if (inRoom() && !G.inRun) {
     if (!NET.host) return toast('Warte auf den Host');
+    // the host carries on with a saved shared round
+    if (G.resumeNet) {
+      G.resumeNet = false;
+      if (resumeNet(loadNetSave())) {
+        resetCam();
+        G.inRun = true;
+        startGame('resume');
+        return;
+      }
+      toast('Der Spielstand ließ sich nicht laden');
+    }
     const d = startMessage();
     d.biome = chosenBiome() || ['meadow', 'desert', 'winter'][Math.floor(Math.random() * 3)];
     d.gmode = P.gmode || 'gold';
@@ -194,6 +206,7 @@ function checkGoal() {
 }
 function endScreen(won) {
   if (!G.teams) hostEnd(won);
+  if (G.netHost) clearNetSave();
   G.state = won ? 'won' : 'lost';
   if (won) sfx('fanfare');
   closePanel();
@@ -219,6 +232,7 @@ function endScreen(won) {
 }
 $('newBtn').addEventListener('click', () => {
   saveGame();
+  saveNet();
   G.pauseAt = performance.now();
   closePanel();
   menu();
@@ -396,7 +410,7 @@ function step() {
     if (G.frame % 15 === 0) updAmbience();
     if (G.frame % 30 === 0) updDecor();
     if (G.frame % 60 === 0) checkHints();
-    if (G.frame % 3600 === 0 && !G.net) saveGame();
+    if (G.frame % 3600 === 0) G.net ? saveNet() : saveGame();
     checkGoal();
   }
   if (!paused) {

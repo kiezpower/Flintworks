@@ -4,7 +4,8 @@
 // late, and the host role moves to another player when the host is gone.
 import { addClonk } from '../entities.js';
 import { clearInputs, clonkOf } from '../players.js';
-import { G } from '../state.js';
+import { deserialize } from '../save.js';
+import { G, crew } from '../state.js';
 import { useMine } from '../teams.js';
 import { startClient, stopClient } from './client.js';
 import { sendWorld, startHost, stopHost, welcome } from './host.js';
@@ -25,8 +26,8 @@ function startMessage() {
   return { k: 'start', seed: (Math.random() * 4294967296) >>> 0, players, versus, teams };
 }
 // a player's Wühler at the castle of its team
-function addPlayerClonk(p) {
-  if (p.pid === G.myId || clonkOf(p.pid)) return;
+function addPlayerClonk(p, self = false) {
+  if ((p.pid === G.myId && !self) || clonkOf(p.pid)) return;
   const team = (G.netStart.teams && G.netStart.teams[p.pid]) || 0;
   const base = teamBase(team);
   const c = addClonk(base.x + 8 + (p.pid % 4) * 6, base.gy - 10);
@@ -91,4 +92,34 @@ onRoomChange(() => {
   online = now;
 });
 
-export { beginNet, endNet, startMessage };
+// carry on with a saved round: the saved players' Wühler go to the players in the room with
+// the same name, everybody else gets a new one; the others receive the world like late joiners
+function resumeNet(s) {
+  endNet();
+  if (!s || !deserialize(s.data)) return false;
+  const cur = NET.players.filter(p => p.online),
+    used = new Set();
+  for (const c of crew) {
+    if (c.pid == null) continue;
+    const p = cur.find(q => q.name === c.name && !used.has(q.pid));
+    if (p) {
+      used.add(p.pid);
+      Object.assign(c, { pid: p.pid, cap: p.cap, hat: p.hat });
+    } else delete c.pid; // that player is not here: the Wühler helps out
+  }
+  const teams = {};
+  for (const c of crew) if (c.pid != null) teams[c.pid] = c.team || 0;
+  G.net = true;
+  G.netStart = { ...s.start, teams };
+  for (const p of cur) teamFor(p.pid);
+  G.myTeam = G.netStart.teams[G.myId] || 0;
+  clearInputs();
+  online = new Set(cur.map(p => p.pid));
+  for (const p of cur) addPlayerClonk(p, true);
+  useMine();
+  startHost();
+  for (const p of cur) if (p.pid !== G.myId) welcome(p.pid, { ...G.netStart, players: NET.players });
+  return true;
+}
+
+export { beginNet, endNet, resumeNet, startMessage };

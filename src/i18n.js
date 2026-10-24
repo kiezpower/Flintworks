@@ -2,6 +2,8 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'Gespeicherte Runde fortsetzen': 'Continue saved round',
+  'Der Spielstand ließ sich nicht laden': 'The saved game could not be loaded',
   'getrennt …': 'disconnected …',
   Verbindung: 'Connection',
   'Gegner {v}/{g}': 'Rivals {v}/{g}',
