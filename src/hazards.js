@@ -8,6 +8,7 @@ import { explode } from './objects.js';
 import { sfx } from './sound.js';
 import { G, crew, flashes, items, parts, trees } from './state.js';
 import { toast } from './ui.js';
+import { beamNear } from './mine.js';
 import { AIR, EARTH, H, LAVA, ROCK, SAND, W, activate, mat, paint, ri, rnd, surf } from './world.js';
 
 const DEEP = 45; // pixels below the surface where trouble starts
@@ -35,10 +36,21 @@ function onDig(x, y) {
         toast('Grubengas! Kein Feuer – und schnell raus hier');
         sfx('hiss', x, y);
       }
+  if (pending || G.frame - caveT < 1500 || beamNear(x, y, 30)) return; // support beams hold the ceiling
   const d = depthAt(x, y);
   // the deeper, the more likely the ceiling gives way
-  if (!pending && G.frame - caveT > 1500 && d > DEEP && rnd() < (d - DEEP) / 120000) {
+  if (d > DEEP && rnd() < (d - DEEP) / 120000) {
     startCaveIn(x, y);
+    return;
+  }
+  // wide hollows without beams give way too (checked once per frame)
+  if (d > 14 && G.spanF !== G.frame) {
+    G.spanF = G.frame;
+    let a = x,
+      b = x;
+    while (a > x - 70 && a > 0 && mat[y * W + a - 1] === AIR) a--;
+    while (b < x + 70 && b < W - 1 && mat[y * W + b + 1] === AIR) b++;
+    if (b - a > 48 && rnd() < 0.004) startCaveIn(x, y);
   }
 }
 function startCaveIn(x, y) {
@@ -60,7 +72,7 @@ function collapse(p) {
     const x = p.x + dx;
     if (x < 1 || x >= W - 1) continue;
     const yc = ceilingAbove(x, p.y);
-    if (yc < 0) continue;
+    if (yc < 0 || beamNear(x, yc + 6, 12)) continue;
     // a band of the ceiling turns to loose rubble and pours down
     for (let yy = yc; yy > yc - 3 - (dx % 3 === 0 ? 2 : 0); yy--) {
       const i = yy * W + x;

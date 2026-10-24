@@ -71,6 +71,8 @@ function gen() {
   G.mode = G.nextMode || 'gold';
   G.relaxed = G.nextDiff === 'relaxed';
   G.store = {};
+  G.beams = [];
+  G.mineMark = null;
   mat.fill(0);
   bg.fill(0);
   for (const a of [meteors, items, parts, flashes, builds, trees, crew, animals, lorries, birds, clouds]) a.length = 0;

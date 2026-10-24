@@ -23,11 +23,12 @@ import {
 } from './buildings.js';
 import { context, nearTree } from './clonk.js';
 import { addClonk, sel_, spawnItem } from './entities.js';
-import { held, joy, keys, selectCrew } from './input.js';
+import { held, joy, keys } from './input.js';
 import { calcTerr, cam } from './render.js';
 import { sfx } from './sound.js';
 import { ITEM, SPR, itemIcon, padIcon, toolIcon } from './sprites.js';
 import { tr } from './i18n.js';
+import { focusBadge, openCrew } from './crewui.js';
 import { G, INV_MAX, animals, builds, crew, lorries } from './state.js';
 import { darkness } from './weather.js';
 import { PLANK, AIR, GOLD, H, MINI, ROCK, W, bg, hex, mat, matAt, surf } from './world.js';
@@ -107,7 +108,7 @@ function hud() {
   // automatic digging hides the dig and jump buttons; throw only shows with something in hand
   btnsEl.classList.toggle('auto', !!G.autoDig);
   btnsEl.classList.toggle('noitem', !(c && !c.dead && c.inv[c.isel]));
-  const ck = crew.map((o, n) => `${n === G.sel}${o.dead}${Math.round(o.energy / 10)}`).join();
+  const ck = crew.map((o, n) => `${n === G.sel}${o.dead}${Math.round(o.energy / 10)}${o.focus}`).join();
   if (ck !== G.crewKey) {
     G.crewKey = ck;
     crewEl.innerHTML = '';
@@ -116,8 +117,9 @@ function hud() {
       b.className = 'cbtn' + (n === G.sel ? ' sel' : '') + (o.dead ? ' dead' : '');
       b.setAttribute('aria-label', o.name);
       b.title = o.name;
-      b.innerHTML = `<span class="cap" style="background:${o.cap}"></span><span class="face"></span><span class="hp"><b style="width:${Math.max(0, o.energy)}%"></b></span>`;
-      b.addEventListener('click', () => selectCrew(n));
+      b.innerHTML = `<span class="cap" style="background:${o.cap}"></span><span class="face"></span><span class="hp"><b style="width:${Math.max(0, o.energy)}%"></b></span>${n ? focusBadge(o) : ''}`;
+      // tap a Wühler: give out jobs (your own one: for everybody)
+      b.addEventListener('click', () => openCrew(n));
       crewEl.appendChild(b);
     });
   }
@@ -421,6 +423,11 @@ function openBase() {
 // ---- Hints ----
 G.hintsSeen = new Set();
 const HINTS = [
+  {
+    id: 'crewtap',
+    test: () => crew.length > 1 && G.frame > 900,
+    text: 'Tippe oben auf einen Helfer, um ihm eine Aufgabe zu geben',
+  },
   {
     id: 'crew',
     test: () => G.frame > 600,

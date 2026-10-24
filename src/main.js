@@ -20,6 +20,7 @@ import { addClonk, insideB, sel_ } from './entities.js';
 import { gen } from './gen.js';
 import { cycleCrew, inp, readInput } from './input.js';
 import { helperAI } from './helpers.js';
+import { updBeams } from './mine.js';
 import { killAnimal, updAnimal, updArrows, updItems, updParts, updTrees } from './objects.js';
 import { cam, render, resize } from './render.js';
 import { clearSave, hasSave, loadGame, saveGame } from './save.js';
@@ -249,6 +250,7 @@ function step() {
     updBuilds();
     updBuildFx();
     updHazards();
+    updBeams();
     updArrows();
     updItems();
     for (const L of lorries) updLorry(L);

@@ -118,6 +118,24 @@ button:focus-visible {
   justify-items: center;
   cursor: pointer;
 }
+.cbtn {
+  position: relative;
+}
+.cbtn .fo {
+  position: absolute;
+  right: -5px;
+  top: -5px;
+  width: 13px;
+  height: 13px;
+  background: #fbf3dc center / 10px no-repeat;
+  image-rendering: pixelated;
+  border: 1px solid #24160c;
+  border-radius: 3px;
+  font: bold 10px/11px monospace;
+  font-style: normal;
+  text-align: center;
+  color: #c0392b;
+}
 .cbtn.sel {
   border-color: var(--gold);
 }

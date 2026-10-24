@@ -5,6 +5,7 @@ import { hasTool } from './tools.js';
 import { drawHazards } from './hazards.js';
 import { drawChests } from './treasure.js';
 import { drawBuildFx, drawWindowGlow } from './bfx.js';
+import { drawBeams, drawBubbles, drawMark } from './mine.js';
 import { drawFloats } from './floats.js';
 import { drawDecor } from './decor.js';
 import { biome } from './biomes.js';
@@ -259,6 +260,8 @@ function render() {
   }
   ctx.drawImage(wc, cx * 2, cy * 2, G.VW * 2, G.VH * 2, 0, 0, G.VW, G.VH);
   drawDecor(ctx, cx, cy);
+  drawBeams(ctx, cx, cy);
+  drawMark(ctx, cx, cy);
   const lava = scanLava(cx, cy);
   drawLavaGlow(ctx);
   drawWaterGlints(ctx);
@@ -557,6 +560,7 @@ function render() {
     drawWindowGlow(ctx, cx, cy, dark);
   }
   drawGoal(ctx, cx, cy);
+  drawBubbles(ctx, cx, cy);
   drawFloats(ctx, cx, cy);
   drawTutorial(ctx, cx, cy);
 }

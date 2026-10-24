@@ -67,6 +67,8 @@ function saveGame() {
       store: G.store || {},
       tools: G.tools || {},
       chests: G.chests,
+      beams: G.beams || [],
+      mineMark: G.mineMark || null,
       chestsFound: G.chestsFound,
       gas: G.gas,
       gasClouds: G.gasClouds,
@@ -134,6 +136,8 @@ function loadGame() {
     G.store = d.store || {};
     G.tools = d.tools || {};
     G.chests = d.chests || [];
+    G.beams = d.beams || [];
+    G.mineMark = d.mineMark || null;
     G.chestsFound = d.chestsFound || 0;
     G.gas = d.gas || [];
     G.gasClouds = d.gasClouds || [];

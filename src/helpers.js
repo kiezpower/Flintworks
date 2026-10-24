@@ -5,9 +5,13 @@
 //   collect  – pick up loose items (also the ones a mining helper just dug free)
 //   chop     – fell trees when the store runs low on wood
 //   mine     – dig out gold, ore, coal and gems close to the surface
+//   follow   – stay with your own Wühler
 //   rest     – nothing to do: wait in the base
+// Each helper has a focus the player sets in the crew panel (all, ore, wood, build, follow,
+// stay); a marker sends the miners to a chosen spot. Miners put up support beams as they dig.
 import { NOIN, diggable, nearTree } from './clonk.js';
 import { midMat } from './entities.js';
+import { jobBubble, tryBeam } from './mine.js';
 import { DIG, JUMP, mkNav } from './pathfind.js';
 import { stock } from './store.js';
 import { G, INV_MAX, builds, crew, items, parts, trees } from './state.js';
@@ -45,10 +49,11 @@ const baseX = () => G.base.x + G.base.w / 2;
 const far = x => Math.abs(x - baseX()) > 300;
 
 // ---- choosing a job ----
-function nearestItem(c) {
+function nearestItem(c, only) {
   let best = null,
     bd = 260;
   for (const it of items) {
+    if (only && it.t !== only) continue;
     if (it.pd > 0 || it.fuse >= 0 || TOOLS.includes(it.t) || far(it.x) || blocked(it) || takenBy(c, it)) continue;
     const d = Math.abs(it.x - c.x) + Math.abs(it.y - c.y) * 1.5;
     if (d < bd) {
@@ -72,13 +77,15 @@ function nearestTree(c) {
   return best;
 }
 // a rich cell not too deep under the surface, nearest to the helper first
+// (with a mining marker: around the marker, also further away from the base)
 function nearestOre(c) {
-  const cx = Math.floor(c.x + 3);
-  for (let r = 0; r < 320; r += 3)
+  const m = G.mineMark;
+  const cx = Math.floor(m ? m.x : c.x + 3);
+  for (let r = 0; r < (m ? 90 : 320); r += 3)
     for (const x of r ? [cx - r, cx + r] : [cx]) {
-      if (x < 4 || x >= W - 10 || far(x)) continue;
-      const top = surf[x];
-      for (let y = top + 2; y < Math.min(H - 6, top + 130); y += 2) {
+      if (x < 4 || x >= W - 10 || (!m && far(x))) continue;
+      const top = m ? Math.max(surf[x], m.y - 50) : surf[x];
+      for (let y = top + 2; y < Math.min(H - 6, m ? m.y + 70 : top + 130); y += 2) {
         if (!RICH.has(mat[y * W + x]) || nearBuild(x, y)) continue;
         const key = (x >> 3) * 1000 + (y >> 3);
         if (blocked(key) || takenBy(c, key)) continue;
@@ -88,20 +95,28 @@ function nearestOre(c) {
   return null;
 }
 function pickJob(c, n) {
+  const f = c.focus || 'all';
+  if (f === 'stay') return { type: 'rest', ref: 'rest' + n };
+  if (f === 'follow') return { type: 'follow', ref: 'follow' + n };
   const full = c.inv.length >= INV_MAX || cargo(c) >= 4;
   if (full || (cargo(c) > 0 && !items.length)) return { type: 'deliver', ref: 'base' + n };
-  const site = builds.find(b => !b.done && crew.filter(o => o.job && o.job.ref === b).length < 2 && !blocked(b));
-  if (site) return { type: 'build', ref: site };
-  const it = nearestItem(c);
+  if (f === 'all' || f === 'build') {
+    const site = builds.find(b => !b.done && crew.filter(o => o.job && o.job.ref === b).length < 2 && !blocked(b));
+    if (site) return { type: 'build', ref: site };
+  }
+  const it = nearestItem(c, f === 'wood' ? 'wood' : null);
   if (it) return { type: 'collect', ref: it };
   if (cargo(c) > 0) return { type: 'deliver', ref: 'base' + n };
-  const woodLow = stock('wood') + stock('plank') / 3 < 8;
-  const t = woodLow && nearestTree(c);
-  if (t) return { type: 'chop', ref: t };
-  const ore = nearestOre(c);
-  if (ore) return { type: 'mine', ref: ore.key, x: ore.x, y: ore.y };
+  if (f === 'wood' || (f === 'all' && stock('wood') + stock('plank') / 3 < 8)) {
+    const t = nearestTree(c);
+    if (t) return { type: 'chop', ref: t };
+  }
+  if (f === 'all' || f === 'ore') {
+    const ore = nearestOre(c);
+    if (ore) return { type: 'mine', ref: ore.key, x: ore.x, y: ore.y };
+  }
   // nothing else to do: stock up on wood
-  const t2 = stock('wood') < 20 && nearestTree(c);
+  const t2 = f === 'all' && stock('wood') < 20 && nearestTree(c);
   if (t2) return { type: 'chop', ref: t2 };
   return { type: 'rest', ref: 'rest' + n };
 }
@@ -118,6 +133,12 @@ function target(c, n) {
       cx: j.type === 'deliver' ? baseX() : x,
     };
   }
+  if (j.type === 'follow') {
+    const me = crew[0];
+    j.gx = me.x;
+    j.gy = me.y;
+    return { x: me.x, y: me.y, r: 14, ry: 10 };
+  }
   if (j.type === 'build') return { x: j.ref.x + j.ref.w / 2 - 3, y: j.ref.gy - 10, r: j.ref.w / 2 - 5 };
   if (j.type === 'collect') return { x: j.ref.x - 2, y: j.ref.y - 6, r: 3, ry: 8 };
   if (j.type === 'chop') return { x: j.ref.x - 3, y: j.ref.gy - 10, r: 6 };
@@ -131,7 +152,13 @@ function plan(c, n) {
   const k = c.job.type === 'mine' ? 3 : 2;
   const heur = (x, y) => (Math.abs(x - cx) + Math.abs(y - T.y)) * k;
   // walk if possible; otherwise dig a way (also out of a pit after mining)
-  return (c.job.type !== 'mine' && nav.find(c.x, c.y, goal, heur)) || navDig.find(c.x, c.y, goal, heur);
+  const p = (c.job.type !== 'mine' && nav.find(c.x, c.y, goal, heur)) || navDig.find(c.x, c.y, goal, heur);
+  if (p || c.job.type !== 'mine') return p;
+  // far away ore: first walk over to it, then plan the digging from there
+  const near = (x, y) => Math.abs(x - cx) <= 10 && y <= T.y + 4;
+  const q = nav.find(c.x, c.y, near, (x, y) => Math.abs(x - cx) * 2 + Math.max(0, y - T.y));
+  if (q && q.length) c.job.approach = true;
+  return q && q.length ? q : null;
 }
 
 function warpHome(c, n) {
@@ -196,12 +223,22 @@ function helperAI(c, n) {
       (j.type === 'rest' && G.frame - j.t > 120) ||
       ((j.type === 'collect' || j.type === 'chop' || j.type === 'mine') && cargo(c) >= 4);
     if (gone) c.job = c.path = null;
+    // following: plan again when your Wühler has moved on
+    else if (
+      j.type === 'follow' &&
+      c.path &&
+      Math.hypot(crew[0].x - j.gx, crew[0].y - j.gy) > 24 &&
+      G.frame - c.pt > 20
+    )
+      c.path = null;
   }
   if (!c.job) {
     // stagger the decisions so not every helper thinks in the same frame
     if ((G.frame + n * 7) % 15) return I;
     c.job = pickJob(c, n);
     c.job.t = G.frame;
+    if (!c.lastJob || c.lastJob !== c.job.type) jobBubble(c, c.job.type);
+    c.lastJob = c.job.type;
     c.path = null;
     c.fails = 0;
     c.lost = c.lost || 0;
@@ -216,7 +253,8 @@ function helperAI(c, n) {
     if (G.hstat) G.hstat[c.job.type + (p ? '+' : '-')] = (G.hstat[c.job.type + (p ? '+' : '-')] || 0) + 1;
     if (!p) {
       // no way home (walled in a pit, say): after a second try the helper finds its own way back
-      if ((c.job.type === 'deliver' || c.job.type === 'rest') && ++c.lost >= 2) warpHome(c, n);
+      if (c.job.type === 'follow') c.pt = G.frame;
+      else if ((c.job.type === 'deliver' || c.job.type === 'rest') && ++c.lost >= 2) warpHome(c, n);
       else block(c.job.ref);
       c.job = null;
       return I;
@@ -227,6 +265,8 @@ function helperAI(c, n) {
     c.pt = G.frame;
   }
   const arrived = follow(c, I);
+  // miners put up support beams in their tunnels
+  if (c.digging && G.frame % 8 === n % 8) tryBeam(c);
   if (arrived) return atWork(c, I);
   // no progress: plan again, give up after a few tries
   if (G.frame - c.pt > 90) {
@@ -254,6 +294,12 @@ function atWork(c, I) {
     }
     return I;
   }
+  if (j.type === 'mine' && j.approach) {
+    // walked over: now plan the way down
+    j.approach = false;
+    c.path = null;
+    return I;
+  }
   if (j.type === 'mine') {
     // dig into the rich spot until it is gone (or a few seconds passed)
     j.dug = (j.dug || 0) + 1;
@@ -262,7 +308,7 @@ function atWork(c, I) {
     I.dig = true;
     I.ax = Math.abs(dx) > 2 ? Math.sign(dx) : c.face;
     I.slope = dy > 3 ? 0.5 : dy < -4 ? -0.38 : 0;
-    if (j.dug > 150 || !RICH.has(mat[j.y * W + j.x])) c.job = c.path = null;
+    if (j.dug > 80 || !RICH.has(mat[j.y * W + j.x])) c.job = c.path = null;
     return I;
   }
   if (j.type === 'collect') {
