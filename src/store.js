@@ -4,7 +4,7 @@ import { addFloat } from './floats.js';
 import { sold } from './profile.js';
 import { sfx } from './sound.js';
 import { ITEM } from './sprites.js';
-import { G } from './state.js';
+import { G, crew } from './state.js';
 
 const SELL = ['nug', 'gem'];
 const KEEP = ['flint', 'tnt', 'loam']; // tools stay in the hand
@@ -20,7 +20,8 @@ function takeStock(t, n = 1) {
 }
 
 // sell valuables, store the rest; returns true if anything happened
-function unload(list, x, y) {
+// (helpers hand in their tools too, your own Wühler keeps them)
+function unload(list, x, y, all = false) {
   let money = 0,
     stored = 0;
   const sell = [];
@@ -29,7 +30,7 @@ function unload(list, x, y) {
     if (SELL.includes(t)) {
       sell.push(t);
       list.splice(k, 1);
-    } else if (!KEEP.includes(t) && ITEM[t]) {
+    } else if ((all || !KEEP.includes(t)) && ITEM[t]) {
       addStock(t);
       stored++;
       list.splice(k, 1);
@@ -50,7 +51,7 @@ function unload(list, x, y) {
   return !!(money || stored);
 }
 function arriveAtBase(c) {
-  if (unload(c.inv, G.base.x + G.base.w / 2, G.base.gy - G.base.h - 4)) {
+  if (unload(c.inv, G.base.x + G.base.w / 2, G.base.gy - G.base.h - 4, c !== crew[0])) {
     c.isel = Math.min(c.isel, Math.max(0, c.inv.length - 1));
     G.invKey = '';
   }

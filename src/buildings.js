@@ -354,7 +354,7 @@ function updBuilds() {
   if (lvl() < 3 && (G.earned || 0) >= grow[lvl() + 1]) {
     G.base.lvl = lvl() + 1;
     calcTerr();
-    sfx('done');
+    sfx('fanfare');
     toast('Deine Burg wächst: Stufe {n} – bessere Preise, mehr Wühler', { n: G.base.lvl });
   }
   for (const b of builds) {

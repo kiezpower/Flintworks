@@ -83,7 +83,7 @@ function mkNav(o) {
         // dig sideways, slanted down or slanted up; the floor must stay under the feet
         // (8 pixel strokes: straight, down 1/2, up 3/8)
         const dx8 = x + dir * 8;
-        for (const dy of [0, 4, -3]) {
+        for (const dy of [0, 4, -3, -6]) {
           const ny = y + dy;
           if (clear(dx8, ny)) continue;
           const n = digNeed(dx8, ny);
@@ -94,9 +94,11 @@ function mkNav(o) {
     return out;
   }
   // goal(x,y) → true when reached; heur(x,y) → estimated rest cost
-  function find(sx, sy, goal, heur, maxNodes = o.maxNodes || 3000) {
+  // a search that can run in slices over several frames: step(ms) returns undefined while
+  // it is still running, then the path (or null)
+  function start(sx, sy, goal, heur, maxNodes = o.maxNodes || 3000) {
     const s = standAt(sx, sy);
-    if (s === null) return null;
+    if (s === null) return { step: () => null };
     const start = [Math.round(sx), s];
     const key = (x, y) => x * 4096 + y;
     const g = new Map(),
@@ -140,16 +142,23 @@ function mkNav(o) {
     let n = 0,
       best = k0,
       bestH = heur(...start);
-    // a time budget too, so a hopeless search never makes the game stutter
-    const t0 = performance.now(),
-      budget = o.budget || 8;
-    while (open.length && n++ < maxNodes) {
-      if ((n & 63) === 0 && performance.now() - t0 > budget) break;
+    return { step };
+    function step(budget) {
+      // a time budget per slice, so a long search never makes the game stutter
+      const t0 = performance.now();
+      while (open.length && n < maxNodes) {
+        if ((++n & 15) === 0 && performance.now() - t0 > budget) return undefined;
+        const r = expand();
+        if (r) return r;
+      }
+      return o.partial ? build(best, true) : null;
+    }
+    function expand() {
       const [f, k] = pop();
       const x = Math.floor(k / 4096),
         y = k % 4096;
       const gk = g.get(k);
-      if (f - heur(x, y) > gk + 1e-6) continue; // stale entry
+      if (f - heur(x, y) > gk + 1e-6) return null; // stale entry
       if (goal(x, y)) return build(k);
       const hh = heur(x, y);
       if (hh < bestH) {
@@ -167,8 +176,8 @@ function mkNav(o) {
           push(ng + heur(nb[i], nb[i + 1]), nk);
         }
       }
+      return null;
     }
-    return o.partial ? build(best, true) : null;
     function build(k, partial) {
       const path = [];
       while (k !== k0) {
@@ -180,7 +189,10 @@ function mkNav(o) {
       return path;
     }
   }
-  return { find, standAt, clear, settle, neighbours };
+  function find(sx, sy, goal, heur, maxNodes) {
+    return start(sx, sy, goal, heur, maxNodes).step(o.budget || 8) || null;
+  }
+  return { find, start, standAt, clear, settle, neighbours };
 }
 const WALK = 0,
   JUMP = 1,

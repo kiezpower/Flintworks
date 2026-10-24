@@ -2,6 +2,19 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'Sprung-Knopf an': 'Jump button on',
+  'Sprung-Knopf aus': 'Jump button off',
+  'Eigener Knopf zum Springen, auch beim automatischen Graben': 'A separate jump button, also with automatic digging',
+  'Gib einem Helfer eine Aufgabe': 'Give a helper a job',
+  'Sammle {goal} Holz im Lager': 'Collect {goal} wood in the store',
+  'Grabe {goal} m tief': 'Dig {goal} m deep',
+  'Lass {goal} Stützbalken aufstellen': 'Have {goal} support beams put up',
+  'Markiere ein Abbaugebiet': 'Mark a mining area',
+  'Baue ein Sägewerk': 'Build a sawmill',
+  'Verkaufe {goal} Goldklumpen': 'Sell {goal} gold nuggets',
+  'Heuere einen Helfer an': 'Hire a helper',
+  'Baue einen Hochofen': 'Build a furnace',
+  'Auftrag erfüllt: +{pay} Taler': 'Task done: +{pay} coins',
   'Alles erledigen': 'Do everything',
   'Sammeln, bauen, fällen und graben': 'Collect, build, chop and dig',
   'Gold & Erz': 'Gold & ore',

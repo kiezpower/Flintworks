@@ -1,6 +1,7 @@
 import { stock, takeStock } from './store.js';
 import { hasTool, toolSection } from './tools.js';
 const depthEl = document.getElementById('depthTxt');
+const misEl = document.getElementById('misTxt');
 import { GAME_MODES, mode } from './modes.js';
 const goalWrap = document.getElementById('goalWrap'),
   goalTxt = document.getElementById('goalTxt'),
@@ -29,6 +30,7 @@ import { sfx } from './sound.js';
 import { ITEM, SPR, itemIcon, padIcon, toolIcon } from './sprites.js';
 import { tr } from './i18n.js';
 import { focusBadge, openCrew } from './crewui.js';
+import { missionText } from './missions.js';
 import { G, INV_MAX, animals, builds, crew, lorries } from './state.js';
 import { darkness } from './weather.js';
 import { PLANK, AIR, GOLD, H, MINI, ROCK, W, bg, hex, mat, matAt, surf } from './world.js';
@@ -91,6 +93,12 @@ function hud() {
     if (d >= 3) depthEl.textContent = tr('Tiefe {d} m', { d });
     depthEl.classList.toggle('deep', d > 11);
   }
+  const mt = missionText();
+  if (mt !== G.misKey) {
+    G.misKey = mt;
+    misEl.hidden = !mt;
+    misEl.textContent = mt ? '➜ ' + mt : '';
+  }
   if (c) whoTxt.textContent = c.inv[c.isel] ? `${c.name} · ${resName(c.inv[c.isel])}` : c.name;
   if (c) {
     hpBar.style.width = Math.max(0, c.energy) + '%';
@@ -107,6 +115,7 @@ function hud() {
   }
   // automatic digging hides the dig and jump buttons; throw only shows with something in hand
   btnsEl.classList.toggle('auto', !!G.autoDig);
+  btnsEl.classList.toggle('jumpon', !!G.jumpBtn);
   btnsEl.classList.toggle('noitem', !(c && !c.dead && c.inv[c.isel]));
   const ck = crew.map((o, n) => `${n === G.sel}${o.dead}${Math.round(o.energy / 10)}${o.focus}`).join();
   if (ck !== G.crewKey) {

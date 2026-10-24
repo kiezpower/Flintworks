@@ -121,6 +121,12 @@ button:focus-visible {
 .cbtn {
   position: relative;
 }
+.stats .mis {
+  max-width: 190px;
+  font-size: 11px;
+  line-height: 1.25;
+  color: #ffe9a8;
+}
 .cbtn .fo {
   position: absolute;
   right: -5px;
@@ -699,6 +705,10 @@ button:focus-visible {
 #btns.auto .pad.big,
 #btns.auto .pad.jump {
   display: none;
+}
+/* the jump button can be switched on again for automatic digging */
+#btns.auto.jumpon .pad.jump {
+  display: grid;
 }
 #btns.auto .pad.act {
   width: 88px;

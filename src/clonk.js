@@ -17,6 +17,7 @@ import {
   EARTH,
   GEM,
   GOLD,
+  GRANITE,
   H,
   LAVA,
   LIQ,
@@ -157,12 +158,17 @@ function wantsDig(c, I) {
   }
   // keep going while the last stroke still finds earth (no flicker on/off)
   const need = c.digging ? 1 : 3;
-  if (I.ay > 0.4) return grounded && !c.hangle && digZone(c, dir, SLOPE_DOWN, 99) >= need;
+  // digging down needs the stick clearly pointing down: a thumb that slips a bit while
+  // walking must not start a hole
+  if (I.ay > 0.55 && I.ay > Math.abs(I.ax) * 0.5)
+    return grounded && !c.hangle && digZone(c, dir, SLOPE_DOWN, 99) >= need;
   if (Math.abs(I.ax) > 0.35 && hold) {
-    // dig when the way is blocked (a wall or a ledge too high to step onto), or keep going
+    // dig when the way is blocked (a wall or a ledge too high to step onto) and you keep
+    // pushing for a moment – a short bump against a step does not dig yet
     const blocked = !free(c.x + dir * 0.7, c.y, 6, 10) && !free(c.x + dir * 0.7, c.y - 3, 6, 10);
-    if (blocked || c.digging) return digZone(c, dir, 0, 9) >= 2 ? 'side' : false;
-  }
+    c.pushT = blocked ? (c.pushT || 0) + 1 : 0;
+    if (c.digging || (blocked && c.pushT > (G.jumpBtn ? 18 : 8))) return digZone(c, dir, 0, 9) >= 2 ? 'side' : false;
+  } else c.pushT = 0;
   return false;
 }
 function digAt(cx, cy, r) {
@@ -422,7 +428,11 @@ function updClonk(c, I) {
     const sp = hasTool('pick') ? 0.8 : 0.55;
     moveBody(c, (c.face * sp) / len, (slope * sp) / len, 3);
     c.anim += 0.3;
-    if (G.frame % 9 === 0) sfx('dig', c.x, c.y);
+    if (G.frame % 9 === 0) {
+      const m = mat[Math.floor(c.y + 5 + slope * 6) * W + Math.floor(c.x + 3 + c.face * 6)];
+      sfx(m === SAND ? 'digSand' : m === ROCK || m === GRANITE ? 'digRock' : 'dig', c.x, c.y);
+      if (m === GOLD || m === GEM) sfx('ting', c.x, c.y);
+    }
     return;
   }
   c.digging = false;

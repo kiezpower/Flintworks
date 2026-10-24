@@ -5,7 +5,7 @@ const GAME_MODES = {
   gold: {
     name: 'Goldrausch',
     desc: 'Verdiene {goal} Taler',
-    goal: 500,
+    goal: 800,
     prog: () => G.money,
     stars: [8, 14],
   },

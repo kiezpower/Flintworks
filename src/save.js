@@ -46,6 +46,7 @@ function saveGame() {
           k === 'chop' ||
           k === 'job' ||
           k === 'path' ||
+          k === 'plan' ||
           k === 'thrower' ||
           k === 'spr' ||
           k === 'char'
@@ -68,6 +69,8 @@ function saveGame() {
       tools: G.tools || {},
       chests: G.chests,
       beams: G.beams || [],
+      mis: G.mis || null,
+      goldSold: G.goldSold || 0,
       mineMark: G.mineMark || null,
       chestsFound: G.chestsFound,
       gas: G.gas,
@@ -137,12 +140,14 @@ function loadGame() {
     G.tools = d.tools || {};
     G.chests = d.chests || [];
     G.beams = d.beams || [];
+    G.mis = d.mis || null;
+    G.goldSold = d.goldSold || 0;
     G.mineMark = d.mineMark || null;
     G.chestsFound = d.chestsFound || 0;
     G.gas = d.gas || [];
     G.gasClouds = d.gasClouds || [];
     G.hintsSeen = new Set(d.hints || []);
-    crew.push(...d.crew.map(c => ({ ...c, chop: null, bridge: null, job: null, path: null })));
+    crew.push(...d.crew.map(c => ({ ...c, chop: null, bridge: null, job: null, path: null, plan: null })));
     items.push(...d.items.map(it => ({ ...it, thrower: null })));
     builds.push(...d.builds);
     G.base = builds.find(b => b.type === 'base');

@@ -21,11 +21,12 @@ import { gen } from './gen.js';
 import { cycleCrew, inp, readInput } from './input.js';
 import { helperAI } from './helpers.js';
 import { updBeams } from './mine.js';
+import { updMissions } from './missions.js';
 import { killAnimal, updAnimal, updArrows, updItems, updParts, updTrees } from './objects.js';
 import { cam, render, resize } from './render.js';
 import { clearSave, hasSave, loadGame, saveGame } from './save.js';
 import { simulate } from './sim.js';
-import { audioInit } from './sound.js';
+import { audioInit, sfx } from './sound.js';
 import { G, animals, builds, crew, lorries } from './state.js';
 import { $, checkHints, closePanel, drawMini, hud, openBuild, panelEl, toast, toastEl, toggleMap } from './ui.js';
 import { updWeather } from './weather.js';
@@ -92,6 +93,7 @@ function startGame(withTutorial = false) {
   crew[0] && Object.assign(crew[0], { hat: P.hat, cap: P.cap });
   G.autoDig = P.autodig !== false;
   G.climbOn = !!P.climbing;
+  G.jumpBtn = P.jumpbtn !== false;
   if (!G.climbOn) for (const c of crew) c.climb = c.hangle = false;
   const res = P.gfx === 'low' || new URLSearchParams(location.search).get('res') === '1' ? 1 : 2;
   if (res !== G.res) {
@@ -110,6 +112,7 @@ function startGame(withTutorial = false) {
 }
 function endScreen(won) {
   G.state = won ? 'won' : 'lost';
+  if (won) sfx('fanfare');
   closePanel();
   clearSave();
   G.inRun = false;
@@ -176,6 +179,17 @@ function openMenu() {
       openMenu();
     },
   );
+  if (G.autoDig)
+    item(
+      G.jumpBtn ? 'Sprung-Knopf an' : 'Sprung-Knopf aus',
+      'Eigener Knopf zum Springen, auch beim automatischen Graben',
+      () => {
+        P.jumpbtn = !G.jumpBtn;
+        G.jumpBtn = P.jumpbtn;
+        saveProfile();
+        openMenu();
+      },
+    );
   item(G.res === 2 ? 'Grafik: fein' : 'Grafik: schnell', 'Schnell läuft flüssiger auf älteren Handys', () => {
     G.res = G.res === 2 ? 1 : 2;
     P.gfx = G.res === 2 ? 'high' : 'low';
@@ -251,6 +265,7 @@ function step() {
     updBuildFx();
     updHazards();
     updBeams();
+    updMissions();
     updArrows();
     updItems();
     for (const L of lorries) updLorry(L);

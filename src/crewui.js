@@ -19,7 +19,7 @@ const focusOf = c => FOCUS.find(f => f.id === (c.focus || 'all'));
 
 function setFocus(c, id) {
   c.focus = id;
-  c.job = c.path = null;
+  c.job = c.path = c.plan = null;
   G.crewKey = '';
 }
 // small badge on the crew bar button

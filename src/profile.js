@@ -119,6 +119,7 @@ function sold(list, v) {
   track('sell', v);
   const n = list.filter(t => t === 'nug').length;
   if (n) track('gold', n);
+  G.goldSold = (G.goldSold || 0) + n;
 }
 // End of a run: trophies for wins, a few for every 50 Taler earned
 function finishGame(won, earned, stars = 1) {

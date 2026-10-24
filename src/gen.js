@@ -72,6 +72,8 @@ function gen() {
   G.relaxed = G.nextDiff === 'relaxed';
   G.store = {};
   G.beams = [];
+  G.mis = null;
+  G.goldSold = 0;
   G.mineMark = null;
   mat.fill(0);
   bg.fill(0);

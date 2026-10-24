@@ -70,8 +70,9 @@ function openChest(ch) {
   if (rnd() < 0.45) loot.push('gem');
   loot.push(rnd() < 0.5 ? 'tnt' : 'flint');
   loot.forEach((t, k) => spawnItem(t, ch.x + 3, ch.y - 2, (k - loot.length / 2) * 0.35, -1.6 - rnd(), 6));
-  sfx('done', ch.x, ch.y);
+  sfx('fanfare');
   sfx('coin', ch.x, ch.y);
+  G.shake = Math.max(G.shake || 0, 2);
   addFloat(ch.x + CW / 2, ch.y - 4, '★', '#ffe066');
   toast('Schatztruhe geöffnet!');
   track('chest');

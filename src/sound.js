@@ -60,6 +60,21 @@ function sfx(n, x, y, k = 1) {
     case 'dig':
       nz(t, 0.07, 900, 300, 0.1 * v);
       break;
+    // each material sounds a little different under the shovel
+    case 'digSand':
+      nz(t, 0.11, 2400, 900, 0.06 * v, 'bandpass');
+      break;
+    case 'digRock':
+      tn(t, 'square', 1500 + rnd() * 400, 900, 0.03, 0.035 * v);
+      nz(t, 0.05, 3500, 1800, 0.08 * v, 'bandpass');
+      break;
+    case 'ting':
+      tn(t, 'triangle', 1760 + rnd() * 300, 2400, 0.09, 0.05 * v);
+      break;
+    case 'fanfare':
+      [523, 659, 784, 1047].forEach((f, k) => tn(t + k * 0.11, 'square', f, f, k === 3 ? 0.35 : 0.1, 0.05));
+      tn(t + 0.33, 'triangle', 523, 523, 0.4, 0.06);
+      break;
     case 'boom':
       nz(t, 1.1, 1800, 50, 0.9 * v);
       tn(t, 'sine', 95, 30, 0.7, 0.6 * v);

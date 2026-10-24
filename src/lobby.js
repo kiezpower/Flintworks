@@ -261,6 +261,16 @@ function openOptions() {
     },
   });
   opt(l, {
+    title: tr(P.jumpbtn === false ? 'Sprung-Knopf aus' : 'Sprung-Knopf an'),
+    sub: tr('Eigener Knopf zum Springen, auch beim automatischen Graben'),
+    onClick: () => {
+      P.jumpbtn = P.jumpbtn === false;
+      G.jumpBtn = P.jumpbtn;
+      saveProfile();
+      openOptions();
+    },
+  });
+  opt(l, {
     title: tr(P.climbing ? 'Klettern an' : 'Klettern aus'),
     sub: tr('An Wänden hochklettern und an Decken hängen'),
     onClick: () => {
