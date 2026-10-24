@@ -512,9 +512,8 @@
 
 .lb-row .lb-mode b {
   font-size: 13px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
 }
 
 .lb-version {
