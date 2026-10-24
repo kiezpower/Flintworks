@@ -396,6 +396,9 @@ function updBuilds() {
           if (b.type === 'flag') calcTerr();
           if (b.type === 'tower') toast('Wachturm fertig: drin stehen für weite Sicht');
           if (b.type === 'lift') toast('Fahrstuhl fertig: draufstellen, Stick runter oder hoch');
+          if (b.type === 'saw') toast('Sägewerk fertig: macht Bretter, sobald Holz im Lager ist');
+          if (b.type === 'furnace') toast('Hochofen fertig: macht Metall aus Erz und Kohle im Lager');
+          if (b.type === 'shop') toast('Werkstatt fertig: macht Feuersteine und Sprengladungen aus dem Lager');
         }
       }
       continue;

@@ -59,7 +59,7 @@ function arriveAtBase(c) {
 // ---- automatic production ----
 // keep: stock that is never used up, so building material stays available; max: stop when this many are stored
 const AUTO = {
-  saw: [{ out: 'plank', n: 3, need: { wood: 1 }, time: 90, keep: { wood: 2 }, max: 9 }],
+  saw: [{ out: 'plank', n: 3, need: { wood: 1 }, time: 90, keep: { wood: 1 }, max: 12 }],
   furnace: [{ out: 'metal', n: 1, need: { ore: 1, coal: 1 }, time: 160, max: 99 }],
   shop: [
     { out: 'flint', n: 1, need: { rock: 1, wood: 1 }, time: 80, keep: { wood: 2, rock: 2 }, max: 4 },
@@ -92,4 +92,15 @@ const AUTO_INFO = {
   shop: 'Macht Feuersteine und Sprengladungen aus dem Lager',
 };
 
-export { AUTO, AUTO_INFO, addStock, arriveAtBase, stock, takeStock, unload, updProduction };
+// why a production building is idle: the first ingredient that is missing, or 'full'
+function idleReason(b) {
+  const list = AUTO[b.type];
+  if (!list || b.busy > 0) return null;
+  if (list.every(r => stock(r.out) >= r.max)) return { full: true, item: list[0].out };
+  for (const r of list) {
+    if (stock(r.out) >= r.max) continue;
+    for (const [t, n] of Object.entries(r.need)) if (stock(t) - ((r.keep && r.keep[t]) || 0) < n) return { item: t };
+  }
+  return null;
+}
+export { idleReason, AUTO, AUTO_INFO, addStock, arriveAtBase, stock, takeStock, unload, updProduction };

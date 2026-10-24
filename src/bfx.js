@@ -1,5 +1,6 @@
 // Living buildings: chimney smoke, sawdust, sparks, bubbling tanks and glowing windows at night.
-import { SPR } from './sprites.js';
+import { SPR, itemIcon } from './sprites.js';
+import { idleReason } from './store.js';
 import { G, builds, parts } from './state.js';
 import { rnd } from './world.js';
 
@@ -81,6 +82,27 @@ function updBuildFx() {
 
 // overlays drawn right after the building sprite
 function drawBuildFx(ctx, b, sx, sy) {
+  if (b.done && !(b.busy > 0)) {
+    // idle production building: bubble with what it is waiting for
+    const why = idleReason(b);
+    if (why) {
+      const bx = Math.round(sx + b.w / 2 - 6),
+        by = Math.round(sy - 15 + Math.sin(G.frame * 0.08) * 1);
+      ctx.fillStyle = '#24160c';
+      ctx.fillRect(bx - 1, by - 1, 14, 13);
+      ctx.fillStyle = why.full ? '#e8f4d8' : '#f4ead2';
+      ctx.fillRect(bx, by, 12, 11);
+      ctx.fillRect(bx + 4, by + 11, 4, 2);
+      ctx.drawImage(itemIcon(why.item), bx + 1, by + 1, 10, 10);
+      ctx.fillStyle = why.full ? '#3f9e4a' : '#e0402f';
+      if (why.full) ctx.fillRect(bx + 9, by - 2, 3, 3);
+      else {
+        ctx.fillRect(bx + 10, by - 3, 2, 4);
+        ctx.fillRect(bx + 10, by + 2, 2, 1);
+      }
+    }
+    return;
+  }
   if (!b.done || !(b.busy > 0)) return;
   if (b.type === 'saw') {
     // spinning blade teeth

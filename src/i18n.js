@@ -2,6 +2,12 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'Sägewerk fertig: macht Bretter, sobald Holz im Lager ist':
+    'Sawmill done: makes planks as soon as there is wood in the store',
+  'Hochofen fertig: macht Metall aus Erz und Kohle im Lager':
+    'Furnace done: makes metal from ore and coal in the store',
+  'Werkstatt fertig: macht Feuersteine und Sprengladungen aus dem Lager':
+    'Workshop done: makes flints and explosives from the store',
   'Neue Version v{v} verfügbar – tippen': 'New version v{v} available – tap',
   'Klettern an': 'Climbing on',
   'Klettern aus': 'Climbing off',
