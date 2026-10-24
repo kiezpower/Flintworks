@@ -7,6 +7,7 @@ import { track } from './profile.js';
 import { dust, splash } from './effects.js';
 import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './entities.js';
 import { inputOf } from './players.js';
+import { vehicleContext, vehicleOf } from './vehicles/index.js';
 import { sfx } from './sound.js';
 import { G, builds, crew, lorries, parts, trees } from './state.js';
 import { toast } from './ui.js';
@@ -252,6 +253,7 @@ function nearTree(c) {
 }
 const NOIN = { ax: 0, ay: 0, dig: false, jumpP: false, jumpUp: false, throwP: false, actP: false };
 function updClonk(c, I) {
+  if (c.ride != null && !c.dead) return; // sitting in a vehicle: the vehicle moves it
   // (automatic digging is part of a player's input; helpers dig on purpose)
   if (I.auto && !I.dig && !c.dead) {
     const d = wantsDig(c, I);
@@ -581,6 +583,7 @@ function onCase(e, cs) {
 }
 function doThrow(c, I) {
   if (!I.throwP || !c.inv.length || c.climb || c.tumble) return;
+  if (c.ride != null) return; // vehicles use Throw themselves (catapult, airship)
   if (c.isel >= c.inv.length) c.isel = c.inv.length - 1;
   const t = c.inv.splice(c.isel, 1)[0];
   if (c.isel >= c.inv.length) c.isel = Math.max(0, c.inv.length - 1);
@@ -605,8 +608,12 @@ function lorryNear(c) {
 }
 function context(c) {
   if (!c || c.dead) return { label: '—' };
+  // vehicles: getting out and stopping the rail laying come first, getting in after the castle
+  const vc = vehicleContext(c);
+  if (vc && (c.ride != null || c.laying)) return vc;
   // (ui: a panel that opens on the device of the player who pressed the button)
   if (insideB(c, G.base)) return { label: 'Basis', ui: 'base' };
+  if (vc) return vc;
   const ch = chestNear(c);
   if (ch) return { label: 'Öffnen', fn: () => openChest(ch) };
   const L = lorryNear(c);

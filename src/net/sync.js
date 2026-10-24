@@ -5,7 +5,8 @@ import { mkLorry } from '../buildings.js';
 import { mkAnimal } from '../entities.js';
 import { ITEM, treeSprite } from '../sprites.js';
 import { mode } from '../modes.js';
-import { CAPS, G, NAMES, animals, builds, crew, items, lorries, trees } from '../state.js';
+import { CAPS, G, NAMES, animals, builds, crew, items, lorries, trees, vehicles } from '../state.js';
+import { VK } from '../vehicles/core.js';
 import { syncTeams, useMine, useTeam } from '../teams.js';
 
 const r4 = v => Math.round(v * 4) / 4;
@@ -42,6 +43,8 @@ const KINDS = {
       bu: c.burn > 0 ? 1 : 0,
       sq: c.netSeq,
       te: c.team || 0,
+      rd: c.ride ?? null,
+      ly: c.laying ? 1 : 0,
     }),
     create: d => ({
       id: d.id,
@@ -88,8 +91,10 @@ const KINDS = {
         hammer: !!d.hm,
         focus: d.fo,
         team: d.te,
+        ride: d.rd,
+        laying: !!d.ly,
         burn: d.bu ? 30 : 0,
-        netBusy: !!(d.ch || d.br || d.tm || d.dead),
+        netBusy: !!(d.ch || d.br || d.tm || d.dead || d.rd != null),
       });
     },
   },
@@ -186,8 +191,38 @@ const KINDS = {
     },
   },
 };
+KINDS.vehicles = {
+  list: vehicles,
+  pack: v => ({
+    id: v.id,
+    k: v.kind,
+    x: r4(v.x),
+    y: r4(v.y),
+    f: v.face,
+    vx: r2(v.vx),
+    a: r2(v.ang || 0),
+    t: r2(v.t || 0),
+    fu: Math.round(v.fuel),
+    rd: v.rider,
+    te: v.team || 0,
+    cg: v.cargo ? v.cargo.length : 0,
+    l: v.link,
+    ab: v.kind === 'gondola' ? [v.a, v.b] : 0,
+    dr: v.drilling ? 1 : 0,
+    cd: v.cd || 0,
+  }),
+  create: d => {
+    const K = VK[d.k] || { w: 10, h: 8 };
+    return { id: d.id, kind: d.k, x: d.x, y: d.y, w: K.w, h: K.h, vx: 0, vy: 0, face: 1, team: d.te, fuel: 100 };
+  },
+  apply: (v, d) => {
+    Object.assign(v, { face: d.f, vx: d.vx, ang: d.a, t: d.t, fuel: d.fu, rider: d.rd, team: d.te, link: d.l });
+    Object.assign(v, { drilling: !!d.dr, cd: d.cd, cargo: new Array(d.cg).fill('rock') });
+    if (d.ab) [v.a, v.b] = d.ab;
+  },
+};
 // entities that move are eased towards the reported position on the client
-const MOVING = new Set(['crew', 'items', 'animals', 'lorries']);
+const MOVING = new Set(['crew', 'items', 'animals', 'lorries', 'vehicles']);
 
 // ---- shared game values ----
 function packGame() {
@@ -223,6 +258,7 @@ function packGame() {
     chests: G.chests && G.chests.map(c => (c.open ? 1 : 0)),
     rainT: G.rainT,
     ticks: G.playTicks,
+    rails: G.rails,
   };
 }
 function applyGame(d) {
@@ -237,6 +273,7 @@ function applyGame(d) {
     goldSold: d.gold,
     rainT: d.rainT,
     playTicks: d.ticks,
+    rails: d.rails || [],
   });
   G.vs = d.vs || null;
   const own = d.teams && d.teams[G.myTeam];

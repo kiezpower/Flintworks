@@ -87,7 +87,7 @@ function drawMark(ctx, cx, cy) {
 }
 
 // what a helper is up to, shown for a moment when it starts a new job
-const BUB = { mine: 'nug', chop: 'wood', build: 'plank', collect: 'rock', deliver: 'nug' };
+const BUB = { mine: 'nug', chop: 'wood', build: 'plank', collect: 'rock', deliver: 'nug', train: 'nug' };
 function jobBubble(c, type) {
   if (type === 'rest' || type === 'follow' || BUB[type]) c.bub = { t: type, l: 100 };
 }

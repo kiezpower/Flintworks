@@ -8,7 +8,21 @@ import { addClonk, mkAnimal, newId, spawnItem } from './entities.js';
 import { calcTerr } from './render.js';
 import { simulate } from './sim.js';
 import { sp, treeSprite } from './sprites.js';
-import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
+import {
+  G,
+  animals,
+  birds,
+  builds,
+  clouds,
+  crew,
+  flashes,
+  items,
+  lorries,
+  meteors,
+  parts,
+  trees,
+  vehicles,
+} from './state.js';
 import {
   ACID,
   AIR,
@@ -118,7 +132,9 @@ function gen() {
   G.mineMark = null;
   mat.fill(0);
   bg.fill(0);
-  for (const a of [meteors, items, parts, flashes, builds, trees, crew, animals, lorries, birds, clouds]) a.length = 0;
+  for (const a of [meteors, items, parts, flashes, builds, trees, crew, animals, lorries, birds, clouds, vehicles])
+    a.length = 0;
+  G.rails = [];
   G.meteorNext = 15000 + rnd() * 8000;
   G.goldDust = G.earthDug = G.loamDug = G.oreDug = G.coalDug = 0;
   G.hintsSeen = new Set();

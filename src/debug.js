@@ -1,5 +1,5 @@
 // Dev-only hooks for the browser tests (never part of the production build).
-import { G, animals, builds, crew, items, lorries, trees } from './state.js';
+import { G, animals, builds, crew, items, lorries, trees, vehicles } from './state.js';
 import { explode, ignite } from './objects.js';
 import { tryBuild, terrOK } from './buildings.js';
 import { calcTerr } from './render.js';
@@ -34,6 +34,9 @@ window.__ww = {
   },
   get crew() {
     return crew;
+  },
+  get vehicles() {
+    return vehicles;
   },
   get items() {
     return items;

@@ -2,6 +2,48 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  Fahrzeuge: 'Vehicles',
+  Bohrwagen: 'Drill wagon',
+  Floß: 'Raft',
+  Katapult: 'Catapult',
+  Reitwipf: 'Riding wipf',
+  Seilbahnmast: 'Cable car mast',
+  Luftschiff: 'Airship',
+  Grubenbahn: 'Mine train',
+  Gondel: 'Gondola',
+  Einsteigen: 'Get in',
+  Aussteigen: 'Get out',
+  Fertig: 'Done',
+  'Schienen legen': 'Lay rails',
+  'Schienen: fertig': 'Rails: done',
+  'Beim Laufen entstehen Schienen hinter dir – 1 Brett oder Holz pro 10 Stück':
+    'Rails appear behind you as you walk – 1 plank or wood per 10 pieces',
+  'Erst ab Burgstufe {n}': 'Castle level {n} needed',
+  'Die Grubenbahn muss auf Schienen stehen': 'The mine train has to stand on rails',
+  '{name} steht bereit – Aktion zum Einsteigen': '{name} is ready – Action to get in',
+  'Schienen brauchen Bretter oder Holz': 'Rails need planks or wood',
+  'Lauf los: hinter dir entstehen Schienen – Aktion „Fertig“ zum Aufhören':
+    'Start walking: rails appear behind you – Action “Done” to stop',
+  'Keine Bretter oder Holz mehr für Schienen': 'No planks or wood left for rails',
+  'Der Bohrwagen braucht Kohle im Lager': 'The drill wagon needs coal in the store',
+  'Das Luftschiff braucht Kohle im Lager': 'The airship needs coal in the store',
+  'Nichts zum Schleudern – Steine ins Lager oder etwas in die Hand':
+    'Nothing to hurl – put rocks in the store or hold something',
+  'Seilbahnmast steht – stelle einen zweiten auf (bis 400 Pixel entfernt)':
+    'Mast is up – put up a second one (up to 400 pixels away)',
+  'Seilbahn fertig – die Gondel pendelt zwischen den Masten': 'Cable car done – the gondola shuttles between the masts',
+  'Bohrt schnell durch Erde und Fels – Stick schräg für schräge Tunnel, braucht Kohle':
+    'Drills fast through earth and rock – tilt the stick for sloped tunnels, needs coal',
+  'Fliegt frei mit dem Stick, Wurf lässt Dinge fallen – ab Burgstufe 2, braucht Kohle':
+    'Flies freely with the stick, Throw drops things – from castle level 2, needs coal',
+  'Fährt auf deinen Schienen hin und her und bringt die Ladung der Helfer zur Burg':
+    'Runs back and forth on your rails and takes the helpers’ load to the castle',
+  'Schleudert Steine, Feuersteine und Sprengladungen weit – Stick hoch/runter zielt, Wurf schießt':
+    'Hurls rocks, flints and explosives far – stick up/down aims, Throw fires',
+  'Schnelles Reittier für die Oberfläche, springt hoch': 'Fast mount for the surface, jumps high',
+  'Schwimmt auf Wasser – über Teiche und Höhlenseen': 'Floats on water – across ponds and cave lakes',
+  'Zwei Masten (bis 400 Pixel auseinander) bilden eine Seilbahn – die Gondel fährt von allein':
+    'Two masts (up to 400 pixels apart) make a cable car – the gondola runs by itself',
   Datenschutz: 'Privacy',
   'Was gespeichert und übertragen wird': 'What is stored and sent',
   'Gespeicherte Runde fortsetzen': 'Continue saved round',

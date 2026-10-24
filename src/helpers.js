@@ -12,6 +12,7 @@
 import { NOIN, digCell, diggable, nearTree, spawnFromDig } from './clonk.js';
 import { midMat } from './entities.js';
 import { jobBubble, tryBeam } from './mine.js';
+import { trainStop } from './vehicles/rails.js';
 import { clonkOf, isPlayer } from './players.js';
 import { DIG, JUMP, mkNav } from './pathfind.js';
 import { ITEM } from './sprites.js';
@@ -107,6 +108,12 @@ function oreScan(c, depth) {
     }
   return null;
 }
+// home to the castle – or to the mine train if its track is much closer
+function deliverJob(c, n) {
+  const stop = !(c.noTrain > G.frame) && trainStop(c);
+  if (stop) return { type: 'train', ref: 'train' + n, x: stop[0], y: stop[1] };
+  return { type: 'deliver', ref: 'base' + n };
+}
 function pickJob(c, n) {
   const f = c.focus || 'all';
   if (f === 'stay') return { type: 'rest', ref: 'rest' + n };
@@ -114,14 +121,14 @@ function pickJob(c, n) {
   const full = c.inv.length >= INV_MAX || cargo(c) >= 4;
   // hurt: go home and recover first (the base heals)
   if (c.energy < 50) return { type: cargo(c) ? 'deliver' : 'rest', ref: 'base' + n };
-  if (full || (cargo(c) > 0 && !items.length)) return { type: 'deliver', ref: 'base' + n };
+  if (full || (cargo(c) > 0 && !items.length)) return deliverJob(c, n);
   if (f === 'all' || f === 'build') {
     const site = builds.find(b => !b.done && crew.filter(o => o.job && o.job.ref === b).length < 2 && !blocked(b));
     if (site) return { type: 'build', ref: site };
   }
   const it = nearestItem(c, f === 'wood' ? 'wood' : null);
   if (it) return { type: 'collect', ref: it };
-  if (cargo(c) > 0) return { type: 'deliver', ref: 'base' + n };
+  if (cargo(c) > 0) return deliverJob(c, n);
   if (f === 'wood' || (f === 'all' && stock('wood') + stock('plank') / 3 < 8)) {
     const t = nearestTree(c);
     if (t) return { type: 'chop', ref: t };
@@ -154,6 +161,7 @@ function target(c, n) {
     j.gy = me.y;
     return { x: me.x, y: me.y, r: 14, ry: 10 };
   }
+  if (j.type === 'train') return { x: j.x - 3, y: j.y - 10, r: 4 };
   if (j.type === 'build') return { x: j.ref.x + j.ref.w / 2 - 3, y: j.ref.gy - 10, r: j.ref.w / 2 - 5 };
   if (j.type === 'collect') return { x: j.ref.x - 2, y: j.ref.y - 6, r: 3, ry: 8 };
   if (j.type === 'chop') return { x: j.ref.x - 3, y: j.ref.gy - 10, r: 6 };
@@ -409,6 +417,15 @@ function atWork(c, I) {
     return I;
   }
   if (j.type === 'deliver' && cargo(c) === 0) c.job = c.path = null;
+  // waiting at the track: the train takes the load when it passes
+  if (j.type === 'train') {
+    j.w = (j.w || 0) + 1;
+    if (cargo(c) === 0) c.job = c.path = null;
+    else if (j.w > 900) {
+      c.noTrain = G.frame + 1800;
+      c.job = c.path = null;
+    }
+  }
   // build: stand still so the hammering counts; rest: just wait
   return I;
 }

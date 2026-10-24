@@ -10,6 +10,7 @@ const meteors = [],
   crew = [],
   animals = [],
   lorries = [],
+  vehicles = [],
   birds = [],
   clouds = [];
 G.money = 0;
@@ -34,4 +35,20 @@ G.base = null;
 // a Wühler carries up to INV_MAX things; the HUD shows three of them
 const INV_MAX = 10;
 
-export { INV_MAX, CAPS, NAMES, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees };
+export {
+  INV_MAX,
+  CAPS,
+  NAMES,
+  animals,
+  birds,
+  builds,
+  clouds,
+  crew,
+  flashes,
+  items,
+  lorries,
+  meteors,
+  parts,
+  trees,
+  vehicles,
+};

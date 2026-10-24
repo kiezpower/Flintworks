@@ -16,6 +16,8 @@ import { sel_ } from './entities.js';
 import { isPlayer } from './players.js';
 import { drawEmotes } from './net/emotes.js';
 import { TEAM_COLS } from './teams.js';
+import { drawVehicles } from './vehicles/core.js';
+import { drawRails } from './vehicles/rails.js';
 import { topSolid } from './gen.js';
 import { game, joyHome } from './input.js';
 import { ICOL, SPR, drawHi, drawItemBig } from './sprites.js';
@@ -277,6 +279,7 @@ function render() {
   ctx.drawImage(wc, cx * 2, cy * 2, G.VW * 2, G.VH * 2, 0, 0, G.VW, G.VH);
   drawDecor(ctx, cx, cy);
   drawBeams(ctx, cx, cy);
+  drawRails(ctx, cx, cy);
   drawMark(ctx, cx, cy);
   const lava = scanLava(cx, cy);
   drawLavaGlow(ctx);
@@ -424,6 +427,7 @@ function render() {
       ctx.restore();
     }
   }
+  drawVehicles(ctx, cx, cy);
   // lorries
   for (const L of lorries) {
     const x = Math.floor(L.x - cx),

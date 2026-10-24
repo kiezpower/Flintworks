@@ -48,6 +48,8 @@ import { clearNetSave, loadNetSave, saveNet } from './net/netsave.js';
 import { clientStep } from './net/client.js';
 import { hostEnd, hostTick } from './net/host.js';
 import { teamOf, useMine, useTeam } from './teams.js';
+import { updVehicles } from './vehicles/core.js';
+import { playerVehicleTick } from './vehicles/index.js';
 import { updEmoBtn } from './net/emotes.js';
 import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
@@ -371,6 +373,7 @@ function step() {
       useTeam(teamOf(c)); // Versus: castle, cash and store of this Wühler's team
       const I = isPlayer(c) ? inputOf(c.pid) : c.dead ? NOIN : helperAI(c, n);
       updClonk(c, I);
+      if (isPlayer(c)) playerVehicleTick(c);
       if (isPlayer(c) && !c.dead) {
         G.cmdPid = c.pid; // messages from these actions go to that player
         doThrow(c, I);
@@ -384,6 +387,7 @@ function step() {
       }
     });
     useMine();
+    updVehicles();
     updBuilds();
     updBuildFx();
     updHazards();

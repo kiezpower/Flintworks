@@ -31,6 +31,8 @@ import { ITEM, SPR, itemIcon, padIcon, toolIcon } from './sprites.js';
 import { tr } from './i18n.js';
 import { focusBadge, openCrew } from './crewui.js';
 import { register, send } from './commands.js';
+import { BUILDABLE, VK, cannotBuild } from './vehicles/index.js';
+import { vehicleIcon } from './vehicles/core.js';
 import { isPlayer } from './players.js';
 import { missionText } from './missions.js';
 import { G, INV_MAX, animals, builds, crew, lorries } from './state.js';
@@ -364,10 +366,38 @@ function openBuild() {
       send('stairs');
     },
   });
+  // vehicles and rails
+  const lv = sec(p, 'Fahrzeuge');
+  opt(lv, {
+    icon: itemIcon('plank'),
+    title: tr(c.laying ? 'Schienen: fertig' : 'Schienen legen'),
+    sub: tr('Beim Laufen entstehen Schienen hinter dir – 1 Brett oder Holz pro 10 Stück'),
+    short: true,
+    onClick: () => {
+      closePanel();
+      send('rails');
+    },
+  });
+  for (const k of BUILDABLE) {
+    const K = VK[k],
+      why = cannotBuild(c, k);
+    opt(lv, {
+      icon: vehicleIcon(k),
+      title: tr(K.name),
+      sub: tr(K.info),
+      cost: K.lvl && why === 'Erst ab Burgstufe {n}' ? tr(why, { n: K.lvl }) : costTxt(K.cost),
+      short: !!why,
+      onClick: () => {
+        closePanel();
+        send('vehicle', { kind: k });
+      },
+    });
+  }
+  const lb = sec(p, 'Gebäude');
   for (const t in BT) {
     const T = BT[t];
     if (T.hidden || (T.terrOnly && !terrOn())) continue;
-    opt(l, {
+    opt(lb, {
       icon: SPR[t],
       title: tr(T.name),
       sub: tr(T.info),

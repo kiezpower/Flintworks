@@ -5,7 +5,21 @@ import { mkCloud } from './gen.js';
 import { calcTerr } from './render.js';
 import { treeSprite } from './sprites.js';
 import { useTeam } from './teams.js';
-import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
+import {
+  G,
+  animals,
+  birds,
+  builds,
+  clouds,
+  crew,
+  flashes,
+  items,
+  lorries,
+  meteors,
+  parts,
+  trees,
+  vehicles,
+} from './state.js';
 import { H, W, activateAll, bg, mat, paintAll, ri, rnd, shade, surf } from './world.js';
 
 // ---- Save / load (per browser) ----
@@ -51,6 +65,7 @@ function serialize() {
           k === 'job' ||
           k === 'path' ||
           k === 'plan' ||
+          k === 'layTrack' ||
           k === 'thrower' ||
           k === 'spr' ||
           k === 'char'
@@ -89,6 +104,8 @@ function serialize() {
       trees: trees.map(strip),
       animals: animals.map(strip),
       lorries: lorries.map(strip),
+      vehicles: vehicles.map(strip),
+      rails: G.rails || [],
       play: performance.now() - G.startT,
       playTicks: G.playTicks || 0,
       nextId: G.nextId || 0,
@@ -164,7 +181,9 @@ function deserialize(d) {
     G.gas = d.gas || [];
     G.gasClouds = d.gasClouds || [];
     G.hintsSeen = new Set(d.hints || []);
-    crew.push(...d.crew.map(c => ({ ...c, chop: null, bridge: null, job: null, path: null, plan: null })));
+    crew.push(
+      ...d.crew.map(c => ({ ...c, chop: null, bridge: null, job: null, path: null, plan: null, laying: false })),
+    );
     items.push(...d.items.map(it => ({ ...it, thrower: null })));
     builds.push(...d.builds);
     G.base = builds.find(b => b.type === 'base');
@@ -179,6 +198,9 @@ function deserialize(d) {
     );
     animals.push(...d.animals);
     lorries.push(...d.lorries);
+    vehicles.length = 0;
+    vehicles.push(...(d.vehicles || []));
+    G.rails = d.rails || [];
     for (let f = 0; f < 3; f++) {
       const bx = ri(0, W),
         by = ri(25, 60),
