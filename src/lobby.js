@@ -337,6 +337,12 @@ function openOptions() {
       hooks.play(true);
     },
   });
+  opt(l, {
+    title: tr('Datenschutz'),
+    sub: tr('Was gespeichert und übertragen wird'),
+    short: true,
+    onClick: () => window.open(LIVE + 'privacy.html', '_blank'),
+  });
   const k = document.createElement('div');
   k.innerHTML = hooks.keysHtml();
   p.appendChild(k);

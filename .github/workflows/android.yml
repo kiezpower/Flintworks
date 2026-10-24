@@ -34,6 +34,8 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
+          export VERSION_CODE=${{ github.run_number }}
+          export VERSION_NAME=$(node -p "require('../package.json').version")
           ./gradlew assembleDebug --no-daemon
       - run: cp android/app/build/outputs/apk/debug/app-debug.apk flintworks.apk
       - uses: actions/upload-artifact@v4
