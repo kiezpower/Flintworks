@@ -1,0 +1,109 @@
+name: Deploy multiplayer relay
+
+# Builds the relay (server/) as a Docker image and runs it on the dogado vServer next to the
+# kiez-power apps; their Caddy serves it as wss://play.kiez-power.de.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - '.github/workflows/deploy-relay.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-flintworks-relay
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/flintworks-relay
+
+jobs:
+  build:
+    name: Build relay image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: server
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:sha-${{ github.sha }}
+            ${{ env.IMAGE }}:latest
+
+  deploy:
+    name: Deploy to dogado vServer
+    runs-on: ubuntu-latest
+    needs: build
+    environment: production
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload compose file and Caddy site
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DOGADO_HOST }}
+          username: ${{ secrets.DOGADO_SSH_USER }}
+          key: ${{ secrets.DOGADO_SSH_KEY }}
+          source: 'server/docker-compose.yml,server/caddy-site.conf'
+          target: /opt/flintworks-relay
+          strip_components: 1
+          overwrite: true
+
+      - name: Start relay via SSH
+        uses: appleboy/ssh-action@v1
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          host: ${{ secrets.DOGADO_HOST }}
+          username: ${{ secrets.DOGADO_SSH_USER }}
+          key: ${{ secrets.DOGADO_SSH_KEY }}
+          envs: GHCR_TOKEN
+          script: |
+            set -e
+            cd /opt/flintworks-relay
+            export IMAGE_TAG="sha-${{ github.sha }}"
+
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
+
+            # the kiez-power apps own the network and Caddy; the relay just joins them
+            docker network inspect kiezpower-net >/dev/null 2>&1 || docker network create kiezpower-net
+            docker compose pull
+            docker compose up -d
+
+            # Caddy: add play.kiez-power.de once (the same block lives in kiez-power-b2b/deploy/Caddyfile,
+            # so it survives their deploys), then reload without restarting the other sites
+            if ! grep -q "play.kiez-power.de" /opt/kiezpower/Caddyfile; then
+              cat caddy-site.conf >> /opt/kiezpower/Caddyfile
+            fi
+            docker exec kiezpower-caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+
+            docker image prune -f --filter "label=org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" || true
+
+      - name: Health check
+        run: |
+          # a plain GET on a WebSocket server answers 426 Upgrade Required
+          for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" https://play.kiez-power.de/ || echo 000)
+            echo "https://play.kiez-power.de -> HTTP $CODE"
+            if [ "$CODE" = "426" ]; then echo "✅ Relay is up"; exit 0; fi
+            sleep 10
+          done
+          echo "❌ Relay not reachable (DNS for play.kiez-power.de set? Caddy certificate?)"
+          exit 1

@@ -177,7 +177,7 @@ GitHub Pages liefert nur statische Dateien. Signaling und Relay müssen deshalb 
 | `src/net/terrain.js` | Chunk-Diffs (XOR + RLE), Vollbild per deflate, Prüfsummen | 180 |
 | `src/net/snapshot.js` | Vollbild über `save.js` (`serialize`/`deserialize`) | 80 |
 | `server/relay.js` | Node `ws`: Räume, Weiterleitung, letztes Vollbild, Host-Wechsel | 200 |
-| `server/package.json`, `server/README.md` | Start mit systemd oder Docker, TLS über Caddy | – |
+| `server/Dockerfile`, `server/docker-compose.yml`, `.github/workflows/deploy-relay.yml` | Docker-Container neben den kiez-power-Apps, deren Caddy macht TLS | – |
 
 ### 5.2 Phasen
 
