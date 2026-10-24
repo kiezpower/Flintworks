@@ -88,18 +88,49 @@ const digAtPx = (x, y) => diggable(mat[Math.floor(y) * W + Math.floor(x)]);
 // earth ceiling digs up-slanted. The test looks at exactly the area the next dig stroke would
 // remove (same centre and radius as in updClonk), so digging continues as long as there is
 // earth in that direction. Returns 'up' or 'side' when climbing/hanging must be ended.
-function digZone(c, dir, ang, yMax) {
-  const cx = c.x + 3 + dir * Math.cos(ang) * 5,
-    cy = c.y + 5 + Math.sin(ang) * 6;
-  let n = 0;
-  for (let y = Math.floor(cy - 6); y <= cy + 6; y++) {
-    if (y > c.y + yMax) break;
-    for (let x = Math.floor(cx - 6); x <= cx + 6; x++) {
-      const dx = x + 0.5 - cx,
-        dy = y + 0.5 - cy;
-      if (dx * dx + dy * dy <= 30.25 && digAtPx(x, y)) n++;
+// One dig stroke clears the Wühler's body box (with rounded corners) moved a few pixels along
+// the dig direction. Clearing the whole body outline means no corner of earth is left
+// that could catch head or feet. slope = height change per pixel forward (same up and down).
+// effective steepness ends up the same both ways (gravity pulls down, stepping up is slower)
+const SLOPE_DOWN = 0.42,
+  SLOPE_UP = 0.9;
+function strokeCells(c, dir, slope, fn, ahead = 4) {
+  const ox = c.x + dir * ahead,
+    oy = c.y + slope * ahead;
+  const x0 = Math.floor(ox - 0.5),
+    x1 = Math.ceil(ox + 6.5),
+    y0 = Math.floor(oy - 1),
+    // going straight, the floor below the feet stays
+    y1 = slope === 0 ? Math.floor(c.y + 9.5) : Math.ceil(oy + 9.5);
+  for (let y = y0; y <= y1; y++)
+    for (let x = x0; x <= x1; x++) {
+      // round the corners a little so tunnels look dug, not cut
+      const cx = x < x0 + 1 ? x0 + 1 - x : x > x1 - 1 ? x - (x1 - 1) : 0,
+        cy = y < y0 + 1 ? y0 + 1 - y : y > y1 - 1 ? y - (y1 - 1) : 0;
+      if (cx && cy) continue;
+      fn(x, y);
     }
-  }
+}
+function digStroke(c, dir, slope) {
+  strokeCells(c, dir, slope, (x, y) => {
+    if (x >= 0 && y >= 0 && x < W && y < H) digCell(x, y);
+  });
+  spawnFromDig(c.x + 3 + dir * 6, c.y + 5 + slope * 6);
+}
+// how much diggable earth the next stroke would remove (rows below yMax ignored)
+function digZone(c, dir, slope, yMax) {
+  let n = 0;
+  // while already digging, look a bit further: the edge of the tunnel moves only half a
+  // pixel per frame, so the next few pixels decide whether to carry on
+  strokeCells(
+    c,
+    dir,
+    slope,
+    (x, y) => {
+      if (y <= c.y + yMax && digAtPx(x, y)) n++;
+    },
+    c.digging ? 7 : 4,
+  );
   return n;
 }
 function wantsDig(c, I) {
@@ -116,14 +147,14 @@ function wantsDig(c, I) {
       for (const dx of [1, 3, 5]) if (digAtPx(c.x + dx, c.y - dy)) ceiling = true;
     // keep digging upwards once started, and dig instead of climbing up an earth wall
     const go = ceiling || c.digging || (c.climb && Math.abs(I.ax) > 0.3);
-    return go && hold && digZone(c, dir, -0.55, 4) >= (c.digging ? 1 : 3) ? 'up' : false;
+    return go && hold && digZone(c, dir, -SLOPE_UP, 4) >= (c.digging ? 1 : 3) ? 'up' : false;
   }
   // keep going while the last stroke still finds earth (no flicker on/off)
   const need = c.digging ? 1 : 3;
-  if (I.ay > 0.6) return grounded && !c.hangle && digZone(c, dir, 0.78, 99) >= need;
+  if (I.ay > 0.6) return grounded && !c.hangle && digZone(c, dir, SLOPE_DOWN, 99) >= need;
   if (Math.abs(I.ax) > 0.5 && hold) {
     // a real wall (not a small step the Wühler simply walks up): earth above the feet
-    return digZone(c, dir, 0, 7) >= (c.digging ? 2 : 8) ? 'side' : false;
+    return digZone(c, dir, 0, 6) >= (c.digging ? 2 : 8) ? 'side' : false;
   }
   return false;
 }
@@ -371,25 +402,17 @@ function updClonk(c, I) {
   if (I.dig && contact && !c.climb && !c.hangle) {
     // Clonk-style digging: only horizontal or slanted, never straight up/down
     if (Math.abs(I.ax) > 0.25) c.face = Math.sign(I.ax);
+    // snap to three directions: straight, slanted down, slanted up (same steepness)
     const mag = Math.hypot(I.ax, I.ay);
-    // snap to three directions: straight, slanted down, slanted up
     const raw = mag < 0.3 ? 0 : Math.atan2(I.ay, Math.max(0.001, Math.abs(I.ax)));
-    const ang = raw > 0.45 ? 0.78 : raw < -0.45 ? -0.55 : 0;
-    const dxv = c.face * Math.cos(ang),
-      dyv = Math.sin(ang);
+    const slope = raw > 0.45 ? SLOPE_DOWN : raw < -0.45 ? -SLOPE_UP : 0;
+    const len = Math.hypot(1, slope);
     c.digging = true;
-    c.digDir = [dxv, dyv];
-    digAt(c.x + 3 + dxv * 5, c.y + 5 + dyv * 6, 5.5);
-    // digging down-slanted: also clear the path for head and shoulders, or the body gets stuck
-    if (dyv > 0.3) digAt(c.x + 3 + dxv * 4.5, c.y + 3.5, 4.2);
-    // digging up-slanted: room for the head and a ramp for the feet
-    if (dyv < -0.3) {
-      digAt(c.x + 3 + dxv * 2.5, c.y + 1.5, 4.5);
-      digAt(c.x + 3 + dxv * 5, c.y + 7, 3.2);
-    }
+    c.digDir = [c.face / len, slope / len];
+    digStroke(c, c.face, slope);
     c.vx = c.vy = 0;
     const sp = hasTool('pick') ? 0.8 : 0.55;
-    moveBody(c, dxv * sp, dyv * sp, 3);
+    moveBody(c, (c.face * sp) / len, (slope * sp) / len, 3);
     c.anim += 0.3;
     if (G.frame % 9 === 0) sfx('dig', c.x, c.y);
     return;
