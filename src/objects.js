@@ -149,7 +149,8 @@ function updItems() {
     }
     // hits
     const sp = Math.hypot(it.vx, it.vy);
-    if (sp > 2 && it.t !== 'nug') {
+    // only thrown things and cave-in rubble hurt; dug-out lumps falling down a shaft do not
+    if (sp > 2 && it.t !== 'nug' && (it.thrower || it.rubble)) {
       for (const e of [...crew, ...animals]) {
         if (e.dead || (e === it.thrower && it.pd > 0) || !overlap(it, e, 0)) continue;
         if (it.armed) {

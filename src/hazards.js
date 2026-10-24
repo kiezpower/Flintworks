@@ -82,7 +82,7 @@ function collapse(p) {
       }
     }
     activate(x, yc);
-    if (dx % 5 === 0) spawnItem('rock', x, yc + 1, (rnd() - 0.5) * 0.4, 0.8, 0);
+    if (dx % 5 === 0) spawnItem('rock', x, yc + 1, (rnd() - 0.5) * 0.4, 0.8, 0).rubble = true;
   }
 }
 

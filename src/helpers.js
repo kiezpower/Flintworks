@@ -109,6 +109,8 @@ function pickJob(c, n) {
   if (f === 'stay') return { type: 'rest', ref: 'rest' + n };
   if (f === 'follow') return { type: 'follow', ref: 'follow' + n };
   const full = c.inv.length >= INV_MAX || cargo(c) >= 4;
+  // hurt: go home and recover first (the base heals)
+  if (c.energy < 50) return { type: cargo(c) ? 'deliver' : 'rest', ref: 'base' + n };
   if (full || (cargo(c) > 0 && !items.length)) return { type: 'deliver', ref: 'base' + n };
   if (f === 'all' || f === 'build') {
     const site = builds.find(b => !b.done && crew.filter(o => o.job && o.job.ref === b).length < 2 && !blocked(b));
@@ -268,7 +270,7 @@ function helperAI(c, n) {
       (j.type === 'chop' && (j.ref.fall || !trees.includes(j.ref))) ||
       (j.type === 'mine' && !RICH.has(mat[j.y * W + j.x]) && !c.path) ||
       (j.type === 'rest' && G.frame - j.t > 120) ||
-      ((j.type === 'collect' || j.type === 'chop' || j.type === 'mine') && cargo(c) >= 4);
+      ((j.type === 'collect' || j.type === 'chop' || j.type === 'mine') && (cargo(c) >= 4 || c.energy < 35));
     if (gone) c.job = c.path = null;
     // following: plan again when your Wühler has moved on
     else if (
