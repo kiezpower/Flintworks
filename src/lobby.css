@@ -534,11 +534,25 @@
 
 /* playing together */
 .lb-slot.filled {
-  border-style: solid;
-  border-color: var(--line);
+  width: calc(var(--k, 5) * 18px);
+  height: calc(var(--k, 5) * 22px);
+  aspect-ratio: auto;
+  background: transparent;
+  border-color: transparent;
+  border-radius: 6px;
 }
-.lb-slot.filled b {
-  font-size: clamp(16px, 3vw, 22px);
+.lb-slot .nm {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  padding: 0 6px;
+  font-size: 11px;
+  white-space: nowrap;
+  color: var(--inkb);
+  background: var(--parch);
+  border: 2px solid var(--line);
+  border-radius: 4px;
 }
 #lbPlay.wait {
   filter: grayscale(0.7);

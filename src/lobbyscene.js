@@ -23,7 +23,10 @@ let terrain = null, // ground with tunnels (repainted where the workers dig)
   biomeName = 'meadow',
   dirty = false,
   topCols = [];
-const HERO = { x: 0.36 }; // hero position as a fraction of the width
+const HERO = { x: 0.36 };
+// where friends stand, in landscape pixels from the hero (landscape: both on the right,
+// the menus cover the left side)
+const friendDx = () => (HERO.x > 0.4 ? [-20, 20] : [20, 40]); // hero position as a fraction of the width
 
 const rgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 const groundY = x =>
@@ -214,7 +217,7 @@ function drawSky(g, b, t) {
 }
 
 function drawScene(g, opts) {
-  const { t, biome, cap, hat, jumpY, spin, sparks } = opts;
+  const { t, biome, cap, hat, jumpY, spin, sparks, friends = [] } = opts;
   const b = BIOMES[biome] || BIOMES.meadow;
   const key = `${land.LW}|${land.LH}`;
   if (key !== terrainKey) {
@@ -247,6 +250,24 @@ function drawScene(g, opts) {
   g.fillStyle = 'rgba(0,0,0,0.25)';
   g.fillRect(hx - 6, hy - 1, 12, 1);
   drawPortrait(g, hx - 8, hy - 20 + bob + Math.round(jumpY), f, cap, hat, t % 240 < 6);
+  // friends in the room stand left and right of the hero, facing it
+  friends.slice(0, 2).forEach((p, k) => {
+    const fx = hx + friendDx()[k],
+      fy = groundY(Math.round(fx));
+    g.globalAlpha = p.online ? 1 : 0.45;
+    g.fillStyle = 'rgba(0,0,0,0.25)';
+    g.fillRect(fx - 6, fy - 1, 12, 1);
+    drawPortrait(
+      g,
+      fx - 8,
+      fy - 20 + (Math.floor(t / 30 + k) % 2),
+      friendDx()[k] > 0 ? -1 : 1,
+      p.cap,
+      p.hat,
+      (t + k * 90) % 240 < 6,
+    );
+    g.globalAlpha = 1;
+  });
   for (let k = sparks.length - 1; k >= 0; k--) {
     const s = sparks[k];
     s.x += s.vx;
@@ -281,4 +302,4 @@ function heroScreen(cv) {
 }
 const heroOrigin = () => ({ x: land.LW * HERO.x, y: groundY(Math.round(land.LW * HERO.x)) - 14 });
 
-export { COAL, EARTH, GEM, GOLD, ORE, drawScene, heroOrigin, heroScreen, sizeScene };
+export { COAL, EARTH, GEM, GOLD, ORE, drawScene, friendDx, heroOrigin, heroScreen, sizeScene };

@@ -186,6 +186,18 @@ function animalSprite(a, ph, hurtF, glowOn) {
   return c;
 }
 
+function nameTag(text, x, y, col) {
+  ctx.font = '5px monospace';
+  const w = Math.ceil(ctx.measureText(text).width) + 3;
+  ctx.fillStyle = 'rgba(36,22,12,0.75)';
+  ctx.fillRect(Math.round(x - w / 2), y - 6, w, 6);
+  ctx.fillStyle = col;
+  ctx.fillRect(Math.round(x - w / 2), y - 6, 1, 6);
+  ctx.fillStyle = '#fbf3dc';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(text, x + 0.5, y - 1.5);
+}
 function render() {
   flush();
   ctx.setTransform(G.res, 0, 0, G.res, 0, 0);
@@ -494,6 +506,8 @@ function render() {
       drawClonkHi(c, -3, -5, c.face, ctx);
       ctx.restore();
     } else drawClonkHi(c, x, y, c.face, ctx);
+    // other players carry their name over the head
+    if (G.net && isPlayer(c) && c !== mine) nameTag(c.name, x + 3, y - (c.bub ? 15 : 4), c.cap);
     if (c === mine && (G.frame >> 4) % 3) {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(x + 2, y - 4, 3, 1);

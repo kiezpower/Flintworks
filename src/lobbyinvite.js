@@ -118,9 +118,10 @@ function refreshSlots() {
       pl = list[k];
     b.classList.toggle('filled', !!pl);
     b.classList.toggle('waiting', !pl && !!NET.room);
-    b.style.background = pl ? pl.cap : '';
-    b.style.opacity = pl && !pl.online ? 0.5 : '';
-    b.innerHTML = `<b>${pl ? esc(pl.name[0] || '?') : '+'}</b>`;
+    // a friend is drawn in the scene; the button only carries the name
+    b.innerHTML = pl
+      ? `<span class="nm">${esc(pl.name)}${pl.ready || pl.pid === NET.hostPid ? ' ✓' : ''}</span>`
+      : '<b>+</b>';
     b.title = pl ? pl.name : tr('Mitspieler einladen');
   });
 }

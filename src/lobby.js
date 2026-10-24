@@ -5,9 +5,9 @@ import './lobby.css';
 import { getLang, setLang, tr } from './i18n.js';
 import { CAPS, HATS, P, QUESTS, claimQuest, saveProfile, unlockText, xpNeed } from './profile.js';
 import { openInvite, refreshSlots } from './lobbyinvite.js';
-import { NET, inRoom } from './net/room.js';
+import { NET, inRoom, others } from './net/room.js';
 import { drawPortrait } from './portrait.js';
-import { drawScene, heroOrigin, heroScreen, sizeScene } from './lobbyscene.js';
+import { drawScene, friendDx, heroOrigin, heroScreen, sizeScene } from './lobbyscene.js';
 import { audioInit, sfx } from './sound.js';
 import { padIcon } from './sprites.js';
 import { G } from './state.js';
@@ -69,15 +69,17 @@ function placeOverlay() {
     e.style.left = r.left - el.getBoundingClientRect().left + h.x + dx * h.k + 'px';
     e.style.top = h.y + dy * h.k + 'px';
   };
-  put('lbSlot1', -16, -2);
-  put('lbSlot2', 16, -2);
+  const [d1, d2] = friendDx();
+  put('lbSlot1', d1, 0);
+  put('lbSlot2', d2, 0);
+  el.style.setProperty('--k', h.k);
   put('lbHat', 0, 0);
   $('lbHat').parentElement.style.left = $('lbHat').style.left;
   $('lbHat').parentElement.style.top = $('lbHat').style.top;
 }
 function drawStage() {
   if (sizeScene(cv)) placeOverlay();
-  drawScene(g, { t, biome: stageBiome(), cap: P.cap, hat: P.hat, jumpY, spin, sparks });
+  drawScene(g, { t, biome: stageBiome(), cap: P.cap, hat: P.hat, jumpY, spin, sparks, friends: others() });
 }
 function burst(n, cols) {
   const o = heroOrigin();
