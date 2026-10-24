@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     VitePWA({
       injectRegister: null,
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['icons/favicon.png', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'Flintworks',

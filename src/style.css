@@ -701,3 +701,11 @@ button:focus-visible {
   font-size: 11px;
   color: var(--gold);
 }
+
+#updateBtn {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+}

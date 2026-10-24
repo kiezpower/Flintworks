@@ -1,3 +1,4 @@
+import { toast } from './ui.js';
 // Tap into the world to send your Wühler there. With automatic digging it digs its way down.
 // Touching the stick or the arrow keys cancels the trip.
 import { inp, joy, keys } from './input.js';
@@ -18,6 +19,16 @@ function tapGotoInput(c) {
   }
   const dx = goal.x - (c.x + 3),
     dy = goal.y - (c.y + 5);
+  // no progress for two seconds: give up and say so
+  const d = Math.abs(dx) + Math.abs(dy);
+  if (d < (goal.best ?? 1e9) - 2) {
+    goal.best = d;
+    goal.bestT = G.frame;
+  } else if (G.frame - (goal.bestT ?? goal.t) > 120) {
+    goal = null;
+    toast('Kommt nicht weiter');
+    return;
+  }
   if ((Math.abs(dx) < 3 && Math.abs(dy) < 10) || G.frame - goal.t > 1200) {
     goal = null;
     return;

@@ -90,6 +90,11 @@ function startGame(withTutorial = false) {
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   crew[0] && Object.assign(crew[0], { hat: P.hat, cap: P.cap });
   G.autoDig = P.autodig !== false;
+  const res = P.gfx === 'low' || new URLSearchParams(location.search).get('res') === '1' ? 1 : 2;
+  if (res !== G.res) {
+    G.res = res;
+    resize();
+  }
   G.sel = 0;
   G.territory = !!P.territory;
   calcTerr();
@@ -168,6 +173,13 @@ function openMenu() {
       openMenu();
     },
   );
+  item(G.res === 2 ? 'Grafik: fein' : 'Grafik: schnell', 'Schnell läuft flüssiger auf älteren Handys', () => {
+    G.res = G.res === 2 ? 1 : 2;
+    P.gfx = G.res === 2 ? 'high' : 'low';
+    saveProfile();
+    resize();
+    openMenu();
+  });
   item('Lobby', 'Spiel speichern und zur Lobby', () => $('newBtn').click());
 }
 $('sndBtn').addEventListener('click', () => {
@@ -257,7 +269,24 @@ function step() {
 G.last = performance.now();
 G.acc = 0;
 G.tick = 0;
+// slow device: after a few seconds below ~40 fps switch to the lighter 1× canvas
+let perfT = 0,
+  perfN = 0,
+  perfSlow = 0;
+function perfGuard(dt) {
+  if (G.res === 1 || G.state !== 'play' || P.gfx === 'high') return;
+  perfT += Math.min(dt, 200);
+  perfN++;
+  if (perfT < 2000) return;
+  perfSlow = perfT / perfN > 25 ? perfSlow + 1 : 0;
+  perfT = perfN = 0;
+  if (perfSlow >= 2) {
+    G.res = 1;
+    resize();
+  }
+}
 function loop(t) {
+  perfGuard(t - G.last);
   G.acc += Math.min(100, t - G.last);
   G.last = t;
   let n = 0;
@@ -291,7 +320,16 @@ requestAnimationFrame(loop);
 
 // Offline mode for the web version; the Android app ships its files itself
 if (!window.Capacitor && 'serviceWorker' in navigator && !import.meta.env.DEV) {
-  import('virtual:pwa-register').then(({ registerSW }) => registerSW({ immediate: true }));
+  import('virtual:pwa-register').then(({ registerSW }) => {
+    const update = registerSW({
+      immediate: true,
+      onNeedRefresh() {
+        const b = $('updateBtn');
+        b.hidden = false;
+        b.onclick = () => update(true);
+      },
+    });
+  });
 }
 if (import.meta.env.DEV) import('./debug.js');
 

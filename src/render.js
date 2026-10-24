@@ -43,6 +43,8 @@ G.zoomAdj = 0;
 try {
   G.zoomAdj = +(localStorage.getItem('wuehlwelt-zoom') || 0) || 0;
 } catch {}
+// canvas pixels per landscape pixel: 2 for the detailed look, 1 on slow devices
+G.res = 2;
 function resize() {
   const r = game.getBoundingClientRect();
   const s = Math.max(
@@ -52,8 +54,8 @@ function resize() {
   G.VW = Math.min(W, Math.ceil(r.width / s));
   G.VH = Math.min(H, Math.ceil(r.height / s));
   // the canvas has twice the landscape resolution; all drawing code keeps landscape units
-  cv.width = G.VW * 2;
-  cv.height = G.VH * 2;
+  cv.width = G.VW * G.res;
+  cv.height = G.VH * G.res;
   cv.style.width = G.VW * s + 'px';
   cv.style.height = G.VH * s + 'px';
   lc.width = G.VW;
@@ -184,7 +186,7 @@ function animalSprite(a, ph, hurtF, glowOn) {
 
 function render() {
   flush();
-  ctx.setTransform(2, 0, 0, 2, 0, 0);
+  ctx.setTransform(G.res, 0, 0, G.res, 0, 0);
   ctx.imageSmoothingEnabled = false;
   const s = sel_() || crew[0];
   const fx = s ? s.x + 3 : W / 2,

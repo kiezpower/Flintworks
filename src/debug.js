@@ -7,7 +7,13 @@ import { openBase } from './ui.js';
 import { saveGame, loadGame, hasSave } from './save.js';
 import { lightning } from './weather.js';
 import { step } from './main.js';
-import { inp } from './input.js';
+import { edge, inp, keys } from './input.js';
+import { startCaveIn, onDig } from './hazards.js';
+import { chestNear, openChest } from './treasure.js';
+import { setGoal } from './tapgo.js';
+import { foundation } from './buildings.js';
+import * as world from './world.js';
+import { gen } from './gen.js';
 import { LIQ, matAt, solid } from './world.js';
 
 window.__ww = {
@@ -71,4 +77,15 @@ window.__ww = {
   calcTerr,
   terrOK,
   inp,
+  keys,
+  edge,
+  G,
+  startCaveIn,
+  onDig,
+  chestNear,
+  openChest,
+  setGoal,
+  foundation,
+  world,
+  gen,
 };

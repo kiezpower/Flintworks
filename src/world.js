@@ -148,11 +148,7 @@ function paintAll() {
   for (let i = 0; i < W * H; i++) paintCell(i);
   wctx.putImageData(img, 0, 0);
 }
-// dirty rectangle of the world image, flushed once per frame
-let dx0 = W,
-  dy0 = H,
-  dx1 = -1,
-  dy1 = -1;
+// changed chunks of the world image, uploaded once per frame
 const CS = 32,
   CWn = Math.ceil(W / CS),
   CHn = Math.ceil(H / CS);
@@ -169,6 +165,23 @@ function swapActive() {
 const activateAll = () => actNext.fill(1);
 const markActive = c => (actNext[c] = 1);
 const acidChunk = new Uint8Array(CWn * CHn);
+const dirty = new Uint8Array(CWn * CHn),
+  dirtyList = new Int32Array(CWn * CHn);
+let dirtyN = 0;
+function markDirty(x, y, r) {
+  const cx0 = Math.max(0, (x - r) >> 5),
+    cx1 = Math.min(CWn - 1, (x + r) >> 5),
+    cy0 = Math.max(0, (y - r) >> 5),
+    cy1 = Math.min(CHn - 1, (y + r) >> 5);
+  for (let cy = cy0; cy <= cy1; cy++)
+    for (let cx = cx0; cx <= cx1; cx++) {
+      const c = cy * CWn + cx;
+      if (!dirty[c]) {
+        dirty[c] = 1;
+        dirtyList[dirtyN++] = c;
+      }
+    }
+}
 function activate(x, y) {
   const cx = x >> 5,
     cy = y >> 5;
@@ -193,19 +206,32 @@ function paint(i) {
   if (x > 1) paintCell(i - 2);
   if (x < W - 1) paintCell(i + 1);
   if (x < W - 2) paintCell(i + 2);
-  if (x - 2 < dx0) dx0 = Math.max(0, x - 2);
-  if (x + 2 > dx1) dx1 = Math.min(W - 1, x + 2);
-  if (y - 2 < dy0) dy0 = Math.max(0, y - 2);
-  if (y + 2 > dy1) dy1 = Math.min(H - 1, y + 2);
+  markDirty(x, y, 2);
+  activate(x, y);
+}
+// cheaper repaint when solidity did not change (liquid flowing through air): the tunnel
+// shading only depends on solid cells, so the direct neighbours are enough
+function paintNear(i) {
+  const x = i % W,
+    y = (i / W) | 0;
+  paintCell(i);
+  if (y > 0) paintCell(i - W);
+  if (y < H - 1) paintCell(i + W);
+  if (x > 0) paintCell(i - 1);
+  if (x < W - 1) paintCell(i + 1);
+  markDirty(x, y, 1);
   activate(x, y);
 }
 function flush() {
-  if (dx1 < 0) return;
-  wctx.putImageData(img, 0, 0, dx0 * RES, dy0 * RES, (dx1 - dx0 + 1) * RES, (dy1 - dy0 + 1) * RES);
-  dx0 = W;
-  dy0 = H;
-  dx1 = -1;
-  dy1 = -1;
+  // upload only the 32×32 chunks that changed: scattered changes stay cheap
+  for (let k = 0; k < dirtyN; k++) {
+    const c = dirtyList[k];
+    dirty[c] = 0;
+    const cx = c % CWn,
+      cy = (c / CWn) | 0;
+    wctx.putImageData(img, 0, 0, cx * CS * RES, cy * CS * RES, CS * RES, CS * RES);
+  }
+  dirtyN = 0;
 }
 const matAt = (x, y) => (x < 0 || x >= W || y < 0 || y >= H ? AIR : mat[y * W + x]);
 const solid = (x, y) => {
@@ -259,6 +285,7 @@ const rnd = seedParam === null ? Math.random : seeded,
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
 export {
+  paintNear,
   RES,
   paintAll,
   GEM,

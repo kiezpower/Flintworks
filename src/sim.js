@@ -23,6 +23,8 @@ import {
   rnd,
   stamp,
   swapActive,
+  paintNear,
+  SOLID,
 } from './world.js';
 
 // ---- Falling-sand simulation ----
@@ -33,8 +35,13 @@ function swap(i, j) {
   mat[i] = mat[j];
   mat[j] = t;
   stamp[j] = G.frame;
-  paint(i);
-  paint(j);
+  if (SOLID[mat[i]] || SOLID[mat[j]]) {
+    paint(i);
+    paint(j);
+  } else {
+    paintNear(i);
+    paintNear(j);
+  }
 }
 function flow(i, x, y, spread) {
   const b = i + W;

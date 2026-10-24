@@ -3,7 +3,7 @@
 import { NOIN } from './clonk.js';
 import { midMat } from './entities.js';
 import { G, INV_MAX, crew, items } from './state.js';
-import { LIQ, free } from './world.js';
+import { LIQ, W, free, surf } from './world.js';
 
 const TOOLS = ['flint', 'tnt', 'loam'];
 const cargo = c => c.inv.filter(t => !TOOLS.includes(t)).length;
@@ -16,6 +16,9 @@ function pickTarget(c) {
     const dx = Math.abs(it.x - c.x),
       dy = it.y - c.y;
     if (dx > bd || dy < -14 || dy > 24) continue;
+    // stay out of tunnels and caves
+    const sx = Math.max(0, Math.min(W - 1, Math.floor(it.x)));
+    if (it.y - surf[sx] > 16 && Math.abs(it.x - G.base.x - G.base.w / 2) > 60) continue;
     if (crew.some(o => o !== c && o.target === it)) continue;
     bd = dx;
     best = it;

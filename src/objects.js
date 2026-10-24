@@ -62,6 +62,12 @@ function updArrows() {
   }
 }
 function updItems() {
+  // explosions and cave-ins leave lots of rubble: keep the item count bounded
+  if (items.length > 160 && G.frame % 60 === 0)
+    for (let k = 0; k < items.length && items.length > 140; k++) {
+      const it = items[k];
+      if (it.t === 'rock' && it.fuse < 0 && Math.abs(it.x - cam.x - G.VW / 2) > G.VW) items.splice(k--, 1);
+    }
   for (let k = items.length - 1; k >= 0; k--) {
     const it = items[k];
     if (it.pd > 0) it.pd--;
