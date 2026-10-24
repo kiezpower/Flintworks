@@ -43,7 +43,9 @@ import {
 } from './ui.js';
 import { register, send } from './commands.js';
 import { NET, inRoom, onGameMsg, sendTo } from './net/room.js';
-import { addNetPlayers, endNet, netTick, startMessage, updPuppet } from './net/session.js';
+import { beginNet, endNet, startMessage } from './net/session.js';
+import { clientStep } from './net/client.js';
+import { hostEnd, hostTick } from './net/host.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
 import { H, W, clamp, surf } from './world.js';
@@ -114,8 +116,7 @@ function playNet(d) {
   G.nextDiff = d.diff;
   gen();
   G.nextSeed = null;
-  addNetPlayers(d.players);
-  G.net = true;
+  beginNet(d);
   resetCam();
   G.inRun = true;
   startGame(false);
@@ -164,7 +165,10 @@ function startGame(withTutorial = false) {
   }
   if (!G.tut && withTutorial !== 'resume') toast('Welt: {name}', { name: tr(biome().name) });
 }
+// a client hears from the host that the round is over
+G.onNetEnd = won => G.state === 'play' && endScreen(won);
 function endScreen(won) {
+  hostEnd(won);
   G.state = won ? 'won' : 'lost';
   if (won) sfx('fanfare');
   closePanel();
@@ -313,16 +317,22 @@ function resetCam() {
 
 function step() {
   readInput();
-  const paused = !panelEl.hidden;
+  // (a multiplayer game never pauses: the others keep playing)
+  const paused = !panelEl.hidden && !G.net;
+  if (G.netClient) {
+    clientStep(paused);
+    stepTail();
+    return;
+  }
   if (G.state === 'play' && !paused) {
     G.playTicks = (G.playTicks || 0) + 1;
     tapGotoInput(sel_());
     // players are steered by their input (yours from this device), helpers by their own AI
     crew.forEach((c, n) => {
-      if (c.puppet) return updPuppet(c); // another player's Wühler (network)
       const I = isPlayer(c) ? inputOf(c.pid) : c.dead ? NOIN : helperAI(c, n);
       updClonk(c, I);
       if (isPlayer(c) && !c.dead) {
+        G.cmdPid = c.pid; // messages from these actions go to that player
         doThrow(c, I);
         if (I.actP) {
           const cx = context(c);
@@ -330,6 +340,7 @@ function step() {
             if (c.pid === G.myId) (cx.ui === 'base' ? openBase : openBuild)();
           } else if (cx.fn) cx.fn();
         }
+        G.cmdPid = null;
       }
     });
     updBuilds();
@@ -354,14 +365,17 @@ function step() {
     if (G.frame % 30 === 0) updDecor();
     if (G.frame % 60 === 0) checkHints();
     if (G.frame % 3600 === 0 && !G.net) saveGame();
-    netTick();
     if (goalReached()) endScreen(true);
   }
   if (!paused) {
     updWeather();
     updParts();
     simulate();
+    hostTick();
   }
+  stepTail();
+}
+function stepTail() {
   {
     const s = sel_();
     const tv = !!(s && !s.dead && builds.some(b => b.type === 'tower' && b.done && insideB(s, b)));

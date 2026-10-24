@@ -167,6 +167,8 @@ const markActive = c => (actNext[c] = 1);
 const acidChunk = new Uint8Array(CWn * CHn);
 const dirty = new Uint8Array(CWn * CHn),
   dirtyList = new Int32Array(CWn * CHn);
+// chunks changed since the host last sent them to the other players (multiplayer)
+const netDirty = new Uint8Array(CWn * CHn);
 let dirtyN = 0;
 function markDirty(x, y, r) {
   const cx0 = Math.max(0, (x - r) >> 5),
@@ -176,6 +178,7 @@ function markDirty(x, y, r) {
   for (let cy = cy0; cy <= cy1; cy++)
     for (let cx = cx0; cx <= cx1; cx++) {
       const c = cy * CWn + cx;
+      netDirty[c] = 1;
       if (!dirty[c]) {
         dirty[c] = 1;
         dirtyList[dirtyN++] = c;
@@ -289,6 +292,8 @@ const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
 export {
   paintNear,
+  netDirty,
+  paintCell,
   RES,
   paintAll,
   GEM,

@@ -25,7 +25,8 @@ function updWeather() {
     if (b.x > W + 30) b.x = -30;
     if (b.x < -30) b.x = W + 30;
   }
-  if (--G.meteorNext <= 0 && !G.relaxed) {
+  // (multiplayer clients only show the weather; meteors, lightning and rain are the host's)
+  if (--G.meteorNext <= 0 && !G.relaxed && !G.netClient) {
     G.meteorNext = 9000 + rnd() * 9000;
     const n = ri(1, 3);
     for (let k = 0; k < n; k++) {
@@ -87,11 +88,11 @@ function updWeather() {
           );
       }
     }
-    if (!G.relaxed && rnd() < 1 / 700) lightning();
+    if (!G.relaxed && !G.netClient && rnd() < 1 / 700) lightning();
     if (G.rainT === 0) {
       G.rainNext = 4000 + rnd() * 5000;
     }
-  } else if (--G.rainNext <= 0) {
+  } else if (--G.rainNext <= 0 && !G.netClient) {
     G.rainT = (1300 + rnd() * 900) * biome().rain;
     toast(G.biome === 'winter' ? 'Es fängt an zu schneien' : 'Es fängt an zu regnen');
   }

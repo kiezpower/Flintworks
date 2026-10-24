@@ -1,8 +1,10 @@
 // Floating text in the world: "+1" on pickups, coins on sales, damage on hits.
 import { itemIcon } from './sprites.js';
+import { G } from './state.js';
 
 const floats = [];
 function addFloat(x, y, text, col = '#ffffff', item = null) {
+  if (G.netHost) G.netEvent(['f', x | 0, y | 0, text, col, item]);
   // stack on top of fresh floats at the same spot
   const n = floats.filter(f => f.l > 45 && Math.abs(f.x - x) < 14 && Math.abs(f.y - y) < 20).length;
   floats.push({ x, y: y - n * 9, text, col, item, l: 70 });

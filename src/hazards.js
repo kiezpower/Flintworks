@@ -28,6 +28,7 @@ const depthAt = (x, y) => y - surf[Math.max(0, Math.min(W - 1, x))];
 
 // called for every dug cell
 function onDig(x, y) {
+  if (G.netClient) return; // gas and cave-ins happen on the host
   if (G.gas)
     for (const g of G.gas)
       if (!g.done && (x - g.x) ** 2 + (y - g.y) ** 2 < g.r * g.r) {

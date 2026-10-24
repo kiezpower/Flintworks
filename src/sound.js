@@ -47,6 +47,8 @@ function tn(t0, type, f0, f1, dur, vol) {
   o.stop(t0 + dur + 0.02);
 }
 function sfx(n, x, y, k = 1) {
+  // multiplayer host: sounds in the world are heard by the others too
+  if (G.netHost && x !== undefined) G.netEvent(['s', n, x | 0, y | 0, k]);
   if (!G.AC || G.muted || G.AC.state !== 'running') return;
   let v = 1;
   if (x !== undefined) {

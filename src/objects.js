@@ -452,6 +452,7 @@ const DEBCOL = {
   [PLANK]: '#a0703f',
 };
 function explode(cx, cy, r) {
+  if (G.netHost) G.netEvent(['x', cx | 0, cy | 0, r]);
   let gc = 0;
   for (let y = Math.floor(cy - r - 2); y <= cy + r + 2; y++) {
     if (y < 0 || y >= H) continue;

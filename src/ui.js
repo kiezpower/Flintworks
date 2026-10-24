@@ -270,6 +270,8 @@ function toggleMap() {
 const toastEl = $('toast');
 G.toastT = 0;
 function toast(key, params) {
+  // multiplayer host: a message caused by another player's order goes to that player
+  if (G.toastHook && G.toastHook(key, params)) return;
   toastEl.textContent = tr(key, params);
   toastEl.hidden = false;
   G.toastT = 170;

@@ -63,7 +63,7 @@ function mkAnimal(kind, x, y) {
 function spawnItem(t, x, y, vx, vy, pd = 0, thrower = null) {
   const [w, h] = ITEM[t].s;
   const it = { id: newId(), t, x, y, vx, vy, w, h, pd, armed: false, fuse: -1, thrower };
-  items.push(it);
+  if (!G.netClient) items.push(it); // on a multiplayer client only the host makes things
   return it;
 }
 function moveBody(e, dx, dy, step) {

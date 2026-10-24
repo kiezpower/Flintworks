@@ -39,7 +39,7 @@ import {
 
 // ---- Clonk ----
 function hurt(c, a, silent) {
-  if (c.dead || c.puppet) return; // another player's Wühler takes damage on its own device
+  if (c.dead || c.puppet || G.netClient) return; // in multiplayer only the host deals damage
   c.energy -= a;
   if (a >= 5) {
     addFloat(c.x + 3, c.y - 3, '-' + Math.round(a), '#ff6a5a');

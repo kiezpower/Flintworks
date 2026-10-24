@@ -13,8 +13,18 @@ const clonkOf = pid => crew.find(c => c.pid === pid) || null;
 const helpers = () => crew.filter(c => !isPlayer(c) && !c.dead);
 // the input that drives a player's Wühler this tick
 const inputOf = pid => (pid === G.myId ? inp : inputs.get(pid) || NOIN);
+// a remote player's latest input; button presses stay set until a tick has used them
 function setInput(pid, I) {
+  const old = inputs.get(pid);
+  if (old) for (const k of EDGES) I[k] = I[k] || old[k];
   inputs.set(pid, I);
 }
+const EDGES = ['jumpP', 'jumpUp', 'throwP', 'actP'];
+function consumeEdges() {
+  for (const I of inputs.values()) for (const k of EDGES) I[k] = false;
+}
+function clearInputs() {
+  inputs.clear();
+}
 
-export { clonkOf, helpers, inputOf, isPlayer, setInput };
+export { clearInputs, clonkOf, consumeEdges, helpers, inputOf, isPlayer, setInput };
