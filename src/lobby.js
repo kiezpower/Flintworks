@@ -13,6 +13,36 @@ import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
 
 const el = $('lobby');
 $('lbVersion').textContent = 'v' + __APP_VERSION__;
+// ask the live web version which version is current; offer the update if this copy is older
+const LIVE = 'https://kiezpower.github.io/Flintworks/';
+let updateChecked = false;
+function checkUpdate() {
+  if (updateChecked || import.meta.env.DEV) return;
+  updateChecked = true;
+  fetch(LIVE + 'version.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.json())
+    .then(({ version }) => {
+      if (!version || version === __APP_VERSION__) return;
+      const a = $('updateLink');
+      a.textContent = tr('Neue Version v{v} verfügbar – tippen', { v: version });
+      // the Android app gets a new APK, the web version simply reloads
+      a.href = window.Capacitor
+        ? 'https://github.com/kiezpower/Flintworks/releases/latest'
+        : location.pathname + '?v=' + version;
+      a.hidden = false;
+      // web: drop the offline copy completely so the new version really loads
+      if (!window.Capacitor)
+        a.onclick = async e => {
+          e.preventDefault();
+          try {
+            for (const r of (await navigator.serviceWorker?.getRegistrations()) || []) await r.unregister();
+            for (const k of await caches.keys()) await caches.delete(k);
+          } catch {}
+          location.replace(location.pathname + '?v=' + version);
+        };
+    })
+    .catch(() => {});
+}
 const cv = $('lbCv'),
   g = cv.getContext('2d');
 const MODES = ['random', 'meadow', 'desert', 'winter'];
@@ -405,6 +435,7 @@ for (const e of el.querySelectorAll('[data-ico]')) e.style.backgroundImage = `ur
 
 function showLobby(h) {
   if (h) hooks = h;
+  checkUpdate();
   G.state = 'menu';
   el.hidden = false;
   $('game').classList.add('inlobby');

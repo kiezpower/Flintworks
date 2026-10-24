@@ -2,6 +2,7 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'Neue Version v{v} verfügbar – tippen': 'New version v{v} available – tap',
   'Klettern an': 'Climbing on',
   'Klettern aus': 'Climbing off',
   'An Wänden hochklettern und an Decken hängen': 'Climb up walls and hang from ceilings',

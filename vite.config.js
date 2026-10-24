@@ -8,7 +8,15 @@ const VERSION = JSON.parse(readFileSync(new URL('./package.json', import.meta.ur
 export default defineConfig({
   base: './',
   define: { __APP_VERSION__: JSON.stringify(VERSION) },
+  build: { rollupOptions: {} },
   plugins: [
+    // version.json lets installed apps and cached pages find out that a newer version exists
+    {
+      name: 'version-json',
+      generateBundle() {
+        this.emitFile({ type: 'asset', fileName: 'version.json', source: JSON.stringify({ version: VERSION }) });
+      },
+    },
     VitePWA({
       injectRegister: null,
       registerType: 'prompt',

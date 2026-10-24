@@ -511,18 +511,35 @@
 }
 
 .lb-row .lb-mode b {
-  font-size: 13px;
-  line-height: 1.1;
-  overflow-wrap: anywhere;
+  font-size: min(15px, 3.4vw);
+  white-space: nowrap;
+}
+.lb-row .lb-mode {
+  overflow: hidden;
 }
 
+/* version always visible next to the level, in both orientations */
 .lb-version {
-  position: absolute !important;
-  left: 50%;
-  bottom: max(2px, env(safe-area-inset-bottom, 0px));
-  transform: translateX(-50%);
+  margin-left: 8px;
   font-family: var(--font-ui);
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.75);
-  pointer-events: none;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 1px 1px 0 #0d1840;
+  white-space: nowrap;
+}
+
+@media (max-aspect-ratio: 1/1) {
+  #lobby {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  }
+  .lb-b {
+    font-size: 12px;
+    gap: 5px;
+    padding: 6px 8px 6px 6px;
+    overflow: hidden;
+  }
+  .lb-b .ico {
+    width: 20px !important;
+    height: 20px !important;
+  }
 }

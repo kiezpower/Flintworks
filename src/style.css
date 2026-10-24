@@ -702,6 +702,7 @@ button:focus-visible {
   color: var(--gold);
 }
 
+#updateLink,
 #updateBtn {
   position: absolute;
   top: 8px;
