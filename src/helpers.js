@@ -9,7 +9,7 @@
 //   rest     – nothing to do: wait in the base
 // Each helper has a focus the player sets in the crew panel (all, ore, wood, build, follow,
 // stay); a marker sends the miners to a chosen spot. Miners put up support beams as they dig.
-import { NOIN, diggable, nearTree } from './clonk.js';
+import { NOIN, digCell, diggable, nearTree, spawnFromDig } from './clonk.js';
 import { midMat } from './entities.js';
 import { jobBubble, tryBeam } from './mine.js';
 import { clonkOf, isPlayer } from './players.js';
@@ -38,7 +38,7 @@ const nearBuild = (x, y) =>
   );
 const digOk = (x, y) => y < H - 4 && diggable(mat[y * W + x]) && !nearBuild(x, y);
 const nav = mkNav({ solid, bad, maxDrop: 36, jumpH: 15, maxNodes: 2500, budget: 5 });
-const navDig = mkNav({ solid, bad, dig: digOk, digCost: 0.12, maxDrop: 36, jumpH: 15, maxNodes: 2500, budget: 6 });
+const navDig = mkNav({ solid, bad, dig: digOk, digCost: 0.35, maxDrop: 36, jumpH: 15, maxNodes: 2500, budget: 6 });
 
 // blacklist for things a helper could not reach (item, tree or ore spot → frame)
 const noWay = new WeakMap();
@@ -261,6 +261,7 @@ function follow(c, I) {
 }
 
 function helperAI(c, n) {
+  if (c.picking > 0) c.picking--;
   if (c.chop) return NOIN;
   const I = { ...NOIN };
   if (LIQ[midMat(c, 0.1)]) I.ay = -1;
@@ -328,7 +329,7 @@ function helperAI(c, n) {
   }
   const arrived = follow(c, I);
   // miners put up support beams in their tunnels
-  if (c.digging && G.frame % 8 === n % 8) tryBeam(c);
+  if ((c.digging || c.picking) && G.frame % 8 === n % 8) tryBeam(c);
   if (arrived) return atWork(c, I);
   // no progress: plan again, give up after a few tries
   if (G.frame - c.pt > 90) {
@@ -341,6 +342,23 @@ function helperAI(c, n) {
   return I;
 }
 
+// the closest rich cell within reach (an open face of it, not through solid rock)
+function richNear(c, r) {
+  const cx = Math.floor(c.x + 3),
+    cy = Math.floor(c.y + 5);
+  let best = null,
+    bd = r * r + 1;
+  for (let y = cy - r; y <= cy + r; y++)
+    for (let x = cx - r; x <= cx + r; x++) {
+      if (x < 0 || y < 0 || x >= W || y >= H - 2 || !RICH.has(mat[y * W + x]) || nearBuild(x, y)) continue;
+      const d = (x - cx) ** 2 + (y - cy) ** 2;
+      if (d < bd) {
+        bd = d;
+        best = [x, y];
+      }
+    }
+  return best;
+}
 // at the place of work
 function atWork(c, I) {
   const j = c.job;
@@ -363,14 +381,24 @@ function atWork(c, I) {
     return I;
   }
   if (j.type === 'mine') {
-    // dig into the rich spot until it is gone (or a few seconds passed)
+    // pick the ore out of the wall around you, cell by cell: the earth stays, so mining a
+    // vein leaves a neat pocket instead of a big cavern
     j.dug = (j.dug || 0) + 1;
-    const dx = j.x - (c.x + 3),
-      dy = j.y - (c.y + 5);
-    I.dig = true;
-    I.ax = Math.abs(dx) > 2 ? Math.sign(dx) : c.face;
-    I.slope = dy > 3 ? 0.5 : dy < -4 ? -0.38 : 0;
-    if (j.dug > 80 || !RICH.has(mat[j.y * W + j.x])) c.job = c.path = null;
+    c.picking = 8;
+    if (j.dug % 3) return I;
+    const cell = richNear(c, 10);
+    if (!cell || j.dug > 600) {
+      c.job = c.path = null;
+      return I;
+    }
+    const [x, y] = cell;
+    c.face = Math.sign(x - (c.x + 3)) || c.face;
+    const dx = x - (c.x + 3),
+      dy = y - (c.y + 5),
+      l = Math.hypot(dx, dy) || 1;
+    c.digDir = [dx / l, dy / l];
+    digCell(x, y);
+    spawnFromDig(c.x + 3 + c.face * 4, c.y + 3);
     return I;
   }
   if (j.type === 'collect') {

@@ -26,7 +26,7 @@ const KINDS = {
       f: c.face,
       vx: r2(c.vx),
       vy: r2(c.vy),
-      dg: c.digging ? 1 : 0,
+      dg: c.digging || c.picking > 0 ? 1 : 0,
       dd: c.digging ? [r2(c.digDir[0]), r2(c.digDir[1])] : 0,
       inv: c.inv,
       is: c.isel,

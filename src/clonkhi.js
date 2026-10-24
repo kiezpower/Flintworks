@@ -72,7 +72,7 @@ function drawClonkHi(c, ox, oy, f, g) {
     const up = ph < 2;
     px(13, up ? 2 : 6, 3, 5, FIXED.o);
     px(13, up ? 2 : 6, 2, 2, skin);
-  } else if (c.digging) {
+  } else if (c.digging || c.picking > 0) {
     const [dx, dy] = c.digDir;
     const wob = Math.sin(c.anim * 2) * 0.7;
     // pickaxe: handle from the hand towards the dig direction, steel head at the end
