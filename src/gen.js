@@ -159,7 +159,7 @@ function gen() {
     }
   // gems: small, rare pockets deep down
   for (let k = 0; k < 12; k++) {
-    const x = ri(220, W - 20);
+    const x = spread(k, 12, 220);
     blob(x, H - 30 - rnd() * 80, ri(2, 4), ri(2, 3), GEM);
   }
   // balancing: one shallow gold vein close to the base for the first sale

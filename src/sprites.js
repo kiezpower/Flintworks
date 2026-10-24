@@ -202,7 +202,7 @@ const ITEM = {
   ore: { name: 'Erz', s: [3, 3], val: 6 },
   coal: { name: 'Kohle', s: [3, 3], val: 4 },
   metal: { name: 'Metall', s: [4, 2], val: 15 },
-  gem: { name: 'Edelstein', s: [3, 3], val: 60 },
+  gem: { name: 'Edelstein', s: [3, 3], val: 45 },
 };
 function drawItemPx(g, t, x, y, blink) {
   const R = (a, b, w, h, c) => {
