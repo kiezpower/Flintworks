@@ -57,7 +57,7 @@ function startMission(i) {
   G.mis = { i, base: m && m.count ? m.count() : 0 };
 }
 function updMissions() {
-  if (G.frame % 30 || G.teams) return; // no tasks in Versus
+  if (G.frame % 30 || G.teams || mode().campaign) return; // no tasks in Versus and campaign
   if (!G.mis) startMission(0);
   const m = cur();
   if (!m) return;
@@ -79,6 +79,8 @@ function missionText() {
       .map((v, t) => (t === G.myTeam ? null : tr('Gegner {v}/{g}', { v, g: mode().goal })))
       .filter(Boolean)
       .join(' · ');
+  const M = mode();
+  if (M.campaign) return ''; // the goal bar shows the level's goal
   const m = cur();
   if (!m) return '';
   const v = Math.min(m.goal, value(m));

@@ -1,5 +1,6 @@
 import { arriveAtBase, stock, takeStock, unload, updProduction } from './store.js';
 import { track } from './profile.js';
+import { fireArrow } from './combat.js';
 import { tr } from './i18n.js';
 import { digCell, lorryNear, onCase, spawnFromDig } from './clonk.js';
 import { register } from './commands.js';
@@ -448,7 +449,7 @@ function updBuilds() {
             d = Math.hypot(dx, dy),
             sp = 4.2,
             t = d / sp;
-          arrows.push({ x: ox, y: oy, vx: dx / t, vy: dy / t - 0.03 * t, l: 120 });
+          fireArrow({ x: ox, y: oy, vx: dx / t, vy: dy / t - 0.03 * t, l: 120 });
           b.cd = 50;
           sfx('bow', ox, oy);
         }

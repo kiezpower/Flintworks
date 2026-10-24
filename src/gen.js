@@ -4,6 +4,8 @@ import { endTeams, setupTeams } from './teams.js';
 import { scatterDecor } from './decor.js';
 import { biome, setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
+import { resetEvents } from './events.js';
+import { applyModeSetup } from './modes.js';
 import { addClonk, mkAnimal, newId, spawnItem } from './entities.js';
 import { calcTerr } from './render.js';
 import { simulate } from './sim.js';
@@ -322,6 +324,9 @@ function gen() {
   G.rainT = 0;
   G.rainNext = 9000 + rnd() * 4000;
   arrows.length = 0;
+  resetEvents();
+  G.kills = G.rescued = 0;
+  applyModeSetup();
   calcTerr();
   scatterDecor();
 }

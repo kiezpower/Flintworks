@@ -270,7 +270,7 @@ function follow(c, I) {
 
 function helperAI(c, n) {
   if (c.picking > 0) c.picking--;
-  if (c.chop) return NOIN;
+  if (c.chop || c.trapped) return NOIN;
   const I = { ...NOIN };
   if (LIQ[midMat(c, 0.1)]) I.ay = -1;
   // drop jobs that are over

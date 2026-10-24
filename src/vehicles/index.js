@@ -4,6 +4,7 @@ import { register } from '../commands.js';
 import { sfx } from '../sound.js';
 import { G } from '../state.js';
 import { tr } from '../i18n.js';
+import { knowsAll, needText } from '../research.js';
 import { toast } from '../ui.js';
 import { free } from '../world.js';
 import './air.js';
@@ -25,6 +26,7 @@ function vehicleContext(c) {
 // why a vehicle cannot be built right now (or null)
 function cannotBuild(c, kind) {
   const K = VK[kind];
+  if (!knowsAll(K.res)) return needText(K.res);
   if (K.lvl && ((G.base && G.base.lvl) || 1) < K.lvl) return 'Erst ab Burgstufe {n}';
   if (!hasRes(c, K.cost)) return '{name} braucht {cost}';
   if (K.needsRails && !nearRail(c)) return 'Die Grubenbahn muss auf Schienen stehen';
@@ -58,6 +60,7 @@ register('vehicle', (c, { kind }) => {
 register('rails', c => {
   if (c.laying) return stopLaying(c);
   if (c.ride != null || c.dead) return;
+  if (!knowsAll(['rails'])) return toast(needText(['rails']));
   if (!hasRes(c, { plank: 1 }) && !hasRes(c, { wood: 1 })) return toast('Schienen brauchen Bretter oder Holz');
   startLaying(c);
   toast('Lauf los: hinter dir entstehen Schienen – Aktion „Fertig“ zum Aufhören');

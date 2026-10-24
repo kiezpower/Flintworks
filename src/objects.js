@@ -3,7 +3,7 @@ import { buzz } from './sound.js';
 import { addFloat } from './floats.js';
 import { track } from './profile.js';
 import { splash } from './effects.js';
-import { arrows } from './buildings.js';
+import { guard } from './combat.js';
 import { hurt, startTumble } from './clonk.js';
 import { midMat, moveBody, overlap, spawnItem, unstuck } from './entities.js';
 import { canPlantAt, plantTree } from './gen.js';
@@ -40,27 +40,6 @@ import {
 } from './world.js';
 
 // ---- Items, trees, animals, explosions, particles ----
-function updArrows() {
-  for (let k = arrows.length - 1; k >= 0; k--) {
-    const a = arrows[k];
-    a.vy += 0.06;
-    a.x += a.vx;
-    a.y += a.vy;
-    let hit = false;
-    for (const m of animals) {
-      if (m.kind !== 'monster') continue;
-      if (a.x > m.x && a.x < m.x + m.w && a.y > m.y && a.y < m.y + m.h) {
-        m.hp -= 20;
-        m.hurt = 12;
-        m.vx += Math.sign(a.vx) * 0.8;
-        hit = true;
-        sfx('clack', a.x, a.y);
-        break;
-      }
-    }
-    if (hit || solid(Math.floor(a.x), Math.floor(a.y)) || --a.l <= 0) arrows.splice(k, 1);
-  }
-}
 function updItems() {
   // explosions and cave-ins leave lots of rubble: keep the item count bounded
   if (items.length > 160 && G.frame % 60 === 0)
@@ -159,7 +138,7 @@ function updItems() {
           break;
         }
         if (e.kind === 'clonk') {
-          hurt(e, sp * 3);
+          hurt(e, sp * 3 * guard(e, 'hit'));
           if (sp > 3.2) startTumble(e, it.vx * 0.6, -1);
         } else {
           e.hp -= sp * 4;
@@ -410,11 +389,12 @@ function updAnimal(a) {
     if (a.atk > 0) a.atk--;
     for (const c of crew) {
       if (c.dead || !overlap(a, c, 0)) continue;
-      hurt(c, 0.12, true);
+      const g = guard(c, 'monster');
+      hurt(c, 0.12 * g, true);
       if (a.atk <= 0) {
         a.atk = 70;
-        startTumble(c, Math.sign(c.x - a.x || 1) * 2.2, -1.6);
-        hurt(c, 7);
+        startTumble(c, Math.sign(c.x - a.x || 1) * 2.2 * g, -1.6 * g);
+        hurt(c, 7 * g);
         sfx('growl', a.x, a.y);
       }
     }
@@ -437,6 +417,7 @@ function killAnimal(a) {
     spawnItem('nug', a.x + 3, a.y, -0.6, -1.5, 10);
     spawnItem('nug', a.x + 6, a.y, 0.6, -1.5, 10);
     toast('Monster besiegt');
+    G.kills = (G.kills || 0) + 1;
     track('monster');
     sfx('growl', a.x, a.y);
   }
@@ -607,4 +588,4 @@ function updParts() {
   for (let k = flashes.length - 1; k >= 0; k--) if (--flashes[k].l <= 0) flashes.splice(k, 1);
 }
 
-export { DEBCOL, DEBRIS, explode, ignite, killAnimal, updAnimal, updArrows, updItems, updParts, updTrees };
+export { DEBCOL, DEBRIS, explode, ignite, killAnimal, updAnimal, updItems, updParts, updTrees };

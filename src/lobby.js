@@ -1,4 +1,5 @@
 import { GAME_MODES, MODE_IDS, mode } from './modes.js';
+import { campaignPanel, totalStars } from './scenarios.js';
 // Lobby between games: the player's Wühler on a stage, resources on top, menus left, play button right.
 import { BIOMES } from './biomes.js';
 import './lobby.css';
@@ -135,11 +136,15 @@ function refresh() {
   $('lbPlay').classList.toggle('wait', wait);
   $('lbNew').hidden = !run;
   $('lbMode').disabled = run;
-  const GM = GAME_MODES[P.gmode || 'gold'];
+  const camp = !run && P.gmode === 'campaign';
+  const GM = GAME_MODES[P.gmode] || GAME_MODES.gold;
   $('lbGMode').disabled = run;
-  setTxt('lbGModeTxt', tr(run ? mode().name : GM.name));
   const gm = run ? mode() : GM;
-  setTxt('lbGModeDesc', tr(gm.desc, { goal: gm.goal }));
+  setTxt('lbGModeTxt', camp ? tr('Kampagne') : gm.campaign ? `${gm.n} · ${tr(gm.name)}` : tr(gm.name));
+  setTxt(
+    'lbGModeDesc',
+    camp ? tr('{n} Level · Sterne {s}/{m}', { n: 7, s: totalStars(), m: 21 }) : tr(gm.desc, { goal: gm.goal }),
+  );
   $('lbDiff').disabled = run;
   setTxt('lbDiffTxt', tr((run ? G.relaxed : P.diff === 'relaxed') ? 'Entspannt' : 'Abenteuer'));
   setTxt('lbModeTxt', tr(run ? BIOMES[G.biome].name : MODE_NAME[P.mode || 'random']));
@@ -364,8 +369,9 @@ tap('lbQuest', openQuests);
 tap('lbRoad', openWho);
 tap('lbOpt', openOptions);
 tap('lbGMode', () => {
+  const ids = [...MODE_IDS, 'campaign'];
   const m = P.gmode || 'gold';
-  P.gmode = MODE_IDS[(MODE_IDS.indexOf(m) + 1) % MODE_IDS.length];
+  P.gmode = ids[(ids.indexOf(m) + 1) % ids.length];
   saveProfile();
   refresh();
 });
@@ -383,7 +389,18 @@ tap('lbMode', () => {
   saveProfile();
   refresh();
 });
-tap('lbPlay', () => hooks.play(false));
+tap('lbPlay', () => (P.gmode === 'campaign' && !hooks.hasRun() && !inRoom() ? openCampaign() : hooks.play(false)));
+function openCampaign() {
+  const p = openPanel('Kampagne');
+  campaignPanel(p, {
+    opt,
+    sec,
+    start: id => {
+      closePanel();
+      hooks.play(false, id);
+    },
+  });
+}
 let newArmed = 0;
 tap('lbNew', () => {
   if (performance.now() - newArmed > 3000) {

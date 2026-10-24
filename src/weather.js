@@ -3,6 +3,7 @@ import { hurt, startTumble } from './clonk.js';
 import { spawnItem } from './entities.js';
 import { topSolid } from './gen.js';
 import { explode, ignite } from './objects.js';
+import { guard } from './combat.js';
 import { cam } from './render.js';
 import { sfx } from './sound.js';
 import { G, birds, clouds, crew, meteors, parts, trees } from './state.js';
@@ -118,7 +119,7 @@ function lightning() {
     }
   for (const c of crew)
     if (!c.dead && Math.abs(c.x + 3 - x) < 8 && Math.abs(c.y + 10 - gy) < 14) {
-      hurt(c, 30);
+      hurt(c, 30 * guard(c, 'hit'));
       startTumble(c, (rnd() - 0.5) * 3, -2);
       c.burn = 120;
     }

@@ -1,7 +1,7 @@
 import { tapGotoInput } from './tapgo.js';
 import { calcTerr } from './render.js';
 import { updHazards } from './hazards.js';
-import { goalReached, mode, starsFor } from './modes.js';
+import { GAME_MODES, goalReached, mode, starsFor } from './modes.js';
 import { updBuildFx } from './bfx.js';
 import { updMusic } from './music.js';
 import { updFloats } from './floats.js';
@@ -22,7 +22,11 @@ import { cycleCrew, readInput } from './input.js';
 import { helperAI } from './helpers.js';
 import { updBeams } from './mine.js';
 import { updMissions } from './missions.js';
-import { killAnimal, updAnimal, updArrows, updItems, updParts, updTrees } from './objects.js';
+import { killAnimal, updAnimal, updItems, updParts, updTrees } from './objects.js';
+import { updArrows, updCombat } from './combat.js';
+import { updResearch } from './research.js';
+import { updEvents } from './events.js';
+import { recordCampaign, updScenario } from './scenarios.js';
 import { cam, render, resize } from './render.js';
 import { clearSave, hasSave, loadGame, saveGame } from './save.js';
 import { simulate } from './sim.js';
@@ -78,7 +82,7 @@ const keyList = (cls, rows) =>
 const keysHtml = () => `${keyList('touchonly', TOUCH_KEYS)}${keyList('keyonly', DESK_KEYS)}`;
 // A run is in progress when a world is loaded or a save is waiting
 const hasRun = () => G.inRun || hasSave();
-function play(withTutorial) {
+function play(withTutorial, level = null) {
   // in a room: the host starts the round for everybody, the others wait for the host
   if (inRoom() && !G.inRun) {
     if (!NET.host) return toast('Warte auf den Host');
@@ -95,7 +99,7 @@ function play(withTutorial) {
     }
     const d = startMessage();
     d.biome = chosenBiome() || ['meadow', 'desert', 'winter'][Math.floor(Math.random() * 3)];
-    d.gmode = P.gmode || 'gold';
+    d.gmode = GAME_MODES[P.gmode] && !GAME_MODES[P.gmode].campaign ? P.gmode : 'gold';
     d.diff = P.diff || 'adventure';
     sendTo('all', d);
     playNet(d);
@@ -109,11 +113,14 @@ function play(withTutorial) {
     if (hasSave() && loadGame()) {
       G.crewKey = G.invKey = '';
     } else {
-      G.nextBiome = chosenBiome();
-      G.nextMode = P.gmode || 'gold';
-      G.nextDiff = P.diff || 'adventure';
+      const L = level && GAME_MODES[level];
+      G.nextBiome = L ? L.biome : chosenBiome();
+      G.nextMode = L ? level : GAME_MODES[P.gmode] ? P.gmode : 'gold';
+      G.nextDiff = L ? L.diff || 'adventure' : P.diff || 'adventure';
+      G.nextSeed = L ? L.seed : null;
       G.nextVersus = false;
       gen();
+      G.nextSeed = null;
       if (!P.tutorialDone) withTutorial = true;
     }
     resetCam();
@@ -217,6 +224,7 @@ function endScreen(won) {
   // counted in game ticks: a slower tempo or a pause does not cost stars
   const s = Math.round((G.playTicks || 0) / 60);
   const stars = won ? starsFor(s) : 0;
+  if (won) recordCampaign(stars);
   const tro = finishGame(won, G.earned || 0, stars);
   const time = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   const M = mode();
@@ -393,6 +401,10 @@ function step() {
     updHazards();
     updBeams();
     updMissions();
+    updResearch();
+    if (G.frame % 30 === 0) updScenario();
+    updEvents();
+    updCombat();
     updArrows();
     updItems();
     for (const L of lorries) updLorry(L);

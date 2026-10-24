@@ -20,7 +20,12 @@ import { send } from './commands.js';
 import { digZone, wantsDig } from './clonk.js';
 import { LIQ, matAt, solid } from './world.js';
 
+import * as events from './events.js';
+import * as combat from './combat.js';
+
 window.__ww = {
+  events,
+  combat,
   send,
   helpers,
   addClonk,

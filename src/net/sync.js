@@ -45,6 +45,7 @@ const KINDS = {
       te: c.team || 0,
       rd: c.ride ?? null,
       ly: c.laying ? 1 : 0,
+      sw: c.swing > 0 ? c.swing : 0,
     }),
     create: d => ({
       id: d.id,
@@ -93,6 +94,7 @@ const KINDS = {
         team: d.te,
         ride: d.rd,
         laying: !!d.ly,
+        swing: d.sw || c.swing || 0,
         burn: d.bu ? 30 : 0,
         netBusy: !!(d.ch || d.br || d.tm || d.dead || d.rd != null),
       });

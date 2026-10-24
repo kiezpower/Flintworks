@@ -90,6 +90,7 @@ function serialize() {
       beams: G.beams || [],
       mis: G.mis || null,
       goldSold: G.goldSold || 0,
+      ev: { kills: G.kills, rescued: G.rescued, rate: G.evRate, kinds: G.evKinds, next: G.evNext },
       mineMark: G.mineMark || null,
       chestsFound: G.chestsFound,
       gas: G.gas,
@@ -176,6 +177,14 @@ function deserialize(d) {
     G.beams = d.beams || [];
     G.mis = d.mis || null;
     G.goldSold = d.goldSold || 0;
+    const ev = d.ev || {};
+    Object.assign(G, {
+      kills: ev.kills || 0,
+      rescued: ev.rescued || 0,
+      evRate: ev.rate ?? 1,
+      evKinds: ev.kinds || null,
+    });
+    G.evNext = ev.next ?? null;
     G.mineMark = d.mineMark || null;
     G.chestsFound = d.chestsFound || 0;
     G.gas = d.gas || [];

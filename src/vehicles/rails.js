@@ -102,6 +102,7 @@ defineVehicle('train', {
   name: 'Grubenbahn',
   info: 'Fährt auf deinen Schienen hin und her und bringt die Ladung der Helfer zur Burg',
   cost: { metal: 2, plank: 4 },
+  res: ['rails'],
   w: 14,
   h: 8,
   seat: [-3, -6],

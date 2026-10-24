@@ -1,5 +1,7 @@
 import { drawGoal } from './tapgo.js';
 import { drawClonkHi } from './clonkhi.js';
+import { drawArrow, drawGear } from './combat.js';
+import { drawEvents } from './events.js';
 import { drawBackdrop } from './backdrop.js';
 import { hasTool } from './tools.js';
 import { drawHazards } from './hazards.js';
@@ -466,16 +468,8 @@ function render() {
       ctx.fillRect(x + 1, y - 1, 1, 1);
     }
   }
-  for (const a of arrows) {
-    const x = Math.floor(a.x - cx),
-      y = Math.floor(a.y - cy),
-      d = Math.hypot(a.vx, a.vy) || 1;
-    ctx.fillStyle = '#d9b98a';
-    ctx.fillRect(x, y, 1, 1);
-    ctx.fillRect(Math.round(x - (a.vx / d) * 2), Math.round(y - (a.vy / d) * 2), 1, 1);
-    ctx.fillStyle = '#4a4540';
-    ctx.fillRect(Math.round(x + a.vx / d), Math.round(y + a.vy / d), 1, 1);
-  }
+  for (const a of arrows) drawArrow(ctx, a, Math.floor(a.x - cx), Math.floor(a.y - cy));
+  drawEvents(ctx, cx, cy);
   for (const m of meteors) {
     const x = Math.floor(m.x - cx),
       y = Math.floor(m.y - cy);
@@ -513,6 +507,7 @@ function render() {
       drawClonkHi(c, -3, -5, c.face, ctx);
       ctx.restore();
     } else drawClonkHi(c, x, y, c.face, ctx);
+    drawGear(ctx, c, x, y);
     // other players carry their name over the head
     if (G.net && isPlayer(c) && c !== mine) nameTag(c.name, x + 3, y - (c.bub ? 15 : 4), c.cap);
     if (c === mine && (G.frame >> 4) % 3) {

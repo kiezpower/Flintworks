@@ -1,5 +1,6 @@
 import { stock, takeStock } from './store.js';
 import { hasTool, toolSection } from './tools.js';
+import { knowsAll, needText, researchSection } from './research.js';
 const depthEl = document.getElementById('depthTxt');
 const misEl = document.getElementById('misTxt');
 import { GAME_MODES, mode } from './modes.js';
@@ -32,7 +33,8 @@ import { tr } from './i18n.js';
 import { focusBadge, openCrew } from './crewui.js';
 import { register, send } from './commands.js';
 import { BUILDABLE, VK, cannotBuild } from './vehicles/index.js';
-import { vehicleIcon } from './vehicles/core.js';
+import { vehicleIcon, vehicleOf } from './vehicles/core.js';
+import { canShoot } from './combat.js';
 import { isPlayer } from './players.js';
 import { missionText } from './missions.js';
 import { G, INV_MAX, animals, builds, crew, lorries } from './state.js';
@@ -120,7 +122,9 @@ function hud() {
   // automatic digging hides the dig and jump buttons; throw only shows with something in hand
   btnsEl.classList.toggle('auto', !!G.autoDig);
   btnsEl.classList.toggle('jumpon', !!G.jumpBtn);
-  btnsEl.classList.toggle('noitem', !(c && !c.dead && c.inv[c.isel]));
+  // (also with the bow and arrows, and in a catapult or airship)
+  const thr = c && !c.dead && (c.ride != null ? THROWERS[vehicleOf(c)?.kind] : c.inv[c.isel] || canShoot(c));
+  btnsEl.classList.toggle('noitem', !thr);
   const ck = crew.map(o => `${o === c}${o.dead}${Math.round(o.energy / 10)}${o.focus}`).join();
   if (ck !== G.crewKey) {
     G.crewKey = ck;
@@ -193,7 +197,8 @@ function openBag() {
     }),
   );
 }
-const ACT_ICONS = { Fällen: 'act', Basis: 'castle', Öffnen: 'chest', Bauen: 'hammer' };
+const THROWERS = { catapult: 1, airship: 1 }; // vehicles that use Wurf
+const ACT_ICONS = { Fällen: 'act', Basis: 'castle', Öffnen: 'chest', Bauen: 'hammer', Zuschlagen: 'sword' };
 const actIconCache = {};
 function actIcon(label) {
   if (actIconCache[label]) return actIconCache[label];
@@ -371,7 +376,9 @@ function openBuild() {
   opt(lv, {
     icon: itemIcon('plank'),
     title: tr(c.laying ? 'Schienen: fertig' : 'Schienen legen'),
-    sub: tr('Beim Laufen entstehen Schienen hinter dir – 1 Brett oder Holz pro 10 Stück'),
+    sub: knowsAll(['rails'])
+      ? tr('Beim Laufen entstehen Schienen hinter dir – 1 Brett oder Holz pro 10 Stück')
+      : needText(['rails']),
     short: true,
     onClick: () => {
       closePanel();
@@ -384,7 +391,7 @@ function openBuild() {
     opt(lv, {
       icon: vehicleIcon(k),
       title: tr(K.name),
-      sub: tr(K.info),
+      sub: knowsAll(K.res) ? tr(K.info) : needText(K.res),
       cost: K.lvl && why === 'Erst ab Burgstufe {n}' ? tr(why, { n: K.lvl }) : costTxt(K.cost),
       short: !!why,
       onClick: () => {
@@ -435,6 +442,7 @@ function openBase() {
         openBase();
       },
     });
+  researchSection(p, { opt, sec, reopen: openBase });
   toolSection(p, c, { opt, sec, toast, reopen: openBase });
   const l = sec(p, tr('Kaufen · Kasse: {m} Taler', { m: G.money }));
   for (const o of BUY) {

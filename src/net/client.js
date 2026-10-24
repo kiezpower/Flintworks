@@ -5,6 +5,9 @@ import { context, updClonk } from '../clonk.js';
 import { addFloat, updFloats } from '../floats.js';
 import { inp } from '../input.js';
 import { updParts } from '../objects.js';
+import { playAnnounce } from '../announce.js';
+import { playShot, updArrows, updCombat } from '../combat.js';
+import { playBomb, updEvents } from '../events.js';
 import { clonkOf } from '../players.js';
 import { sfx } from '../sound.js';
 import { G, flashes } from '../state.js';
@@ -120,6 +123,7 @@ function reconcile(c, e) {
   }
 }
 function playEvent(e) {
+  if (playAnnounce(e) || playShot(e) || playBomb(e)) return;
   if (e[0] === 's') sfx(e[1], e[2], e[3], e[4]);
   else if (e[0] === 'f') addFloat(e[1], e[2], e[3], e[4], e[5]);
   else if (e[0] === 'x') {
@@ -144,6 +148,9 @@ function clientStep(paused) {
     // nothing from the host for a while (app in the background, dead spot)
     if (performance.now() - lastSnap > 3000 && G.frame % 180 === 0) toast('Warte auf den Host …');
     updFloats();
+    updArrows();
+    updCombat();
+    updEvents();
   }
   if (!paused) {
     updWeather();

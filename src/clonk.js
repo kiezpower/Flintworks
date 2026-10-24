@@ -1,3 +1,4 @@
+import { canShoot, shoot, swordContext } from './combat.js';
 import { hasTool } from './tools.js';
 import { onDig } from './hazards.js';
 import { buzz } from './sound.js';
@@ -7,7 +8,7 @@ import { track } from './profile.js';
 import { dust, splash } from './effects.js';
 import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './entities.js';
 import { inputOf } from './players.js';
-import { vehicleContext, vehicleOf } from './vehicles/index.js';
+import { vehicleContext } from './vehicles/index.js';
 import { sfx } from './sound.js';
 import { G, builds, crew, lorries, parts, trees } from './state.js';
 import { toast } from './ui.js';
@@ -582,6 +583,7 @@ function onCase(e, cs) {
   return !e.climb && Math.abs(e.y + e.h - cs.y) < 1.5 && e.x + e.w > cs.x && e.x < cs.x + 12;
 }
 function doThrow(c, I) {
+  if (I.throwP && !c.inv.length && !c.climb && !c.tumble && canShoot(c)) return shoot(c, I);
   if (!I.throwP || !c.inv.length || c.climb || c.tumble) return;
   if (c.ride != null) return; // vehicles use Throw themselves (catapult, airship)
   if (c.isel >= c.inv.length) c.isel = c.inv.length - 1;
@@ -611,6 +613,8 @@ function context(c) {
   // vehicles: getting out and stopping the rail laying come first, getting in after the castle
   const vc = vehicleContext(c);
   if (vc && (c.ride != null || c.laying)) return vc;
+  const sw = swordContext(c);
+  if (sw) return sw;
   // (ui: a panel that opens on the device of the player who pressed the button)
   if (insideB(c, G.base)) return { label: 'Basis', ui: 'base' };
   if (vc) return vc;

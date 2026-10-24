@@ -464,6 +464,57 @@ PAD_ICONS.lamp = R => {
   R(5, 4, 2, 2, '#fff6c0');
   R(3, 9, 6, 1, '#6f767c');
 };
+// equipment and research
+PAD_ICONS.sword = R => {
+  R(8, 1, 3, 2, '#e4e8ec');
+  for (let k = 0; k < 5; k++) R(7 - k, 3 + k, 2, 1, k % 2 ? '#aab0b6' : '#e4e8ec');
+  R(1, 7, 4, 1, '#c9a43a');
+  R(1, 8, 2, 3, '#6a4526');
+};
+PAD_ICONS.bow = R => {
+  for (let k = 0; k < 10; k++) R(3 + Math.round(Math.sin((k / 9) * Math.PI) * 3), 1 + k, 1, 1, '#8b5e34');
+  R(3, 1, 1, 10, '#e8e0d0');
+  R(1, 5, 9, 1, '#a0703f');
+  R(9, 4, 2, 3, '#aab0b6');
+};
+PAD_ICONS.arrow = R => {
+  R(1, 10, 2, 1, '#e8e0d0');
+  for (let k = 0; k < 6; k++) R(2 + k, 9 - k, 1, 1, '#a0703f');
+  R(8, 2, 2, 2, '#aab0b6');
+  R(9, 1, 1, 1, '#e4e8ec');
+};
+PAD_ICONS.farrow = R => {
+  PAD_ICONS.arrow(R);
+  R(7, 0, 3, 2, '#ffcf4a');
+  R(9, 2, 2, 2, '#ff7a2f');
+};
+PAD_ICONS.shield = R => {
+  R(2, 1, 8, 7, '#8b5e34');
+  R(3, 8, 6, 2, '#8b5e34');
+  R(5, 10, 2, 1, '#8b5e34');
+  R(2, 1, 8, 1, '#aab0b6');
+  R(5, 2, 2, 7, '#c9a43a');
+};
+PAD_ICONS.helm = R => {
+  R(2, 4, 8, 5, '#9aa4ae');
+  R(3, 2, 6, 2, '#9aa4ae');
+  R(3, 2, 4, 1, '#d4dbe2');
+  R(1, 8, 10, 2, '#6f767c');
+  R(5, 5, 2, 4, '#6f767c');
+};
+PAD_ICONS.rails = R => {
+  for (let k = 0; k < 4; k++) R(1 + k * 3, 5, 2, 5, '#8b5e34');
+  R(0, 6, 12, 1, '#c0c6cc');
+  R(0, 9, 12, 1, '#c0c6cc');
+};
+PAD_ICONS.balloon = R => {
+  R(2, 0, 8, 6, '#c8402c');
+  R(3, 0, 2, 6, '#e8d8b0');
+  R(1, 1, 10, 4, '#c8402c');
+  R(3, 6, 1, 3, '#5a3a1a');
+  R(8, 6, 1, 3, '#5a3a1a');
+  R(3, 9, 6, 3, '#9a6a3a');
+};
 const padIcon = kind => sp(12, 12, PAD_ICONS[kind]).toDataURL();
 const toolIcon = kind => sp(12, 12, PAD_ICONS[kind]);
 
@@ -547,6 +598,7 @@ function drawHi(ctx, spr, x, y) {
 }
 
 export {
+  PAD_ICONS,
   drawHi,
   hiRes,
   scale2x,
