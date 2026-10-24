@@ -2,6 +2,10 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'Spieltempo: {t}': 'Game speed: {t}',
+  Gemütlich: 'Relaxed',
+  Schnell: 'Fast',
+  'Gemütlich, Normal oder Schnell': 'Relaxed, normal or fast',
   'Sprung-Knopf an': 'Jump button on',
   'Sprung-Knopf aus': 'Jump button off',
   'Eigener Knopf zum Springen, auch beim automatischen Graben': 'A separate jump button, also with automatic digging',

@@ -135,16 +135,19 @@ function gen() {
     if (liquid)
       blob(c.x, c.y, c.rx, c.ry, liquid, (i, xx, yy) => mat[i] === AIR && yy > c.y - (liquid === WATER ? 1 : 3));
   });
+  // resources spread evenly along the world (random within each stretch), so every world
+  // has about as much close to the base – no lucky or empty starts
+  const spread = (k, n, x0) => Math.floor(x0 + (k + 0.15 + rnd() * 0.7) * ((W - 15 - x0) / n));
   for (let k = 0; k < 16; k++) {
-    const x = ri(150, W - 15);
+    const x = spread(k, 16, 150);
     blob(x, deep(x, 18), ri(5, 12), ri(3, 6), COAL);
   }
   for (let k = 0; k < 14; k++) {
-    const x = ri(170, W - 15);
+    const x = spread(k, 14, 170);
     blob(x, deep(x, 40), ri(4, 9), ri(3, 6), ORE);
   }
   for (let k = 0; k < 26; k++) {
-    const x = ri(160, W - 15);
+    const x = spread(k, 26, 160);
     blob(x, deep(x, 22), ri(3, 7), ri(2, 5), GOLD);
   }
   // desert: thick sand cover (not under the home base)

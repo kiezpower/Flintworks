@@ -260,6 +260,19 @@ function openOptions() {
       openOptions();
     },
   });
+  {
+    const names = { calm: 'Gemütlich', normal: 'Normal', fast: 'Schnell' };
+    opt(l, {
+      title: tr('Spieltempo: {t}', { t: tr(names[P.tempo || 'normal']) }),
+      sub: tr('Gemütlich, Normal oder Schnell'),
+      onClick: () => {
+        const ks = Object.keys(names);
+        P.tempo = ks[(ks.indexOf(P.tempo || 'normal') + 1) % ks.length];
+        saveProfile();
+        openOptions();
+      },
+    });
+  }
   opt(l, {
     title: tr(P.jumpbtn === false ? 'Sprung-Knopf aus' : 'Sprung-Knopf an'),
     sub: tr('Eigener Knopf zum Springen, auch beim automatischen Graben'),

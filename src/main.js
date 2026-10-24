@@ -85,6 +85,9 @@ const lobbyHooks = { play, discard, hasRun, keysHtml };
 function menu() {
   showLobby(lobbyHooks);
 }
+// game tempo: share of the original speed
+const TEMPO = { calm: 0.7, normal: 0.85, fast: 1 };
+const TEMPO_NAME = { calm: 'Gemütlich', normal: 'Normal', fast: 'Schnell' };
 function startGame(withTutorial = false) {
   if (withTutorial === true) startTutorial();
   else if (withTutorial !== 'resume') endTutorial(false);
@@ -94,6 +97,7 @@ function startGame(withTutorial = false) {
   G.autoDig = P.autodig !== false;
   G.climbOn = !!P.climbing;
   G.jumpBtn = P.jumpbtn !== false;
+  G.speed = TEMPO[P.tempo || 'normal'] || 0.85;
   if (!G.climbOn) for (const c of crew) c.climb = c.hangle = false;
   const res = P.gfx === 'low' || new URLSearchParams(location.search).get('res') === '1' ? 1 : 2;
   if (res !== G.res) {
@@ -116,7 +120,8 @@ function endScreen(won) {
   closePanel();
   clearSave();
   G.inRun = false;
-  const s = Math.round((performance.now() - G.startT) / 1000);
+  // (in game time: a slower tempo does not cost stars)
+  const s = Math.round(((performance.now() - G.startT) / 1000) * (G.speed || 1));
   const stars = won ? starsFor(s) : 0;
   const tro = finishGame(won, G.earned || 0, stars);
   const time = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -179,6 +184,13 @@ function openMenu() {
       openMenu();
     },
   );
+  item(tr('Spieltempo: {t}', { t: tr(TEMPO_NAME[P.tempo || 'normal']) }), 'Gemütlich, Normal oder Schnell', () => {
+    const ks = Object.keys(TEMPO);
+    P.tempo = ks[(ks.indexOf(P.tempo || 'normal') + 1) % ks.length];
+    G.speed = TEMPO[P.tempo];
+    saveProfile();
+    openMenu();
+  });
   if (G.autoDig)
     item(
       G.jumpBtn ? 'Sprung-Knopf an' : 'Sprung-Knopf aus',
@@ -324,9 +336,11 @@ function loop(t) {
   G.acc += Math.min(100, t - G.last);
   G.last = t;
   let n = 0;
-  while (G.acc >= 16.667 && n < 4) {
+  // game tempo: the whole simulation runs a bit slower or faster (setting "Spieltempo")
+  const dt = 16.667 / (G.speed || 1);
+  while (G.acc >= dt && n < 4) {
     step();
-    G.acc -= 16.667;
+    G.acc -= dt;
     n++;
   }
   if (n === 4) G.acc = 0;

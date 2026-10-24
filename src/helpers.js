@@ -85,13 +85,17 @@ function nearestTree(c) {
 // a rich cell not too deep under the surface, nearest to the helper first
 // (with a mining marker: around the marker, also further away from the base)
 function nearestOre(c) {
+  // first close to the surface, then deeper down once that is used up
+  return oreScan(c, 130) || (!G.mineMark && oreScan(c, 240));
+}
+function oreScan(c, depth) {
   const m = G.mineMark;
   const cx = Math.floor(m ? m.x : c.x + 3);
   for (let r = 0; r < (m ? 90 : 560); r += 3)
     for (const x of r ? [cx - r, cx + r] : [cx]) {
       if (x < 4 || x >= W - 10 || (!m && far(x))) continue;
       const top = m ? Math.max(surf[x], m.y - 50) : surf[x];
-      for (let y = top + 2; y < Math.min(H - 6, m ? m.y + 70 : top + 130); y += 2) {
+      for (let y = top + 2; y < Math.min(H - 6, m ? m.y + 70 : top + depth); y += 2) {
         if (!RICH.has(mat[y * W + x]) || nearBuild(x, y)) continue;
         const key = ((x / 24) | 0) * 1000 + ((y / 24) | 0); // coarse: a failed spot blocks its surroundings
         if (blocked(key) || takenBy(c, key)) continue;
