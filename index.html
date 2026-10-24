@@ -2,7 +2,10 @@
 <html lang="de">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"
+    />
     <title>Flintworks</title>
     <meta
       name="description"
@@ -13,7 +16,10 @@
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
     <meta name="apple-mobile-web-app-title" content="Flintworks" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -24,7 +30,11 @@
   </head>
   <body>
     <div id="game">
-      <canvas id="cv" aria-label="Spielwelt" data-i18n-aria="Spielwelt"></canvas>
+      <canvas
+        id="cv"
+        aria-label="Spielwelt"
+        data-i18n-aria="Spielwelt"
+      ></canvas>
 
       <div id="hud">
         <div class="col">
@@ -33,15 +43,24 @@
             <div class="who" id="whoTxt"></div>
             <div class="who pwr" id="pwrTxt" hidden></div>
             <div class="who depth" id="depthTxt" hidden></div>
-            <div class="money"><span class="coin"></span><span id="moneyTxt">0</span></div>
+            <div class="money">
+              <span class="coin"></span><span id="moneyTxt">0</span>
+            </div>
             <div class="store" id="storeRow" hidden></div>
             <div class="goal" id="goalWrap" hidden>
-              <span id="goalTxt"></span><span class="gbar"><b id="goalBar"></b></span>
+              <span id="goalTxt"></span
+              ><span class="gbar"><b id="goalBar"></b></span>
             </div>
             <div class="bar" title="Energie" data-i18n-title="Energie">
               <b id="hpBar"></b>
             </div>
-            <div class="bar air" id="airWrap" hidden title="Luft" data-i18n-title="Luft">
+            <div
+              class="bar air"
+              id="airWrap"
+              hidden
+              title="Luft"
+              data-i18n-title="Luft"
+            >
               <b id="airBar"></b>
             </div>
           </div>
@@ -52,7 +71,13 @@
             <button class="small" id="buildBtn" data-i18n="Bauen">Bauen</button>
             <button class="small" id="menuBtn" data-i18n="Menü">Menü</button>
           </div>
-          <canvas id="miniThumb" width="175" height="50" aria-label="Karte" data-i18n-aria="Karte"></canvas>
+          <canvas
+            id="miniThumb"
+            width="175"
+            height="50"
+            aria-label="Karte"
+            data-i18n-aria="Karte"
+          ></canvas>
           <div hidden>
             <button id="zoomBtn">Zoom</button>
             <button id="mapBtn">Karte</button>
@@ -65,48 +90,72 @@
       <div id="pads">
         <div id="joy"><div id="knob"></div></div>
         <div id="btns">
-          <button class="pad act" data-b="act"><i class="ico" data-ico="act"></i><span id="actBtn">Bauen</span></button>
+          <button class="pad act" data-b="act">
+            <i class="ico" data-ico="act"></i><span id="actBtn">Bauen</span>
+          </button>
           <button class="pad jump" data-b="jump">
-            <i class="ico" data-ico="jump"></i><span data-i18n="Sprung">Sprung</span>
+            <i class="ico" data-ico="jump"></i
+            ><span data-i18n="Sprung">Sprung</span>
           </button>
           <button class="pad throw" data-b="throw">
-            <i class="ico" data-ico="throw"></i><span data-i18n="Wurf">Wurf</span>
+            <i class="ico" data-ico="throw"></i
+            ><span data-i18n="Wurf">Wurf</span>
           </button>
           <button class="pad big" data-b="dig">
-            <i class="ico" data-ico="dig"></i><span data-i18n="Graben">Graben</span>
+            <i class="ico" data-ico="dig"></i
+            ><span data-i18n="Graben">Graben</span>
           </button>
         </div>
       </div>
 
       <div id="mapView" class="panel" hidden>
         <div class="ph">
-          <span style="color: var(--gold)" data-i18n="Karte · Antippen schließt">Karte · Antippen schließt</span>
+          <span style="color: var(--gold)" data-i18n="Karte · Antippen schließt"
+            >Karte · Antippen schließt</span
+          >
         </div>
         <canvas id="mini" width="350" height="100"></canvas>
         <div class="legend">
-          <span><i style="background: #fff"></i><span data-i18n="gewählt">gewählt</span></span
+          <span
+            ><i style="background: #fff"></i
+            ><span data-i18n="gewählt">gewählt</span></span
           ><span><i style="background: #3f9e4a"></i>Crew</span
-          ><span><i style="background: #c9b89a"></i><span data-i18n="Gebäude">Gebäude</span></span
-          ><span><i style="background: #ff4040"></i>Monster</span><span><i style="background: #f2c230"></i>Gold</span
+          ><span
+            ><i style="background: #c9b89a"></i
+            ><span data-i18n="Gebäude">Gebäude</span></span
+          ><span><i style="background: #ff4040"></i>Monster</span
+          ><span><i style="background: #f2c230"></i>Gold</span
           ><span><i style="background: #ff7a2a"></i>Lava</span
-          ><span><i style="background: #7ed957"></i><span data-i18n="Säure">Säure</span></span>
+          ><span
+            ><i style="background: #7ed957"></i
+            ><span data-i18n="Säure">Säure</span></span
+          >
         </div>
       </div>
 
       <div id="quest" class="panel" hidden>
         <span id="questStep"></span><span id="questText"></span>
-        <button class="small" id="questSkip" data-i18n="Überspringen">Überspringen</button>
+        <button class="small" id="questSkip" data-i18n="Überspringen">
+          Überspringen
+        </button>
       </div>
 
       <div id="toast" class="panel" hidden></div>
-      <button id="updateBtn" class="go" hidden data-i18n="Neue Version – tippen zum Laden">
+      <button
+        id="updateBtn"
+        class="go"
+        hidden
+        data-i18n="Neue Version – tippen zum Laden"
+      >
         Neue Version – tippen zum Laden
       </button>
 
       <div id="panel" class="panel" hidden>
         <div class="ph">
           <h2 id="pTitle"></h2>
-          <button class="small" id="pClose" data-i18n="Schließen">Schließen</button>
+          <button class="small" id="pClose" data-i18n="Schließen">
+            Schließen
+          </button>
         </div>
         <div id="pBody"></div>
       </div>
@@ -122,29 +171,53 @@
             <div class="lb-xp"><i id="lbXp"></i><span id="lbXpTxt"></span></div>
           </div>
           <div class="lb-title" id="lbTitle">Flintworks</div>
-          <div class="lb-version" id="lbVersion"></div>
           <div class="lb-chips">
-            <span class="chip"><i class="ico" data-ico="trophy"></i><b id="lbTro">0</b></span>
-            <button class="chip lb-opt" id="lbOpt" aria-label="Optionen" data-i18n-aria="Optionen">
+            <span class="chip"
+              ><i class="ico" data-ico="trophy"></i><b id="lbTro">0</b></span
+            >
+            <button
+              class="chip lb-opt"
+              id="lbOpt"
+              aria-label="Optionen"
+              data-i18n-aria="Optionen"
+            >
               <i class="ico" data-ico="gear"></i>
             </button>
           </div>
         </div>
         <div class="lb-side">
           <button class="lb-b" id="lbWho">
-            <i class="ico" data-ico="crew"></i><span data-i18n="Wühler">Wühler</span>
+            <i class="ico" data-ico="crew"></i
+            ><span data-i18n="Wühler">Wühler</span>
           </button>
           <button class="lb-b" id="lbQuest">
-            <i class="ico" data-ico="quest"></i><span data-i18n="Aufgaben">Aufgaben</span>
+            <i class="ico" data-ico="quest"></i
+            ><span data-i18n="Aufgaben">Aufgaben</span>
           </button>
         </div>
         <div class="lb-stage">
           <div class="lb-team">
-            <button class="lb-slot" id="lbSlot1" aria-label="Mitspieler einladen" data-i18n-aria="Mitspieler einladen">
+            <button
+              class="lb-slot"
+              id="lbSlot1"
+              aria-label="Mitspieler einladen"
+              data-i18n-aria="Mitspieler einladen"
+            >
               <b>+</b>
             </button>
-            <canvas id="lbCv" width="88" height="56" aria-label="Dein Wühler" data-i18n-aria="Dein Wühler"></canvas>
-            <button class="lb-slot" id="lbSlot2" aria-label="Mitspieler einladen" data-i18n-aria="Mitspieler einladen">
+            <canvas
+              id="lbCv"
+              width="88"
+              height="56"
+              aria-label="Dein Wühler"
+              data-i18n-aria="Dein Wühler"
+            ></canvas>
+            <button
+              class="lb-slot"
+              id="lbSlot2"
+              aria-label="Mitspieler einladen"
+              data-i18n-aria="Mitspieler einladen"
+            >
               <b>+</b>
             </button>
           </div>
@@ -157,21 +230,26 @@
         </button>
         <div class="lb-play">
           <button class="lb-mode lb-gmode" id="lbGMode">
-            <small data-i18n="Modus">Modus</small><b id="lbGModeTxt">Goldrausch</b><em id="lbGModeDesc"></em>
+            <small data-i18n="Modus">Modus</small
+            ><b id="lbGModeTxt">Goldrausch</b><em id="lbGModeDesc"></em>
           </button>
           <div class="lb-row">
             <button class="lb-mode" id="lbMode">
               <small data-i18n="Welt">Welt</small><b id="lbModeTxt">Zufall</b>
             </button>
             <button class="lb-mode lb-diff" id="lbDiff">
-              <small data-i18n="Gefahr">Gefahr</small><b id="lbDiffTxt">Abenteuer</b>
+              <small data-i18n="Gefahr">Gefahr</small
+              ><b id="lbDiffTxt">Abenteuer</b>
             </button>
           </div>
           <button class="lb-go" id="lbPlay">
             <span id="lbPlayTxt">Spielen</span>
           </button>
-          <button class="ghost lb-new" id="lbNew" data-i18n="Neue Welt">Neue Welt</button>
+          <button class="ghost lb-new" id="lbNew" data-i18n="Neue Welt">
+            Neue Welt
+          </button>
         </div>
+        <div class="lb-version" id="lbVersion"></div>
       </div>
     </div>
     <script type="module" src="/src/main.js"></script>

@@ -7,13 +7,17 @@
   grid-template-columns: auto 1fr auto;
   grid-template-rows: auto 1fr auto;
   grid-template-areas:
-    'top top top'
-    'side stage play'
-    'road stage play';
+    "top top top"
+    "side stage play"
+    "road stage play";
   gap: 8px 12px;
-  padding: max(10px, env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px))
-    max(10px, env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px));
-  background: radial-gradient(ellipse at 50% 55%, #3f7fe0 0%, #2549a8 45%, #15265e 100%), #15265e;
+  padding: max(10px, env(safe-area-inset-top, 0px))
+    max(14px, env(safe-area-inset-right, 0px))
+    max(10px, env(safe-area-inset-bottom, 0px))
+    max(14px, env(safe-area-inset-left, 0px));
+  background:
+    radial-gradient(ellipse at 50% 55%, #3f7fe0 0%, #2549a8 45%, #15265e 100%),
+    #15265e;
   font-family: var(--font-display);
   color: #fff;
   overflow: hidden;
@@ -21,7 +25,7 @@
 }
 #lobby::before {
   /* soft rays behind the stage */
-  content: '';
+  content: "";
   position: absolute;
   inset: -40%;
   background: repeating-conic-gradient(
@@ -169,7 +173,7 @@
   background: linear-gradient(#ffcf4a, #e89a1c);
 }
 .alert::after {
-  content: '!';
+  content: "!";
   position: absolute;
   top: -8px;
   right: -8px;
@@ -322,10 +326,10 @@
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto 1fr auto auto;
     grid-template-areas:
-      'top top'
-      'stage stage'
-      'side play'
-      'road play';
+      "top top"
+      "stage stage"
+      "side play"
+      "road play";
   }
   .lb-side {
     display: grid;
@@ -507,7 +511,7 @@
 }
 
 .lb-row .lb-mode b {
-  font-size: 15px;
+  font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -515,10 +519,11 @@
 
 .lb-version {
   position: absolute !important;
-  right: 14px;
-  bottom: 4px;
+  left: 50%;
+  bottom: max(2px, env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
   font-family: var(--font-ui);
   font-size: 10px;
-  opacity: 0.6;
+  color: rgba(255, 255, 255, 0.75);
   pointer-events: none;
 }
