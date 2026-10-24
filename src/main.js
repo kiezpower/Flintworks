@@ -506,7 +506,8 @@ menu();
 requestAnimationFrame(loop);
 
 // Offline mode for the web version; the Android app ships its files itself
-if (!window.Capacitor && 'serviceWorker' in navigator && !import.meta.env.DEV) {
+// (window.Capacitor exists on the web too, since the core is bundled: ask for the platform)
+if (!window.Capacitor?.isNativePlatform?.() && 'serviceWorker' in navigator && !import.meta.env.DEV) {
   import('virtual:pwa-register').then(({ registerSW }) => {
     const update = registerSW({
       immediate: true,

@@ -738,3 +738,9 @@ button:focus-visible {
   transform: translateX(-50%);
   z-index: 40;
 }
+.install-steps {
+  margin: 4px 0 8px;
+  padding-left: 22px;
+  line-height: 1.6;
+  text-align: left;
+}

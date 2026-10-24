@@ -2,6 +2,26 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'Als App installieren': 'Install as an app',
+  'Startbildschirm, Vollbild, offline': 'Home screen, full screen, offline',
+  'Mit Symbol auf dem Startbildschirm, im Vollbild und auch ohne Internet spielbar.':
+    'With an icon on your home screen, in full screen and playable without internet.',
+  'Ein Tipp genügt': 'One tap is enough',
+  'So geht es': 'How it works',
+  'Jetzt installieren': 'Install now',
+  'Kostenlos, ohne App-Store': 'Free, no app store needed',
+  Später: 'Later',
+  'Nicht mehr fragen': "Don't ask again",
+  'Flintworks ist jetzt als App installiert': 'Flintworks is now installed as an app',
+  'Tippe in Safari auf „Teilen“ (Quadrat mit Pfeil nach oben)':
+    'In Safari tap “Share” (the square with the arrow pointing up)',
+  'Wähle „Zum Home-Bildschirm“': 'Choose “Add to Home Screen”',
+  'Tippe auf „Hinzufügen“ – Flintworks liegt jetzt als App auf deinem Home-Bildschirm':
+    'Tap “Add” – Flintworks is now an app on your home screen',
+  'Öffne das Browsermenü (⋮ oben rechts)': 'Open the browser menu (⋮ top right)',
+  'Wähle „App installieren“ oder „Zum Startbildschirm hinzufügen“': 'Choose “Install app” or “Add to Home screen”',
+  'Klicke in der Adressleiste auf das Installieren-Symbol oder im Browsermenü auf „App installieren“':
+    'Click the install icon in the address bar or “Install app” in the browser menu',
   Forschung: 'Research',
   Mechanik: 'Mechanics',
   Metallurgie: 'Metallurgy',

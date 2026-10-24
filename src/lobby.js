@@ -1,5 +1,6 @@
 import { GAME_MODES, MODE_IDS, mode } from './modes.js';
 import { campaignPanel, totalStars } from './scenarios.js';
+import { canInstall, offerInstall, openInstall } from './install.js';
 // Lobby between games: the player's Wühler on a stage, resources on top, menus left, play button right.
 import { BIOMES } from './biomes.js';
 import './lobby.css';
@@ -29,12 +30,12 @@ function checkUpdate() {
       const a = $('updateLink');
       a.textContent = tr('Neue Version v{v} verfügbar – tippen', { v: version });
       // the Android app gets a new APK, the web version simply reloads
-      a.href = window.Capacitor
+      a.href = window.Capacitor?.isNativePlatform?.()
         ? 'https://github.com/kiezpower/Flintworks/releases/latest'
         : location.pathname + '?v=' + version;
       a.hidden = false;
       // web: drop the offline copy completely so the new version really loads
-      if (!window.Capacitor)
+      if (!window.Capacitor?.isNativePlatform?.())
         a.onclick = async e => {
           e.preventDefault();
           try {
@@ -334,6 +335,12 @@ function openOptions() {
       openOptions();
     },
   });
+  if (canInstall())
+    opt(l, {
+      title: tr('Als App installieren'),
+      sub: tr('Startbildschirm, Vollbild, offline'),
+      onClick: openInstall,
+    });
   opt(l, {
     title: tr('Tutorial spielen'),
     sub: tr('Neue Welt mit Anleitung'),
@@ -435,6 +442,7 @@ function showLobby(h) {
     placeOverlay();
   });
   refresh();
+  offerInstall();
 }
 function hideLobby() {
   el.hidden = true;
