@@ -6,7 +6,7 @@ import { clonkOf, consumeEdges, setInput } from '../players.js';
 import { G } from '../state.js';
 import { onGameMsg, sendTo } from './room.js';
 import { KINDS, packGame } from './sync.js';
-import { resetSent, takeChunks } from './terrain.js';
+import { allChunks, resetSent, takeChunks } from './terrain.js';
 
 const last = {}; // kind → Map(id → last sent JSON)
 let lastGame = null,
@@ -60,7 +60,10 @@ function hostTick() {
     const c = takeChunks(G.frame);
     if (c.length) sendTo('all', { k: 'ter', c });
   }
-  if (G.frame % 4 === 0) sendSnapshot(G.frame % 120 === 0);
+  if (G.frame % 4 === 0) {
+    sendSnapshot(G.frame % 120 === 0 || G.netKey);
+    G.netKey = false;
+  }
 }
 // only what changed: per entity the fields that differ from what was sent last time
 // (new entities and every 2 s a keyframe go out complete)
@@ -113,4 +116,17 @@ function hostEnd(won) {
   if (G.netHost) sendTo('all', { k: 'end', won });
 }
 
-export { hostEnd, hostTick, startHost, stopHost };
+// a player joins late or comes back: same world, the whole landscape, then a full snapshot
+function welcome(pid, start) {
+  sendTo(pid, { ...start, k: 'start', late: true });
+  sendTo(pid, { k: 'ter', c: allChunks() });
+  G.netKey = true;
+}
+
+// a new host sends its landscape to everybody once, so all start from the same ground
+function sendWorld() {
+  sendTo('all', { k: 'ter', c: allChunks() });
+  G.netKey = true;
+}
+
+export { hostEnd, hostTick, sendWorld, startHost, stopHost, welcome };

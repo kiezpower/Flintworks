@@ -16,7 +16,8 @@ import { KINDS, MOVING, applyGame } from './sync.js';
 import { applyChunks } from './terrain.js';
 
 let seq = 0,
-  gameRaw = {};
+  gameRaw = {},
+  lastSnap = 0;
 const raw = {}; // kind → Map(id → last full data from the host)
 const hist = []; // own predicted positions per input number: {sq, x, y}
 const pend = { j: false, ju: false, t: false, a: false }; // button presses since the last send
@@ -29,14 +30,21 @@ function startClient() {
   hist.length = 0;
   seq = 0;
   gameRaw = {};
+  lastSnap = performance.now();
   for (const k in raw) delete raw[k];
 }
 function stopClient() {
   G.netClient = false;
 }
 
-onGameMsg('snap', d => G.netClient && applySnap(d));
-onGameMsg('ter', d => G.netClient && applyChunks(d.c));
+onGameMsg('snap', d => {
+  if (!G.netClient) return;
+  lastSnap = performance.now();
+  applySnap(d);
+});
+onGameMsg('ter', d => {
+  if (G.netClient) applyChunks(d.c);
+});
 onGameMsg('toast', d => toast(d.key, d.params));
 onGameMsg('end', d => G.netClient && G.onNetEnd?.(d.won));
 
@@ -133,6 +141,8 @@ function clientStep(paused) {
     }
     sendInput(me);
     ease();
+    // nothing from the host for a while (app in the background, dead spot)
+    if (performance.now() - lastSnap > 3000 && G.frame % 180 === 0) toast('Warte auf den Host …');
     updFloats();
   }
   if (!paused) {

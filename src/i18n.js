@@ -2,6 +2,7 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'Warte auf den Host …': 'Waiting for the host …',
   Name: 'Name',
   'Tippen zum Ändern': 'Tap to change',
   'Wie heißt dein Wühler?': 'What is your digger called?',

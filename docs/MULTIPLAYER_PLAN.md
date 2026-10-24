@@ -188,7 +188,7 @@ GitHub Pages liefert nur statische Dateien. Signaling und Relay müssen deshalb 
 | **2 Host-autoritativ** ✅ v1.5.0 | Host simuliert, der Freund gräbt, beide sehen dieselben Löcher, Items und Helfer | `net/host.js`, `net/client.js`, `net/terrain.js`, `main.js` | 2–3 Tage | Bandbreite bei Wasser. Wie sich die Vorhersage anfühlt. |
 | **3 Lobby und Einladen** ✅ v1.6.0 | Freunde erscheinen in den „+“-Plätzen, Bereit-Haken, gemeinsamer Start, Link öffnet den Raum | `net/room.js`, `lobby.js`, `lobbyscene.js`, `lobby.css`, `i18n.js` | 1 Tag | – |
 | **4 Koop** | Gemeinsame Kasse und gemeinsames Lager, jeder steuert Helfer, Mitspieler auf der Minikarte, Namen über den Köpfen, Emotes (👋 ⛏ 🆘) | `players.js`, `ui.js`, `crewui.js`, `render.js`, `modes.js` | 1–1,5 Tage | UI-Platz auf kleinen Handys |
-| **5 Robustheit** | Funkloch und Hintergrund überstehen, Reconnect, Host-Wechsel, Join im laufenden Spiel | `net/*`, `server/relay.js`, `save.js` | 2 Tage | Host-Wechsel ist der heikelste Teil. Vorher manuell mit 3 Geräten testen. |
+| **5 Robustheit** ✅ v1.7.0 | Funkloch und Hintergrund überstehen, Reconnect, Host-Wechsel, Join im laufenden Spiel | `net/*`, `server/relay.js`, `save.js` | 2 Tage | Host-Wechsel ist der heikelste Teil. Vorher manuell mit 3 Geräten testen. |
 | **6 Versus** | 1:1 und 2:2 mit getrennten Basen, Kassen und Helfern, Siegerbildschirm | `players.js`, `gen.js`, `modes.js`, `store.js`, `buildings.js`, `helpers.js`, `ui.js` | 2 Tage | Balance zwischen den Basen. Weltbreite reicht nur für 2 Basen. |
 | **7 Android und Feinschliff** | `flintworks://`-Links öffnen die App, Datenanzeige, Verbindungsqualität im HUD | `AndroidManifest.xml`, `main.js`, `net/room.js` | 0,5–1 Tag | App Links nur mit eigenem `kiezpower.github.io`-Repo |
 

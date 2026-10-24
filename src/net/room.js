@@ -125,6 +125,18 @@ async function shareInvite(text) {
   }
 }
 
+// app in the background: hang up (saves battery; as host the others get a new host after a
+// few seconds) and come back into the room when the app is open again
+document.addEventListener('visibilitychange', () => {
+  if (!NET.room) return;
+  if (document.hidden) disconnect();
+  else {
+    NET.status = 'connecting';
+    changed();
+    connect(enter);
+  }
+});
+
 // ?room=CODE in the address: someone invited us – join right away
 const fromUrl = new URLSearchParams(location.search).get('room');
 if (fromUrl && /^[A-Z0-9]{6}$/i.test(fromUrl)) joinRoom(fromUrl);

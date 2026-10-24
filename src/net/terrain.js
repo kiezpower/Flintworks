@@ -128,4 +128,11 @@ function applyChunks(list) {
   for (let k = 0; k < list.length; k += 2) decodeChunk(list[k], list[k + 1]);
 }
 
-export { applyChunks, resetSent, takeChunks };
+// the whole landscape (for a player who joins late or comes back)
+function allChunks() {
+  const out = [];
+  for (let c = 0; c < CWn * CHn; c++) out.push(c, encodeChunk(c));
+  return out;
+}
+
+export { allChunks, applyChunks, resetSent, takeChunks };
