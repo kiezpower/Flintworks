@@ -92,7 +92,7 @@ const digAtPx = (x, y) => diggable(mat[Math.floor(y) * W + Math.floor(x)]);
 // the dig direction. Clearing the whole body outline means no corner of earth is left
 // that could catch head or feet. slope = height change per pixel forward (same up and down).
 // effective steepness ends up the same both ways (gravity pulls down, stepping up is slower)
-const SLOPE_DOWN = 0.28,
+const SLOPE_DOWN = 0.12,
   SLOPE_UP = 0.38;
 function strokeCells(c, dir, slope, fn, ahead = 4) {
   const ox = c.x + dir * ahead,
@@ -149,17 +149,19 @@ function wantsDig(c, I) {
     for (let dy = 1; dy <= 4 && !ceiling; dy++)
       for (const dx of [1, 3, 5]) if (digAtPx(c.x + dx, c.y - dy)) ceiling = true;
     // keep digging upwards once started, and dig instead of climbing up an earth wall
-    const go = ceiling || c.digging || (c.climb && Math.abs(I.ax) > 0.3);
+    const wall = Math.abs(I.ax) > 0.3 && !free(c.x + dir * 0.7, c.y, 6, 10) && !free(c.x + dir * 0.7, c.y - 3, 6, 10);
+    const go = ceiling || c.digging || wall || (c.climb && Math.abs(I.ax) > 0.3);
     if (go && (hold || c.digging) && digZone(c, dir, -SLOPE_UP, 4) >= (c.digging ? 1 : 3)) return 'up';
     // no way up here: pushing up and sideways into a wall still digs sideways
-    if (Math.abs(I.ax) < 0.5) return false;
+    if (Math.abs(I.ax) < 0.35) return false;
   }
   // keep going while the last stroke still finds earth (no flicker on/off)
   const need = c.digging ? 1 : 3;
   if (I.ay > 0.4) return grounded && !c.hangle && digZone(c, dir, SLOPE_DOWN, 99) >= need;
-  if (Math.abs(I.ax) > 0.5 && hold) {
-    // a real wall (not a small step the Wühler simply walks up): earth above the feet
-    return digZone(c, dir, 0, 6) >= (c.digging ? 2 : 8) ? 'side' : false;
+  if (Math.abs(I.ax) > 0.35 && hold) {
+    // dig when the way is blocked (a wall or a ledge too high to step onto), or keep going
+    const blocked = !free(c.x + dir * 0.7, c.y, 6, 10) && !free(c.x + dir * 0.7, c.y - 3, 6, 10);
+    if (blocked || c.digging) return digZone(c, dir, 0, 9) >= 2 ? 'side' : false;
   }
   return false;
 }
@@ -463,7 +465,8 @@ function updClonk(c, I) {
       hurt(c, d);
       if (fallV > 4.4) startTumble(c, c.vx, -0.8);
       else sfx('thud', c.x, c.y);
-    } else if (fallV < -1 && !inLiq && !boxFree(c.x, c.y - 1, 6, 1)) {
+    } else if (G.climbOn && fallV < -1 && !inLiq && !boxFree(c.x, c.y - 1, 6, 1)) {
+      // hanging from ceilings and climbing walls are optional (off by default)
       c.hangle = true;
       c.vx = c.vy = 0;
       return;
@@ -471,7 +474,7 @@ function updClonk(c, I) {
     c.vy = 0;
   }
   if (bx) {
-    if (!inLiq && Math.abs(I.ax) > 0.3) {
+    if (G.climbOn && !inLiq && Math.abs(I.ax) > 0.3) {
       c.climb = true;
       c.face = Math.sign(I.ax);
     }

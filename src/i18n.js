@@ -2,6 +2,9 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  'Klettern an': 'Climbing on',
+  'Klettern aus': 'Climbing off',
+  'An Wänden hochklettern und an Decken hängen': 'Climb up walls and hang from ceilings',
   'Grafik: fein': 'Graphics: detailed',
   'Grafik: schnell': 'Graphics: fast',
   'Schnell läuft flüssiger auf älteren Handys': 'Fast runs smoother on older phones',

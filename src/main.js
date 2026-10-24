@@ -90,6 +90,8 @@ function startGame(withTutorial = false) {
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   crew[0] && Object.assign(crew[0], { hat: P.hat, cap: P.cap });
   G.autoDig = P.autodig !== false;
+  G.climbOn = !!P.climbing;
+  if (!G.climbOn) for (const c of crew) c.climb = c.hangle = false;
   const res = P.gfx === 'low' || new URLSearchParams(location.search).get('res') === '1' ? 1 : 2;
   if (res !== G.res) {
     G.res = res;
@@ -149,7 +151,7 @@ $('miniThumb').addEventListener('click', toggleMap);
 function openMenu() {
   if (G.state !== 'play') return;
   const p = openPanel('Menü');
-  const l = sec(p, 'Spiel');
+  const l = sec(p, tr('Spiel') + ' · v' + __APP_VERSION__);
   const item = (title, sub, fn) => opt(l, { title: tr(title), sub: sub ? tr(sub) : '', short: true, onClick: fn });
   item('Karte', 'Die ganze Welt', () => {
     closePanel();
@@ -178,6 +180,13 @@ function openMenu() {
     P.gfx = G.res === 2 ? 'high' : 'low';
     saveProfile();
     resize();
+    openMenu();
+  });
+  item(G.climbOn ? 'Klettern an' : 'Klettern aus', 'An Wänden hochklettern und an Decken hängen', () => {
+    P.climbing = !G.climbOn;
+    G.climbOn = P.climbing;
+    if (!G.climbOn) for (const c of crew) c.climb = c.hangle = false;
+    saveProfile();
     openMenu();
   });
   item('Lobby', 'Spiel speichern und zur Lobby', () => $('newBtn').click());

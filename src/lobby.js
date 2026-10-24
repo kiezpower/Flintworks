@@ -12,6 +12,7 @@ import { G } from './state.js';
 import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
 
 const el = $('lobby');
+$('lbVersion').textContent = 'v' + __APP_VERSION__;
 const cv = $('lbCv'),
   g = cv.getContext('2d');
 const MODES = ['random', 'meadow', 'desert', 'winter'];
@@ -284,6 +285,16 @@ function openOptions() {
     onClick: () => {
       P.autodig = P.autodig === false;
       G.autoDig = P.autodig;
+      saveProfile();
+      openOptions();
+    },
+  });
+  opt(l, {
+    title: tr(P.climbing ? 'Klettern an' : 'Klettern aus'),
+    sub: tr('An Wänden hochklettern und an Decken hängen'),
+    onClick: () => {
+      P.climbing = !P.climbing;
+      G.climbOn = P.climbing;
       saveProfile();
       openOptions();
     },

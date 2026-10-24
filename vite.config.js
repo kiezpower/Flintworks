@@ -1,8 +1,13 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { readFileSync } from 'node:fs';
+
+// version shown in the lobby and menu: bump it in package.json with every change
+const VERSION = JSON.parse(readFileSync(new URL('./package.json', import.meta.url))).version;
 
 export default defineConfig({
   base: './',
+  define: { __APP_VERSION__: JSON.stringify(VERSION) },
   plugins: [
     VitePWA({
       injectRegister: null,
