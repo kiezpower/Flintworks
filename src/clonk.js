@@ -92,16 +92,19 @@ const digAtPx = (x, y) => diggable(mat[Math.floor(y) * W + Math.floor(x)]);
 // the dig direction. Clearing the whole body outline means no corner of earth is left
 // that could catch head or feet. slope = height change per pixel forward (same up and down).
 // effective steepness ends up the same both ways (gravity pulls down, stepping up is slower)
-const SLOPE_DOWN = 0.42,
-  SLOPE_UP = 0.9;
+const SLOPE_DOWN = 0.28,
+  SLOPE_UP = 0.38;
 function strokeCells(c, dir, slope, fn, ahead = 4) {
   const ox = c.x + dir * ahead,
     oy = c.y + slope * ahead;
-  const x0 = Math.floor(ox - 0.5),
-    x1 = Math.ceil(ox + 6.5),
-    y0 = Math.floor(oy - 1),
-    // going straight, the floor below the feet stays
-    y1 = slope === 0 ? Math.floor(c.y + 9.5) : Math.ceil(oy + 9.5);
+  // the box sweeps from where the body is now to where it will be, so nothing between
+  // the two positions (above the head when going up, below the feet when going down) is left
+  // (sideways only when going up: digging down, the floor under the current position stays)
+  const x0 = Math.floor((slope < 0 ? Math.min(c.x, ox) : ox) - 0.5),
+    x1 = Math.ceil((slope < 0 ? Math.max(c.x, ox) : ox) + 6.5),
+    y0 = Math.floor(Math.min(c.y, oy) - 1),
+    // going straight or up, the floor below the feet stays
+    y1 = slope <= 0 ? Math.floor(c.y + 9.5) : Math.ceil(Math.max(c.y, oy) + 9.5);
   for (let y = y0; y <= y1; y++)
     for (let x = x0; x <= x1; x++) {
       // round the corners a little so tunnels look dug, not cut
@@ -147,11 +150,13 @@ function wantsDig(c, I) {
       for (const dx of [1, 3, 5]) if (digAtPx(c.x + dx, c.y - dy)) ceiling = true;
     // keep digging upwards once started, and dig instead of climbing up an earth wall
     const go = ceiling || c.digging || (c.climb && Math.abs(I.ax) > 0.3);
-    return go && hold && digZone(c, dir, -SLOPE_UP, 4) >= (c.digging ? 1 : 3) ? 'up' : false;
+    if (go && (hold || c.digging) && digZone(c, dir, -SLOPE_UP, 4) >= (c.digging ? 1 : 3)) return 'up';
+    // no way up here: pushing up and sideways into a wall still digs sideways
+    if (Math.abs(I.ax) < 0.5) return false;
   }
   // keep going while the last stroke still finds earth (no flicker on/off)
   const need = c.digging ? 1 : 3;
-  if (I.ay > 0.6) return grounded && !c.hangle && digZone(c, dir, SLOPE_DOWN, 99) >= need;
+  if (I.ay > 0.4) return grounded && !c.hangle && digZone(c, dir, SLOPE_DOWN, 99) >= need;
   if (Math.abs(I.ax) > 0.5 && hold) {
     // a real wall (not a small step the Wühler simply walks up): earth above the feet
     return digZone(c, dir, 0, 6) >= (c.digging ? 2 : 8) ? 'side' : false;
