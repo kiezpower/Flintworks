@@ -14,6 +14,7 @@ import { drawTutorial } from './tutorial.js';
 import { arrows, lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
 import { isPlayer } from './players.js';
+import { drawEmotes } from './net/emotes.js';
 import { topSolid } from './gen.js';
 import { game, joyHome } from './input.js';
 import { ICOL, SPR, drawHi, drawItemBig } from './sprites.js';
@@ -577,6 +578,7 @@ function render() {
   }
   drawGoal(ctx, cx, cy);
   drawBubbles(ctx, cx, cy);
+  drawEmotes(ctx, cx, cy);
   drawFloats(ctx, cx, cy);
   drawTutorial(ctx, cx, cy);
 }

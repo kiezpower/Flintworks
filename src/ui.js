@@ -256,8 +256,15 @@ function drawMini(full) {
       }
   crew.forEach((c, n) => {
     if (c.dead) return;
+    const px = Math.floor(c.x / K),
+      py = Math.floor(c.y / K);
+    // players (you in white) a bit bigger than helpers
+    if (isPlayer(c)) {
+      mctx.fillStyle = '#24160c';
+      mctx.fillRect(px - 2, py - 2, 6, 6);
+    }
     mctx.fillStyle = c === sel_() ? '#ffffff' : c.cap;
-    mctx.fillRect(Math.floor(c.x / K) - 1, Math.floor(c.y / K) - 1, 4, 4);
+    mctx.fillRect(px - 1, py - 1, 4, 4);
   });
   // the small always-visible map in the corner
   tctx.imageSmoothingEnabled = true;

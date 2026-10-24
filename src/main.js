@@ -46,6 +46,7 @@ import { NET, inRoom, onGameMsg, sendTo } from './net/room.js';
 import { beginNet, endNet, startMessage } from './net/session.js';
 import { clientStep } from './net/client.js';
 import { hostEnd, hostTick } from './net/host.js';
+import { updEmoBtn } from './net/emotes.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
 import { H, W, clamp, surf } from './world.js';
@@ -427,7 +428,10 @@ function loop(t) {
     );
   }
   G.tick++;
-  if (G.tick % 5 === 0) hud();
+  if (G.tick % 5 === 0) {
+    hud();
+    updEmoBtn();
+  }
   if (G.tick % 10 === 0) drawMini(G.tick % 60 === 0);
   requestAnimationFrame(loop);
 }

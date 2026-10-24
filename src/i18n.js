@@ -2,6 +2,14 @@
 // Placeholders: {name} is filled from the params object.
 const EN = {
   // lobby and profile
+  Zuruf: 'Call',
+  'Alle sehen es über deinem Wühler': 'Everybody sees it over your digger',
+  'Hallo!': 'Hello!',
+  'Hier graben!': 'Dig here!',
+  'Gold gefunden!': 'Found gold!',
+  'Hilfe!': 'Help!',
+  'Gut gemacht!': 'Well done!',
+  'Zur Basis!': 'Back to base!',
   'Warte auf den Host …': 'Waiting for the host …',
   Name: 'Name',
   'Tippen zum Ändern': 'Tap to change',
