@@ -76,7 +76,8 @@
 }
 .lb-logo {
   display: grid;
-  padding: 4px 14px 6px;
+  position: relative;
+  padding: 4px 10px 6px;
   background: linear-gradient(var(--wood-hi), var(--wood) 50%, var(--wood-lo));
   border: 3px solid var(--line);
   border-radius: 4px 4px 12px 12px;
@@ -92,6 +93,12 @@
     -1px -1px 0 #ffe9a0;
 }
 .lb-version {
+  position: absolute;
+  left: 100%;
+  bottom: 4px;
+  margin-left: 8px;
+  white-space: nowrap;
+  text-shadow: 1px 1px 0 var(--line);
   font-family: var(--font-ui);
   font-size: 10px;
   color: var(--parch);

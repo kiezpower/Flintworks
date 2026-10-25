@@ -70,6 +70,17 @@ function sfx(n, x, y, k = 1) {
       tn(t, 'square', 1500 + rnd() * 400, 900, 0.03, 0.035 * v);
       nz(t, 0.05, 3500, 1800, 0.08 * v, 'bandpass');
       break;
+    case 'click':
+      tn(t, 'square', 700, 520, 0.04, 0.03);
+      break;
+    case 'open':
+      tn(t, 'square', 440, 440, 0.05, 0.03);
+      tn(t + 0.05, 'square', 660, 660, 0.07, 0.03);
+      break;
+    case 'close':
+      tn(t, 'square', 600, 600, 0.05, 0.03);
+      tn(t + 0.05, 'square', 400, 400, 0.07, 0.03);
+      break;
     case 'ting':
       tn(t, 'triangle', 1760 + rnd() * 300, 2400, 0.09, 0.05 * v);
       break;

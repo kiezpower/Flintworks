@@ -35,6 +35,7 @@ import { cam, render, resize } from './render.js';
 import { clearSave, hasSave, loadGame, saveGame } from './save.js';
 import { simulate } from './sim.js';
 import { audioInit, sfx } from './sound.js';
+import { initUiArt } from './uiart.js';
 import { G, animals, builds, crew, lorries } from './state.js';
 import {
   $,
@@ -526,3 +527,13 @@ if (ownWeb() && 'serviceWorker' in navigator && !import.meta.env.DEV) {
 if (import.meta.env.DEV) import('./debug.js');
 
 export { card, endScreen, loop, menu, overlay, resetCam, startGame, step };
+
+initUiArt();
+// every button gets a soft click
+document.addEventListener(
+  'click',
+  e => {
+    if (e.target.closest && e.target.closest('button')) sfx('click');
+  },
+  true,
+);
