@@ -288,7 +288,7 @@ function render() {
   drawLavaGlow(ctx);
   drawWaterGlints(ctx);
   drawGemSparkles(ctx);
-  drawFireflies(ctx, cx, cy, dark);
+  if (G.res === 2) drawFireflies(ctx, cx, cy, dark);
   // pump pipes
   for (const b of builds)
     if (b.type === 'pump' && b.done && b.pipe) {
@@ -597,23 +597,25 @@ function render() {
     if (dark > 0.02) drawWindowGlow(ctx, cx, cy, dark);
   }
   // warm light on top: lamps below ground, lava and working furnaces
-  beginGlow(ctx);
-  for (const c of crew) {
-    const d = c.dead ? 0 : Math.max(dark, depthAt(c.x, c.y));
-    if (d > 0.05)
-      warmGlow(
-        ctx,
-        c.x + 3 - cx,
-        c.y + 4 - cy,
-        isPlayer(c) ? 26 : 14,
-        d * 0.32 * (0.9 + Math.sin(G.frame * 0.2 + n0(c)) * 0.1),
-      );
+  if (G.res === 2) {
+    beginGlow(ctx);
+    for (const c of crew) {
+      const d = c.dead ? 0 : Math.max(dark, depthAt(c.x, c.y));
+      if (d > 0.05)
+        warmGlow(
+          ctx,
+          c.x + 3 - cx,
+          c.y + 4 - cy,
+          isPlayer(c) ? 26 : 14,
+          d * 0.32 * (0.9 + Math.sin(G.frame * 0.2 + n0(c)) * 0.1),
+        );
+    }
+    for (let k = 0; k < lava.length; k += 6) warmGlow(ctx, lava[k], lava[k + 1], 12, 0.22);
+    for (const b of builds)
+      if (b.done && b.busy && (b.type === 'furnace' || b.type === 'shop'))
+        warmGlow(ctx, b.x + b.w / 2 - cx, b.gy - b.h / 2 - cy, 18, 0.3 + ((G.frame >> 3) & 1) * 0.06);
+    endGlow(ctx);
   }
-  for (let k = 0; k < lava.length; k += 6) warmGlow(ctx, lava[k], lava[k + 1], 12, 0.22);
-  for (const b of builds)
-    if (b.done && b.busy && (b.type === 'furnace' || b.type === 'shop'))
-      warmGlow(ctx, b.x + b.w / 2 - cx, b.gy - b.h / 2 - cy, 18, 0.3 + ((G.frame >> 3) & 1) * 0.06);
-  endGlow(ctx);
   drawVignette(ctx);
   drawGoal(ctx, cx, cy);
   drawBubbles(ctx, cx, cy);

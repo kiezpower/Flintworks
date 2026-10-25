@@ -41,7 +41,7 @@ function frameUrl() {
 }
 
 // The word in the display font, thresholded to crisp pixels, then outlined, shaded and sparkled.
-function drawLogo(text, size = 20) {
+function drawLogo(text, size = 24) {
   const src = document.createElement('canvas'),
     sc = src.getContext('2d', { willReadFrequently: true });
   src.width = 20 * size;
@@ -111,7 +111,7 @@ function initUiArt() {
   document.documentElement.style.setProperty('--frame', `url(${frameUrl()})`);
   const title = document.getElementById('lbTitle');
   if (!title || !document.fonts) return;
-  document.fonts.load('700 20px "Pixelify Sans"').then(() => {
+  document.fonts.load('700 24px "Pixelify Sans"').then(() => {
     const cv = drawLogo(title.textContent);
     cv.className = 'lb-logo-art';
     cv.setAttribute('aria-hidden', 'true');
