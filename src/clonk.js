@@ -200,7 +200,17 @@ function digCell(x, y) {
     // the steel pick chips slowly through rock
     if (!hasTool('pick') || rnd() > 0.3) return;
   } else if (m !== EARTH && m !== SAND && m !== GOLD && m !== LOAM && m !== ORE && m !== COAL && m !== GEM) return;
-  if (rnd() < 0.06) parts.push({ x, y, vx: (rnd() - 0.5) * 1.2, vy: -rnd(), l: 20, c: CRUMB[m] });
+  if (rnd() < 0.14)
+    parts.push({
+      x,
+      y,
+      vx: (rnd() - 0.5) * 1.4,
+      vy: -rnd() * 1.2,
+      l: 20 + rnd() * 10,
+      c: CRUMB[m],
+      s: rnd() < 0.3 ? 2 : 1,
+    });
+  if (m === ROCK) G.shake = Math.max(G.shake, 0.8);
   if (m === GOLD) {
     G.goldDust++;
     if (rnd() < 0.25) parts.push({ x, y, vx: (rnd() - 0.5) * 1.2, vy: -rnd() * 1.4, l: 25, c: '#ffe066' });
@@ -469,6 +479,7 @@ function updClonk(c, I) {
   }
   const fallV = c.vy;
   const [bx, by] = moveBody(c, c.vx, c.vy, onG ? 3 : 0);
+  if (by && fallV > 1.6) c.sqT = G.frame;
   if (by && fallV > 2.4) dust(c.x, c.y + 9, Math.round(fallV * 2), '#b89a76');
   if (by) {
     if (fallV > 3.9) {
