@@ -68,6 +68,27 @@ const tint = (c, f) => {
   const ch = s => Math.min(255, Math.round(((c >>> s) & 255) * f)) << s;
   return (((c >>> 24) << 24) | ch(16) | ch(8) | ch(0)) >>> 0;
 };
+// Soil changes character with depth: warm and reddish just below the grass, cooler and greyer
+// further down, a blue-ish cast in the deepest layers. Only earth, loam and rock take part.
+const mixf = (a, b, t) => a + (b - a) * t,
+  cl01 = v => (v < 0 ? 0 : v > 1 ? 1 : v);
+function layerTint(c, d) {
+  if (d < 10) return c;
+  const t1 = cl01((d - 10) / 30),
+    t2 = cl01((d - 50) / 50),
+    t3 = cl01((d - 110) / 60);
+  let r = mixf(1, 1.05, t1),
+    g = mixf(1, 0.96, t1),
+    b = mixf(1, 0.88, t1);
+  r = mixf(r, 0.88, t2);
+  g = mixf(g, 0.9, t2);
+  b = mixf(b, 1.0, t2);
+  r = mixf(r, 0.8, t3);
+  g = mixf(g, 0.82, t3);
+  b = mixf(b, 0.98, t3);
+  const ch = (s, k) => Math.min(255, Math.round(((c >>> s) & 255) * k)) << s;
+  return (((c >>> 24) << 24) | ch(16, b) | ch(8, g) | ch(0, r)) >>> 0;
+}
 const PAL_LIT = PAL.map(a => a.map(c => tint(c, 1.2)));
 const PAL_DARK = PAL.map(a => a.map(c => tint(c, 0.72)));
 // the top layer of earth (shade 4-7) depends on the world type
@@ -110,6 +131,7 @@ function texel(i, sx, sy) {
   const tex = m === EARTH && shade[i] & 4 ? topTex() : TEX[m];
   let c = tex ? tex[ti] : PAL[m][shade[i] & 3];
   if (tex) c = tint(c, WSH[i]);
+  if ((m === EARTH && !(shade[i] & 4)) || m === LOAM || m === ROCK) c = layerTint(c, ((i / W) | 0) - surf[i % W]);
   if (LIQ[m]) {
     // a bright line on open liquid surfaces
     if (sy === 0 && i >= W && mat[i - W] === AIR) c = tint(c, 1.35);

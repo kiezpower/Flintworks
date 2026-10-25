@@ -11,8 +11,18 @@ import { drawBeams, drawBubbles, drawMark } from './mine.js';
 import { drawFloats } from './floats.js';
 import { drawDecor } from './decor.js';
 import { biome } from './biomes.js';
-import { beginGlow, depthAt, depthShade, drawVignette, endGlow, warmGlow } from './light.js';
-import { drawFireflies, drawGemSparkles, drawLavaGlow, drawWaterGlints, scanLava } from './effects.js';
+import {
+  beginGlow,
+  lightHole,
+  depthAt,
+  depthShade,
+  drawVignette,
+  duskGrade,
+  endGlow,
+  skyGlow,
+  warmGlow,
+} from './light.js';
+import { drawFireflies, drawGemSparkles, drawLavaGlow, drawWaterGlints, oreSpots, scanLava } from './effects.js';
 import { drawTutorial } from './tutorial.js';
 import { arrows, lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
@@ -25,7 +35,7 @@ import { topSolid } from './gen.js';
 import { game, joyHome } from './input.js';
 import { ICOL, SPR, drawHi, drawItemBig } from './sprites.js';
 import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
-import { darkness, skyCols } from './weather.js';
+import { darkness, skyCols, sunAlt } from './weather.js';
 import { H, W, clamp, flush, rnd, wc } from './world.js';
 
 // ---- Rendering ----
@@ -35,7 +45,7 @@ const lc = document.createElement('canvas'),
   lctx = lc.getContext('2d');
 G.VW = 200;
 G.VH = 120;
-const cam = { x: 0, y: 0 };
+const cam = { x: 0, y: 0, lx: 0, ly: 0 };
 const stars = [...Array(70)].map(() => ({ x: rnd(), y: rnd() * 0.6, b: rnd() }));
 G.terrEdges = [];
 function calcTerr() {
@@ -215,8 +225,13 @@ function render() {
     fy = s ? s.y + 5 : H / 2;
   const tx = clamp(fx - G.VW / 2, 0, W - G.VW),
     ty = clamp(fy - G.VH / 2, 0, H - G.VH);
-  cam.x += (tx - cam.x) * 0.12;
-  cam.y += (ty - cam.y) * 0.12;
+  // look a little ahead in the walking direction and down while falling
+  const lx = s ? clamp(s.vx * 9, -14, 14) : 0,
+    ly = s ? clamp(s.vy, 0, 4.5) * 4 : 0;
+  cam.lx += (lx - cam.lx) * 0.04;
+  cam.ly += (ly - cam.ly) * 0.08;
+  cam.x += (clamp(tx + cam.lx, 0, W - G.VW) - cam.x) * 0.12;
+  cam.y += (clamp(ty + cam.ly, 0, H - G.VH) - cam.y) * 0.12;
   const sh = G.shake ? (rnd() - 0.5) * G.shake : 0;
   G.shake *= 0.85;
   if (G.shake < 0.3) G.shake = 0;
@@ -246,6 +261,7 @@ function render() {
       ctx.fillRect(Math.round(sx) - 3, Math.round(syy) - 3, 7, 7);
       ctx.fillRect(Math.round(sx) - 4, Math.round(syy) - 2, 9, 5);
       ctx.fillRect(Math.round(sx) - 2, Math.round(syy) - 4, 5, 9);
+      if (G.lightFx) skyGlow(ctx, sx, syy, 'sun', 0.7 * Math.min(1, Math.sin(ang) + 0.2));
     }
     const mx = G.VW / 2 + Math.cos(-ang) * G.VW * 0.45,
       my = 95 + Math.sin(ang) * 80 - cy * 0.3;
@@ -255,6 +271,7 @@ function render() {
       ctx.fillRect(Math.round(mx) - 3, Math.round(my) - 2, 7, 5);
       ctx.fillStyle = st;
       ctx.fillRect(Math.round(mx), Math.round(my) - 2, 3, 4);
+      if (G.lightFx) skyGlow(ctx, mx, my, 'moon', 0.5);
     }
   }
   ctx.globalAlpha = G.rainT > 0 ? 0.95 : 0.9;
@@ -265,8 +282,20 @@ function render() {
   }
   ctx.globalAlpha = 1;
   if (G.rainT > 0) {
-    ctx.fillStyle = 'rgba(80,90,100,.18)';
+    // grey haze, thicker towards the horizon, and far-away streaks behind the hills
+    const hz = ctx.createLinearGradient(0, 0, 0, G.VH);
+    hz.addColorStop(0, 'rgba(70,80,96,.28)');
+    hz.addColorStop(1, 'rgba(96,106,116,.12)');
+    ctx.fillStyle = hz;
     ctx.fillRect(0, 0, G.VW, G.VH);
+    if (G.biome !== 'winter') {
+      ctx.fillStyle = 'rgba(190,210,235,.3)';
+      for (let k = 0; k < 40; k++) {
+        const rx = ((k * 53 + G.frame * 0.7) % (G.VW + 20)) - 10,
+          ry = ((k * 91 + G.frame * 2.4) % (G.VH + 10)) - 5;
+        ctx.fillRect(Math.round(rx), Math.round(ry), 1, 3);
+      }
+    }
   }
   drawBackdrop(ctx, cx, cy);
   for (const b of birds) {
@@ -288,7 +317,7 @@ function render() {
   drawLavaGlow(ctx);
   drawWaterGlints(ctx);
   drawGemSparkles(ctx);
-  if (G.res === 2) drawFireflies(ctx, cx, cy, dark);
+  if (G.res === 2 && G.lightFx) drawFireflies(ctx, cx, cy, dark);
   // pump pipes
   for (const b of builds)
     if (b.type === 'pump' && b.done && b.pipe) {
@@ -555,6 +584,7 @@ function render() {
     ctx.stroke();
     if (--G.bolt.l <= 0) G.bolt = null;
   }
+  if (G.lightFx) duskGrade(ctx, sunAlt());
   // lighting: night plus a dimming that deepens below the surface; lamps, lava and buildings cut holes
   lctx.globalCompositeOperation = 'source-over';
   lctx.clearRect(0, 0, G.VW, G.VH);
@@ -562,7 +592,7 @@ function render() {
     lctx.fillStyle = `rgba(6,10,30,${dark})`;
     lctx.fillRect(0, 0, G.VW, G.VH);
   }
-  const under = depthShade(lctx, cx, cy);
+  const under = G.lightFx && depthShade(lctx, cx, cy);
   if (dark > 0.02 || under) {
     lctx.globalCompositeOperation = 'destination-out';
     const light = (x, y, r, a = 1) => {
@@ -591,13 +621,15 @@ function render() {
     for (const t of trees) if (t.burn > 0) light(t.x - cx, t.gy - t.spr.height / 2 - cy, 36, 0.9);
     for (const c of crew) if (c.burn > 0) light(c.x + 3 - cx, c.y + 4 - cy, 24, 0.9);
     for (let k = 0; k < lava.length; k += 8) light(lava[k], lava[k + 1], 16, 0.7);
+    if (under)
+      for (let k = 0; k < oreSpots.length; k += 3) lightHole(lctx, oreSpots[k], oreSpots[k + 1], 6, oreSpots[k + 2]);
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(lc, 0, 0);
     ctx.imageSmoothingEnabled = false;
     if (dark > 0.02) drawWindowGlow(ctx, cx, cy, dark);
   }
   // warm light on top: lamps below ground, lava and working furnaces
-  if (G.res === 2) {
+  if (G.res === 2 && G.lightFx) {
     beginGlow(ctx);
     for (const c of crew) {
       const d = c.dead ? 0 : Math.max(dark, depthAt(c.x, c.y));
@@ -616,7 +648,7 @@ function render() {
         warmGlow(ctx, b.x + b.w / 2 - cx, b.gy - b.h / 2 - cy, 18, 0.3 + ((G.frame >> 3) & 1) * 0.06);
     endGlow(ctx);
   }
-  drawVignette(ctx);
+  if (G.lightFx) drawVignette(ctx);
   drawGoal(ctx, cx, cy);
   drawBubbles(ctx, cx, cy);
   drawEmotes(ctx, cx, cy);

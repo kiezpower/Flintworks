@@ -570,8 +570,10 @@ function updParts() {
           // flakes just melt away
         } else if (p.rain) {
           if (ok && rnd() < 0.07) setMat(cx, cy, WATER);
-          else if (rnd() < 0.4)
-            parts.push({ x: p.x, y: p.y - 1, vx: (rnd() - 0.5) * 0.6, vy: -0.5, l: 6, c: '#cfe6fa' });
+          else if (rnd() < 0.5) {
+            parts.push({ x: p.x, y: p.y - 1, vx: -0.35 - rnd() * 0.25, vy: -0.45, l: 7, c: '#cfe6fa' });
+            parts.push({ x: p.x, y: p.y - 1, vx: 0.35 + rnd() * 0.25, vy: -0.45, l: 7, c: '#e6f4ff' });
+          }
         } else if (ok) setMat(cx, cy, p.m);
         parts.splice(k, 1);
         continue;

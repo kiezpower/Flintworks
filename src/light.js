@@ -53,6 +53,24 @@ function depthAt(x, y) {
   return t < 0 ? 0 : Math.max(0, Math.min(1, (y - t - AMB_GAP) / AMB_LEN));
 }
 
+// small soft hole in the dimming layer, cached as a sprite; makes ore readable in the dark
+const holeSpr = document.createElement('canvas');
+holeSpr.width = holeSpr.height = 16;
+{
+  const g = holeSpr.getContext('2d'),
+    gr = g.createRadialGradient(8, 8, 0, 8, 8, 8);
+  gr.addColorStop(0, 'rgba(0,0,0,1)');
+  gr.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = gr;
+  g.fillRect(0, 0, 16, 16);
+}
+// lctx must be in 'destination-out' mode
+function lightHole(lctx, x, y, r, a) {
+  lctx.globalAlpha = a;
+  lctx.drawImage(holeSpr, x - r, y - r, r * 2, r * 2);
+  lctx.globalAlpha = 1;
+}
+
 // soft warm light that adds up on top of the dimmed picture
 const glowSpr = document.createElement('canvas');
 glowSpr.width = glowSpr.height = 64;
@@ -97,4 +115,36 @@ function drawVignette(ctx) {
   ctx.drawImage(vig, 0, 0);
 }
 
-export { beginGlow, depthAt, depthShade, drawVignette, endGlow, warmGlow };
+// soft glow around the sun and moon, drawn into the sky
+const skyGlows = {};
+function skyGlow(ctx, x, y, kind, a) {
+  let spr = skyGlows[kind];
+  if (!spr) {
+    spr = skyGlows[kind] = document.createElement('canvas');
+    spr.width = spr.height = 96;
+    const g = spr.getContext('2d'),
+      gr = g.createRadialGradient(48, 48, 2, 48, 48, 48),
+      c = kind === 'sun' ? '255,230,150' : '190,210,255';
+    gr.addColorStop(0, `rgba(${c},0.85)`);
+    gr.addColorStop(0.3, `rgba(${c},0.25)`);
+    gr.addColorStop(1, `rgba(${c},0)`);
+    g.fillStyle = gr;
+    g.fillRect(0, 0, 96, 96);
+  }
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.imageSmoothingEnabled = true;
+  ctx.globalAlpha = a;
+  ctx.drawImage(spr, x - 36, y - 36, 72, 72);
+  endGlow(ctx);
+}
+// warm tint over the whole picture while the sun is low (sunrise and sunset)
+function duskGrade(ctx, sunAlt) {
+  const k = Math.max(0, 1 - Math.abs(sunAlt - 0.2) / 0.3);
+  if (k < 0.02) return;
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.fillStyle = `rgba(255,170,110,${0.42 * k})`;
+  ctx.fillRect(0, 0, G.VW, G.VH);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+export { lightHole, duskGrade, skyGlow, beginGlow, depthAt, depthShade, drawVignette, endGlow, warmGlow };

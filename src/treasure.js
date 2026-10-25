@@ -1,4 +1,5 @@
 // Buried treasure chests: small caves deep underground, opened with the action button.
+import { celebrate } from './effects.js';
 import { spawnItem } from './entities.js';
 import { addFloat } from './floats.js';
 import { track } from './profile.js';
@@ -71,6 +72,7 @@ function openChest(ch) {
   loot.push(rnd() < 0.5 ? 'tnt' : 'flint');
   loot.forEach((t, k) => spawnItem(t, ch.x + 3, ch.y - 2, (k - loot.length / 2) * 0.35, -1.6 - rnd(), 6));
   sfx('fanfare');
+  celebrate(ch.x + CW / 2, ch.y, 36);
   sfx('coin', ch.x, ch.y);
   G.shake = Math.max(G.shake || 0, 2);
   addFloat(ch.x + CW / 2, ch.y - 4, '★', '#ffe066');

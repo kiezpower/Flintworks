@@ -181,6 +181,7 @@ function startGame(withTutorial = false) {
   G.autoDig = P.autodig !== false;
   G.climbOn = !!P.climbing;
   G.jumpBtn = P.jumpbtn !== false;
+  G.lightFx = P.lightfx !== false;
   G.speed = TEMPO[P.tempo || 'normal'] || 0.85;
   if (!G.climbOn) for (const c of crew) c.climb = c.hangle = false;
   const res = P.gfx === 'low' || new URLSearchParams(location.search).get('res') === '1' ? 1 : 2;
@@ -318,6 +319,12 @@ function openMenu() {
     P.gfx = G.res === 2 ? 'high' : 'low';
     saveProfile();
     resize();
+    openMenu();
+  });
+  item(G.lightFx ? 'Licht: an' : 'Licht: aus', 'Dämmerung unter Tage, Leuchten und Rahmen ums Bild', () => {
+    P.lightfx = !G.lightFx;
+    G.lightFx = P.lightfx;
+    saveProfile();
     openMenu();
   });
   item(G.climbOn ? 'Klettern an' : 'Klettern aus', 'An Wänden hochklettern und an Decken hängen', () => {

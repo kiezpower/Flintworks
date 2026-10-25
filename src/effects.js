@@ -1,7 +1,7 @@
 import { biome } from './biomes.js';
 // Visual extras: distant mountains, glowing lava, dust and splashes.
 import { G, parts } from './state.js';
-import { AIR, GEM, LAVA, W, WATER, mat, rnd } from './world.js';
+import { AIR, COAL, GEM, GOLD, LAVA, ORE, W, WATER, mat, rnd } from './world.js';
 
 // Far mountain range with snow caps, drawn behind the hills
 function drawMountains(ctx, cx, cy, dark) {
@@ -26,11 +26,13 @@ function drawMountains(ctx, cx, cy, dark) {
 // Lava pixels on screen, sampled on a coarse grid (reused for glow and night light)
 const lavaSpots = [],
   waterSpots = [],
-  gemSpots = [];
+  gemSpots = [],
+  oreSpots = [];
 function scanLava(cx, cy) {
   lavaSpots.length = 0;
   waterSpots.length = 0;
   gemSpots.length = 0;
+  oreSpots.length = 0;
   for (let y = 1; y < G.VH && lavaSpots.length < 160; y += 3)
     for (let x = 1; x < G.VW; x += 3) {
       const i = (cy + y) * W + cx + x;
@@ -45,6 +47,12 @@ function scanLava(cx, cy) {
         if (mat[j - W] === AIR) waterSpots.push(x, y - k);
       }
       if (mat[i] === GEM && rnd() < 0.08) gemSpots.push(x, y);
+      // gold, gems, ore and coal stay readable in the dimmed underground: how much light each gets
+      if (oreSpots.length < 360) {
+        const m = mat[i],
+          a = m === GOLD ? 0.65 : m === GEM ? 0.75 : m === ORE ? 0.5 : m === COAL ? 0.45 : 0;
+        if (a) oreSpots.push(x, y, a);
+      }
       if (mat[i] !== LAVA) continue;
       lavaSpots.push(x, y);
       if (mat[i - W] !== LAVA && rnd() < 0.004)
@@ -96,6 +104,37 @@ function drawFireflies(ctx, cx, cy, dark) {
   }
 }
 
+// A burst of golden sparks for finished buildings, chests, jobs and castle levels
+function celebrate(x, y, n = 22) {
+  for (let k = 0; k < n; k++) {
+    const a = rnd() * Math.PI * 2,
+      v = 0.5 + rnd() * 1.4;
+    parts.push({
+      x,
+      y,
+      vx: Math.cos(a) * v,
+      vy: Math.sin(a) * v - 0.6,
+      l: 28 + rnd() * 18,
+      c: rnd() < 0.3 ? '#ffffff' : rnd() < 0.6 ? '#ffe066' : '#f2c230',
+      g: 0.03,
+      s: rnd() < 0.25 ? 2 : 1,
+    });
+  }
+}
+// small glint when the pick strikes gold or a gem
+function glint(x, y) {
+  for (let k = 0; k < 3; k++)
+    parts.push({
+      x,
+      y,
+      vx: (rnd() - 0.5) * 1.2,
+      vy: -rnd() * 1.1,
+      l: 14,
+      c: rnd() < 0.5 ? '#ffffff' : '#ffe066',
+      g: 0.02,
+    });
+}
+
 const dust = (x, y, n, col) => {
   for (let k = 0; k < n; k++)
     parts.push({
@@ -120,4 +159,16 @@ const splash = (x, y, n) => {
     });
 };
 
-export { drawFireflies, drawGemSparkles, drawLavaGlow, drawMountains, drawWaterGlints, dust, scanLava, splash };
+export {
+  oreSpots,
+  celebrate,
+  glint,
+  drawFireflies,
+  drawGemSparkles,
+  drawLavaGlow,
+  drawMountains,
+  drawWaterGlints,
+  dust,
+  scanLava,
+  splash,
+};

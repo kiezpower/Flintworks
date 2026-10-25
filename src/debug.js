@@ -21,11 +21,13 @@ import { digZone, wantsDig } from './clonk.js';
 import { LIQ, matAt, solid } from './world.js';
 
 import * as events from './events.js';
+import * as effects from './effects.js';
 import * as combat from './combat.js';
 import { TUT, ground, rockOpen } from './tutlevel.js';
 import { STEPS } from './tutsteps.js';
 
 window.__ww = {
+  effects,
   events,
   combat,
   send,

@@ -1,6 +1,7 @@
 // Small missions during a round: one at a time, shown under the money. Each practises a part of
 // the game (giving helpers jobs, mining areas, beams, buildings) and pays a bonus. The list is
 // part of the lessons (lessons.js), whose tip explains a mission when it starts.
+import { celebrate } from './effects.js';
 import { addFloat } from './floats.js';
 import { tr } from './i18n.js';
 import { MISSIONS } from './lessons.js';
@@ -29,6 +30,7 @@ function updMissions() {
     G.earned = (G.earned || 0) + m.pay;
     const c = sel_();
     if (c) addFloat(c.x + 3, c.y - 6, '+' + m.pay, '#f2c230');
+    if (c) celebrate(c.x + 3, c.y - 2);
     sfx('fanfare');
     toast('Auftrag erfüllt: +{pay} Taler', { pay: m.pay });
     startMission(G.mis.i + 1);
