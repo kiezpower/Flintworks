@@ -80,6 +80,32 @@ const EN = {
   'Besiege {goal} Monster': 'Defeat {goal} monsters',
   'Erreiche {goal} m Tiefe': 'Reach a depth of {goal} m',
   'Baue ein Luftschiff': 'Build an airship',
+  // hand-built levels (chapter 2) and their goals
+  'Kapitel 1 · Erste Welten': 'Chapter 1 · First worlds',
+  'Kapitel 2 · Klassiker': 'Chapter 2 · Classics',
+  'Level verloren': 'Level lost',
+  'Alle Wühler sind verloren.': 'All diggers are lost.',
+  'Die Zeit ist um.': 'Time is up.',
+  'Ein Wipf ist gerettet!': 'A wipf is rescued!',
+  Gerettet: 'Rescued',
+  Taler: 'coins',
+  'Monster besiegt': 'Monsters defeated',
+  Truhen: 'Chests',
+  'Tiefe in m': 'Depth in m',
+  'Ziel erreicht': 'Goal reached',
+  Minuten: 'Minutes',
+  '{what} verkauft': '{what} sold',
+  '{what} im Lager': '{what} in store',
+  Wipfrettung: 'Wipf rescue',
+  'Rette {goal} Wipfe aus ihren Höhlen': 'Rescue {goal} wipfs from their caves',
+  'Unter dem Hügel sitzen vier Wipfe in ihren Höhlen fest. Grab dich zu ihnen durch – die Karte (M) zeigt dir die Höhlen.':
+    'Four wipfs are stuck in their caves under the hill. Dig your way to them – the map (M) shows you the caves.',
+  'Die Höhle ist von Fels umschlossen. Wirf einen Feuerstein dagegen, das sprengt ihn auf.':
+    'The cave is surrounded by rock. Throw a flint at it, that blasts it open.',
+  'Neben der tiefen Höhle glänzt Gold – das bringt Geld an der Burg.':
+    'Gold glitters next to the deep cave – it brings money at the castle.',
+  Halbzeit: 'Halfway',
+  'Zwei Wipfe sind frei, zwei warten noch.': 'Two wipfs are free, two are still waiting.',
   'Zwei Wühler sind rechts von der Burg tief verschüttet – grab dich zu ihnen durch. Der Bohrwagen ist schon erforscht.':
     'Two diggers are buried deep to the right of the castle – dig your way to them. The drill wagon is already researched.',
   'Unter der Wiese hausen Monster. Schwert und Langbogen kannst du an der Burg kaufen.':

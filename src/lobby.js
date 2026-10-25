@@ -1,5 +1,5 @@
 import { GAME_MODES, MODE_IDS, mode } from './modes.js';
-import { campaignPanel, totalStars } from './scenarios.js';
+import { ALL_IDS, campaignPanel, totalStars } from './scenarios.js';
 import { lessonsPanel } from './lessons.js';
 import { canInstall, offerInstall, openInstall } from './install.js';
 import { LIVE, isNative, ownWeb } from './platform.js';
@@ -146,7 +146,9 @@ function refresh() {
   setTxt('lbGModeTxt', camp ? tr('Kampagne') : gm.n ? `${gm.n} · ${tr(gm.name)}` : tr(gm.name));
   setTxt(
     'lbGModeDesc',
-    camp ? tr('{n} Level · Sterne {s}/{m}', { n: 7, s: totalStars(), m: 21 }) : tr(gm.desc, { goal: gm.goal }),
+    camp
+      ? tr('{n} Level · Sterne {s}/{m}', { n: ALL_IDS.length, s: totalStars(), m: ALL_IDS.length * 3 })
+      : tr(gm.desc, { goal: gm.goal }),
   );
   $('lbDiff').disabled = run;
   setTxt('lbDiffTxt', tr((run ? G.relaxed : P.diff === 'relaxed') ? 'Entspannt' : 'Abenteuer'));

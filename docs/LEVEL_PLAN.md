@@ -1,6 +1,26 @@
 # Plan: Vorgebaute Level („Szenarien“ wie im Original-Clonk)
 
-> **Stand: Etappe 1 umgesetzt (v1.33.0), Etappen 2–8 offen.** Entscheidungen siehe Abschnitt 11.
+> **Stand: Etappen 1–5 umgesetzt (v1.33.0, v1.34.0), Etappen 6–8 offen.** Entscheidungen siehe
+> Abschnitt 11. Wie man ein Level baut: `docs/LEVELS.md`.
+>
+> Abweichungen in Etappen 2 bis 5:
+> - **Karten als Text (`map.txt`) statt PNG.** Ein Zeichen = ein Material. Grund: lädt ohne
+>   Warten (das Erzeugen der Welt bleibt synchron), Änderungen sind im Diff lesbar, und Level
+>   lassen sich ohne Bildprogramm bauen und im Test prüfen. Zoom, Aufrauen und Zufalls-Zonen (`?`)
+>   wie geplant.
+> - **Das Tutorial bleibt im Code** (`tutlevel.js`), statt Level-Paket zu werden (U8 entfällt):
+>   Es läuft gut, hat eigene Tests, und Spieler hätten nichts davon.
+> - Der Bildzähler wird beim Erzeugen auf ungerade gesetzt (`settle()` in `gen.js`); damit kommt
+>   dieselbe Welt aus demselben Seed immer gleich heraus. Freie Welten mit 1400 × 400 bleiben
+>   bitgenau wie vorher.
+> - Ziele (`goals`) sind eine Liste, die ganz erfüllt sein muss (kein `any`); die Anzeige nennt
+>   das erste offene Ziel. Mehr hat noch kein Level gebraucht.
+> - Eingeschlossene Wipfe (`lost`) laufen nicht vor ihrem Retter weg und blinken auf der Karte.
+> - Kapitel 2 ist von Anfang an offen (das erste Level), unabhängig von Kapitel 1.
+> - Die Lobby zeigt die Kapitel als Abschnitte mit eigenen Sternen; Vorschaubilder der Karten
+>   gibt es nicht, die Levelliste behält ihre Symbole (wenig Nutzen auf dem kleinen Platz).
+> - Speicherstände tragen den Level-Zustand (`G.lvl`) und alle Verkäufe je Art (`G.sold`).
+>
 > Abweichungen und Erkenntnisse aus Etappe 1:
 > - Welten mit 1400 × 400 bleiben bitgenau wie vorher (geprüft mit Prüfsummen von v1.29.0 für
 >   freies Spiel, Versus und zwei Kampagnen-Level, `tests/worldsize.spec.js`). Andere Größen

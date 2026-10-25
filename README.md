@@ -49,6 +49,10 @@ Der Bildtest (`npm run test:visual`) startet Vite selbst und versteht ebenfalls 
 
 Die Android-App lässt sich lokal mit Android Studio aus dem Ordner `android/` bauen. Normalerweise ist das nicht nötig: GitHub baut sie automatisch.
 
+## Level bauen
+
+Vorgebaute Level (Kampagne, Kapitel 2) liegen in `src/levels/`, je ein Ordner mit `map.txt` und `level.json`. Wie das geht, steht in [docs/LEVELS.md](docs/LEVELS.md).
+
 ## Neue Texte übersetzen
 
 Texte werden mit `tr('Deutscher Text', { platzhalter })` ausgegeben bzw. direkt an `toast()` übergeben. Für Englisch den deutschen Text als Schlüssel in `src/i18n.js` eintragen. Fehlt ein Eintrag, erscheint der deutsche Text.

@@ -69,9 +69,10 @@ function hud() {
     : tr('{money} Taler', { money });
   goalWrap.hidden = goldMode || !!M.tutorial;
   if (!goalWrap.hidden) {
-    const p = Math.min(M.goal, M.prog());
-    goalTxt.textContent = `${tr(M.name)} ${p}/${M.goal}`;
-    goalBar.style.width = (p / M.goal) * 100 + '%';
+    // (hand-built levels name their first open goal)
+    const st = M.status ? M.status() : { text: '', p: Math.min(M.goal, M.prog()), of: M.goal };
+    goalTxt.textContent = M.status ? st.text : `${tr(M.name)} ${st.p}/${st.of}`;
+    goalBar.style.width = (st.p / st.of) * 100 + '%';
   }
   // store contents as small icons with counts
   const sk = G.store ? Object.entries(G.store).filter(([, n]) => n > 0) : [];
@@ -245,6 +246,12 @@ function drawMini(full) {
   for (const a of animals)
     if (a.kind === 'monster') {
       mctx.fillStyle = '#ff4040';
+      mctx.fillRect(Math.floor(a.x / MK) - 1, Math.floor(a.y / MK) - 1, 4, 4);
+    }
+  // levels: animals still waiting to be rescued blink on the map
+  for (const a of animals)
+    if (a.lost && a.hp > 0) {
+      mctx.fillStyle = (G.tick >> 4) & 1 ? '#ffffff' : '#f2c230';
       mctx.fillRect(Math.floor(a.x / MK) - 1, Math.floor(a.y / MK) - 1, 4, 4);
     }
   // treasure hunt: closed chests are marked on the map

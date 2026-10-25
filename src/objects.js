@@ -362,7 +362,8 @@ function updAnimal(a) {
     }
     let near = null;
     for (const c of crew) if (!c.dead && Math.abs(c.x - a.x) < 14 && Math.abs(c.y - a.y) < 10) near = c;
-    if (near) a.tvx = Math.sign(a.x - near.x) * 0.8;
+    // (a wipf lost in a level waits for its rescuer instead of running off)
+    if (near) a.tvx = a.lost ? 0 : Math.sign(a.x - near.x) * 0.8;
     for (const o of animals)
       if (o.kind === 'monster' && Math.abs(o.x - a.x) < 40 && Math.abs(o.y - a.y) < 20)
         a.tvx = Math.sign(a.x - o.x) * 0.9;

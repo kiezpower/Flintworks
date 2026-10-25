@@ -4,7 +4,7 @@
 // everything here does nothing.
 import { G } from './state.js';
 
-const KEYS = ['money', 'store', 'tools', 'earned', 'base', 'mineMark', 'goldSold', 'chestsFound', 'mis'];
+const KEYS = ['money', 'store', 'tools', 'earned', 'base', 'mineMark', 'goldSold', 'sold', 'chestsFound', 'mis'];
 const TEAM_COLS = ['#c8402c', '#2f7fd0'];
 G.teams = null;
 G.curTeam = 0;
@@ -35,7 +35,7 @@ function setupTeams(bases) {
   syncTeams();
 }
 function freshTeam() {
-  return { money: G.money, store: {}, tools: {}, earned: 0, mineMark: null, goldSold: 0, chestsFound: 0, mis: null };
+  return { money: G.money, store: {}, tools: {}, earned: 0, mineMark: null, goldSold: 0, sold: {}, chestsFound: 0, mis: null };
 }
 function endTeams() {
   useTeam(0);

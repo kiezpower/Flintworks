@@ -1,0 +1,55 @@
+{
+  "id": "wipfrettung",
+  "v": 1,
+  "name": "Wipfrettung",
+  "icon": "crew",
+  "desc": "Rette {goal} Wipfe aus ihren Höhlen",
+  "intro": "Unter dem Hügel sitzen vier Wipfe in ihren Höhlen fest. Grab dich zu ihnen durch – die Karte (M) zeigt dir die Höhlen.",
+  "biome": "meadow",
+  "size": [800, 300],
+  "zoom": 4,
+  "rough": 0.5,
+  "seed": 8101,
+  "diff": "adventure",
+  "fill": { "caves": 0, "gems": 0, "loam": 0.6 },
+  "start": {
+    "money": 60,
+    "crew": 3,
+    "inv": [["flint", "flint"], ["loam"], ["rock"]]
+  },
+  "rules": { "meteors": false },
+  "objects": [
+    { "t": "base", "x": 40 },
+    { "t": "tree", "x": 112, "stage": 4 },
+    { "t": "tree", "x": 128, "stage": 4 },
+    { "t": "tree", "x": 300, "stage": 3 },
+    { "t": "tree", "x": 470, "stage": 4 },
+    { "t": "tree", "x": 590, "stage": 3 },
+    { "t": "tree", "x": 770, "stage": 4 },
+    { "t": "item", "kind": "flint", "x": 160 },
+    { "t": "item", "kind": "flint", "x": 330 },
+    { "t": "animal", "kind": "wipf", "x": 208, "y": 130, "lost": true },
+    { "t": "animal", "kind": "wipf", "x": 380, "y": 118, "lost": true },
+    { "t": "animal", "kind": "wipf", "x": 496, "y": 222, "lost": true },
+    { "t": "animal", "kind": "wipf", "x": 704, "y": 186, "lost": true },
+    { "t": "animal", "kind": "wipf", "x": 640, "y": 80 }
+  ],
+  "areas": { "rock": [340, 96, 80, 48], "deep": [440, 180, 120, 80] },
+  "goals": [{ "t": "rescue", "n": 4 }],
+  "lose": { "crewDead": true },
+  "stars": [6, 10],
+  "triggers": [
+    {
+      "when": { "t": "enter", "area": "rock" },
+      "do": [{ "t": "say", "text": "Die Höhle ist von Fels umschlossen. Wirf einen Feuerstein dagegen, das sprengt ihn auf." }]
+    },
+    {
+      "when": { "t": "enter", "area": "deep" },
+      "do": [{ "t": "say", "text": "Neben der tiefen Höhle glänzt Gold – das bringt Geld an der Burg." }]
+    },
+    {
+      "when": { "t": "rescued", "n": 2 },
+      "do": [{ "t": "banner", "title": "Halbzeit", "text": "Zwei Wipfe sind frei, zwei warten noch." }]
+    }
+  ]
+}
