@@ -13,7 +13,7 @@ import { addClonk, sel_, spawnItem } from './entities.js';
 import { held, joy, keys } from './input.js';
 import { calcTerr, cam } from './render.js';
 import { sfx } from './sound.js';
-import { ITEM, SPR, itemIcon, padIcon, toolIcon } from './sprites.js';
+import { ITEM, SPR, detailed, itemIcon, padIcon, toolIcon } from './sprites.js';
 import { tr } from './i18n.js';
 import { focusBadge, openCrew } from './crewui.js';
 import { register, send } from './commands.js';
@@ -303,13 +303,21 @@ function opt(parent, { icon, title, sub, cost, short, disabled, onClick }) {
   b.className = 'opt' + (short ? ' short' : '');
   if (disabled) b.disabled = true;
   if (icon) {
+    // shown through its double-resolution copy (lit from above, outlined) at a whole multiple
+    // of its size; small icons on screens without fine pixels keep the simple version
+    const w = icon.hi ? icon.width / 2 : icon.width,
+      h = icon.hi ? icon.height / 2 : icon.height,
+      k = Math.max(1, Math.min(Math.floor(48 / w), Math.floor(40 / h))) || 1,
+      hi = icon.hi ? icon : k > 1 || devicePixelRatio >= 2 ? detailed(icon) : icon,
+      f0 = hi === icon && !icon.hi ? k : k / 2,
+      // (whole device pixels per texel, so no pixel comes out wider than its neighbours)
+      f = (f0 * devicePixelRatio) % 1 ? Math.max(1, Math.floor(f0)) : f0;
     const c = document.createElement('canvas');
-    c.width = icon.width;
-    c.height = icon.height;
-    c.getContext('2d').drawImage(icon, 0, 0);
-    const k = Math.max(1, Math.min(Math.floor(40 / icon.width), Math.floor(30 / icon.height))) || 1;
-    c.style.width = icon.width * k + 'px';
-    c.style.height = icon.height * k + 'px';
+    c.width = hi.width;
+    c.height = hi.height;
+    c.getContext('2d').drawImage(hi, 0, 0);
+    c.style.width = hi.width * f + 'px';
+    c.style.height = hi.height * f + 'px';
     c.style.justifySelf = 'center';
     b.appendChild(c);
   }

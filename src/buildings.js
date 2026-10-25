@@ -402,6 +402,18 @@ function updBuilds() {
             l: 15,
             c: '#ffd77a',
           });
+        // dust from the rising walls
+        if (rnd() < 0.12)
+          parts.push({
+            x: b.x + rnd() * b.w,
+            y: b.gy - b.h * b.prog,
+            vx: (rnd() - 0.5) * 0.4,
+            vy: -0.15 - rnd() * 0.2,
+            l: 40,
+            c: 'rgba(200,180,150,0.4)',
+            s: 2,
+            g: -0.003,
+          });
         if (b.prog >= 1) {
           b.prog = 1;
           b.done = true;

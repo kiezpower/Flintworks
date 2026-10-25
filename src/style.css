@@ -526,10 +526,10 @@ button:focus-visible {
 .opt canvas {
   grid-row: 1 / span 3;
   image-rendering: pixelated;
-  max-width: 40px;
+  max-width: 48px;
 }
 .opt {
-  grid-template-columns: 40px 1fr;
+  grid-template-columns: 48px 1fr;
 }
 .opt b {
   font-weight: 700;

@@ -7,7 +7,7 @@ import { G, parts } from '../state.js';
 import { stock, takeStock } from '../store.js';
 import { toast } from '../ui.js';
 import { GRANITE, H, LIQ, ROCK, W, bg, free, mat, paint, rnd } from '../world.js';
-import { box, defineVehicle } from './core.js';
+import { box, defineVehicle, wheel } from './core.js';
 
 const liquidAt = (x, y) => x >= 0 && y >= 0 && x < W && y < H && LIQ[mat[Math.floor(y) * W + Math.floor(x)]];
 const grounded = v => !free(v.x, v.y + 1, v.w, v.h);
@@ -73,7 +73,7 @@ defineVehicle('drill', {
     ctx.fillStyle = (v.t | 0) % 2 ? '#c8c8d0' : '#9a9aa6';
     for (let k = 0; k < 4; k++) ctx.fillRect(fx + f * k, y + 2 + k * 0.6, 1, v.h - 5 - k * 1.2);
     // wheels
-    for (const wx of [x + 3, x + v.w - 4]) box(ctx, wx - 1, y + v.h - 3, 3, 3, (v.t | 0) % 2 ? '#3a3a40' : '#55555c');
+    for (const wx of [x + 3, x + v.w - 4]) wheel(ctx, wx + 0.5, y + v.h - 1.5, 1.6, (v.x || 0) / 1.6);
     if (!v.icon && v.fuel < 20 && (G.frame >> 4) % 2) {
       ctx.fillStyle = '#ff6a5a';
       ctx.fillRect(x + v.w / 2 - 1, y - 4, 2, 2);
@@ -163,7 +163,7 @@ defineVehicle('catapult', {
   },
   draw(ctx, v, x, y) {
     box(ctx, x, y + 5, v.w, 3, '#8a5a2b');
-    for (const wx of [x + 2, x + v.w - 5]) box(ctx, wx, y + 7, 3, 3, '#5a3a1a');
+    for (const wx of [x + 2, x + v.w - 5]) wheel(ctx, wx + 1.5, y + 8.5, 1.6, (v.x || 0) / 1.6, '#5a3a1a');
     // the arm: pulled back after a shot, otherwise at the aim angle
     const a = v.cd > 20 ? 0.2 : v.ang,
       ax = x + v.w / 2,

@@ -29,11 +29,11 @@ import { sel_ } from './entities.js';
 import { isPlayer } from './players.js';
 import { drawEmotes } from './net/emotes.js';
 import { TEAM_COLS } from './teams.js';
-import { drawVehicles } from './vehicles/core.js';
+import { box, drawVehicles, wheel } from './vehicles/core.js';
 import { drawRails } from './vehicles/rails.js';
 import { topSolid } from './gen.js';
 import { game, joyHome } from './input.js';
-import { ICOL, SPR, drawHi, drawItemBig } from './sprites.js';
+import { ICOL, SPR, drawDetailed, drawHi, drawItemBig } from './sprites.js';
 import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
 import { darkness, skyCols, sunAlt } from './weather.js';
 import { H, W, clamp, flush, rnd, wc } from './world.js';
@@ -115,6 +115,55 @@ function drawHat(put, hat) {
     put(2, -2, 3, 1, '#ff7eb6');
     put(3, -2, 1, 1, '#ffe27a');
   }
+}
+// a building site: the outline of the finished building, the walls rising from the ground and a
+// wooden scaffold that grows with them
+function drawSite(ctx, b, spr, sx, sy) {
+  const vh = Math.ceil(b.h * b.prog),
+    top = sy + b.h - vh;
+  ctx.globalAlpha = 0.22;
+  drawDetailed(ctx, spr, sx, sy);
+  ctx.globalAlpha = 1;
+  if (vh > 0) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(sx - 1, top, b.w + 2, vh + 1);
+    ctx.clip();
+    drawDetailed(ctx, spr, sx, sy);
+    ctx.restore();
+  }
+  // posts on both sides, a little above the walls, with planks every five pixels
+  const st = Math.max(sy, top - 3);
+  for (const px of [sx - 1, sx + b.w]) {
+    ctx.fillStyle = '#24160c';
+    ctx.fillRect(px - 0.5, st - 0.5, 1.5, sy + b.h - st + 0.5);
+    ctx.fillStyle = '#a8743f';
+    ctx.fillRect(px, st, 0.5, sy + b.h - st);
+  }
+  for (let yy = sy + b.h - 4; yy >= st; yy -= 5) {
+    ctx.fillStyle = '#24160c';
+    ctx.fillRect(sx - 1.5, yy - 0.5, b.w + 3, 1.5);
+    ctx.fillStyle = '#c08a50';
+    ctx.fillRect(sx - 1, yy, b.w + 2, 0.5);
+  }
+  // a diagonal brace across the lower part
+  ctx.fillStyle = '#8b5e34';
+  const bh = Math.min(vh, 10);
+  for (let k = 0; k < bh; k++) ctx.fillRect(sx + (k / bh) * Math.min(b.w, 10), sy + b.h - 1 - k, 0.5, 0.5);
+}
+// moving parts of working buildings: the saw blade, the lift wheel, the pump wheel
+function drawMoving(ctx, b, sx, sy) {
+  const spin = (cx, cy, r, a, col) => {
+    ctx.fillStyle = col;
+    for (let k = 0; k < 4; k++) {
+      const t = a + (k * Math.PI) / 2;
+      for (let q = 1; q <= r; q++)
+        ctx.fillRect(Math.round((cx + Math.cos(t) * q * 0.5) * 2) / 2, Math.round((cy + Math.sin(t) * q * 0.5) * 2) / 2, 0.5, 0.5);
+    }
+  };
+  if (b.type === 'saw' && b.busy > 0) spin(sx + 16.25, sy + 8.25, 5, G.frame * 0.45, '#eef1f4');
+  if (b.type === 'lift') spin(sx + 8, sy + 2, 3, (b.cs ? b.cs.y : 0) * 0.6, '#c0c6cc');
+  if (b.type === 'pump' && b.on) spin(sx + 8, sy + 11, 3, G.frame * 0.2, '#c0c6cc');
 }
 // colour helpers for sprite shading, cached per input colour
 const shadeCache = {};
@@ -330,18 +379,13 @@ function render() {
       sy = b.gy - b.h - cy,
       spr = SPR[b.type];
     if (sx < G.VW && sx + b.w > 0 && sy < G.VH + 40 && sy + b.h > -20) {
-      if (b.done && b.type !== 'flag' && b.type !== 'gate') drawHi(ctx, spr, sx, sy);
-      else {
-        const vh = Math.ceil(b.h * b.prog);
-        ctx.globalAlpha = 0.3;
-        ctx.drawImage(spr, sx, sy);
-        ctx.globalAlpha = 1;
-        if (vh > 0) ctx.drawImage(spr, 0, b.h - vh, b.w, vh, sx, sy + b.h - vh, b.w, vh);
-        ctx.fillStyle = '#a8743f';
-        ctx.fillRect(sx, sy, 1, b.h);
-        ctx.fillRect(sx + b.w - 1, sy, 1, b.h);
-        for (let yy = sy + b.h - 1; yy >= sy; yy -= 5) ctx.fillRect(sx, yy, b.w, 1);
-      }
+      // a soft shadow where the building stands on the ground
+      ctx.fillStyle = 'rgba(20,12,6,0.28)';
+      ctx.fillRect(sx - 1, sy + b.h, b.w + 2, 1);
+      ctx.fillStyle = 'rgba(20,12,6,0.14)';
+      ctx.fillRect(sx - 2, sy + b.h + 1, b.w + 4, 1);
+      if (b.done && b.type !== 'flag' && b.type !== 'gate') drawDetailed(ctx, spr, sx, sy);
+      else if (!b.done) drawSite(ctx, b, spr, sx, sy);
       drawBuildFx(ctx, b, sx, sy);
       if (b.type === 'base') {
         // (Versus: the team colour)
@@ -397,6 +441,7 @@ function render() {
       if (b.done && b.type === 'flag') {
         drawFlag(sx, sy, 18, 6);
       }
+      if (b.done) drawMoving(ctx, b, sx, sy);
       if (b.done && b.type === 'furnace' && b.busy) {
         ctx.fillStyle = (G.frame >> 2) & 1 ? '#ffcf4a' : '#ff7a2a';
         ctx.fillRect(sx + 6, sy + 15, 6, 7);
@@ -466,24 +511,16 @@ function render() {
     const x = Math.floor(L.x - cx),
       y = Math.floor(L.y - cy);
     if (x < -14 || x > G.VW || y < -10 || y > G.VH) continue;
-    ctx.fillStyle = '#6f6a64';
-    ctx.fillRect(x, y + 1, 12, 4);
-    ctx.fillStyle = '#8a847c';
-    ctx.fillRect(x, y + 1, 12, 1);
-    ctx.fillStyle = '#4a4540';
-    ctx.fillRect(x + 1, y + 2, 1, 3);
-    ctx.fillRect(x + 10, y + 2, 1, 3);
-    if (L.items.length) {
-      ctx.fillStyle = '#f2c230';
-      for (let k = 0; k < Math.min(5, Math.ceil(L.items.length / 5)); k++) ctx.fillRect(x + 2 + k * 2, y, 2, 1);
+    // the load heaps up over the rim, in the colours of what is in it
+    for (let k = 0; k < Math.min(10, L.items.length); k++) {
+      ctx.fillStyle = ICOL[L.items[k]] || '#f2c230';
+      ctx.fillRect(x + 1.5 + (k % 5) * 1.8, y - (k >= 5 ? 1 : 0), 1.5, 1.5);
     }
-    const wr = Math.floor(L.x / 2) & 1;
-    ctx.fillStyle = '#2a2a2a';
-    ctx.fillRect(x + 1, y + 5, 3, 2);
-    ctx.fillRect(x + 8, y + 5, 3, 2);
-    ctx.fillStyle = '#9a948c';
-    ctx.fillRect(x + 2 + wr, y + 5, 1, 1);
-    ctx.fillRect(x + 9 + wr, y + 5, 1, 1);
+    box(ctx, x, y + 1, 12, 4, '#6f6a64');
+    ctx.fillStyle = '#4a4540';
+    ctx.fillRect(x + 3.5, y + 2, 0.5, 2.5);
+    ctx.fillRect(x + 8, y + 2, 0.5, 2.5);
+    for (const wx of [x + 2.5, x + 9.5]) wheel(ctx, wx, y + 5.5, 1.5, L.x / 1.5, '#2a2a2a');
   }
   drawChests(ctx, cx, cy);
   drawHazards(ctx, cx, cy);
