@@ -25,6 +25,7 @@ import { gen } from './gen.js';
 import { cycleCrew, readInput } from './input.js';
 import { helperAI } from './helpers.js';
 import { updBeams } from './mine.js';
+import { checkLessons } from './lessons.js';
 import { updMissions } from './missions.js';
 import { killAnimal, updAnimal, updItems, updParts, updTrees } from './objects.js';
 import { updArrows, updCombat } from './combat.js';
@@ -37,19 +38,7 @@ import { simulate } from './sim.js';
 import { audioInit, sfx } from './sound.js';
 import { initUiArt } from './uiart.js';
 import { G, animals, builds, crew, lorries } from './state.js';
-import {
-  $,
-  checkHints,
-  closePanel,
-  drawMini,
-  hud,
-  openBase,
-  openBuild,
-  panelEl,
-  toast,
-  toastEl,
-  toggleMap,
-} from './ui.js';
+import { $, closePanel, drawMini, hud, openBase, openBuild, panelEl, toast, toastEl, toggleMap } from './ui.js';
 import { register, send } from './commands.js';
 import { NET, inRoom, onGameMsg, sendTo } from './net/room.js';
 import { beginNet, endNet, resumeNet, startMessage } from './net/session.js';
@@ -445,7 +434,7 @@ function step() {
     updTutorial();
     if (G.frame % 15 === 0) updAmbience();
     if (G.frame % 30 === 0) updDecor();
-    if (G.frame % 60 === 0) checkHints();
+    if (G.frame % 60 === 0) checkLessons();
     if (G.frame % 3600 === 0) G.net ? saveNet() : saveGame();
     checkGoal();
   }

@@ -1,5 +1,6 @@
 import { GAME_MODES, MODE_IDS, mode } from './modes.js';
 import { campaignPanel, totalStars } from './scenarios.js';
+import { lessonsPanel } from './lessons.js';
 import { canInstall, offerInstall, openInstall } from './install.js';
 import { LIVE, isNative, ownWeb } from './platform.js';
 // Lobby between games: the player's Wühler on a stage, resources on top, menus left, play button right.
@@ -343,6 +344,11 @@ function openOptions() {
       onClick: openInstall,
     });
   opt(l, {
+    title: tr('Spielhilfe'),
+    sub: tr('Alle entdeckten Tipps zum Nachlesen'),
+    onClick: openHelp,
+  });
+  opt(l, {
     title: tr('Tutorial spielen'),
     sub: tr(hooks.hasRun() ? 'Ersetzt dein laufendes Spiel' : 'Eigene kleine Welt mit Anleitung'),
     onClick: () => {
@@ -365,6 +371,10 @@ function openOptions() {
   const k = document.createElement('div');
   k.innerHTML = hooks.keysHtml();
   p.appendChild(k);
+}
+
+function openHelp() {
+  lessonsPanel(openPanel('Spielhilfe'), openHelp);
 }
 
 // ---- Wiring ----

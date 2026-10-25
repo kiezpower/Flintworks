@@ -267,4 +267,4 @@ function drawTutorial(ctx, cx, cy) {
   ctx.restore();
 }
 
-export { STEPS, drawTutorial, endTutorial, resumeTutorial, setTutHooks, startTutorial, tutHud, updTutorial };
+export { STEPS, drawTutorial, say, endTutorial, resumeTutorial, setTutHooks, startTutorial, tutHud, updTutorial };

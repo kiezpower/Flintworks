@@ -1,5 +1,5 @@
 import { stock, takeStock } from './store.js';
-import { hasTool, toolSection } from './tools.js';
+import { toolSection } from './tools.js';
 import { knowsAll, needText, researchSection } from './research.js';
 const depthEl = document.getElementById('depthTxt');
 const misEl = document.getElementById('misTxt');
@@ -7,23 +7,8 @@ import { GAME_MODES, mode } from './modes.js';
 const goalWrap = document.getElementById('goalWrap'),
   goalTxt = document.getElementById('goalTxt'),
   goalBar = document.getElementById('goalBar');
-import {
-  BASELV,
-  BT,
-  BUY,
-  UPG,
-  costTxt,
-  countRes,
-  hasRes,
-  lvl,
-  mkLorry,
-  payRes,
-  resName,
-  terrOK,
-  terrOn,
-  tryBuild,
-} from './buildings.js';
-import { context, nearTree } from './clonk.js';
+import { BASELV, BT, BUY, UPG, costTxt, hasRes, lvl, mkLorry, payRes, resName, terrOn, tryBuild } from './buildings.js';
+import { context } from './clonk.js';
 import { addClonk, sel_, spawnItem } from './entities.js';
 import { held, joy, keys } from './input.js';
 import { calcTerr, cam } from './render.js';
@@ -38,8 +23,7 @@ import { canShoot } from './combat.js';
 import { isPlayer } from './players.js';
 import { missionText } from './missions.js';
 import { G, INV_MAX, animals, builds, crew, lorries } from './state.js';
-import { darkness } from './weather.js';
-import { PLANK, AIR, GOLD, H, MINI, ROCK, W, bg, hex, mat, matAt, surf } from './world.js';
+import { PLANK, AIR, GOLD, MINI, W, bg, hex, mat, surf } from './world.js';
 
 // ---- HUD, panels, minimap ----
 const $ = id => document.getElementById(id);
@@ -501,88 +485,11 @@ register('buy', (c, { t }) => {
   else spawnItem(t, G.base.x + 16, G.base.gy - 6, 0, 0, 20);
 });
 
-// ---- Hints ----
-G.hintsSeen = new Set();
-const HINTS = [
-  {
-    id: 'crewtap',
-    test: () => crew.length > 1 && G.frame > 900,
-    text: 'Tippe oben auf einen Helfer, um ihm eine Aufgabe zu geben',
-  },
-  {
-    id: 'crew',
-    test: () => G.frame > 600,
-    text: 'Deine Helfer arbeiten von selbst: sie sammeln, fällen Bäume, graben Erz und bringen alles zur Basis',
-  },
-  { id: 'tap', test: () => G.frame > 1500, text: 'Tipp rechts ins Gelände: dein Wühler läuft (und gräbt) dorthin' },
-  { id: 'tree', test: c => nearTree(c), text: 'Aktion fällt den Baum. Holz brauchst du zum Bauen' },
-  {
-    id: 'gold',
-    test: c => c.inv.includes('nug'),
-    text: 'Lauf mit dem Gold in die Heimatbasis – es wird sofort verkauft',
-  },
-  {
-    id: 'build',
-    test: c => countRes(c, 'wood') >= 2 && countRes(c, 'rock') >= 1,
-    text: 'Genug Material für eine Hütte: Bauen',
-  },
-  {
-    id: 'rock',
-    test: c =>
-      c.digging && matAt(Math.floor(c.x + 3 + c.digDir[0] * 9), Math.floor(c.y + 5 + c.digDir[1] * 10)) === ROCK,
-    text: 'Fels ist zu hart. Wirf einen Feuerstein darauf',
-  },
-  { id: 'loam', test: c => c.inv[c.isel] === 'loam', text: 'Lehm in der Hand: Aktion baut eine Brücke' },
-  {
-    id: 'ore',
-    test: c => c.inv.includes('ore') || c.inv.includes('coal'),
-    text: 'Erz und Kohle schmilzt der Hochofen zu Metall',
-  },
-  {
-    id: 'deep',
-    test: c => c.y - surf[Math.max(0, Math.min(W - 1, Math.floor(c.x)))] > 45,
-    text: 'Ab hier wird es gefährlich: Die Decke kann einstürzen, Grubengas lauert',
-  },
-  {
-    id: 'metal',
-    test: c => c.inv.includes('metal') && !hasTool('pick'),
-    text: 'Mit Metall gibt es an der Basis besseres Werkzeug',
-  },
-  {
-    id: 'chest',
-    test: () => (G.chestsFound || 0) === 0 && G.mode === 'treasure' && G.frame > 900,
-    text: 'Die Karte zeigt, wo die Schatztruhen vergraben sind',
-  },
-  { id: 'plank', test: c => c.inv.includes('plank'), text: 'Bretter: für Gebäude oder als Holzbrücke (Aktion)' },
-  { id: 'terr', test: c => terrOn() && !terrOK(c.x), text: 'Du bist außerhalb deines Gebiets. Flaggen erweitern es' },
-  { id: 'hang', test: c => c.hangle, text: 'Du hängst an der Decke. Runter lässt los' },
-  { id: 'night', test: () => darkness() > 0.35, text: 'Es wird Nacht. Bleib in der Nähe der Basis' },
-  {
-    id: 'lava',
-    test: c => Math.abs(c.y - H + 60) < 40 && G.frame % 60 === 0,
-    text: 'Vorsicht: In der Tiefe gibt es Lava und Säure',
-  },
-];
-function checkHints() {
-  const c = sel_();
-  if (!c || c.dead || G.toastT > 0 || G.tut) return;
-  for (const h of HINTS) {
-    if (G.hintsSeen.has(h.id)) continue;
-    if (h.test(c)) {
-      G.hintsSeen.add(h.id);
-      toast(h.text);
-      return;
-    }
-  }
-}
-
 export {
   $,
-  HINTS,
   actBtn,
   airBar,
   airWrap,
-  checkHints,
   closePanel,
   crewEl,
   drawMini,

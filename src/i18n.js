@@ -595,6 +595,47 @@ const EN = {
   'Eigene kleine Welt mit Anleitung': 'A small world of its own with a guide',
   'Nochmal tippen: Tutorial starten, dein Spielstand geht verloren':
     'Tap again: start the tutorial, your current game will be lost',
+  // lessons and the game guide
+  'Aufgaben für Helfer': 'Jobs for helpers',
+  'Klick oben auf einen Helfer, um ihm eine Aufgabe zu geben': 'Click a helper at the top to give them a job',
+  'Klick ins Gelände: dein Wühler läuft (und gräbt) dorthin':
+    'Click into the landscape: your Wühler walks (and digs) there',
+  'F fällt den Baum. Holz brauchst du zum Bauen': 'F chops the tree. You need wood for building',
+  'Was die Helfer heimbringen, liegt im Lager. Mit der Aufgabe Holz fällen sie Bäume':
+    'What the helpers bring home goes into the store. With the job Wood they chop trees',
+  'Lehm in der Hand: F baut eine Brücke': 'Loam in hand: F builds a bridge',
+  'Je tiefer, desto mehr Erz und Gold. Wie tief du bist, steht links oben':
+    'The deeper, the more ore and gold. Your depth is shown at the top left',
+  'Helfer stützen ihre Stollen mit Balken – dafür brauchen sie Holz im Lager':
+    'Helpers prop up their tunnels with beams – they need wood in the store for that',
+  'Tippe oben links auf deinen Wühler → Hier abbauen: dort graben die Bergleute':
+    'Tap your Wühler at the top left → Mine here: the miners dig there',
+  'Klick oben links auf deinen Wühler → Hier abbauen: dort graben die Bergleute':
+    'Click your Wühler at the top left → Mine here: the miners dig there',
+  'Das Sägewerk macht aus Holz Bretter: Bauen → Sägewerk': 'The sawmill turns wood into planks: Build → Sawmill',
+  'Neue Helfer heuerst du in der Burg an: dort Aktion': 'You hire new helpers at the castle: Action there',
+  'In der Burg kannst du forschen: Fahrzeuge, Waffen und mehr':
+    'You can research at the castle: vehicles, weapons and more',
+  'Entdeckt: {n} von {m}': 'Found: {n} of {m}',
+  'Noch nicht entdeckt': 'Not found yet',
+  'Tipps wieder zeigen': 'Show tips again',
+  'Alle Tipps erscheinen im Spiel noch einmal': 'All tips show up in the game once more',
+  'Die Tipps kommen wieder': 'The tips will come again',
+  Spielhilfe: 'Game guide',
+  'Alle entdeckten Tipps zum Nachlesen': 'All tips found so far, to read again',
+  'Laufen per Tipp': 'Walk by tapping',
+  Bäume: 'Trees',
+  Lager: 'Store',
+  Fels: 'Rock',
+  Tiefe: 'Depth',
+  Stützbalken: 'Support beams',
+  Anheuern: 'Hiring',
+  'Gefahr in der Tiefe': 'Danger in the deep',
+  Schatztruhen: 'Treasure chests',
+  Gebiet: 'Territory',
+  Hangeln: 'Hanging',
+  Nacht: 'Night',
+  Helfer: 'Helpers',
   // tutorial: the first shift
   'Belohnung: Grubenhelm und {n} Taler Startgeld für deine erste Runde':
     'Reward: miner’s helmet and {n} coins start money for your first round',
