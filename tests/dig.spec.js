@@ -180,3 +180,49 @@ test('loot falls where it was dug, and the end of a small vein still gives its n
   expect(r.own).toBe(0);
   expect(errors).toEqual([]);
 });
+
+test('after a short pause digging goes on at once, a fresh start needs a moment of pushing', async ({ page }) => {
+  const errors = await field(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      { mat, W, AIR, EARTH, paint } = w.world,
+      c = w.crew[0];
+    for (let x = 380; x < 700; x++)
+      for (let y = 60; y < 260; y++) {
+        mat[y * W + x] = y < 200 && x < 440 ? AIR : EARTH;
+        paint(y * W + x);
+      }
+    Object.assign(c, { x: 432, y: 190, vx: 0, vy: 0, face: 1 });
+    w.step(5);
+    // automatic digging only: walk against the wall
+    const until = () => {
+      for (let i = 1; i < 60; i++) {
+        w.step(1);
+        if (c.digging) return i;
+      }
+      return 99;
+    };
+    w.keys.r = 1;
+    const first = until();
+    w.step(40);
+    w.keys.r = 0;
+    w.step(12);
+    w.keys.r = 1;
+    const again = until();
+    w.keys.r = 0;
+    // long after, it takes the push again
+    w.step(120);
+    w.keys.r = 1;
+    const later = until();
+    w.keys.r = 0;
+    return { first, again, later };
+  });
+  console.log(JSON.stringify(r));
+  expect(r.first).toBeGreaterThan(5);
+  expect(r.first).toBeLessThan(40);
+  // (only the few pixels back to the face are walked first)
+  expect(r.again).toBeLessThan(10);
+  expect(r.again).toBeLessThan(r.first - 10);
+  expect(r.later).toBeGreaterThan(5);
+  expect(errors).toEqual([]);
+});

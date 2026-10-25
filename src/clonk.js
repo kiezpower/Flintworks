@@ -184,8 +184,10 @@ function wantsDig(c, I) {
     // no way up here: pushing up and sideways into a wall still digs sideways
     if (Math.abs(I.ax) < 0.35) return false;
   }
-  // keep going while the last stroke still finds earth (no flicker on/off)
-  const need = c.digging ? 1 : 3;
+  // keep going while the last stroke still finds earth (no flicker on/off); after a short
+  // pause (a step back, a look round) digging goes on at once
+  const recent = G.frame - (c.digEnd ?? -999) < 30;
+  const need = c.digging || recent ? 1 : 3;
   // digging down needs the stick clearly pointing down: a thumb that slips a bit while
   // walking must not start a hole
   if (I.ay > 0.55 && I.ay > Math.abs(I.ax) * 0.5)
@@ -195,7 +197,7 @@ function wantsDig(c, I) {
     // pushing for a moment – a short bump against a step does not dig yet
     const blocked = !free(c.x + dir * 0.7, c.y, 6, 10) && !free(c.x + dir * 0.7, c.y - 3, 6, 10);
     c.pushT = blocked ? (c.pushT || 0) + 1 : 0;
-    if (c.digging || (blocked && c.pushT > (G.jumpBtn ? 18 : 8))) return digZone(c, dir, 0, 9) >= 2 ? 'side' : false;
+    if (c.digging || (blocked && (recent || c.pushT > (G.jumpBtn ? 18 : 8)))) return digZone(c, dir, 0, 9) >= 2 ? 'side' : false;
   } else c.pushT = 0;
   return false;
 }
@@ -370,7 +372,7 @@ function digHit(c, slope) {
   }
   if (c === sel_()) {
     if (m === ROCK || m === GRANITE) G.shake = Math.max(G.shake, 1.1);
-    if (G.vibe !== false) buzz(m === ROCK || m === GRANITE ? 14 : 7);
+    buzz(m === ROCK || m === GRANITE ? 14 : 7);
   }
 }
 function nearTree(c) {
@@ -562,13 +564,19 @@ function updBody(c, I) {
     const mag = Math.hypot(I.ax, I.ay);
     const raw = mag < 0.3 ? 0 : Math.atan2(I.ay, Math.max(0.001, Math.abs(I.ax)));
     // (helpers pass their own slope: they may dig down more steeply to reach ore)
-    const slope = I.slope !== undefined ? I.slope : raw > 0.45 ? SLOPE_DOWN : raw < -0.45 ? -SLOPE_UP : 0;
-    const len = Math.hypot(1, slope);
+    let slope = I.slope !== undefined ? I.slope : raw > 0.45 ? SLOPE_DOWN : raw < -0.45 ? -SLOPE_UP : 0;
     if (!c.digging) {
       // the first blow comes right away
       c.digPh = 0.45;
       c.digH = 1;
     }
+    // a player's tunnel bends into a new direction over a few strokes instead of a sharp kink
+    if (I.slope === undefined) {
+      if (c.digging && c.digF === c.face) slope = c.digS += (slope - c.digS) * 0.3;
+      c.digS = slope;
+      c.digF = c.face;
+    }
+    const len = Math.hypot(1, slope);
     c.digging = true;
     c.digDir = [c.face / len, slope / len];
     const h = digStroke(c, c.face, slope);
@@ -593,6 +601,7 @@ function updBody(c, I) {
     c.anim += 0.3;
     return;
   }
+  if (c.digging) c.digEnd = G.frame;
   c.digging = false;
   if (c.climb) {
     climbUpd(c, I);

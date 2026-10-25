@@ -218,7 +218,7 @@ function sfx(n, x, y, k = 1, p = 1) {
 
 // short vibration on phones for hits and blasts
 function buzz(ms) {
-  if (G.muted || !navigator.vibrate) return;
+  if (G.muted || G.vibe === false || !navigator.vibrate) return;
   try {
     navigator.vibrate(ms);
   } catch {}

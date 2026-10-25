@@ -172,18 +172,21 @@ function markFresh(i) {
   }
   fresh[i] = 255;
 }
-// called every 75 frames: the walls dry in 16 steps
+// called every frame: each cell is visited once in 75 frames and dries in 16 steps; the work
+// is spread over the frames so long tunnels do not make the game stutter
+let dryK = 0;
 function dryFresh() {
-  let n = 0;
-  for (let k = 0; k < freshN; k++) {
-    const i = freshList[k];
+  const n = Math.ceil(freshN / 75);
+  for (let s = 0; s < n && freshN; s++) {
+    if (dryK >= freshN) dryK = 0;
+    const i = freshList[dryK];
     fresh[i] = mat[i] === AIR && fresh[i] > 16 ? fresh[i] - 16 : 0;
     // the earth around it dries along
     for (const j of [i, i - 1, i + 1, i - W, i + W]) if (j >= 0 && j < W * H && (j === i || mat[j] !== AIR)) paintCell(j);
     markDirty(i % W, (i / W) | 0, 1);
-    if (fresh[i]) freshList[n++] = i;
+    if (fresh[i]) dryK++;
+    else freshList[dryK] = freshList[--freshN];
   }
-  freshN = n;
 }
 function clearFresh() {
   for (let k = 0; k < freshN; k++) fresh[freshList[k]] = 0;

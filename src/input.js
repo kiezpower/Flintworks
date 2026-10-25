@@ -16,7 +16,7 @@ G.joyUpArmed = true;
 G.inputKind = matchMedia('(hover: none), (pointer: coarse)').matches ? 'touch' : 'keys';
 function buzz(ms) {
   try {
-    if (navigator.vibrate) navigator.vibrate(ms);
+    if (navigator.vibrate && G.vibe !== false) navigator.vibrate(ms);
   } catch {}
 }
 const edge = { jump: false, jumpUp: false, throw: false, act: false };

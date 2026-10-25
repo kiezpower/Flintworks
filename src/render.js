@@ -560,6 +560,14 @@ function render() {
       ctx.fillRect(x + 2, y - 4, 3, 1);
       ctx.fillRect(x + 3, y - 3, 1, 1);
     }
+    // on a touch screen, three dots in the face show which way the tunnel is going
+    if (c === mine && c.digging && G.inputKind === 'touch') {
+      const [dx, dy] = c.digDir;
+      for (let k = 0; k < 3; k++) {
+        ctx.fillStyle = `rgba(255,244,214,${0.25 + 0.2 * Math.sin(G.frame * 0.15 - k)})`;
+        ctx.fillRect(Math.round(x + 3 + dx * (9 + k * 3)), Math.round(y + 5 + dy * (9 + k * 3)), 1, 1);
+      }
+    }
   });
   for (const p of parts) {
     const x = Math.floor(p.x - cx),
