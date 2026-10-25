@@ -70,6 +70,13 @@ function sfx(n, x, y, k = 1) {
       tn(t, 'square', 1500 + rnd() * 400, 900, 0.03, 0.035 * v);
       nz(t, 0.05, 3500, 1800, 0.08 * v, 'bandpass');
       break;
+    case 'step':
+      nz(t, 0.04, 700 + rnd() * 300, 250, 0.045 * v);
+      break;
+    case 'land':
+      nz(t, 0.09, 600, 150, 0.1 * v);
+      tn(t, 'sine', 120, 70, 0.08, 0.06 * v);
+      break;
     case 'click':
       tn(t, 'square', 700, 520, 0.04, 0.03);
       break;

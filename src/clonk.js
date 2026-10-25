@@ -479,7 +479,10 @@ function updClonk(c, I) {
   }
   const fallV = c.vy;
   const [bx, by] = moveBody(c, c.vx, c.vy, onG ? 3 : 0);
-  if (by && fallV > 1.6) c.sqT = G.frame;
+  if (by && fallV > 1.6) {
+    c.sqT = G.frame;
+    if (fallV <= 3.9) sfx('land', c.x, c.y);
+  }
   if (by && fallV > 2.4) dust(c.x, c.y + 9, Math.round(fallV * 2), '#b89a76');
   if (by) {
     if (fallV > 3.9) {
@@ -511,7 +514,10 @@ function updClonk(c, I) {
   }
   if (onG) c.anim += Math.abs(c.vx) * 0.35;
   else if (inLiq) c.anim += 0.12;
-  if (onG && Math.abs(c.vx) > 0.8 && G.frame % 12 === 0) dust(c.x, c.y + 9, 1, '#b89a76');
+  if (onG && Math.abs(c.vx) > 0.8 && G.frame % 12 === 0) {
+    dust(c.x, c.y + 9, 1, '#b89a76');
+    sfx('step', c.x, c.y, 0.6);
+  }
 }
 function climbUpd(c, I) {
   const f = c.face,
