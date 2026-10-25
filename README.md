@@ -18,10 +18,13 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 | Springen | Stick nach oben schnippen oder „Sprung“ | Leertaste |
 | Graben (gerade, ↓/↑ schräg) | „Graben“ halten oder kurz tippen | Shift / X |
 | Werfen | „Wurf“ | E |
+| Durch Holztreppe oder -brücke nach unten | Stick nach unten | ↓ / S |
 | Aktion (Fällen, Basis, Werk, Brücke …) | Aktions-Knopf | F |
 | Bauen | „Bauen“ oben rechts | B |
 | Wühler wechseln | Porträt oben links oder Wühler antippen | Tab |
 | Karte | „Karte“ | M |
+
+Holztreppen und Holzbrücken tragen nur von oben: Man läuft von der Seite unter ihnen durch, springt von unten hindurch und steigt auf, wo sie die Füße erreichen. Lehmbrücken bleiben feste Wände.
 
 ## Entwickeln
 

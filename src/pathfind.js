@@ -3,12 +3,15 @@
 // jump onto ledges up to jumpH pixels and, if allowed, dig through diggable material.
 // The same code drives the helpers in the game and the workers in the lobby.
 
-// o: { solid(x,y), dig?(x,y), bad?(x,y), w, h, stepX, maxStep, maxDrop, jumpH, digCost, maxNodes }
+// o: { solid(x,y), plat?(x,y), dig?(x,y), bad?(x,y), w, h, stepX, maxStep, maxDrop, jumpH, digCost, maxNodes }
+// plat(x,y) marks platform pixels (wooden stairs): they only hold the feet, and a jump passes them
 function mkNav(o) {
   const w = o.w || 6,
     h = o.h || 10;
-  const clear = (x, y) => {
-    for (let yy = y; yy < y + h; yy++) for (let xx = x; xx < x + w; xx++) if (o.solid(xx, yy)) return false;
+  const clear = (x, y, rise) => {
+    for (let yy = y; yy < y + h; yy++)
+      for (let xx = x; xx < x + w; xx++)
+        if (o.solid(xx, yy) && !(o.plat && (rise || yy < y + h - 2) && o.plat(xx, yy))) return false;
     return true;
   };
   // how many cells must be dug to fit the body here (-1: something undiggable in the way)
@@ -64,11 +67,11 @@ function mkNav(o) {
       if (!walked && jh > ms) {
         // jump: straight up with the head clear, then over onto the ledge
         for (let up = ms + 1; up <= jh; up++) {
-          if (!clear(x, y - up)) break;
+          if (!clear(x, y - up, true)) break;
           let landed = false;
           for (const reach of [sx, sx * 2, sx * 3]) {
             const jx = x + dir * reach;
-            if (!clear(jx, y - up)) continue;
+            if (!clear(jx, y - up, true)) continue;
             const ny = settle(jx, y - up);
             if (ny !== null && ny < y - ms && okNode(jx, ny)) {
               out.push(jx, ny, 6 + up * 0.6 + reach, 1);
