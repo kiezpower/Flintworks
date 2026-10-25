@@ -1,6 +1,24 @@
 # Plan: Hochwertigeres Graben
 
-> **Stand: Plan, noch nicht umgesetzt.**
+> **Stand: umgesetzt (v1.29.0), alle sieben Etappen.** Abweichungen vom ursprünglichen Plan:
+> - Härte: Sand 0,75 · Erde 1 · Gold 1,15 · Lehm 1,2 · Kohle 1,25 · Erz 1,4 · Edelstein 1,5 ·
+>   Fels 1,7 (mit Spitzhacke). Gemessen in 240 Frames: Erde 136 px (vorher 132), Fels 115 px
+>   (vorher 113), Erz 97 px, Edelstein 89 px. Sand rutscht nach und lässt sich schlecht messen.
+> - Schlag-Takt: Das Material wird weiter jedes Frame abgetragen (so bleibt der Stollen immer
+>   passierbar); der Takt steuert Vorschub (nach dem Hieb schiebt der Wühler nach), Sound,
+>   Partikel, Fels-Wackeln und Vibration.
+> - Stollen-Optik: Keine geglätteten Schrägen (die Treppen sind bei 1 px-Raster unvermeidlich),
+>   dafür eine unebene Decke. „Frisch gegraben“ färbt die Erde am Stollenrand dunkel und feucht,
+>   auf der fast schwarzen Rückwand allein war es nicht zu sehen.
+> - Beute: Die höhere Decke gräbt etwas mehr Erde, dadurch rund 7 % mehr Ertrag pro Stollenlänge.
+>   Am Ende einer Ader wird auf ein Nugget aufgerundet (ab halbem Nugget) oder abgerundet. Das
+>   „Hinfliegen ins Inventar“ entfällt: Der Wühler sammelt Nuggets zu seinen Füßen ohnehin auf.
+> - Vorschau: drei Punkte in Grabrichtung, nur auf Touch-Geräten.
+> - Mehrspieler: Takt und Härte laufen auf dem Host; Gäste sehen die Hacken-Animation nach der
+>   eigenen Animation und bekommen Sound und Tonhöhe vom Host. Partikel bleiben beim Host.
+> - Code: `src/clonk.js` (Härte, Takt, Hieb, Beute), `src/clonkhi.js` (Hacke), `src/sound.js`,
+>   `src/world.js` (feuchte Wände, Textur-Farben), `src/objects.js` (Geröll), Tests in
+>   `tests/dig.spec.js`.
 
 Ziel: Graben ist die Tätigkeit, die man in Flintworks am häufigsten macht. Es soll sich
 **satt, körperlich und belohnend** anfühlen – jeder Hieb ist sicht-, hör- und spürbar, jedes
