@@ -153,6 +153,11 @@ function paintCell(i) {
   px[o + PW] = texel(i, 0, 1);
   px[o + PW + 1] = texel(i, 1, 1);
 }
+// the colour a cell shows on screen, as CSS (crumbs flying off take the colour of the earth)
+const cssOf = i => {
+  const c = texel(i, i & 1, 0);
+  return `rgb(${c & 255},${(c >> 8) & 255},${(c >> 16) & 255})`;
+};
 // old single-colour lookup, still used for flat previews
 const colorOf = i => {
   const m = mat[i];
@@ -365,6 +370,7 @@ export {
   boxFree,
   clamp,
   colorOf,
+  cssOf,
   flush,
   free,
   hex,

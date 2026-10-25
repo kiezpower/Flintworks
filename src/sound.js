@@ -20,6 +20,8 @@ function audioInit() {
     G.AC = null;
   }
 }
+// where the voices of the current sound go: the master gain, or a stereo panner in front of it
+let OUT = null;
 function nz(t0, dur, f0, f1, vol, type = 'lowpass') {
   const s = G.AC.createBufferSource();
   s.buffer = G.NB;
@@ -30,7 +32,7 @@ function nz(t0, dur, f0, f1, vol, type = 'lowpass') {
   const g = G.AC.createGain();
   g.gain.setValueAtTime(vol, t0);
   g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
-  s.connect(f).connect(g).connect(G.MG);
+  s.connect(f).connect(g).connect(OUT || G.MG);
   s.start(t0, rnd() * 0.5);
   s.stop(t0 + dur + 0.02);
 }
@@ -42,13 +44,14 @@ function tn(t0, type, f0, f1, dur, vol) {
   const g = G.AC.createGain();
   g.gain.setValueAtTime(vol, t0);
   g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
-  o.connect(g).connect(G.MG);
+  o.connect(g).connect(OUT || G.MG);
   o.start(t0);
   o.stop(t0 + dur + 0.02);
 }
-function sfx(n, x, y, k = 1) {
+// k: loudness, p: pitch (1 = normal)
+function sfx(n, x, y, k = 1, p = 1) {
   // multiplayer host: sounds in the world are heard by the others too
-  if (G.netHost && x !== undefined) G.netEvent(['s', n, x | 0, y | 0, k]);
+  if (G.netHost && x !== undefined) G.netEvent(['s', n, x | 0, y | 0, k, p]);
   if (!G.AC || G.muted || G.AC.state !== 'running') return;
   let v = 1;
   if (x !== undefined) {
@@ -58,17 +61,49 @@ function sfx(n, x, y, k = 1) {
   }
   v *= k;
   const t = G.AC.currentTime;
+  // sounds in the world come from the left or right of the screen
+  if (x !== undefined && G.AC.createStereoPanner) {
+    OUT = G.AC.createStereoPanner();
+    OUT.pan.value = clamp((x - (cam.x + G.VW / 2)) / (G.VW / 2), -1, 1) * 0.6;
+    OUT.connect(G.MG);
+  }
+  // pick strikes never sound quite the same twice
+  const r = 0.92 + rnd() * 0.16;
   switch (n) {
+    // each material sounds different under the pick: a strike, then the earth crumbling off
     case 'dig':
-      nz(t, 0.07, 900, 300, 0.1 * v);
+      tn(t, 'sine', 150 * r, 70, 0.07, 0.1 * v);
+      nz(t, 0.09, 1300 * r, 300, 0.1 * v);
+      nz(t + 0.04, 0.16, 700 * r, 180, 0.035 * v);
       break;
-    // each material sounds a little different under the shovel
     case 'digSand':
-      nz(t, 0.11, 2400, 900, 0.06 * v, 'bandpass');
+      nz(t, 0.13, 2600 * r, 900, 0.06 * v, 'bandpass');
+      nz(t + 0.02, 0.22, 4200 * r, 2000, 0.022 * v, 'highpass');
+      break;
+    case 'digLoam':
+      tn(t, 'sine', 120 * r, 55, 0.09, 0.12 * v);
+      nz(t, 0.07, 800 * r, 220, 0.1 * v);
+      break;
+    case 'digCoal':
+      nz(t, 0.06, 1500 * r, 500, 0.11 * v, 'bandpass');
+      tn(t, 'square', 420 * r, 260, 0.025, 0.025 * v);
+      nz(t + 0.03, 0.14, 900 * r, 300, 0.04 * v);
+      break;
+    case 'digOre':
+      tn(t, 'triangle', 900 * r, 620, 0.07, 0.045 * v);
+      nz(t, 0.05, 2000 * r, 900, 0.09 * v, 'bandpass');
+      nz(t + 0.03, 0.12, 800 * r, 250, 0.04 * v);
       break;
     case 'digRock':
-      tn(t, 'square', 1500 + rnd() * 400, 900, 0.03, 0.035 * v);
-      nz(t, 0.05, 3500, 1800, 0.08 * v, 'bandpass');
+      tn(t, 'square', 1500 * r, 900, 0.03, 0.035 * v);
+      tn(t, 'triangle', 2600 * r, 2300, 0.12, 0.025 * v);
+      nz(t, 0.05, 3500 * r, 1800, 0.08 * v, 'bandpass');
+      nz(t + 0.03, 0.14, 1200 * r, 400, 0.03 * v);
+      break;
+    // a nugget pops out; one after the other they climb up the scale
+    case 'nug':
+      tn(t, 'triangle', 660 * p, 990 * p, 0.06, 0.07 * v);
+      tn(t + 0.05, 'sine', 1320 * p, 1320 * p, 0.1, 0.03 * v);
       break;
     case 'step':
       nz(t, 0.04, 700 + rnd() * 300, 250, 0.045 * v);
@@ -178,6 +213,7 @@ function sfx(n, x, y, k = 1) {
       nz(t, 0.6, 6000, 3000, 0.06 * v, 'highpass');
       break;
   }
+  OUT = null;
 }
 
 // short vibration on phones for hits and blasts

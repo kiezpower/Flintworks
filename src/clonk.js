@@ -32,6 +32,7 @@ import {
   WATER,
   bg,
   boxFree,
+  cssOf,
   free,
   mat,
   paint,
@@ -199,6 +200,9 @@ function digAt(cx, cy, r) {
   }
   spawnFromDig(cx, cy);
 }
+// colours of the cells dug last (taken from the texture, so crumbs match the ground)
+const crumbCols = [];
+let crumbN = 0;
 const CRUMB = {
   [EARTH]: '#7d5230',
   [SAND]: '#d9b56a',
@@ -218,7 +222,10 @@ function digCell(x, y, paced = false) {
   if (m === ROCK) {
     if (!hasTool('pick') || (!paced && rnd() > 0.3)) return 0;
   } else if (m !== EARTH && m !== SAND && m !== GOLD && m !== LOAM && m !== ORE && m !== COAL && m !== GEM) return 0;
-  if (rnd() < 0.14)
+  // a Wühler's stroke throws its crumbs on the strike (see digHit); it only notes their colours
+  if (paced) {
+    if (rnd() < 0.2) crumbCols[crumbN++ & 7] = cssOf(i);
+  } else if (rnd() < 0.14)
     parts.push({
       x,
       y,
@@ -230,7 +237,7 @@ function digCell(x, y, paced = false) {
     });
   if (m === GOLD) {
     G.goldDust++;
-    if (rnd() < 0.25) parts.push({ x, y, vx: (rnd() - 0.5) * 1.2, vy: -rnd() * 1.4, l: 25, c: '#ffe066' });
+    if (!paced && rnd() < 0.25) parts.push({ x, y, vx: (rnd() - 0.5) * 1.2, vy: -rnd() * 1.4, l: 25, c: '#ffe066', b: 1 });
   } else if (m === EARTH) G.earthDug++;
   else if (m === LOAM) G.loamDug++;
   else if (m === ORE) G.oreDug++;
@@ -242,11 +249,15 @@ function digCell(x, y, paced = false) {
   onDig(x, y);
   return m;
 }
+const SCALE = [1, 1.125, 1.25, 1.333, 1.5, 1.667, 1.875, 2];
 function spawnFromDig(cx, cy) {
   while (G.goldDust >= 16) {
     G.goldDust -= 16;
     spawnItem('nug', cx - 1, cy - 1, (rnd() - 0.5) * 1.5, -1.2, 10);
-    sfx('pick', cx, cy);
+    // nuggets in quick succession climb up the scale
+    G.nugN = G.frame - (G.nugT || -999) < 150 ? Math.min(7, (G.nugN || 0) + 1) : 0;
+    G.nugT = G.frame;
+    sfx('nug', cx, cy, 1, SCALE[G.nugN]);
   }
   if (G.oreDug >= 45) {
     G.oreDug = 0;
@@ -273,6 +284,18 @@ function spawnFromDig(cx, cy) {
     spawnItem(rnd() < 0.3 ? 'flint' : 'rock', cx - 1, cy - 2, rnd() - 0.5, -1, 30);
   }
 }
+// what else comes off with the strike: sand and coal dust, sparks from hard stone
+const DUST = {
+  [SAND]: { n: 3, c: ['rgba(232,206,150,0.35)', 'rgba(215,186,128,0.3)'], s: 2, g: -0.004, l: 35 },
+  [EARTH]: { n: 1, c: ['rgba(120,84,52,0.3)'], s: 2, g: -0.003, l: 25 },
+  [LOAM]: { n: 1, c: ['rgba(150,104,62,0.3)'], s: 2, g: -0.003, l: 25 },
+  [COAL]: { n: 3, c: ['rgba(38,34,32,0.5)', 'rgba(60,56,52,0.4)'], s: 2, g: -0.003, l: 40 },
+  [ORE]: { n: 2, c: ['#ffd27a', '#fff3c0'], s: 1, g: 0.05, l: 7, spark: 1 },
+  [GEM]: { n: 2, c: ['#d8fbff', '#ffffff'], s: 1, g: 0.03, l: 9, spark: 1 },
+  [ROCK]: { n: 3, c: ['#fff3c0', '#ffd27a', '#ffffff'], s: 1, g: 0.05, l: 7, spark: 1 },
+  [GRANITE]: { n: 3, c: ['#fff3c0', '#ffd27a'], s: 1, g: 0.05, l: 7, spark: 1 },
+};
+const DIGSND = { [SAND]: 'digSand', [LOAM]: 'digLoam', [COAL]: 'digCoal', [ORE]: 'digOre', [GEM]: 'digOre', [ROCK]: 'digRock', [GRANITE]: 'digRock' };
 // the moment the pick strikes: sound, a shake in rock, a short buzz on the phone
 const STRIKE = 0.6;
 function digHit(c, slope) {
@@ -280,10 +303,39 @@ function digHit(c, slope) {
     fy = c.y + 5 + slope * 6;
   let m = mat[Math.floor(fy) * W + Math.floor(fx)];
   if (!HARD[m] && m !== GRANITE) m = c.digM || EARTH;
-  sfx(m === SAND ? 'digSand' : m === ROCK || m === GRANITE ? 'digRock' : 'dig', c.x, c.y);
+  sfx(DIGSND[m] || 'dig', c.x, c.y);
   if (m === GOLD || m === GEM) {
     sfx('ting', c.x, c.y);
     glint(fx, fy);
+  }
+  // crumbs fly back from the face, plus dust, sparks or soot depending on the ground
+  const full = parts.length < (G.res === 1 ? 300 : 700);
+  const n = full ? 3 + Math.floor(rnd() * 3) : 1;
+  for (let k = 0; k < n; k++)
+    parts.push({
+      x: fx + (rnd() - 0.5) * 3,
+      y: fy + (rnd() - 0.5) * 6,
+      vx: -c.face * (0.3 + rnd() * 0.9),
+      vy: -0.4 - rnd() * 1.1,
+      l: 45 + rnd() * 30,
+      c: crumbCols[Math.floor(rnd() * Math.min(8, crumbN))] || CRUMB[m] || CRUMB[EARTH],
+      s: rnd() < 0.4 ? 2 : 1,
+      b: 1,
+    });
+  if (full) {
+    const fx2 = DUST[m];
+    if (fx2)
+      for (let k = 0; k < fx2.n; k++)
+        parts.push({
+          x: fx + (rnd() - 0.5) * 2,
+          y: fy + (rnd() - 0.5) * 5,
+          vx: fx2.spark ? (rnd() - 0.5) * 2.4 : -c.face * rnd() * 0.4 + (rnd() - 0.5) * 0.2,
+          vy: fx2.spark ? -rnd() * 1.4 : -0.1 - rnd() * 0.2,
+          l: fx2.l + rnd() * 10,
+          c: fx2.c[k % fx2.c.length],
+          s: fx2.s,
+          g: fx2.g,
+        });
   }
   if (c === sel_()) {
     if (m === ROCK || m === GRANITE) G.shake = Math.max(G.shake, 1.1);
@@ -497,6 +549,13 @@ function updBody(c, I) {
     c.digPh += 1 / (11 * c.digH);
     if (c.digPh >= 1) c.digPh -= 1;
     if (ph0 < STRIKE && c.digPh >= STRIKE) digHit(c, slope);
+    // gold and gems just ahead glitter in the face before the pick gets there
+    if (G.frame % 6 === 0) {
+      const gx = Math.floor(c.x + 3 + c.face * (7 + rnd() * 8)),
+        gy = Math.floor(c.y + rnd() * 10 + slope * 8),
+        gm = gx >= 0 && gx < W && gy >= 0 && gy < H ? mat[gy * W + gx] : AIR;
+      if (gm === GOLD || gm === GEM) parts.push({ x: gx, y: gy, vx: 0, vy: 0, l: 10, c: '#fffbe0', g: 0 });
+    }
     const surge = c.digPh >= STRIKE && c.digPh < STRIKE + 0.25 ? 1.9 : 0.7;
     const sp = ((hasTool('pick') ? 0.8 : 0.55) / c.digH) * surge;
     moveBody(c, (c.face * sp) / len, (slope * sp) / len, 3);

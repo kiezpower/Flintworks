@@ -93,3 +93,48 @@ test('digging goes on through every material in all three directions', async ({ 
   }
   expect(errors).toEqual([]);
 });
+
+test('every strike throws crumbs and plays the sound of the ground', async ({ page }) => {
+  const errors = await field(page);
+  const r = await page.evaluate(async () => {
+    const w = window.__ww;
+    w.audioInit();
+    await w.G.AC.resume();
+    // every dig sound plays, panned to the side of the screen it comes from
+    for (const n of ['dig', 'digSand', 'digLoam', 'digCoal', 'digOre', 'digRock', 'nug', 'ting'])
+      w.sfx(n, w.crew[0].x + 40, w.crew[0].y, 1, 1.25);
+    const out = {};
+    for (const m of ['EARTH', 'SAND', 'ROCK']) {
+      const { mat, W, AIR, paint } = w.world;
+      for (let x = 380; x < 700; x++)
+        for (let y = 60; y < 260; y++) {
+          mat[y * W + x] = y < 200 && x < 440 ? AIR : w.world[m];
+          paint(y * W + x);
+        }
+      w.G.tools = { pick: true };
+      w.parts().length = 0;
+      const c = w.crew[0];
+      Object.assign(c, { x: 432, y: 190, vx: 0, vy: 0, face: 1 });
+      w.step(5);
+      w.keys.r = w.keys.dig = 1;
+      let crumbs = 0,
+        hits = 0,
+        ph = c.digPh || 0;
+      for (let i = 0; i < 120; i++) {
+        w.step(1);
+        if (c.digPh < ph) hits++;
+        ph = c.digPh;
+        crumbs = Math.max(crumbs, w.parts().filter(p => p.b).length);
+      }
+      w.keys.r = w.keys.dig = 0;
+      out[m] = { crumbs, hits, extra: w.parts().filter(p => !p.b).length };
+    }
+    return out;
+  });
+  console.log(JSON.stringify(r));
+  // a beat of a few strikes per second, faster in sand than in rock
+  expect(r.EARTH.hits).toBeGreaterThan(6);
+  expect(r.SAND.hits).toBeGreaterThan(r.ROCK.hits);
+  for (const m of ['EARTH', 'SAND', 'ROCK']) expect(r[m].crumbs, m).toBeGreaterThan(3);
+  expect(errors).toEqual([]);
+});

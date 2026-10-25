@@ -583,6 +583,20 @@ function updParts() {
       if (--p.l <= 0) parts.splice(k, 1);
       continue;
     }
+    if (p.b) {
+      // dug-out crumbs: bounce off walls and the floor, then lie there for a moment
+      const nx = p.x + p.vx,
+        ny = p.y + p.vy;
+      if (solid(Math.floor(nx), Math.floor(p.y))) p.vx *= -0.3;
+      else p.x = nx;
+      if (solid(Math.floor(p.x), Math.floor(ny))) {
+        if (p.vy > 0.7) p.vy *= -0.3;
+        else p.vy = 0;
+        p.vx *= 0.6;
+      } else p.y = ny;
+      if (--p.l <= 0) parts.splice(k, 1);
+      continue;
+    }
     p.x += p.vx;
     p.y += p.vy;
     if (--p.l <= 0) parts.splice(k, 1);
