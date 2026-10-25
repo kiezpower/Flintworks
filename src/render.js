@@ -11,7 +11,8 @@ import { drawBeams, drawBubbles, drawMark } from './mine.js';
 import { drawFloats } from './floats.js';
 import { drawDecor } from './decor.js';
 import { biome } from './biomes.js';
-import { drawGemSparkles, drawLavaGlow, drawWaterGlints, scanLava } from './effects.js';
+import { beginGlow, depthAt, depthShade, drawVignette, endGlow, warmGlow } from './light.js';
+import { drawFireflies, drawGemSparkles, drawLavaGlow, drawWaterGlints, scanLava } from './effects.js';
 import { drawTutorial } from './tutorial.js';
 import { arrows, lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
@@ -287,6 +288,7 @@ function render() {
   drawLavaGlow(ctx);
   drawWaterGlints(ctx);
   drawGemSparkles(ctx);
+  if (G.res === 2) drawFireflies(ctx, cx, cy, dark);
   // pump pipes
   for (const b of builds)
     if (b.type === 'pump' && b.done && b.pipe) {
@@ -506,7 +508,21 @@ function render() {
       ctx.rotate(c.rot);
       drawClonkHi(c, -3, -5, c.face, ctx);
       ctx.restore();
-    } else drawClonkHi(c, x, y, c.face, ctx);
+    } else {
+      // squash on landing, a little stretch while jumping or falling fast (anchored at the feet)
+      const age = G.frame - (c.sqT ?? -99),
+        p = age >= 0 && age < 6 ? 1 - age / 6 : 0,
+        air = c.vy < -1.4 || c.vy > 2.6 ? 1 : 0,
+        ky = 1 - 0.2 * p + 0.1 * air,
+        kx = 1 + 0.14 * p - 0.06 * air;
+      if (p || air) {
+        ctx.save();
+        ctx.translate(x + 3, y + 10);
+        ctx.scale(kx, ky);
+        drawClonkHi(c, -3, -10, c.face, ctx);
+        ctx.restore();
+      } else drawClonkHi(c, x, y, c.face, ctx);
+    }
     drawGear(ctx, c, x, y);
     // other players carry their name over the head
     if (G.net && isPlayer(c) && c !== mine) nameTag(c.name, x + 3, y - (c.bub ? 15 : 4), c.cap);
@@ -539,12 +555,15 @@ function render() {
     ctx.stroke();
     if (--G.bolt.l <= 0) G.bolt = null;
   }
-  // night lighting
+  // lighting: night plus a dimming that deepens below the surface; lamps, lava and buildings cut holes
+  lctx.globalCompositeOperation = 'source-over';
+  lctx.clearRect(0, 0, G.VW, G.VH);
   if (dark > 0.02) {
-    lctx.globalCompositeOperation = 'source-over';
-    lctx.clearRect(0, 0, G.VW, G.VH);
     lctx.fillStyle = `rgba(6,10,30,${dark})`;
     lctx.fillRect(0, 0, G.VW, G.VH);
+  }
+  const under = depthShade(lctx, cx, cy);
+  if (dark > 0.02 || under) {
     lctx.globalCompositeOperation = 'destination-out';
     const light = (x, y, r, a = 1) => {
       if (x < -r || x > G.VW + r || y < -r || y > G.VH + r) return;
@@ -575,14 +594,37 @@ function render() {
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(lc, 0, 0);
     ctx.imageSmoothingEnabled = false;
-    drawWindowGlow(ctx, cx, cy, dark);
+    if (dark > 0.02) drawWindowGlow(ctx, cx, cy, dark);
   }
+  // warm light on top: lamps below ground, lava and working furnaces
+  if (G.res === 2) {
+    beginGlow(ctx);
+    for (const c of crew) {
+      const d = c.dead ? 0 : Math.max(dark, depthAt(c.x, c.y));
+      if (d > 0.05)
+        warmGlow(
+          ctx,
+          c.x + 3 - cx,
+          c.y + 4 - cy,
+          isPlayer(c) ? 26 : 14,
+          d * 0.32 * (0.9 + Math.sin(G.frame * 0.2 + n0(c)) * 0.1),
+        );
+    }
+    for (let k = 0; k < lava.length; k += 6) warmGlow(ctx, lava[k], lava[k + 1], 12, 0.22);
+    for (const b of builds)
+      if (b.done && b.busy && (b.type === 'furnace' || b.type === 'shop'))
+        warmGlow(ctx, b.x + b.w / 2 - cx, b.gy - b.h / 2 - cy, 18, 0.3 + ((G.frame >> 3) & 1) * 0.06);
+    endGlow(ctx);
+  }
+  drawVignette(ctx);
   drawGoal(ctx, cx, cy);
   drawBubbles(ctx, cx, cy);
   drawEmotes(ctx, cx, cy);
   drawFloats(ctx, cx, cy);
   drawTutorial(ctx, cx, cy);
 }
+// a stable per-wühler phase so lamp flicker is not in lockstep
+const n0 = c => (c.x * 0 + (c.name ? c.name.length : 0)) * 1.7;
 function drawFlag(x, y, pole, len, col = '#c8402c') {
   ctx.fillStyle = '#4a3a2a';
   ctx.fillRect(x, y, 1, pole);

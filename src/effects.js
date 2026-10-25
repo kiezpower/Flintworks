@@ -78,6 +78,24 @@ function drawLavaGlow(ctx) {
   ctx.globalCompositeOperation = 'source-over';
 }
 
+// Fireflies drift over the meadows on warm nights (no state: positions come from sine waves)
+function drawFireflies(ctx, cx, cy, dark) {
+  if (dark < 0.3 || biome().name === 'Winter') return;
+  const t = G.frame * 0.02;
+  for (let k = 0; k < 14; k++) {
+    const wx = ((k * 211 + 40 + Math.sin(t * 0.7 + k) * 14) % G.VW) | 0,
+      wy = Math.round(G.VH * 0.36 + ((k * 53) % 40) + Math.sin(t + k * 2.1) * 6);
+    // only above ground: skip when the spot is inside the soil
+    if (mat[(cy + wy) * W + cx + wx] !== AIR) continue;
+    const a = (0.5 + 0.5 * Math.sin(t * 3 + k * 1.7)) * Math.min(1, (dark - 0.3) * 3);
+    if (a < 0.15) continue;
+    ctx.fillStyle = `rgba(255,236,120,${a * 0.35})`;
+    ctx.fillRect(wx - 1, wy - 1, 3, 3);
+    ctx.fillStyle = `rgba(255,248,190,${a})`;
+    ctx.fillRect(wx, wy, 1, 1);
+  }
+}
+
 const dust = (x, y, n, col) => {
   for (let k = 0; k < n; k++)
     parts.push({
@@ -102,4 +120,4 @@ const splash = (x, y, n) => {
     });
 };
 
-export { drawGemSparkles, drawLavaGlow, drawMountains, drawWaterGlints, dust, scanLava, splash };
+export { drawFireflies, drawGemSparkles, drawLavaGlow, drawMountains, drawWaterGlints, dust, scanLava, splash };

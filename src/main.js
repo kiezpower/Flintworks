@@ -14,6 +14,9 @@ import { updAmbience } from './ambience.js';
 import { endTutorial, startTutorial, updTutorial } from './tutorial.js';
 import { applyStatic, tr } from './i18n.js';
 import { openPanel, opt, sec } from './ui.js';
+import '@fontsource/pixelify-sans/500.css';
+import '@fontsource/pixelify-sans/700.css';
+import '@fontsource/silkscreen/400.css';
 import './style.css';
 import { updBuilds, updLorry } from './buildings.js';
 import { NOIN, context, doThrow, updClonk } from './clonk.js';
@@ -32,6 +35,7 @@ import { cam, render, resize } from './render.js';
 import { clearSave, hasSave, loadGame, saveGame } from './save.js';
 import { simulate } from './sim.js';
 import { audioInit, sfx } from './sound.js';
+import { initUiArt } from './uiart.js';
 import { G, animals, builds, crew, lorries } from './state.js';
 import {
   $,
@@ -523,3 +527,13 @@ if (ownWeb() && 'serviceWorker' in navigator && !import.meta.env.DEV) {
 if (import.meta.env.DEV) import('./debug.js');
 
 export { card, endScreen, loop, menu, overlay, resetCam, startGame, step };
+
+initUiArt();
+// every button gets a soft click
+document.addEventListener(
+  'click',
+  e => {
+    if (e.target.closest && e.target.closest('button')) sfx('click');
+  },
+  true,
+);

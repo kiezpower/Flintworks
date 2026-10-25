@@ -71,7 +71,9 @@ src/
   input.js            Tastatur, Touch-Stick, Knöpfe
   render.js           Zeichnen der Spielwelt
   ui.js               HUD, Menüs, Karte, Tipps
-  effects.js          Berge, Lava-Glühen, Wasserglitzern, Staub, Spritzer
+  effects.js          Berge, Lava-Glühen, Wasserglitzern, Staub, Spritzer, Glühwürmchen
+  light.js            Untergrund-Dämmerung, warmes Lampenlicht, Vignette
+  uiart.js            Pixel-Logo und 9-Slice-Rahmen, beim Start gezeichnet
   ambience.js         Regen, Wind, Vögel, Grillen
   save.js             Spielstand im Browser speichern
   sprites.js          Pixel-Grafiken

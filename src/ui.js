@@ -297,6 +297,7 @@ function openPanel(title) {
   pTitle.textContent = tr(title);
   pBody.innerHTML = '';
   panelEl.hidden = false;
+  sfx('open');
   joy.x = joy.y = 0;
   held.dig = false;
   G.digLatch = false;
@@ -305,6 +306,7 @@ function openPanel(title) {
   return pBody;
 }
 function closePanel() {
+  if (!panelEl.hidden) sfx('close');
   panelEl.hidden = true;
 }
 $('pClose').addEventListener('click', () => {
