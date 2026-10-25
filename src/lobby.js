@@ -1,5 +1,6 @@
 import { GAME_MODES, MODE_IDS, mode } from './modes.js';
 import { campaignPanel, totalStars } from './scenarios.js';
+import { lessonsPanel } from './lessons.js';
 import { canInstall, offerInstall, openInstall } from './install.js';
 import { LIVE, isNative, ownWeb } from './platform.js';
 // Lobby between games: the player's Wühler on a stage, resources on top, menus left, play button right.
@@ -142,7 +143,7 @@ function refresh() {
   const GM = GAME_MODES[P.gmode] || GAME_MODES.gold;
   $('lbGMode').disabled = run;
   const gm = run ? mode() : GM;
-  setTxt('lbGModeTxt', camp ? tr('Kampagne') : gm.campaign ? `${gm.n} · ${tr(gm.name)}` : tr(gm.name));
+  setTxt('lbGModeTxt', camp ? tr('Kampagne') : gm.n ? `${gm.n} · ${tr(gm.name)}` : tr(gm.name));
   setTxt(
     'lbGModeDesc',
     camp ? tr('{n} Level · Sterne {s}/{m}', { n: 7, s: totalStars(), m: 21 }) : tr(gm.desc, { goal: gm.goal }),
@@ -343,9 +344,20 @@ function openOptions() {
       onClick: openInstall,
     });
   opt(l, {
+    title: tr('Spielhilfe'),
+    sub: tr('Alle entdeckten Tipps zum Nachlesen'),
+    onClick: openHelp,
+  });
+  opt(l, {
     title: tr('Tutorial spielen'),
-    sub: tr('Neue Welt mit Anleitung'),
+    sub: tr(hooks.hasRun() ? 'Ersetzt dein laufendes Spiel' : 'Eigene kleine Welt mit Anleitung'),
     onClick: () => {
+      // a running game would be lost: ask with a second tap
+      if (hooks.hasRun() && performance.now() - tutArmed > 3000) {
+        tutArmed = performance.now();
+        toast('Nochmal tippen: Tutorial starten, dein Spielstand geht verloren');
+        return;
+      }
       closePanel();
       hooks.play(true);
     },
@@ -359,6 +371,10 @@ function openOptions() {
   const k = document.createElement('div');
   k.innerHTML = hooks.keysHtml();
   p.appendChild(k);
+}
+
+function openHelp() {
+  lessonsPanel(openPanel('Spielhilfe'), openHelp);
 }
 
 // ---- Wiring ----
@@ -409,14 +425,16 @@ function openCampaign() {
     },
   });
 }
-let newArmed = 0;
+// (−Infinity: the first tap always asks, also right after the page opened)
+let newArmed = -Infinity,
+  tutArmed = -Infinity;
 tap('lbNew', () => {
   if (performance.now() - newArmed > 3000) {
     newArmed = performance.now();
     toast('Nochmal tippen: neue Welt starten, Fortschritt geht verloren');
     return;
   }
-  newArmed = 0;
+  newArmed = -Infinity;
   hooks.discard();
   refresh();
 });

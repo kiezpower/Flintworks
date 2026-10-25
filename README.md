@@ -2,7 +2,7 @@
 
 Ein Aufbau- und Grabespiel mit Pixel-Physik im Stil der Klassiker, inspiriert von den Clonk-Spielen: Führe deine Crew, grabe nach Gold, fälle Bäume, baue eine Produktionskette und verkaufe alles an der Heimatbasis.
 
-Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch und Englisch (Umschalter im Startbildschirm). Ein geführtes Tutorial erklärt die ersten Schritte.
+Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch und Englisch (Umschalter im Startbildschirm). Das erste Spiel ist ein geführtes Tutorial in einer eigenen kleinen Welt („Die erste Schicht“); danach erklären Tipps und kleine Aufträge den Rest, nachzulesen unter Optionen → Spielhilfe.
 
 ## Spielen
 
@@ -33,7 +33,10 @@ npm run dev        # Entwicklungsserver mit Live-Reload, auch im WLAN fürs Hand
 npm run build      # fertige Web-Version in dist/
 npm run preview    # gebaute Version lokal testen
 npm run android    # Web-Version bauen und ins Android-Projekt kopieren
+npm test           # Browser-Tests: spielt das Tutorial durch (Playwright)
 ```
+
+Für die Tests einmalig `npx playwright install chromium` ausführen oder einen vorhandenen Chromium mit `PW_CHROMIUM=/pfad/zu/chrome npm test` angeben.
 
 Mit `?seed=7` in der Adresse entsteht immer dieselbe Welt.
 
@@ -77,10 +80,14 @@ src/
   ambience.js         Regen, Wind, Vögel, Grillen
   save.js             Spielstand im Browser speichern
   sprites.js          Pixel-Grafiken
-  tutorial.js         Geführtes Tutorial mit Zielpfeil
+  tutorial.js         Geführtes Tutorial: Ablauf, Zielpfeil, Knopf-Hervorhebung, Geisterhand, Abschlusskarte
+  tutsteps.js         Die zehn Schritte des Tutorials
+  tutlevel.js         Die Tutorial-Welt mit festem Lehrpfad
+  lessons.js          Tipps und Aufträge nach dem Tutorial, Spielhilfe in der Lobby
   i18n.js             Übersetzungen (Deutsch ist der Schlüssel, Englisch die Übersetzung)
   debug.js            Test-Zugang, nur im Entwicklungsmodus
   style.css           Gestaltung
+tests/                Browser-Tests (Playwright)
 public/icons/         App-Icons
 android/              Android-Projekt (Capacitor)
 ```

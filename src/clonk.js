@@ -43,6 +43,7 @@ import {
 function hurt(c, a, silent) {
   if (c.dead || c.puppet || G.netClient) return; // in multiplayer only the host deals damage
   c.energy -= a;
+  if (G.tut && c.energy < 20) c.energy = 20; // nobody gets exhausted in the tutorial
   if (a >= 5) {
     addFloat(c.x + 3, c.y - 3, '-' + Math.round(a), '#ff6a5a');
     if (c === sel_()) buzz(40 + Math.min(120, a * 4));
