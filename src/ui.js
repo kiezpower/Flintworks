@@ -14,6 +14,7 @@ import { held, joy, keys } from './input.js';
 import { calcTerr, cam } from './render.js';
 import { sfx } from './sound.js';
 import { ITEM, SPR, detailed, itemIcon, padIcon, toolIcon } from './sprites.js';
+import { shownMoney } from './reward.js';
 import { tr } from './i18n.js';
 import { focusBadge, openCrew } from './crewui.js';
 import { register, send } from './commands.js';
@@ -54,9 +55,11 @@ function hud() {
   const c = sel_();
   const M = mode();
   const goldMode = M === GAME_MODES.gold;
+  // (the counter counts up as the coins of a sale arrive)
+  const money = shownMoney();
   moneyTxt.textContent = goldMode
-    ? tr('{money} / {goal} Taler', { money: G.money, goal: M.goal })
-    : tr('{money} Taler', { money: G.money });
+    ? tr('{money} / {goal} Taler', { money, goal: M.goal })
+    : tr('{money} Taler', { money });
   goalWrap.hidden = goldMode || !!M.tutorial;
   if (!goalWrap.hidden) {
     const p = Math.min(M.goal, M.prog());

@@ -1,7 +1,7 @@
 // Research at the castle: a small tech tree. One topic at a time runs in the background and
 // unlocks vehicles, rails, tools and equipment. The state lives in G.tools (per team, saved
 // and sent to the other players like the tools): 'r_<id>' when done, _rq while running.
-import { announce } from './announce.js';
+import { announceBanner } from './announce.js';
 import { register, send } from './commands.js';
 import { tr } from './i18n.js';
 import { sfx } from './sound.js';
@@ -50,7 +50,7 @@ function updResearch() {
     if (!q || --q.left > 0) continue;
     G.tools = { ...G.tools, ['r_' + q.id]: true, _rq: null };
     sfx('fanfare');
-    announce('Erforscht: {name}', { name: tr(RESEARCH[q.id].name) }, G.teams ? t : null);
+    announceBanner('Erforscht', RESEARCH[q.id].name, null, G.teams ? t : null);
   }
   useMine();
 }

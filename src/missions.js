@@ -9,7 +9,7 @@ import { mode } from './modes.js';
 import { sfx } from './sound.js';
 import { sel_ } from './entities.js';
 import { G } from './state.js';
-import { toast } from './ui.js';
+import { banner, flyCoins } from './reward.js';
 
 const cur = () => (G.mis && MISSIONS[G.mis.i]) || null;
 function value(m) {
@@ -31,8 +31,9 @@ function updMissions() {
     const c = sel_();
     if (c) addFloat(c.x + 3, c.y - 6, '+' + m.pay, '#f2c230');
     if (c) celebrate(c.x + 3, c.y - 2);
+    if (c) flyCoins(c.x + 3, c.y - 6, m.pay);
     sfx('fanfare');
-    toast('Auftrag erfüllt: +{pay} Taler', { pay: m.pay });
+    banner(tr('Auftrag erfüllt'), tr('+{pay} Taler', { pay: m.pay }));
     startMission(G.mis.i + 1);
   }
 }

@@ -12,7 +12,8 @@ import { clearFoot } from './gen.js';
 import { calcTerr } from './render.js';
 import { sfx } from './sound.js';
 import { ITEM } from './sprites.js';
-import { G, animals, builds, crew, items, lorries, parts, trees } from './state.js';
+import { G, animals, builds, crew, flashes, items, lorries, parts, trees } from './state.js';
+import { banner } from './reward.js';
 import { closePanel, toast } from './ui.js';
 import {
   AIR,
@@ -368,7 +369,7 @@ function updBuilds() {
       calcTerr();
       sfx('fanfare');
       if (G.base) celebrate(G.base.x + G.base.w / 2, G.base.gy - G.base.h / 2, 40);
-      if (t === G.myTeam) toast('Deine Burg wächst: Stufe {n} – bessere Preise, mehr Wühler', { n: G.base.lvl });
+      if (t === G.myTeam) banner(tr('Deine Burg wächst: Stufe {n}', { n: G.base.lvl }), tr('Bessere Preise, mehr Wühler'));
     }
   }
   for (const b of builds) {
@@ -422,6 +423,19 @@ function updBuilds() {
           toast('{name} fertig', { name: tr(BT[b.type].name) });
           sfx('done', b.x, b.gy);
           celebrate(b.x + b.w / 2, b.gy - b.h / 2);
+          // a flash over the new building and a ring of dust where it meets the ground
+          flashes.push({ x: b.x + b.w / 2, y: b.gy - b.h / 2, r: Math.max(b.w, b.h) * 0.6, l: 8 });
+          for (let k = 0; k < 14; k++)
+            parts.push({
+              x: b.x + (k / 13) * b.w,
+              y: b.gy - 1,
+              vx: (k / 13 - 0.5) * 1.6,
+              vy: -0.2 - rnd() * 0.3,
+              l: 45,
+              c: 'rgba(210,190,160,0.45)',
+              s: 2,
+              g: -0.002,
+            });
           if (b.type === 'flag') calcTerr();
           if (b.type === 'tower') toast('Wachturm fertig: drin stehen für weite Sicht');
           if (b.type === 'lift') toast('Fahrstuhl fertig: draufstellen, Stick runter oder hoch');
