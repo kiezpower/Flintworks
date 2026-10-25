@@ -52,7 +52,7 @@ import { updEmoBtn } from './net/emotes.js';
 import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
-import { H, W, clamp, surf } from './world.js';
+import { H, W, clamp, dryFresh, surf } from './world.js';
 
 // ---- Screens & loop ----
 const overlay = $('overlay'),
@@ -448,6 +448,7 @@ function step() {
   if (!paused) {
     updWeather();
     updParts();
+    if (G.frame % 75 === 0) dryFresh();
     simulate();
     hostTick();
   }

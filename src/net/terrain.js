@@ -3,7 +3,7 @@
 // A slow round-robin refresh of all chunks repairs anything that went missing.
 import { b64, unb64 } from '../save.js';
 import { crew } from '../state.js';
-import { ACID, AIR, CHn, CS, CWn, H, LAVA, W, WATER, bg, mat, netDirty, paint } from '../world.js';
+import { ACID, AIR, CHn, CS, CWn, H, LAVA, SOLID, W, WATER, bg, mat, markFresh, netDirty, paint } from '../world.js';
 
 const MAX_PER_PACKET = 24;
 let refresh = 0,
@@ -48,6 +48,8 @@ function decodeChunk(c, str) {
     for (let q = 0; q < run; q++, n++) {
       const i = (y0 + ((n / w) | 0)) * W + x0 + (n % w);
       if (i >= W * H || (mat[i] === m && bg[i] === b)) continue;
+      // dug out on the host: the wall is fresh here too
+      if (m === AIR && b && SOLID[mat[i]]) markFresh(i);
       mat[i] = m;
       bg[i] = b;
       paint(i);

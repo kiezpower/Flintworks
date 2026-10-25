@@ -34,6 +34,7 @@ import {
   boxFree,
   cssOf,
   free,
+  markFresh,
   mat,
   paint,
   rnd,
@@ -100,7 +101,17 @@ const HARD = { [SAND]: 0.75, [EARTH]: 1, [LOAM]: 1.2, [GOLD]: 1.15, [COAL]: 1.25
 // effective steepness ends up the same both ways (gravity pulls down, stepping up is slower)
 const SLOPE_DOWN = 0.12,
   SLOPE_UP = 0.38;
-function strokeCells(c, dir, slope, fn, ahead = 4) {
+// the ceiling of a dug tunnel is a little uneven: up to two more rows of earth come away,
+// the same for every stroke over a spot (it depends on the place only, so all players agree)
+const hash1 = i => (Math.imul(i ^ 0x5bd1e995, 0x9e3779b1) >>> 22) / 1023;
+function ceilBump(x) {
+  const i = x >> 2,
+    f = (x & 3) / 4,
+    a = hash1(i),
+    v = a + (hash1(i + 1) - a) * f * f * (3 - 2 * f);
+  return v < 0.45 ? 0 : v < 0.8 ? 1 : 2;
+}
+function strokeCells(c, dir, slope, fn, ahead = 4, bumps = false) {
   const ox = c.x + dir * ahead,
     oy = c.y + slope * ahead;
   // the box sweeps from where the body is now to where it will be, so nothing between
@@ -119,6 +130,8 @@ function strokeCells(c, dir, slope, fn, ahead = 4) {
       if (cx && cy) continue;
       fn(x, y);
     }
+  if (bumps)
+    for (let x = x0 + 1; x < x1; x++) for (let y = y0 - ceilBump(x); y < y0; y++) fn(x, y);
 }
 // returns how hard the earth removed by this stroke was on average (0: nothing removed)
 function digStroke(c, dir, slope) {
@@ -132,7 +145,7 @@ function digStroke(c, dir, slope) {
       h += HARD[m];
       if (HARD[m] >= (HARD[c.digM] || 0) || n === 1) c.digM = m;
     }
-  });
+  }, 4, true);
   spawnFromDig(c.x + 3 + dir * 6, c.y + 5 + slope * 6);
   return n ? h / n : 0;
 }
@@ -245,6 +258,7 @@ function digCell(x, y, paced = false) {
   else if (m === GEM) G.gemDug = (G.gemDug || 0) + 1;
   mat[i] = AIR;
   bg[i] = 1;
+  markFresh(i);
   paint(i);
   onDig(x, y);
   return m;
