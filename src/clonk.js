@@ -10,7 +10,7 @@ import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './
 import { inputOf } from './players.js';
 import { vehicleContext } from './vehicles/index.js';
 import { sfx } from './sound.js';
-import { G, builds, crew, lorries, parts, trees } from './state.js';
+import { G, builds, crew, flashes, lorries, parts, trees } from './state.js';
 import { toast } from './ui.js';
 import {
   ACID,
@@ -139,14 +139,14 @@ function digStroke(c, dir, slope) {
     h = 0;
   strokeCells(c, dir, slope, (x, y) => {
     if (x < 0 || y < 0 || x >= W || y >= H) return;
-    const m = digCell(x, y, true);
+    const m = digCell(x, y, true, c);
     if (m) {
       n++;
       h += HARD[m];
       if (HARD[m] >= (HARD[c.digM] || 0) || n === 1) c.digM = m;
     }
   }, 4, true);
-  spawnFromDig(c.x + 3 + dir * 6, c.y + 5 + slope * 6);
+  spawnFromDig(c.x + 3 + dir * 6, c.y + 5 + slope * 6, c);
   return n ? h / n : 0;
 }
 // how much diggable earth the next stroke would remove (rows below yMax ignored)
@@ -228,8 +228,9 @@ const CRUMB = {
 };
 // removes one cell of diggable earth and returns its material (0 if nothing was dug).
 // paced: a Wühler's stroke, whose pace already follows the hardness; other diggers (machines)
-// chip through rock only now and then
-function digCell(x, y, paced = false) {
+// chip through rock only now and then. acc: who collects the dust for nuggets, ore and coal
+// (the Wühler or machine digging; the world for the rest), so loot falls where it was dug
+function digCell(x, y, paced = false, acc = G) {
   const i = y * W + x,
     m = mat[i];
   if (m === ROCK) {
@@ -249,13 +250,15 @@ function digCell(x, y, paced = false) {
       s: rnd() < 0.3 ? 2 : 1,
     });
   if (m === GOLD) {
-    G.goldDust++;
+    acc.goldDust = (acc.goldDust || 0) + 1;
+    // the last bit of a vein: what is left over makes a nugget if it is at least half of one
+    if (acc.goldDust % 16 >= 8 && !goldNear(x, y)) acc.veinEnd = true;
     if (!paced && rnd() < 0.25) parts.push({ x, y, vx: (rnd() - 0.5) * 1.2, vy: -rnd() * 1.4, l: 25, c: '#ffe066', b: 1 });
-  } else if (m === EARTH) G.earthDug++;
-  else if (m === LOAM) G.loamDug++;
-  else if (m === ORE) G.oreDug++;
-  else if (m === COAL) G.coalDug++;
-  else if (m === GEM) G.gemDug = (G.gemDug || 0) + 1;
+  } else if (m === EARTH) acc.earthDug = (acc.earthDug || 0) + 1;
+  else if (m === LOAM) acc.loamDug = (acc.loamDug || 0) + 1;
+  else if (m === ORE) acc.oreDug = (acc.oreDug || 0) + 1;
+  else if (m === COAL) acc.coalDug = (acc.coalDug || 0) + 1;
+  else if (m === GEM) acc.gemDug = (acc.gemDug || 0) + 1;
   mat[i] = AIR;
   bg[i] = 1;
   markFresh(i);
@@ -264,37 +267,51 @@ function digCell(x, y, paced = false) {
   return m;
 }
 const SCALE = [1, 1.125, 1.25, 1.333, 1.5, 1.667, 1.875, 2];
-function spawnFromDig(cx, cy) {
-  while (G.goldDust >= 16) {
-    G.goldDust -= 16;
-    spawnItem('nug', cx - 1, cy - 1, (rnd() - 0.5) * 1.5, -1.2, 10);
-    // nuggets in quick succession climb up the scale
-    G.nugN = G.frame - (G.nugT || -999) < 150 ? Math.min(7, (G.nugN || 0) + 1) : 0;
-    G.nugT = G.frame;
-    sfx('nug', cx, cy, 1, SCALE[G.nugN]);
+// any gold left around a cell that is being dug (the cell itself not counted)
+function goldNear(x, y) {
+  for (let yy = Math.max(0, y - 3); yy <= Math.min(H - 1, y + 3); yy++)
+    for (let xx = Math.max(0, x - 3); xx <= Math.min(W - 1, x + 3); xx++)
+      if (mat[yy * W + xx] === GOLD && (xx !== x || yy !== y)) return true;
+  return false;
+}
+function spawnFromDig(cx, cy, acc = G) {
+  if (acc.veinEnd) {
+    acc.veinEnd = false;
+    if (acc.goldDust % 16 >= 8) acc.goldDust += 16 - (acc.goldDust % 16);
+    else acc.goldDust -= acc.goldDust % 16;
   }
-  if (G.oreDug >= 45) {
-    G.oreDug = 0;
+  while (acc.goldDust >= 16) {
+    acc.goldDust -= 16;
+    spawnItem('nug', cx - 1, cy - 1, (rnd() - 0.5) * 1.5, -1.4, 10);
+    // the nugget pops out with a flash; nuggets in quick succession climb up the scale
+    flashes.push({ x: cx, y: cy, r: 5, l: 6 });
+    glint(cx, cy);
+    acc.nugN = G.frame - (acc.nugT ?? -999) < 150 ? Math.min(7, (acc.nugN || 0) + 1) : 0;
+    acc.nugT = G.frame;
+    sfx('nug', cx, cy, 1, SCALE[acc.nugN]);
+  }
+  if (acc.oreDug >= 45) {
+    acc.oreDug = 0;
     spawnItem('ore', cx - 1, cy - 2, rnd() - 0.5, -1, 20);
     sfx('pick', cx, cy);
   }
-  if (G.coalDug >= 45) {
-    G.coalDug = 0;
+  if (acc.coalDug >= 45) {
+    acc.coalDug = 0;
     spawnItem('coal', cx - 1, cy - 2, rnd() - 0.5, -1, 20);
     sfx('pick', cx, cy);
   }
-  if (G.gemDug >= 24) {
-    G.gemDug = 0;
+  if (acc.gemDug >= 24) {
+    acc.gemDug = 0;
     spawnItem('gem', cx - 1, cy - 2, rnd() - 0.5, -1.2, 10);
     track('gem');
     sfx('coin', cx, cy);
   }
-  if (G.loamDug >= 90) {
-    G.loamDug = 0;
+  if (acc.loamDug >= 90) {
+    acc.loamDug = 0;
     spawnItem('loam', cx - 2, cy - 2, rnd() - 0.5, -1, 20);
   }
-  if (G.earthDug >= 260) {
-    G.earthDug = 0;
+  if (acc.earthDug >= 260) {
+    acc.earthDug = 0;
     spawnItem(rnd() < 0.3 ? 'flint' : 'rock', cx - 1, cy - 2, rnd() - 0.5, -1, 30);
   }
 }

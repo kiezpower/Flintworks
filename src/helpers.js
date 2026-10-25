@@ -418,8 +418,8 @@ function atWork(c, I) {
       dy = y - (c.y + 5),
       l = Math.hypot(dx, dy) || 1;
     c.digDir = [dx / l, dy / l];
-    digCell(x, y);
-    spawnFromDig(c.x + 3 + c.face * 4, c.y + 3);
+    digCell(x, y, false, c);
+    spawnFromDig(c.x + 3 + c.face * 4, c.y + 3, c);
     return I;
   }
   if (j.type === 'collect') {

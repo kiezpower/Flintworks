@@ -138,3 +138,45 @@ test('every strike throws crumbs and plays the sound of the ground', async ({ pa
   for (const m of ['EARTH', 'SAND', 'ROCK']) expect(r[m].crumbs, m).toBeGreaterThan(3);
   expect(errors).toEqual([]);
 });
+
+test('loot falls where it was dug, and the end of a small vein still gives its nugget', async ({ page }) => {
+  const errors = await field(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      { mat, W, AIR, EARTH, GOLD, paint } = w.world,
+      c = w.crew[0];
+    for (let x = 380; x < 700; x++)
+      for (let y = 60; y < 260; y++) {
+        mat[y * W + x] = y < 200 && x < 440 ? AIR : EARTH;
+        paint(y * W + x);
+      }
+    // a little vein of 12 cells in the way: less than one nugget's worth (16)
+    for (let x = 470; x < 474; x++) for (let y = 194; y < 197; y++) mat[y * W + x] = GOLD;
+    for (let x = 470; x < 474; x++) for (let y = 194; y < 197; y++) paint(y * W + x);
+    w.items.length = 0;
+    w.G.goldDust = 0;
+    Object.assign(c, { x: 432, y: 190, vx: 0, vy: 0, face: 1, goldDust: 0, inv: [] });
+    w.step(5);
+    w.keys.r = w.keys.dig = 1;
+    w.step(160);
+    w.keys.r = w.keys.dig = 0;
+    // (the Wühler picks up what falls at its feet)
+    return {
+      lying: w.items.filter(t => t.t === 'nug').map(t => Math.round(t.x)),
+      carried: c.inv.filter(t => t === 'nug').length,
+      world: w.G.goldDust,
+      own: c.goldDust,
+    };
+  });
+  console.log(JSON.stringify(r));
+  expect(r.lying.length + r.carried).toBe(1);
+  // lying in the tunnel next to the vein, if not already in the pack
+  for (const x of r.lying) {
+    expect(x).toBeGreaterThan(455);
+    expect(x).toBeLessThan(500);
+  }
+  // the dust was counted for the Wühler, not for the world
+  expect(r.world).toBe(0);
+  expect(r.own).toBe(0);
+  expect(errors).toEqual([]);
+});

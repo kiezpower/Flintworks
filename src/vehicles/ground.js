@@ -94,9 +94,9 @@ function drillAhead(v, dir, slope) {
         paint(i);
         onDig(x, y);
         if (rnd() < 0.05) parts.push({ x, y, vx: (rnd() - 0.5) * 1.2, vy: -rnd(), l: 18, c: '#8a847c' });
-      } else digCell(x, y);
+      } else digCell(x, y, false, v);
     }
-  spawnFromDig(dir > 0 ? v.x + v.w + 2 : v.x - 4, v.y + 3);
+  spawnFromDig(dir > 0 ? v.x + v.w + 2 : v.x - 4, v.y + 3, v);
 }
 
 // ---- raft: floats on water ----
