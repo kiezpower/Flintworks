@@ -38,6 +38,7 @@ npm run preview    # gebaute Version lokal testen
 npm run android    # Web-Version bauen und ins Android-Projekt kopieren
 npm test           # Browser-Tests: spielt das Tutorial durch und gräbt durch jedes Material (Playwright)
 npm run test:visual # spielt eine Runde, speichert Screenshots in tests/out/ und prüft auf Fehler
+npm run store-shots # erzeugt Store-Bilder (Screenshots, Cover, Feature-Grafik) in docs/itch/ und docs/play/
 ```
 
 Für die Tests einmalig `npx playwright install chromium` ausführen oder einen vorhandenen Chromium mit `PW_CHROMIUM=/pfad/zu/chrome npm test` angeben.

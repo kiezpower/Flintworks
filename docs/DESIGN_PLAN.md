@@ -1,6 +1,19 @@
 # Plan: Design und Grafik
 
-> **Stand: Etappe 1 und 2 umgesetzt (v1.30.0).** Nachfolger von `GRABEN_PLAN.md` (v1.29.0).
+> **Stand: alle Etappen umgesetzt (v1.30.0–v1.31.0).** Nachfolger von `GRABEN_PLAN.md` (v1.29.0).
+> - Etappe 3: Statt jedes Gebäude neu zu zeichnen, bekommt die doppelt aufgelöste Kopie aller
+>   Gebäude Licht von oben und eine feine Körnung (`detailed` in `sprites.js`); dazu Schatten
+>   am Boden, Baustellen mit wachsendem Gerüst und Staub, drehende Teile (Sägeblatt, Fahrstuhl-
+>   und Pumpenrad). Fahrzeuge und Loren mit Licht von oben und runden, drehenden Rädern.
+>   Ein echter Neuentwurf einzelner Gebäude bleibt möglich, wenn eines noch zu schlicht wirkt.
+> - Etappe 4: Alle Icons in Menüs und auf den Knöpfen laufen über ihre doppelt aufgelöste Kopie
+>   (24×24 statt 12×12, geglättet, Licht von oben), in den Menüs größer und auf ganzen
+>   Gerätepixeln. Neu gezeichnet wurde kein Icon.
+> - Etappe 5: Münzen fliegen vom Verkauf zum Geldzähler, der beim Ankommen hochzählt; Banner für
+>   fertige Forschung, erfüllte Aufträge und wachsende Burg; fertige Gebäude blitzen auf.
+> - Etappe 6: `npm run store-shots` erzeugt Screenshots (DE/EN), itch-Cover und Feature-Grafik aus
+>   gestellten Szenen. Ein KI-Titelbild ist vorbereitet (Prompt in `PLAYSTORE.md`), aber nicht
+>   erzeugt – dafür braucht es einen Bildgenerator mit deinem Konto.
 > - Etappe 1: Stil-Leitfaden in `docs/STYLE.md`.
 > - Etappe 2: Aus drei Varianten gewählt: „Detailreich“ mit der Farbstimmung von „Stimmung“
 >   (`src/under.js`). Adern und Linsen mit Rand, Mineral-Schimmer in der Erde, Bodenflecken,
