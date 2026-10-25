@@ -1,6 +1,15 @@
 # Plan: Design und Grafik
 
-> **Stand: Plan, noch nicht umgesetzt.** Nachfolger von `GRABEN_PLAN.md` (v1.29.0).
+> **Stand: Etappe 1 und 2 umgesetzt (v1.30.0).** Nachfolger von `GRABEN_PLAN.md` (v1.29.0).
+> - Etappe 1: Stil-Leitfaden in `docs/STYLE.md`.
+> - Etappe 2: Aus drei Varianten gewählt: „Detailreich“ mit der Farbstimmung von „Stimmung“
+>   (`src/under.js`). Adern und Linsen mit Rand, Mineral-Schimmer in der Erde, Bodenflecken,
+>   Funde je nach Tiefe (Wurzeln, Steine, Knochen, Trilobiten, Kristalle), Stollen-Rückwand aus
+>   Erde bzw. Fels, Farbverlauf warm → kühl → violett, Gold und Edelsteine leuchten.
+>   Nicht umgesetzt: Tropfsteine und Pilze in Höhlen (gegrabene Stollen und natürliche Höhlen
+>   sind im Weltspeicher nicht zu unterscheiden; sie würden auch in frischen Stollen auftauchen).
+> - Kosten: Das einmalige Zeichnen der Welt beim Rundenstart dauert etwa 1,5-mal so lange
+>   (im Test 320 statt 205 ms); das laufende Spiel ist nicht betroffen.
 
 Ziel: Flintworks soll auf den ersten Blick hochwertig wirken – im Store, in der Lobby und in den
 ersten fünf Minuten unter Tage – **ohne dass dafür jemand Grafiken von Hand zeichnen muss.**

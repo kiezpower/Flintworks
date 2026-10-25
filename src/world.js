@@ -1,6 +1,6 @@
 import { builds } from './state.js';
-import { T, TEX, TUNNEL, setTopSoil, topTex, worldShade } from './tex.js';
-import { setGround, underTexel, wallTexel } from './under.js';
+import { T, TEX, setTopSoil, topTex, worldShade } from './tex.js';
+import { prepareUnder, setGround, underTexel, wallTexel } from './under.js';
 
 // ---- World & materials ----
 const W = 1400,
@@ -28,7 +28,7 @@ const mat = new Uint8Array(W * H),
   shade = new Uint8Array(W * H),
   stamp = new Uint32Array(W * H);
 const surf = new Int16Array(W);
-setGround(surf, W);
+setGround(surf, W, H);
 const rgba = (r, g, b, a = 255) => ((a << 24) | (b << 16) | (g << 8) | r) >>> 0;
 const hex = (h, a = 255) =>
   rgba(parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16), a);
@@ -66,9 +66,12 @@ const MINI = [
   '#5fd3e8',
 ];
 // brighter / darker copies of a packed colour (alpha kept)
+// (written out without helpers: this runs for every texel of the world)
 const tint = (c, f) => {
-  const ch = s => Math.min(255, Math.round(((c >>> s) & 255) * f)) << s;
-  return (((c >>> 24) << 24) | ch(16) | ch(8) | ch(0)) >>> 0;
+  const r = Math.round((c & 255) * f),
+    g = Math.round(((c >>> 8) & 255) * f),
+    b = Math.round(((c >>> 16) & 255) * f);
+  return ((c & 0xff000000) | ((b > 255 ? 255 : b) << 16) | ((g > 255 ? 255 : g) << 8) | (r > 255 ? 255 : r)) >>> 0;
 };
 // Soil changes character with depth: warm and reddish just below the grass, cooler and greyer
 // further down, a blue-ish cast in the deepest layers. Only earth, loam and rock take part.
@@ -88,8 +91,10 @@ function layerTint(c, d) {
   r = mixf(r, 0.8, t3);
   g = mixf(g, 0.82, t3);
   b = mixf(b, 0.98, t3);
-  const ch = (s, k) => Math.min(255, Math.round(((c >>> s) & 255) * k)) << s;
-  return (((c >>> 24) << 24) | ch(16, b) | ch(8, g) | ch(0, r)) >>> 0;
+  const R = Math.round((c & 255) * r),
+    G2 = Math.round(((c >>> 8) & 255) * g),
+    B = Math.round(((c >>> 16) & 255) * b);
+  return ((c & 0xff000000) | ((B > 255 ? 255 : B) << 16) | ((G2 > 255 ? 255 : G2) << 8) | (R > 255 ? 255 : R)) >>> 0;
 }
 const PAL_LIT = PAL.map(a => a.map(c => tint(c, 1.2)));
 const PAL_DARK = PAL.map(a => a.map(c => tint(c, 0.72)));
@@ -128,7 +133,7 @@ function texel(i, sx, sy) {
     if (solidAt(i + 2 * W)) n++;
     let k = 1 - n * 0.055 - fresh[i] * 0.0005;
     if ((sx === 0 && solidAt(i - 1)) || (sx === 1 && solidAt(i + 1)) || (sy === 0 && solidAt(i - W))) k *= 0.72;
-    return tint(wallTexel(ti, ((i / W) | 0) - surf[i % W], TEX) ?? TUNNEL[ti], k * WSH[i]);
+    return wallTexel(ti, ((i / W) | 0) - surf[i % W], TEX, k * WSH[i]);
   }
   const tex = m === EARTH && shade[i] & 4 ? topTex() : TEX[m];
   let c = tex ? tex[ti] : PAL[m][shade[i] & 3];
@@ -209,6 +214,7 @@ const wctx = wc.getContext('2d');
 const img = wctx.createImageData(PW, H * RES);
 const px = new Uint32Array(img.data.buffer);
 function paintAll() {
+  prepareUnder(mat);
   for (let i = 0; i < W * H; i++) paintCell(i);
   wctx.putImageData(img, 0, 0);
 }
