@@ -209,3 +209,47 @@ test('every text of every level has an English version', async ({ page }) => {
   });
   expect(missing).toEqual([]);
 });
+
+// Chapter 1 is made by the generator from fixed seeds. These checksums freeze its seven worlds:
+// when this test fails, the generator has changed – play the levels, check their star times,
+// then take the new checksums.
+test('the seven levels of chapter 1 stay exactly as they are', async ({ page }) => {
+  const errors = await lobby(page);
+  const want = {
+    c1: 509105164,
+    c2: 2346584643,
+    c3: 3226257325,
+    c4: 4017410677,
+    c5: 3041344851,
+    c6: 2303378087,
+    c7: 1057119582,
+  };
+  const got = await page.evaluate(async ids => {
+    const { GAME_MODES } = await import('/src/modes.js');
+    const w = window.__ww,
+      G = w.G,
+      out = {};
+    for (const id of ids) {
+      const M = GAME_MODES[id];
+      Object.assign(G, { nextSeed: M.seed, nextBiome: M.biome, nextMode: id, nextDiff: M.diff || 'adventure' });
+      G.nextVersus = false;
+      G.nextSize = null;
+      G.frame = 1;
+      w.world.stamp.fill(0);
+      w.gen();
+      G.nextSeed = null;
+      const { mat, bg, shade, surf, W, H } = w.world;
+      let h = 2166136261;
+      const add = v => {
+        h ^= v;
+        h = Math.imul(h, 16777619) >>> 0;
+      };
+      for (let i = 0; i < W * H; i++) add(mat[i] | (bg[i] << 4) | (shade[i] << 5));
+      for (let x = 0; x < W; x++) add(surf[x] & 0xffff);
+      out[id] = h;
+    }
+    return out;
+  }, Object.keys(want));
+  expect(got).toEqual(want);
+  expect(errors).toEqual([]);
+});

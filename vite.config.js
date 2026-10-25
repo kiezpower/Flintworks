@@ -1,15 +1,54 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 
 // version shown in the lobby and menu: bump it in package.json with every change
 const VERSION = JSON.parse(readFileSync(new URL('./package.json', import.meta.url))).version;
+
+// level.json written by the level editor: one key per line, objects and triggers one per line
+function levelJson(L) {
+  const val = (v, ind) =>
+    Array.isArray(v) && v.some(o => o && typeof o === 'object')
+      ? `[\n${v.map(o => `${ind}  ${JSON.stringify(o)}`).join(',\n')}\n${ind}]`
+      : JSON.stringify(v);
+  const keys = Object.keys(L).filter(k => k !== 'map');
+  return `{\n${keys.map(k => `  ${JSON.stringify(k)}: ${val(L[k], '  ')}`).join(',\n')}\n}\n`;
+}
+// dev server only: the level editor (editor.html) saves to src/levels/<id>/
+const levelEditor = {
+  name: 'level-editor-save',
+  apply: 'serve',
+  configureServer(server) {
+    server.middlewares.use('/__levels/save', (req, res) => {
+      if (req.method !== 'POST') return res.writeHead(405).end();
+      let body = '';
+      req.on('data', c => (body += c));
+      req.on('end', () => {
+        try {
+          const { level, map } = JSON.parse(body);
+          if (!/^[a-z0-9-]{2,40}$/.test(level.id)) throw new Error('bad id');
+          const dir = new URL(`./src/levels/${level.id}/`, import.meta.url);
+          mkdirSync(dir, { recursive: true });
+          writeFileSync(new URL('level.json', dir), levelJson(level));
+          writeFileSync(new URL('map.txt', dir), map);
+          const orderFile = new URL('./src/levels/order.json', import.meta.url),
+            order = JSON.parse(readFileSync(orderFile, 'utf8'));
+          if (!order.includes(level.id)) writeFileSync(orderFile, JSON.stringify([...order, level.id]) + '\n');
+          res.writeHead(200, { 'content-type': 'application/json' }).end('{"ok":true}');
+        } catch (e) {
+          res.writeHead(400, { 'content-type': 'application/json' }).end(JSON.stringify({ error: e.message }));
+        }
+      });
+    });
+  },
+};
 
 export default defineConfig({
   base: './',
   define: { __APP_VERSION__: JSON.stringify(VERSION) },
   build: { rollupOptions: {} },
   plugins: [
+    levelEditor,
     // version.json lets installed apps and cached pages find out that a newer version exists
     {
       name: 'version-json',

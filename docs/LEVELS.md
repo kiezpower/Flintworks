@@ -1,8 +1,26 @@
 # Level bauen
 
 Vorgebaute Level liegen in `src/levels/<id>/`, je ein Ordner mit zwei Dateien. Sie bilden
-Kapitel 2 der Kampagne. Die Reihenfolge steht in `ORDER` in `src/levels/index.js`. Der Plan
-dazu ist `docs/LEVEL_PLAN.md`.
+Kapitel 2 der Kampagne. Die Reihenfolge steht in `src/levels/order.json`. Der Plan dazu ist
+`docs/LEVEL_PLAN.md`.
+
+## Der Editor
+
+`npm run dev`, dann `/editor.html` im Browser (nur im Entwicklungsserver, nicht in der
+Web-Version oder der App).
+
+- **Level** wählt ein vorhandenes Level, **Neu …** legt eines an (Ordnername, Größe, Zoom).
+- **Pinsel**, **Rechteck** und **Füllen** malen das gewählte Material; der Regler stellt die
+  Pinselgröße ein. Rechtsklick nimmt das Material unter dem Zeiger, Strg+Z macht rückgängig.
+- **Objekt** setzt das gewählte Objekt (Umschalt + Klick entfernt das nächste), **Bereich**
+  zieht einen benannten Bereich für Auslöser und Ziele auf.
+- Alles andere (Ziele, Auslöser, Start, Regeln) steht im Textfeld `level.json`; **Übernehmen**
+  liest es ein. Eine neue Größe schneidet die Karte ab oder setzt sie am Rand fort.
+- **Probespielen** startet das Level im Spiel (über `/?draft=1`), „← Editor“ führt zurück.
+- **Speichern** schreibt `level.json` und `map.txt` nach `src/levels/<id>/` und hängt ein neues
+  Level hinten an `order.json` an. Texte danach in `src/i18n.js` übersetzen.
+
+Karten lassen sich auch von Hand oder mit einem Skript schreiben: es sind normale Textdateien.
 
 | Datei | Inhalt |
 |---|---|

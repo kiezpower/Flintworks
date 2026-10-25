@@ -3,24 +3,22 @@
 // work like for the other campaign levels. Chapter 2 of the campaign.
 import { GAME_MODES } from '../modes.js';
 import { levelTick, progress, status, total } from './goals.js';
+import ORDER from './order.json';
 
+// (the order of chapter 2 is in order.json; the level editor adds new levels at the end)
 const PACKS = import.meta.glob('./*/level.json', { eager: true, import: 'default' });
 const MAPS = import.meta.glob('./*/map.txt', { eager: true, query: '?raw', import: 'default' });
 
-// the order of chapter 2
-const ORDER = ['wipfrettung'];
-
 const CHAPTER2 = [];
-for (const id of ORDER) {
-  const L = { ...PACKS[`./${id}/level.json`], map: MAPS[`./${id}/map.txt`] };
-  if (L.id !== id) throw new Error(`level folder ${id} has the id ${L.id}`);
+// a level package becomes a game mode (also a draft from the level editor, see editor.html)
+function registerLevel(L, n = 0) {
   const st = L.start || {},
     ru = L.rules || {};
-  GAME_MODES[id] = {
+  GAME_MODES[L.id] = {
     pkg: L,
     campaign: true,
     chapter: 2,
-    n: CHAPTER2.length + 1,
+    n,
     name: L.name,
     icon: L.icon || 'castle',
     desc: L.desc,
@@ -28,7 +26,7 @@ for (const id of ORDER) {
     seed: L.seed || 1,
     diff: L.diff,
     size: L.size,
-    stars: L.stars,
+    stars: L.stars || [10, 15],
     intro: L.intro,
     money: st.money,
     research: st.research,
@@ -40,7 +38,12 @@ for (const id of ORDER) {
     status: () => status(L),
     tick: () => levelTick(L),
   };
+}
+for (const id of ORDER) {
+  const L = { ...PACKS[`./${id}/level.json`], map: MAPS[`./${id}/map.txt`] };
+  if (L.id !== id) throw new Error(`level folder ${id} has the id ${L.id}`);
+  registerLevel(L, CHAPTER2.length + 1);
   CHAPTER2.push(id);
 }
 
-export { CHAPTER2 };
+export { CHAPTER2, ORDER, registerLevel };
