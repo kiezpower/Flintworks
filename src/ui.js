@@ -73,8 +73,8 @@ function hud() {
   moneyTxt.textContent = goldMode
     ? tr('{money} / {goal} Taler', { money: G.money, goal: M.goal })
     : tr('{money} Taler', { money: G.money });
-  goalWrap.hidden = goldMode;
-  if (!goldMode) {
+  goalWrap.hidden = goldMode || !!M.tutorial;
+  if (!goalWrap.hidden) {
     const p = Math.min(M.goal, M.prog());
     goalTxt.textContent = `${tr(M.name)} ${p}/${M.goal}`;
     goalBar.style.width = (p / M.goal) * 100 + '%';
@@ -416,7 +416,7 @@ function openBuild() {
         closePanel();
         send('build', { type: t });
       },
-    });
+    }).dataset.tut = 'b_' + t;
   }
 }
 function openBase() {

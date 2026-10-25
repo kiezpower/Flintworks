@@ -11,7 +11,7 @@ import { chosenBiome, hideLobby, lobbyFrame, lobbyOpen, showLobby } from './lobb
 import { P, finishGame, saveProfile } from './profile.js';
 import { biome } from './biomes.js';
 import { updAmbience } from './ambience.js';
-import { endTutorial, resumeTutorial, startTutorial, updTutorial } from './tutorial.js';
+import { endTutorial, resumeTutorial, setTutHooks, startTutorial, tutHud, updTutorial } from './tutorial.js';
 import { applyStatic, tr } from './i18n.js';
 import { openPanel, opt, sec } from './ui.js';
 import '@fontsource/pixelify-sans/500.css';
@@ -119,6 +119,9 @@ function play(withTutorial, level = null) {
       G.crewKey = G.invKey = '';
       if (G.tut) withTutorial = 'loaded'; // a saved tutorial goes on where it was
     } else {
+      // the very first game is the tutorial in its own small world (also when asked for)
+      if (!P.tutorialDone && !level) withTutorial = true;
+      if (withTutorial) level = 'tut';
       const L = level && GAME_MODES[level];
       G.nextBiome = L ? L.biome : chosenBiome();
       G.nextMode = L ? level : GAME_MODES[P.gmode] ? P.gmode : 'gold';
@@ -127,7 +130,6 @@ function play(withTutorial, level = null) {
       G.nextVersus = false;
       gen();
       G.nextSeed = null;
-      if (!P.tutorialDone) withTutorial = true;
     }
     resetCam();
     G.inRun = true;
@@ -163,6 +165,7 @@ function discard() {
   G.inRun = false;
 }
 const lobbyHooks = { play, discard, hasRun, keysHtml };
+setTutHooks({ play, menu, discard });
 function menu() {
   showLobby(lobbyHooks);
 }
@@ -375,6 +378,7 @@ function step() {
   readInput();
   // (a multiplayer game never pauses: the others keep playing)
   const paused = !panelEl.hidden && !G.net;
+  if (G.state === 'play' && paused) updTutorial(true);
   if (G.netClient) {
     clientStep(paused);
     stepTail();
@@ -498,6 +502,7 @@ function loop(t) {
   G.tick++;
   if (G.tick % 5 === 0) {
     hud();
+    tutHud();
     updEmoBtn();
   }
   if (G.tick % 10 === 0) drawMini(G.tick % 60 === 0);

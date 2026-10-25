@@ -142,7 +142,7 @@ function refresh() {
   const GM = GAME_MODES[P.gmode] || GAME_MODES.gold;
   $('lbGMode').disabled = run;
   const gm = run ? mode() : GM;
-  setTxt('lbGModeTxt', camp ? tr('Kampagne') : gm.campaign ? `${gm.n} · ${tr(gm.name)}` : tr(gm.name));
+  setTxt('lbGModeTxt', camp ? tr('Kampagne') : gm.n ? `${gm.n} · ${tr(gm.name)}` : tr(gm.name));
   setTxt(
     'lbGModeDesc',
     camp ? tr('{n} Level · Sterne {s}/{m}', { n: 7, s: totalStars(), m: 21 }) : tr(gm.desc, { goal: gm.goal }),
@@ -415,15 +415,16 @@ function openCampaign() {
     },
   });
 }
-let newArmed = 0,
-  tutArmed = 0;
+// (−Infinity: the first tap always asks, also right after the page opened)
+let newArmed = -Infinity,
+  tutArmed = -Infinity;
 tap('lbNew', () => {
   if (performance.now() - newArmed > 3000) {
     newArmed = performance.now();
     toast('Nochmal tippen: neue Welt starten, Fortschritt geht verloren');
     return;
   }
-  newArmed = 0;
+  newArmed = -Infinity;
   hooks.discard();
   refresh();
 });
