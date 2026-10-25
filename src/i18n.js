@@ -236,6 +236,9 @@ const EN = {
   'Werkstatt fertig: macht Feuersteine und Sprengladungen aus dem Lager':
     'Workshop done: makes flints and explosives from the store',
   'Neue Version v{v} verfügbar – tippen': 'New version v{v} available – tap',
+  'Licht: an': 'Lighting: on',
+  'Licht: aus': 'Lighting: off',
+  'Dämmerung unter Tage, Leuchten und Rahmen ums Bild': 'Dimming underground, glow and a soft frame around the picture',
   'Klettern an': 'Climbing on',
   'Klettern aus': 'Climbing off',
   'An Wänden hochklettern und an Decken hängen': 'Climb up walls and hang from ceilings',

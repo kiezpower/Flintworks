@@ -318,6 +318,16 @@ function openOptions() {
     },
   });
   opt(l, {
+    title: tr(P.lightfx === false ? 'Licht: aus' : 'Licht: an'),
+    sub: tr('Dämmerung unter Tage, Leuchten und Rahmen ums Bild'),
+    onClick: () => {
+      P.lightfx = P.lightfx === false;
+      G.lightFx = P.lightfx;
+      saveProfile();
+      openOptions();
+    },
+  });
+  opt(l, {
     title: tr(P.climbing ? 'Klettern an' : 'Klettern aus'),
     sub: tr('An Wänden hochklettern und an Decken hängen'),
     onClick: () => {

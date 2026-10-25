@@ -33,9 +33,12 @@ npm run dev        # Entwicklungsserver mit Live-Reload, auch im WLAN fürs Hand
 npm run build      # fertige Web-Version in dist/
 npm run preview    # gebaute Version lokal testen
 npm run android    # Web-Version bauen und ins Android-Projekt kopieren
+npm run test:visual # spielt eine Runde, speichert Screenshots in tests/out/ und prüft auf Fehler
 ```
 
 Mit `?seed=7` in der Adresse entsteht immer dieselbe Welt.
+
+Der Bildtest startet Vite selbst. Passt der mitgelieferte Browser nicht zur Playwright-Version, hilft `CHROMIUM_PATH=/pfad/zu/chromium npm run test:visual`.
 
 Die Android-App lässt sich lokal mit Android Studio aus dem Ordner `android/` bauen. Normalerweise ist das nicht nötig: GitHub baut sie automatisch.
 

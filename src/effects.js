@@ -96,6 +96,37 @@ function drawFireflies(ctx, cx, cy, dark) {
   }
 }
 
+// A burst of golden sparks for finished buildings, chests, jobs and castle levels
+function celebrate(x, y, n = 22) {
+  for (let k = 0; k < n; k++) {
+    const a = rnd() * Math.PI * 2,
+      v = 0.5 + rnd() * 1.4;
+    parts.push({
+      x,
+      y,
+      vx: Math.cos(a) * v,
+      vy: Math.sin(a) * v - 0.6,
+      l: 28 + rnd() * 18,
+      c: rnd() < 0.3 ? '#ffffff' : rnd() < 0.6 ? '#ffe066' : '#f2c230',
+      g: 0.03,
+      s: rnd() < 0.25 ? 2 : 1,
+    });
+  }
+}
+// small glint when the pick strikes gold or a gem
+function glint(x, y) {
+  for (let k = 0; k < 3; k++)
+    parts.push({
+      x,
+      y,
+      vx: (rnd() - 0.5) * 1.2,
+      vy: -rnd() * 1.1,
+      l: 14,
+      c: rnd() < 0.5 ? '#ffffff' : '#ffe066',
+      g: 0.02,
+    });
+}
+
 const dust = (x, y, n, col) => {
   for (let k = 0; k < n; k++)
     parts.push({
@@ -120,4 +151,15 @@ const splash = (x, y, n) => {
     });
 };
 
-export { drawFireflies, drawGemSparkles, drawLavaGlow, drawMountains, drawWaterGlints, dust, scanLava, splash };
+export {
+  celebrate,
+  glint,
+  drawFireflies,
+  drawGemSparkles,
+  drawLavaGlow,
+  drawMountains,
+  drawWaterGlints,
+  dust,
+  scanLava,
+  splash,
+};

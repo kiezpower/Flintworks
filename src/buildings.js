@@ -1,4 +1,5 @@
 import { arriveAtBase, stock, takeStock, unload, updProduction } from './store.js';
+import { celebrate } from './effects.js';
 import { track } from './profile.js';
 import { fireArrow } from './combat.js';
 import { tr } from './i18n.js';
@@ -366,6 +367,7 @@ function updBuilds() {
       G.base.lvl = lvl() + 1;
       calcTerr();
       sfx('fanfare');
+      if (G.base) celebrate(G.base.x + G.base.w / 2, G.base.gy - G.base.h / 2, 40);
       if (t === G.myTeam) toast('Deine Burg wächst: Stufe {n} – bessere Preise, mehr Wühler', { n: G.base.lvl });
     }
   }
@@ -407,6 +409,7 @@ function updBuilds() {
           track('build');
           toast('{name} fertig', { name: tr(BT[b.type].name) });
           sfx('done', b.x, b.gy);
+          celebrate(b.x + b.w / 2, b.gy - b.h / 2);
           if (b.type === 'flag') calcTerr();
           if (b.type === 'tower') toast('Wachturm fertig: drin stehen für weite Sicht');
           if (b.type === 'lift') toast('Fahrstuhl fertig: draufstellen, Stick runter oder hoch');

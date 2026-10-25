@@ -17,6 +17,7 @@ G.money = 0;
 G.state = 'menu';
 G.startT = 0;
 G.shake = 0;
+G.lightFx = true; // mood lighting, glow and vignette (option in the menu)
 G.goldDust = 0;
 G.earthDug = 0;
 G.loamDug = 0;

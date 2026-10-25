@@ -118,7 +118,7 @@ function initUiArt() {
     title.before(cv);
     title.classList.add('sr');
     const fit = () => {
-      const s = innerHeight >= 900 ? 3 : 2;
+      const s = innerHeight >= 900 ? 3 : innerHeight <= 460 ? 1 : 2;
       cv.style.width = cv.width * s + 'px';
       cv.style.height = cv.height * s + 'px';
     };

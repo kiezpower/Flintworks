@@ -140,9 +140,10 @@ button:focus-visible {
   position: relative;
 }
 .stats .mis {
-  max-width: 190px;
-  font-size: 11px;
-  line-height: 1.25;
+  max-width: 200px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  line-height: 1.2;
   color: #ffe9a8;
 }
 .cbtn .fo {
@@ -188,13 +189,14 @@ button:focus-visible {
   background: var(--leaf);
 }
 .stats {
-  padding: 5px 8px;
+  padding: 6px 9px;
   display: grid;
-  gap: 4px;
-  min-width: 132px;
+  gap: 5px;
+  min-width: 150px;
 }
 .who {
-  font-size: 10px;
+  font-family: var(--font-display);
+  font-size: 13px;
   color: var(--ink);
   white-space: nowrap;
 }
@@ -208,7 +210,9 @@ button:focus-visible {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
   font-variant-numeric: tabular-nums;
   color: var(--gold);
 }
@@ -223,7 +227,7 @@ button:focus-visible {
     inset 1px 1px 0 #fff2a8;
 }
 .bar {
-  height: 5px;
+  height: 6px;
   background: #3a2618;
   border-radius: 2px;
   overflow: hidden;
@@ -710,12 +714,13 @@ button:focus-visible {
 
 .goal {
   display: grid;
-  gap: 2px;
-  font-size: 11px;
+  gap: 3px;
+  font-family: var(--font-display);
+  font-size: 13px;
   color: #ffe39a;
 }
 .gbar {
-  height: 4px;
+  height: 5px;
   background: rgba(0, 0, 0, 0.5);
   border-radius: 2px;
   overflow: hidden;
@@ -754,8 +759,9 @@ button:focus-visible {
 .store {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px 7px;
-  font-size: 11px;
+  gap: 3px 8px;
+  font-family: var(--font-display);
+  font-size: 13px;
   color: #e8dcc4;
 }
 .store span {
@@ -764,8 +770,8 @@ button:focus-visible {
   gap: 2px;
 }
 .store img {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   image-rendering: pixelated;
 }
 

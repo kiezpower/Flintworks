@@ -21,9 +21,11 @@ import { digZone, wantsDig } from './clonk.js';
 import { LIQ, matAt, solid } from './world.js';
 
 import * as events from './events.js';
+import * as effects from './effects.js';
 import * as combat from './combat.js';
 
 window.__ww = {
+  effects,
   events,
   combat,
   send,

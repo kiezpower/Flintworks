@@ -5,7 +5,7 @@ import { buzz } from './sound.js';
 import { chestNear, openChest } from './treasure.js';
 import { addFloat } from './floats.js';
 import { track } from './profile.js';
-import { dust, splash } from './effects.js';
+import { dust, glint, splash } from './effects.js';
 import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './entities.js';
 import { inputOf } from './players.js';
 import { vehicleContext } from './vehicles/index.js';
@@ -441,7 +441,10 @@ function updClonk(c, I) {
     if (G.frame % 9 === 0) {
       const m = mat[Math.floor(c.y + 5 + slope * 6) * W + Math.floor(c.x + 3 + c.face * 6)];
       sfx(m === SAND ? 'digSand' : m === ROCK || m === GRANITE ? 'digRock' : 'dig', c.x, c.y);
-      if (m === GOLD || m === GEM) sfx('ting', c.x, c.y);
+      if (m === GOLD || m === GEM) {
+        sfx('ting', c.x, c.y);
+        glint(c.x + 3 + c.face * 6, c.y + 5 + slope * 6);
+      }
     }
     return;
   }
