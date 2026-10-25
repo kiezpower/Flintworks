@@ -11,8 +11,18 @@ import { drawBeams, drawBubbles, drawMark } from './mine.js';
 import { drawFloats } from './floats.js';
 import { drawDecor } from './decor.js';
 import { biome } from './biomes.js';
-import { beginGlow, depthAt, depthShade, drawVignette, duskGrade, endGlow, skyGlow, warmGlow } from './light.js';
-import { drawFireflies, drawGemSparkles, drawLavaGlow, drawWaterGlints, scanLava } from './effects.js';
+import {
+  beginGlow,
+  lightHole,
+  depthAt,
+  depthShade,
+  drawVignette,
+  duskGrade,
+  endGlow,
+  skyGlow,
+  warmGlow,
+} from './light.js';
+import { drawFireflies, drawGemSparkles, drawLavaGlow, drawWaterGlints, oreSpots, scanLava } from './effects.js';
 import { drawTutorial } from './tutorial.js';
 import { arrows, lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
@@ -611,6 +621,8 @@ function render() {
     for (const t of trees) if (t.burn > 0) light(t.x - cx, t.gy - t.spr.height / 2 - cy, 36, 0.9);
     for (const c of crew) if (c.burn > 0) light(c.x + 3 - cx, c.y + 4 - cy, 24, 0.9);
     for (let k = 0; k < lava.length; k += 8) light(lava[k], lava[k + 1], 16, 0.7);
+    if (under)
+      for (let k = 0; k < oreSpots.length; k += 3) lightHole(lctx, oreSpots[k], oreSpots[k + 1], 6, oreSpots[k + 2]);
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(lc, 0, 0);
     ctx.imageSmoothingEnabled = false;

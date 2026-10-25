@@ -1,7 +1,7 @@
 import { biome } from './biomes.js';
 // Visual extras: distant mountains, glowing lava, dust and splashes.
 import { G, parts } from './state.js';
-import { AIR, GEM, LAVA, W, WATER, mat, rnd } from './world.js';
+import { AIR, COAL, GEM, GOLD, LAVA, ORE, W, WATER, mat, rnd } from './world.js';
 
 // Far mountain range with snow caps, drawn behind the hills
 function drawMountains(ctx, cx, cy, dark) {
@@ -26,11 +26,13 @@ function drawMountains(ctx, cx, cy, dark) {
 // Lava pixels on screen, sampled on a coarse grid (reused for glow and night light)
 const lavaSpots = [],
   waterSpots = [],
-  gemSpots = [];
+  gemSpots = [],
+  oreSpots = [];
 function scanLava(cx, cy) {
   lavaSpots.length = 0;
   waterSpots.length = 0;
   gemSpots.length = 0;
+  oreSpots.length = 0;
   for (let y = 1; y < G.VH && lavaSpots.length < 160; y += 3)
     for (let x = 1; x < G.VW; x += 3) {
       const i = (cy + y) * W + cx + x;
@@ -45,6 +47,12 @@ function scanLava(cx, cy) {
         if (mat[j - W] === AIR) waterSpots.push(x, y - k);
       }
       if (mat[i] === GEM && rnd() < 0.08) gemSpots.push(x, y);
+      // gold, gems, ore and coal stay readable in the dimmed underground: how much light each gets
+      if (oreSpots.length < 360) {
+        const m = mat[i],
+          a = m === GOLD ? 0.65 : m === GEM ? 0.75 : m === ORE ? 0.5 : m === COAL ? 0.45 : 0;
+        if (a) oreSpots.push(x, y, a);
+      }
       if (mat[i] !== LAVA) continue;
       lavaSpots.push(x, y);
       if (mat[i - W] !== LAVA && rnd() < 0.004)
@@ -152,6 +160,7 @@ const splash = (x, y, n) => {
 };
 
 export {
+  oreSpots,
   celebrate,
   glint,
   drawFireflies,
