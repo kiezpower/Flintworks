@@ -108,6 +108,8 @@ function serialize() {
       beams: G.beams || [],
       mis: G.mis || null,
       goldSold: G.goldSold || 0,
+      sold: G.sold || {},
+      lvl: G.lvl || null,
       ev: { kills: G.kills, rescued: G.rescued, rate: G.evRate, kinds: G.evKinds, next: G.evNext },
       mineMark: G.mineMark || null,
       chestsFound: G.chestsFound,
@@ -199,6 +201,8 @@ function deserialize(d) {
     G.beams = d.beams || [];
     G.mis = d.mis || null;
     G.goldSold = d.goldSold || 0;
+    G.sold = d.sold || {};
+    G.lvl = d.lvl || null;
     const ev = d.ev || {};
     Object.assign(G, {
       kills: ev.kills || 0,

@@ -207,6 +207,8 @@ function startGame(withTutorial = false) {
 }
 // a client hears from the host that the round is over (Versus: which team won)
 G.onNetEnd = (won, winner) => G.state === 'play' && endScreen(winner == null ? won : winner === G.myTeam);
+// a hand-built level ends early: won by a trigger, or lost (crew gone, time up) with a reason
+G.onLevelEnd = (won, why) => G.state === 'play' && endScreen(won, why);
 // the goal: in Versus the first team to reach it wins
 function checkGoal() {
   if (!G.teams) {
@@ -226,7 +228,7 @@ function checkGoal() {
     endScreen(winner === G.myTeam);
   }
 }
-function endScreen(won) {
+function endScreen(won, why) {
   if (!G.teams) hostEnd(won);
   if (G.netHost) clearNetSave();
   G.state = won ? 'won' : 'lost';
@@ -245,7 +247,7 @@ function endScreen(won) {
     ? `<h1>${tr('Geschafft')}</h1><p class="stars">${'★'.repeat(stars)}<span>${'★'.repeat(3 - stars)}</span></p>
        <p>${tr(M.name)} · ${tr(M.desc, { goal: M.goal })} · ${tr('Zeit {time}', { time })}</p>
        <p class="hint">${tr('3 Sterne unter {a} Min., 2 Sterne unter {b} Min.', { a: M.stars[0], b: M.stars[1] })}</p>`
-    : `<h1>${tr('Crew verloren')}</h1><p>${tr('Alle Wühler sind erschöpft und die Kasse reicht für keinen neuen.')}</p>`;
+    : `<h1>${tr(why ? 'Level verloren' : 'Crew verloren')}</h1><p>${tr(why || 'Alle Wühler sind erschöpft und die Kasse reicht für keinen neuen.')}</p>`;
   card.innerHTML += `<p class="trophy-gain">${tr('{n} Trophäen', { n: (tro >= 0 ? '+' : '') + tro })}</p><button class="go" id="goBtn">${tr('Zur Lobby')}</button>`;
   $('goBtn').onclick = () => {
     overlay.hidden = true;

@@ -120,6 +120,9 @@ function sold(list, v) {
   const n = list.filter(t => t === 'nug').length;
   if (n) track('gold', n);
   G.goldSold = (G.goldSold || 0) + n;
+  // every kind counted, for level goals ("sell 15 ore")
+  G.sold = G.sold || {};
+  for (const t of list) G.sold[t] = (G.sold[t] || 0) + 1;
 }
 // End of a run: trophies for wins, a few for every 50 Taler earned
 function finishGame(won, earned, stars = 1) {

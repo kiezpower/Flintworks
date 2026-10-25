@@ -5,7 +5,8 @@ import { scatterDecor } from './decor.js';
 import { biome, setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
 import { resetEvents } from './events.js';
-import { applyModeSetup } from './modes.js';
+import { GAME_MODES, applyModeSetup } from './modes.js';
+import { genLevel } from './levels/loader.js';
 import { addClonk, mkAnimal, newId, spawnItem } from './entities.js';
 import { calcTerr } from './render.js';
 import { simulate } from './sim.js';
@@ -127,8 +128,10 @@ const perArea = k => Math.max(1, Math.round((k * W * H) / (W0 * H0))),
   perWidth = k => Math.max(1, Math.round((k * W) / W0));
 function gen() {
   endTeams();
+  // a hand-built level (levels/) is loaded from its map instead of being generated
+  const LP = GAME_MODES[G.nextMode]?.pkg;
   // the size of the new world: a level's own, otherwise 1400 × 400 (or ?size= in the dev server)
-  resizeWorld(...(G.nextSize || devSize || [W0, H0]));
+  resizeWorld(...((LP && LP.size) || G.nextSize || devSize || [W0, H0]));
   // multiplayer: everybody builds the same world from the host's seed
   if (G.nextSeed != null) setSeed(G.nextSeed);
   G.seed = getSeed();
@@ -142,6 +145,8 @@ function gen() {
   G.beams = [];
   G.mis = null;
   G.goldSold = 0;
+  G.sold = {};
+  G.lvl = null;
   G.mineMark = null;
   mat.fill(0);
   bg.fill(0);
@@ -153,6 +158,7 @@ function gen() {
   clearFresh();
   G.hintsSeen = new Set();
   for (let i = 0; i < W * H; i++) shade[i] = (rnd() * 4) | 0;
+  if (LP) return genLevel(LP);
   const p1 = rnd() * 6,
     p2 = rnd() * 6,
     p3 = rnd() * 6;
@@ -267,11 +273,7 @@ function gen() {
       const i = y * W + x;
       if (mat[i] === EARTH) shade[i] |= 4;
     }
-  paintAll();
-  activateAll();
-  for (let k = 0; k < 60; k++) simulate();
-  flush();
-  parts.length = 0;
+  settle();
   // home base
   G.base = { id: newId(), type: 'base', x: 72, gy: surf[90] + 1, w: 36, h: 30, prog: 1, done: true, busy: 0, lvl: 1 };
   G.base.gy = surf[90] + 1;
@@ -327,6 +329,20 @@ function gen() {
     const c = caves[7 + k];
     animals.push(mkAnimal('monster', c.x - 6, c.y - 4));
   }
+  finishWorld();
+}
+// sand and water settle before anybody looks; on an odd frame count, so that the same seed
+// always gives the same world (the sand falls left or right depending on the frame)
+function settle() {
+  if (!(G.frame & 1)) G.frame++;
+  paintAll();
+  activateAll();
+  for (let k = 0; k < 60; k++) simulate();
+  flush();
+  parts.length = 0;
+}
+// birds, clouds, weather, events and the mode's own start; the last part of every new world
+function finishWorld() {
   for (let f = 0; f < 3; f++) {
     const bx = ri(0, W),
       by = ri(25, 60),
@@ -426,4 +442,4 @@ function mkCloud(x) {
   return { x, y: ri(10, 48), w, h, vx: 0.04 + rnd() * 0.06, spr };
 }
 
-export { blob, canPlantAt, clearFoot, gen, mkCloud, plantTree, topSolid };
+export { blob, canPlantAt, clearFoot, finishWorld, gen, mkCloud, perArea, perWidth, plantTree, settle, topSolid };

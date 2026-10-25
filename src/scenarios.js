@@ -3,8 +3,9 @@
 // Stars per level are kept in the profile (P.campaign); a level opens with one star on the last.
 import { announce } from './announce.js';
 import { addClonk, mkAnimal, sel_ } from './entities.js';
-import { addFloat } from './floats.js';
 import { tr } from './i18n.js';
+import { CHAPTER2 } from './levels/index.js';
+import { rescueTick } from './levels/goals.js';
 import { GAME_MODES } from './modes.js';
 import { P, saveProfile } from './profile.js';
 import { toolIcon } from './sprites.js';
@@ -156,20 +157,6 @@ LEVEL_IDS.forEach((id, n) => {
   GAME_MODES[id] = { ...LEVELS[id], campaign: true, n: n + 1 };
 });
 
-// trapped Wühler wait until someone reaches them, then join the crew
-function rescueTick() {
-  for (const c of crew) {
-    if (!c.trapped || c.dead) continue;
-    c.vx = 0;
-    if (G.frame % 240 === 0) addFloat(c.x + 3, c.y - 6, tr('Hilfe!'), '#ffffff');
-    const saver = crew.find(o => !o.trapped && !o.dead && Math.abs(o.x - c.x) < 14 && Math.abs(o.y - c.y) < 12);
-    if (!saver) continue;
-    c.trapped = false;
-    c.focus = 'all';
-    G.rescued = (G.rescued || 0) + 1;
-    announce('{name} ist gerettet!', { name: c.name });
-  }
-}
 // every half second on the host / in a single game
 function updScenario() {
   const M = GAME_MODES[G.mode];
@@ -182,35 +169,46 @@ function updScenario() {
 }
 
 // ---- progress in the profile ----
+// chapter 1: the levels above (generated worlds), chapter 2: the hand-built levels (levels/)
+const CHAPTERS = [
+  { name: 'Kapitel 1 · Erste Welten', ids: LEVEL_IDS },
+  { name: 'Kapitel 2 · Klassiker', ids: CHAPTER2 },
+];
+const ALL_IDS = CHAPTERS.flatMap(c => c.ids);
 P.campaign = P.campaign || {};
 const starsOf = id => P.campaign[id] || 0;
+// the first level of each chapter is open, the next one after a star on the one before
 const unlocked = id => {
-  const n = LEVEL_IDS.indexOf(id);
-  return n <= 0 || starsOf(LEVEL_IDS[n - 1]) > 0;
+  const ids = CHAPTERS.find(c => c.ids.includes(id)).ids,
+    n = ids.indexOf(id);
+  return n <= 0 || starsOf(ids[n - 1]) > 0;
 };
-const totalStars = () => LEVEL_IDS.reduce((s, id) => s + starsOf(id), 0);
+const totalStars = () => ALL_IDS.reduce((s, id) => s + starsOf(id), 0);
 function recordCampaign(stars) {
-  if (!LEVELS[G.mode]) return;
+  if (!ALL_IDS.includes(G.mode)) return;
   P.campaign[G.mode] = Math.max(starsOf(G.mode), stars);
   saveProfile();
 }
 
 // the level list in the lobby; start(id) begins a level
 function campaignPanel(p, { opt, sec, start }) {
-  const l = sec(p, tr('Sterne: {n}/{m}', { n: totalStars(), m: LEVEL_IDS.length * 3 }));
-  LEVEL_IDS.forEach((id, n) => {
-    const L = LEVELS[id],
-      open = unlocked(id),
-      s = starsOf(id);
-    opt(l, {
-      icon: toolIcon(L.icon),
-      title: `${n + 1} · ${tr(L.name)}`,
-      sub: tr(L.desc, { goal: L.goal }),
-      cost: open ? '★'.repeat(s) + '☆'.repeat(3 - s) : '🔒',
-      disabled: !open,
-      onClick: () => start(id),
+  for (const ch of CHAPTERS) {
+    const got = ch.ids.reduce((s, id) => s + starsOf(id), 0);
+    const l = sec(p, `${tr(ch.name)} · ${tr('Sterne: {n}/{m}', { n: got, m: ch.ids.length * 3 })}`);
+    ch.ids.forEach((id, n) => {
+      const L = GAME_MODES[id],
+        open = unlocked(id),
+        s = starsOf(id);
+      opt(l, {
+        icon: toolIcon(L.icon),
+        title: `${n + 1} · ${tr(L.name)}`,
+        sub: tr(L.desc, { goal: L.goal }),
+        cost: open ? '★'.repeat(s) + '☆'.repeat(3 - s) : '🔒',
+        disabled: !open,
+        onClick: () => start(id),
+      });
     });
-  });
+  }
 }
 
-export { LEVELS, campaignPanel, recordCampaign, totalStars, updScenario };
+export { ALL_IDS, LEVELS, campaignPanel, recordCampaign, totalStars, updScenario };
