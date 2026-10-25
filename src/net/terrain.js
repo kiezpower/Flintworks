@@ -3,7 +3,7 @@
 // A slow round-robin refresh of all chunks repairs anything that went missing.
 import { b64, unb64 } from '../save.js';
 import { crew } from '../state.js';
-import { ACID, AIR, CHn, CS, CWn, H, LAVA, SOLID, W, WATER, bg, mat, markFresh, netDirty, paint } from '../world.js';
+import { ACID, AIR, CHn, CS, CWn, H, LAVA, SOLID, W, WATER, bg, mat, markFresh, netDirty, onResize, paint } from '../world.js';
 
 const MAX_PER_PACKET = 24;
 let refresh = 0,
@@ -60,7 +60,12 @@ function decodeChunk(c, str) {
 
 // what the clients have (as far as the host knows), cell = material | dug << 4
 let sent = null;
-const liqT = new Int32Array(CWn * CHn);
+let liqT = new Int32Array(CWn * CHn);
+// a new world size: what the clients had no longer fits
+onResize(() => {
+  sent = null;
+  liqT = new Int32Array(CWn * CHn);
+});
 function resetSent() {
   sent = new Uint8Array(W * H);
   for (let i = 0; i < W * H; i++) sent[i] = mat[i] | (bg[i] << 4);

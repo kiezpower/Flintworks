@@ -36,7 +36,7 @@ import { game, joyHome } from './input.js';
 import { ICOL, SPR, drawHi, drawItemBig } from './sprites.js';
 import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
 import { darkness, skyCols, sunAlt } from './weather.js';
-import { H, W, clamp, flush, rnd, wc } from './world.js';
+import { H, W, clamp, drawWorld, flush, onResize, rnd } from './world.js';
 
 // ---- Rendering ----
 const cv = document.getElementById('cv'),
@@ -83,6 +83,8 @@ function resize() {
   joyHome();
 }
 addEventListener('resize', resize);
+// the view can be no bigger than the world
+onResize(() => resize());
 // Hats from the lobby shop, drawn on top of the cap (pixel offsets relative to the head)
 function drawHat(put, hat) {
   if (hat === 'helm' || hat === 'viking') {
@@ -239,7 +241,10 @@ function render() {
     cy = clamp(Math.round(cam.y + sh * 0.6), 0, H - G.VH);
   const dark = darkness(),
     [st, sb] = skyCols();
-  const g = ctx.createLinearGradient(0, -cy, 0, 170 - cy);
+  // sky, sun, clouds, birds and hills are made for ground around row 120; in a world with its
+  // ground lower down they move down with it (scy is the camera as the sky sees it)
+  const scy = cy - (Math.round(H * 0.3) - 120);
+  const g = ctx.createLinearGradient(0, -scy, 0, 170 - scy);
   g.addColorStop(0, st);
   g.addColorStop(1, sb);
   ctx.fillStyle = g;
@@ -248,14 +253,14 @@ function render() {
     ctx.fillStyle = `rgba(255,255,240,${(dark - 0.25) * 1.6})`;
     for (const st of stars) {
       if ((G.frame + st.b * 100) % 90 < 3 && st.b > 0.8) continue;
-      ctx.fillRect(Math.floor(st.x * G.VW), Math.floor(st.y * 120 - cy * 0.2), 1, 1);
+      ctx.fillRect(Math.floor(st.x * G.VW), Math.floor(st.y * 120 - scy * 0.2), 1, 1);
     }
   }
   // sun & moon
   {
     const ang = 2 * Math.PI * G.dayT,
       sx = G.VW / 2 + Math.cos(Math.PI - ang) * G.VW * 0.45,
-      syy = 95 - Math.sin(ang) * 80 - cy * 0.3;
+      syy = 95 - Math.sin(ang) * 80 - scy * 0.3;
     if (Math.sin(ang) > -0.1) {
       ctx.fillStyle = '#fff3c4';
       ctx.fillRect(Math.round(sx) - 3, Math.round(syy) - 3, 7, 7);
@@ -264,7 +269,7 @@ function render() {
       if (G.lightFx) skyGlow(ctx, sx, syy, 'sun', 0.7 * Math.min(1, Math.sin(ang) + 0.2));
     }
     const mx = G.VW / 2 + Math.cos(-ang) * G.VW * 0.45,
-      my = 95 + Math.sin(ang) * 80 - cy * 0.3;
+      my = 95 + Math.sin(ang) * 80 - scy * 0.3;
     if (Math.sin(ang) < 0.1) {
       ctx.fillStyle = '#e8ecf4';
       ctx.fillRect(Math.round(mx) - 2, Math.round(my) - 3, 5, 7);
@@ -277,7 +282,7 @@ function render() {
   ctx.globalAlpha = G.rainT > 0 ? 0.95 : 0.9;
   for (const c of clouds) {
     const x = Math.round(c.x - cx * 0.7),
-      y = c.y - Math.round(cy * 0.7);
+      y = c.y - Math.round(scy * 0.7);
     if (x > -c.w && x < G.VW) ctx.drawImage(c.spr, x, y);
   }
   ctx.globalAlpha = 1;
@@ -297,10 +302,10 @@ function render() {
       }
     }
   }
-  drawBackdrop(ctx, cx, cy);
+  drawBackdrop(ctx, cx, scy);
   for (const b of birds) {
     const x = Math.round(b.x - cx * 0.9),
-      y = Math.round(b.y - cy * 0.9);
+      y = Math.round(b.y - scy * 0.9);
     if (x < -3 || x > G.VW) continue;
     ctx.fillStyle = dark > 0.3 ? '#8890a8' : '#2a2a35';
     const up = Math.sin(b.ph) > 0;
@@ -308,7 +313,7 @@ function render() {
     ctx.fillRect(x - 1, up ? y - 1 : y + 1, 1, 1);
     ctx.fillRect(x + 1, up ? y - 1 : y + 1, 1, 1);
   }
-  ctx.drawImage(wc, cx * 2, cy * 2, G.VW * 2, G.VH * 2, 0, 0, G.VW, G.VH);
+  drawWorld(ctx, cx, cy, G.VW, G.VH);
   drawDecor(ctx, cx, cy);
   drawBeams(ctx, cx, cy);
   drawRails(ctx, cx, cy);

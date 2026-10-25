@@ -1,6 +1,27 @@
 # Plan: Vorgebaute Level („Szenarien“ wie im Original-Clonk)
 
-> **Stand: Plan, noch nicht umgesetzt.** Baut auf v1.29.0 auf. Entscheidungen siehe Abschnitt 11.
+> **Stand: Etappe 1 umgesetzt (v1.30.0), Etappen 2–8 offen.** Entscheidungen siehe Abschnitt 11.
+> Abweichungen und Erkenntnisse aus Etappe 1:
+> - Welten mit 1400 × 400 bleiben bitgenau wie vorher (geprüft mit Prüfsummen von v1.29.0 für
+>   freies Spiel, Versus und zwei Kampagnen-Level, `tests/worldsize.spec.js`). Andere Größen
+>   bekommen Höhlen, Adern, Steine, Gas und Tiere passend zur Fläche, Bäume, Truhen und Wolken
+>   passend zur Breite; der Boden liegt bei 30 % der Höhe, niedrige Welten haben flachere Hügel.
+> - **Gefunden:** Der Fallsand beim Erzeugen rechnet je nach Bildzähler (`G.frame`, gerade oder
+>   ungerade) nach links oder rechts. Dieselbe Welt aus demselben Seed ist darum nur gleich, wenn
+>   gleich viele Bilder davor liefen. Das gab es schon vorher und betrifft heute nichts (im
+>   Mehrspieler schickt der Host den Boden). Für Level und den Determinismus-Test in Abschnitt 9
+>   muss Etappe 2 den Zähler beim Erzeugen festsetzen.
+> - Das Weltbild liegt in einem Pixelpuffer und wird in Kacheln mit 1024 × 1024 Texeln gezeigt
+>   (`drawWorld`). Geänderte Chunks gehen in die Kachel, in der sie liegen.
+> - Himmel, Sonne, Wolken, Vögel und die Hügel im Hintergrund wandern mit dem Boden nach unten,
+>   wenn er tiefer liegt als in Zeile 120.
+> - Übersichtskarte: ein Viertel der Weltgröße; die kleine Karte in der Ecke zeigt die ganze Welt
+>   eingepasst, die große Karte höchstens 60 % der Bildschirmhöhe.
+> - Mehrspieler: Die Start-Nachricht trägt die Größe, Nachzügler bekommen die aktuelle Größe.
+>   Geprüft mit lokalem Relay, Host, Gast und Nachzügler in 900 × 350 (keine Fehler, Boden zu
+>   99,9 % gleich, der Rest ist fließendes Wasser). Diese Prüfung ist kein automatischer Test.
+> - Speicherstände tragen `w`/`h`; alte ohne diese Angaben laden als 1400 × 400.
+> - Zum Ausprobieren im Entwicklungsserver: `?size=700x300`.
 
 Ziel: Neben den Zufallswelten gibt es **von Hand gestaltete Level**. Jedes hat eine eigene
 Landschaft, eigene Startbedingungen, ein eigenes Ziel und kleine Ereignisse, so wie die Szenarien

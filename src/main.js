@@ -52,7 +52,7 @@ import { updEmoBtn } from './net/emotes.js';
 import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
-import { H, W, clamp, dryFresh, surf } from './world.js';
+import { H, H0, W, W0, clamp, dryFresh, surf } from './world.js';
 
 // ---- Screens & loop ----
 const overlay = $('overlay'),
@@ -119,9 +119,11 @@ function play(withTutorial, level = null) {
       G.nextMode = L ? level : GAME_MODES[P.gmode] ? P.gmode : 'gold';
       G.nextDiff = L ? L.diff || 'adventure' : P.diff || 'adventure';
       G.nextSeed = L ? L.seed : null;
+      // tutorial and levels have their own size; free play is 1400 × 400 (or ?size= when developing)
+      G.nextSize = L ? L.size || [W0, H0] : null;
       G.nextVersus = false;
       gen();
-      G.nextSeed = null;
+      G.nextSeed = G.nextSize = null;
       if (bonus) {
         G.money += bonus;
         P.tutBonus = 0;
@@ -146,8 +148,9 @@ function playNet(d) {
   G.nextMode = d.gmode;
   G.nextDiff = d.diff;
   G.nextVersus = !!d.versus;
+  G.nextSize = d.size || [W0, H0];
   gen();
-  G.nextSeed = null;
+  G.nextSeed = G.nextSize = null;
   G.nextVersus = false;
   beginNet(d);
   resetCam();

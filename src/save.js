@@ -20,7 +20,22 @@ import {
   trees,
   vehicles,
 } from './state.js';
-import { H, W, activateAll, bg, clearFresh, mat, paintAll, ri, rnd, shade, surf } from './world.js';
+import {
+  H,
+  H0,
+  W,
+  W0,
+  activateAll,
+  bg,
+  clearFresh,
+  mat,
+  paintAll,
+  resizeWorld,
+  ri,
+  rnd,
+  shade,
+  surf,
+} from './world.js';
 
 // ---- Save / load (per browser) ----
 const SAVEKEY = 'wuehlwelt-save-v1';
@@ -77,6 +92,8 @@ function serialize() {
     };
     const data = {
       v: 1,
+      w: W,
+      h: H,
       world: b64(new Uint8Array(u16.buffer)),
       surf: [...surf],
       money: G.money,
@@ -150,6 +167,8 @@ function deserialize(d) {
   if (!d || d.v !== 1) return false;
   try {
     setBiome(d.biome || 'meadow');
+    // saves from before different world sizes are 1400 × 400
+    resizeWorld(d.w || W0, d.h || H0);
     const u8 = unb64(d.world),
       u16 = new Uint16Array(u8.buffer);
     let i = 0;

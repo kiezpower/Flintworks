@@ -42,8 +42,12 @@ import {
   SAND,
   SOLID,
   W,
+  W0,
+  H0,
   WATER,
   activateAll,
+  devSize,
+  resizeWorld,
   bg,
   clearFresh,
   flush,
@@ -117,8 +121,14 @@ function topSolid(x) {
   for (let y = 0; y < H; y++) if (SOLID[mat[y * W + x]] || LIQ[mat[y * W + x]]) return y;
   return H;
 }
+// Counts in the generator are made for a 1400 × 400 world; other sizes get as many per area
+// (or per width for things on the surface), at least one
+const perArea = k => Math.max(1, Math.round((k * W * H) / (W0 * H0))),
+  perWidth = k => Math.max(1, Math.round((k * W) / W0));
 function gen() {
   endTeams();
+  // the size of the new world: a level's own, otherwise 1400 × 400 (or ?size= in the dev server)
+  resizeWorld(...(G.nextSize || devSize || [W0, H0]));
   // multiplayer: everybody builds the same world from the host's seed
   if (G.nextSeed != null) setSeed(G.nextSeed);
   G.seed = getSeed();
@@ -146,9 +156,12 @@ function gen() {
   const p1 = rnd() * 6,
     p2 = rnd() * 6,
     p3 = rnd() * 6;
+  // low worlds get flatter hills (1400 × 400: ground around row 120)
+  const hy = Math.round(H * 0.3),
+    ha = Math.min(1, H / H0);
   for (let x = 0; x < W; x++)
     surf[x] = Math.round(
-      120 + 26 * Math.sin(x * 0.0062 + p1) + 12 * Math.sin(x * 0.019 + p2) + 4 * Math.sin(x * 0.061 + p3),
+      hy + ha * 26 * Math.sin(x * 0.0062 + p1) + ha * 12 * Math.sin(x * 0.019 + p2) + ha * 4 * Math.sin(x * 0.061 + p3),
     );
   const bh = surf[90];
   for (let x = 0; x < 160; x++) {
@@ -168,20 +181,20 @@ function gen() {
       }
     }
   const deep = (x, min) => surf[x] + min + rnd() * Math.max(4, H - 30 - surf[x] - min);
-  for (let k = 0; k < 38; k++) {
+  for (let k = 0, n = perArea(38); k < n; k++) {
     const x = ri(150, W - 10);
     blob(x, deep(x, 8), ri(6, 18), ri(4, 11), ROCK);
   }
-  for (let k = 0; k < 14; k++) {
+  for (let k = 0, n = perArea(14); k < n; k++) {
     const x = ri(150, W - 10);
     blob(x, deep(x, 5), ri(6, 13), ri(4, 9), SAND);
   }
-  for (let k = 0; k < 12; k++) {
+  for (let k = 0, n = perArea(12); k < n; k++) {
     const x = ri(150, W - 10);
     blob(x, deep(x, 15), ri(8, 16), ri(3, 6), LOAM);
   }
   const caves = [];
-  for (let k = 0; k < 14; k++) {
+  for (let k = 0, n = perArea(14); k < n; k++) {
     const x = ri(180, W - 30),
       cy = deep(x, 30),
       rx = ri(10, 24),
@@ -199,16 +212,16 @@ function gen() {
   // resources spread evenly along the world (random within each stretch), so every world
   // has about as much close to the base – no lucky or empty starts
   const spread = (k, n, x0) => Math.floor(x0 + (k + 0.15 + rnd() * 0.7) * ((W - 15 - x0) / n));
-  for (let k = 0; k < 16; k++) {
-    const x = spread(k, 16, 150);
+  for (let k = 0, n = perArea(16); k < n; k++) {
+    const x = spread(k, n, 150);
     blob(x, deep(x, 18), ri(5, 12), ri(3, 6), COAL);
   }
-  for (let k = 0; k < 14; k++) {
-    const x = spread(k, 14, 170);
+  for (let k = 0, n = perArea(14); k < n; k++) {
+    const x = spread(k, n, 170);
     blob(x, deep(x, 40), ri(4, 9), ri(3, 6), ORE);
   }
-  for (let k = 0; k < 26; k++) {
-    const x = spread(k, 26, 160);
+  for (let k = 0, n = perArea(26); k < n; k++) {
+    const x = spread(k, n, 160);
     blob(x, deep(x, 22), ri(3, 7), ri(2, 5), GOLD);
   }
   // desert: thick sand cover (not under the home base)
@@ -219,8 +232,8 @@ function gen() {
       for (let y = surf[x] + 1; y <= surf[x] + d; y++) if (mat[y * W + x] === EARTH) mat[y * W + x] = SAND;
     }
   // gems: small, rare pockets deep down
-  for (let k = 0; k < 12; k++) {
-    const x = spread(k, 12, 220);
+  for (let k = 0, n = perArea(12); k < n; k++) {
+    const x = spread(k, n, 220);
     blob(x, H - 30 - rnd() * 80, ri(2, 4), ri(2, 3), GEM);
   }
   // balancing: one shallow gold vein close to the base for the first sale
@@ -246,8 +259,8 @@ function gen() {
       }
     }
   }
-  placeChests();
-  placeGas();
+  placeChests(perWidth(6));
+  placeGas(perArea(9));
   if (G.relaxed) G.gas = [];
   for (let x = 0; x < W; x++)
     for (let y = surf[x] + 1; y <= surf[x] + 3; y++) {
@@ -271,18 +284,18 @@ function gen() {
       n++;
     }
   let tries = 0;
-  while (trees.length < biome().trees && tries++ < 500) {
+  while (trees.length < perWidth(biome().trees) && tries++ < 500) {
     const x = ri(10, W - 10);
     if (x > G.base.x - 8 && x < G.base.x + G.base.w + 8) continue;
     if (!canPlantAt(x)) continue;
     plantTree(x, ri(2, 4));
   }
   // items
-  for (let k = 0; k < 8; k++) {
+  for (let k = 0, n = perWidth(8); k < n; k++) {
     const x = ri(170, W - 20);
     spawnItem('rock', x, topSolid(x) - 6, 0, 0);
   }
-  for (let k = 0; k < 4; k++) {
+  for (let k = 0, n = perWidth(4); k < n; k++) {
     const x = ri(170, W - 20);
     spawnItem('flint', x, topSolid(x) - 6, 0, 0);
   }
@@ -295,7 +308,7 @@ function gen() {
   crew[2].inv = ['rock'];
   if (G.nextVersus) genSecondBase();
   // animals
-  for (let k = 0; k < 6; k++) {
+  for (let k = 0, n = perWidth(6); k < n; k++) {
     const x = ri(200, W - 20);
     animals.push(mkAnimal('wipf', x, topSolid(x) - 6));
   }
@@ -321,7 +334,7 @@ function gen() {
     for (let k = 0; k < ri(3, 5); k++)
       birds.push({ x: bx + k * 6, y: by + (k % 2) * 4, vx: dir * (0.5 + rnd() * 0.15), ph: rnd() * 6 });
   }
-  for (let k = 0; k < 9; k++) clouds.push(mkCloud(rnd() * W));
+  for (let k = 0, n = perWidth(9); k < n; k++) clouds.push(mkCloud(rnd() * W));
   G.dayT = 0.02;
   G.rainT = 0;
   G.rainNext = 9000 + rnd() * 4000;

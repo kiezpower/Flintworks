@@ -316,6 +316,8 @@ button:focus-visible {
   display: block;
   width: 100%;
   height: auto;
+  max-height: 60vh;
+  object-fit: contain;
   border-radius: 2px;
   image-rendering: pixelated;
   background: #1a120c;

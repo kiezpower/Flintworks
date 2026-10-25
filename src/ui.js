@@ -23,7 +23,7 @@ import { canShoot } from './combat.js';
 import { isPlayer } from './players.js';
 import { missionText } from './missions.js';
 import { G, INV_MAX, animals, builds, crew, lorries } from './state.js';
-import { PLANK, AIR, GOLD, MINI, W, bg, hex, mat, surf } from './world.js';
+import { PLANK, AIR, GOLD, H, MINI, W, bg, hex, mat, onResize, surf } from './world.js';
 
 // ---- HUD, panels, minimap ----
 const $ = id => document.getElementById(id);
@@ -41,8 +41,17 @@ const panelEl = $('panel'),
   pBody = $('pBody');
 const mapView = $('mapView'),
   mini = $('mini'),
-  mctx = mini.getContext('2d'),
-  mimg = mctx.createImageData(350, 100);
+  mctx = mini.getContext('2d');
+// the map shows the world at a quarter of its size
+const MK = 4;
+let mimg;
+function sizeMini() {
+  mini.width = Math.ceil(W / MK);
+  mini.height = Math.ceil(H / MK);
+  mimg = mctx.createImageData(mini.width, mini.height);
+}
+sizeMini();
+onResize(sizeMini);
 for (const el of document.querySelectorAll('[data-ico]')) el.style.backgroundImage = `url(${padIcon(el.dataset.ico)})`;
 mapView.addEventListener('pointerdown', e => {
   e.stopPropagation();
@@ -203,21 +212,23 @@ const thumb = $('miniThumb'),
   tctx = thumb.getContext('2d');
 function drawMini(full) {
   if (G.state !== 'play') return;
-  const K = 4;
   if (full) {
-    const d = new Uint32Array(mimg.data.buffer);
-    for (let my = 0; my < 100; my++)
-      for (let mx = 0; mx < 350; mx++) {
+    const d = new Uint32Array(mimg.data.buffer),
+      MW = mini.width;
+    for (let my = 0; my < mini.height; my++)
+      for (let mx = 0; mx < MW; mx++) {
         let gold = false,
           best = -1;
         for (let q = 0; q < 4; q++) {
-          const i = (my * K + (q >> 1) * 2) * W + mx * K + (q & 1) * 2;
+          const x = Math.min(W - 1, mx * MK + (q & 1) * 2),
+            y = Math.min(H - 1, my * MK + (q >> 1) * 2),
+            i = y * W + x;
           const m = mat[i];
           if (m === GOLD) gold = true;
           if (best < 0 || m !== AIR) best = i;
         }
         const m = mat[best];
-        d[my * 350 + mx] = gold
+        d[my * MW + mx] = gold
           ? hex('#f2c230')
           : m === AIR
             ? bg[best]
@@ -229,27 +240,29 @@ function drawMini(full) {
   mctx.putImageData(mimg, 0, 0);
   mctx.strokeStyle = 'rgba(255,255,255,.8)';
   mctx.lineWidth = 1;
-  mctx.strokeRect(Math.floor(cam.x / K) + 0.5, Math.floor(cam.y / K) + 0.5, Math.ceil(G.VW / K), Math.ceil(G.VH / K));
+  const vx = Math.floor(cam.x / MK) + 0.5,
+    vy = Math.floor(cam.y / MK) + 0.5;
+  mctx.strokeRect(vx, vy, Math.ceil(G.VW / MK), Math.ceil(G.VH / MK));
   for (const b of builds) {
     mctx.fillStyle = '#c9b89a';
-    mctx.fillRect(Math.floor(b.x / K), Math.floor((b.gy - b.h) / K), Math.ceil(b.w / K), Math.ceil(b.h / K));
+    mctx.fillRect(Math.floor(b.x / MK), Math.floor((b.gy - b.h) / MK), Math.ceil(b.w / MK), Math.ceil(b.h / MK));
   }
   for (const a of animals)
     if (a.kind === 'monster') {
       mctx.fillStyle = '#ff4040';
-      mctx.fillRect(Math.floor(a.x / K) - 1, Math.floor(a.y / K) - 1, 4, 4);
+      mctx.fillRect(Math.floor(a.x / MK) - 1, Math.floor(a.y / MK) - 1, 4, 4);
     }
   // treasure hunt: closed chests are marked on the map
   if (G.mode === 'treasure' && G.chests)
     for (const ch of G.chests)
       if (!ch.open) {
         mctx.fillStyle = (G.tick >> 4) & 1 ? '#ffe066' : '#b8860b';
-        mctx.fillRect(Math.floor(ch.x / K) - 1, Math.floor(ch.y / K) - 1, 5, 4);
+        mctx.fillRect(Math.floor(ch.x / MK) - 1, Math.floor(ch.y / MK) - 1, 5, 4);
       }
   crew.forEach((c, n) => {
     if (c.dead) return;
-    const px = Math.floor(c.x / K),
-      py = Math.floor(c.y / K);
+    const px = Math.floor(c.x / MK),
+      py = Math.floor(c.y / MK);
     // players (you in white) a bit bigger than helpers
     if (isPlayer(c)) {
       mctx.fillStyle = '#24160c';
@@ -259,8 +272,13 @@ function drawMini(full) {
     mctx.fillRect(px - 1, py - 1, 4, 4);
   });
   // the small always-visible map in the corner
+  // (the whole world, as big as fits, centred)
   tctx.imageSmoothingEnabled = true;
-  tctx.drawImage(mini, 0, 0, thumb.width, thumb.height);
+  const f = Math.min(thumb.width / mini.width, thumb.height / mini.height),
+    tw = Math.round(mini.width * f),
+    th = Math.round(mini.height * f);
+  tctx.clearRect(0, 0, thumb.width, thumb.height);
+  tctx.drawImage(mini, (thumb.width - tw) >> 1, (thumb.height - th) >> 1, tw, th);
 }
 function toggleMap() {
   mapView.hidden = !mapView.hidden;
