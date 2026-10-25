@@ -65,7 +65,7 @@ Beschreibung (Englisch, zum Einfügen):
 > - Ride vehicles: drill wagon, mine train, raft, catapult, cable car, airship
 > - Fight cave monsters with sword and longbow
 > - Survive earthquakes, volcanoes, meteors and cave-ins
-> - Campaign with 7 levels, plus free play in three worlds
+> - Campaign with 15 levels in two chapters, plus free play in three worlds and three hand-built maps for co-op and versus
 > - Up to 4 players online in co-op or versus
 >
 > Free, no ads, no in-app purchases. Plays in the browser on phone and desktop – an Android app is available too.

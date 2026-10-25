@@ -14,6 +14,18 @@ function levelJson(L) {
   const keys = Object.keys(L).filter(k => k !== 'map');
   return `{\n${keys.map(k => `  ${JSON.stringify(k)}: ${val(L[k], '  ')}`).join(',\n')}\n}\n`;
 }
+// level maps (src/levels/*/map.txt) go into the bundle run-length encoded, unpacked by
+// unpackMap() in src/levels/palette.js: a fifth of the size in the offline cache and the app
+const levelMaps = {
+  name: 'level-maps-rle',
+  transform(code, id) {
+    if (!/\/src\/levels\/[^/]+\/map\.txt\?raw$/.test(id)) return null;
+    const text = JSON.parse(code.replace(/^export default /, '').replace(/;?\s*$/, ''));
+    const rows = text.replace(/\r/g, '').split('\n');
+    const rle = rows.map(r => r.replace(/(.)\1*/g, m => (m.length > 1 ? m.length : '') + m[0])).join('\n');
+    return { code: `export default ${JSON.stringify('RLE1:' + rle)};`, map: null };
+  },
+};
 // dev server only: the level editor (editor.html) saves to src/levels/<id>/
 const levelEditor = {
   name: 'level-editor-save',
@@ -48,6 +60,7 @@ export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(VERSION) },
   build: { rollupOptions: {} },
   plugins: [
+    levelMaps,
     levelEditor,
     // version.json lets installed apps and cached pages find out that a newer version exists
     {

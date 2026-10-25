@@ -1,0 +1,36 @@
+{
+  "id": "gipfelsturm",
+  "v": 1,
+  "name": "Gipfelsturm",
+  "icon": "castle",
+  "desc": "Erreiche den Gipfel und baue einen Wachturm",
+  "intro": "Der Berg hat einen Kern aus Granit. Steig außen hinauf – mit Treppen, Brücken, einer Seilbahn oder einem Fahrstuhl.",
+  "biome": "winter",
+  "size": [900, 700],
+  "zoom": 5,
+  "rough": 0.4,
+  "seed": 8707,
+  "diff": "adventure",
+  "fill": {"caves": 0.3},
+  "start": {"money": 120, "crew": 3, "inv": [["flint", "rock"], ["loam"], ["wood"]], "research": ["mech"], "store": {"plank": 4, "wood": 4, "metal": 1}},
+  "rules": {"meteors": false, "events": ["quake"], "evRate": 0.5},
+  "objects": [
+    {"t": "base", "x": 20},
+    {"t": "tree", "x": 120, "stage": 4},
+    {"t": "tree", "x": 170, "stage": 4},
+    {"t": "tree", "x": 230, "stage": 4},
+    {"t": "tree", "x": 820, "stage": 4},
+    {"t": "tree", "x": 860, "stage": 4}
+  ],
+  "areas": {"gipfel": [500, 0, 150, 110], "hang": [300, 250, 150, 150]},
+  "goals": [
+    {"t": "reach", "area": "gipfel", "label": "Gipfel erreicht"},
+    {"t": "build", "what": "tower", "n": 1}
+  ],
+  "lose": {"crewDead": true},
+  "stars": [10, 16],
+  "triggers": [
+    {"when": {"t": "enter", "area": "hang"}, "do": [{"t": "say", "text": "Halb oben! Holztreppen (Bauen) helfen über steile Stellen."}]},
+    {"when": {"t": "goal", "n": 0}, "do": [{"t": "banner", "title": "Gipfel erreicht", "text": "Jetzt noch ein Wachturm – wo, ist egal."}]}
+  ]
+}

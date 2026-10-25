@@ -1,0 +1,28 @@
+{
+  "id": "wettgraben",
+  "v": 1,
+  "name": "Wettgraben",
+  "icon": "dig",
+  "desc": "Erreiche als Erster {goal} m Tiefe",
+  "intro": "Jedes Team gräbt auf seiner Seite nach unten. Felsplatten bremsen, Gold lockt zur Seite. Wer zuerst unten ist, gewinnt.",
+  "biome": "desert",
+  "size": [1000, 700],
+  "zoom": 5,
+  "rough": 0.25,
+  "seed": 9010,
+  "diff": "adventure",
+  "fill": {"caves": 0, "rock": 0.6},
+  "start": {"money": 40, "crew": 3},
+  "rules": {"meteors": false},
+  "objects": [
+    {"t": "base", "x": 30},
+    {"t": "base", "x": -66, "team": 1}
+  ],
+  "areas": {},
+  "goals": [
+    {"t": "depth", "n": 100}
+  ],
+  "lose": {},
+  "stars": [6, 10],
+  "triggers": []
+}

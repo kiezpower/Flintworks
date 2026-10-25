@@ -11,7 +11,10 @@ import { G, animals, builds, crew, vehicles } from '../state.js';
 import { VK } from '../vehicles/index.js';
 import { W, surf } from '../world.js';
 
-const lvl = () => G.lvl || (G.lvl = { fired: {}, flags: {}, reached: {}, depth: 0 });
+const lvl = () => G.lvl || (G.lvl = { fired: {}, flags: {}, reached: {}, depth: {} });
+// areas reached and the deepest point count per team (Versus maps; otherwise all are team 0)
+const team = () => G.curTeam || 0;
+const teamOfC = c => c.team || 0;
 // [x, y, w, h], x below zero counts from the right edge
 const areaOf = (L, name) => {
   const a = L.areas && L.areas[name];
@@ -36,13 +39,13 @@ const TYPES = {
   rescue: { val: () => G.rescued || 0, label: () => tr('Gerettet') },
   kills: { val: () => G.kills || 0, label: () => tr('Monster besiegt') },
   chests: { val: () => G.chestsFound || 0, label: () => tr('Truhen') },
-  depth: { val: () => lvl().depth, label: () => tr('Tiefe in m') },
+  depth: { val: () => lvl().depth[team()] || 0, label: () => tr('Tiefe in m') },
   build: {
     val: g =>
       builds.filter(b => b.done && b.type === g.what).length + vehicles.filter(v => v.kind === g.what).length,
     label: g => nameOf(g.what),
   },
-  reach: { val: g => (lvl().reached[g.area] ? 1 : 0), label: g => tr(g.label || 'Ziel erreicht') },
+  reach: { val: g => (lvl().reached[team() + ':' + g.area] ? 1 : 0), label: g => tr(g.label || 'Ziel erreicht') },
   survive: { val: () => Math.floor((G.playTicks || 0) / 3600), label: () => tr('Minuten') },
 };
 const need = g => g.n ?? 1;
@@ -112,8 +115,11 @@ function act(d, L) {
 function levelTick(L) {
   const s = lvl();
   rescueTick();
-  for (const name in L.areas || {}) if (!s.reached[name] && WHEN.enter({ area: name }, L)) s.reached[name] = true;
-  for (const c of alive()) s.depth = Math.max(s.depth, depthM(c));
+  for (const c of alive()) {
+    const t = teamOfC(c);
+    s.depth[t] = Math.max(s.depth[t] || 0, depthM(c));
+    for (const name in L.areas || {}) if (inArea(c, areaOf(L, name))) s.reached[t + ':' + name] = true;
+  }
   (L.triggers || []).forEach((t, k) => {
     if (s.fired[k] && !t.repeat) return;
     if (!WHEN[t.when.t](t.when, L)) return;

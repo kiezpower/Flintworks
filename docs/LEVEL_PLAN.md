@@ -1,7 +1,19 @@
 # Plan: Vorgebaute Level („Szenarien“ wie im Original-Clonk)
 
-> **Stand: Etappen 1–6 umgesetzt (v1.33.0–v1.35.0), Etappen 7–8 offen.** Entscheidungen siehe
+> **Stand: alle Etappen umgesetzt (v1.33.0–v1.36.0).** Entscheidungen siehe
 > Abschnitt 11. Wie man ein Level baut: `docs/LEVELS.md`.
+>
+> Abweichungen in Etappen 7 und 8:
+> - Kapitel 2 hat die 8 geplanten Level: Wipfrettung, Die alte Mine, Insel im See, Labyrinth,
+>   Feuerinsel, Säuresee, Gipfelsturm, Die Schlucht. Die Größen weichen teils vom Plan ab (Insel
+>   1600 × 350, Feuerinsel 1000 × 450, Schlucht 2400 × 500).
+> - Die drei Mehrspieler-Karten (Zwei Burgen, Wettgraben, Expedition) sind **Spielmodi in der
+>   Lobby** („Karte · …“), also auch allein spielbar. Versus-Karten haben eine zweite Burg
+>   (`team: 1`); Ziele wie Tiefe und erreichte Bereiche zählen je Team.
+> - Im Säuresee hält ein Fels-Becken die Säure (Säure frisst Lehm). Der Bildzähler beim Erzeugen
+>   ist jetzt 1 modulo 30 (nicht nur ungerade), weil Lava nur jedes dritte Bild fließt.
+> - Sternzeiten sind geschätzt (nicht aus Testrunden gemessen); sie sollten nach den ersten
+>   echten Runden nachgestellt werden.
 >
 > Abweichungen in Etappe 6:
 > - Der Editor ist eine eigene Seite (`/editor.html`, nur Entwicklungsserver, nicht im Build)

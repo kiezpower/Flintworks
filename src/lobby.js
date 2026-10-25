@@ -1,5 +1,6 @@
 import { GAME_MODES, MODE_IDS, mode } from './modes.js';
 import { ALL_IDS, campaignPanel, totalStars } from './scenarios.js';
+import { MAP_IDS } from './levels/index.js';
 import { lessonsPanel } from './lessons.js';
 import { canInstall, offerInstall, openInstall } from './install.js';
 import { LIVE, isNative, ownWeb } from './platform.js';
@@ -143,7 +144,8 @@ function refresh() {
   const GM = GAME_MODES[P.gmode] || GAME_MODES.gold;
   $('lbGMode').disabled = run;
   const gm = run ? mode() : GM;
-  setTxt('lbGModeTxt', camp ? tr('Kampagne') : gm.n ? `${gm.n} · ${tr(gm.name)}` : tr(gm.name));
+  const gmName = gm.map ? `${tr('Karte')} · ${tr(gm.name)}` : gm.n ? `${gm.n} · ${tr(gm.name)}` : tr(gm.name);
+  setTxt('lbGModeTxt', camp ? tr('Kampagne') : gmName);
   setTxt(
     'lbGModeDesc',
     camp
@@ -415,7 +417,8 @@ tap('lbQuest', openQuests);
 tap('lbRoad', openWho);
 tap('lbOpt', openOptions);
 tap('lbGMode', () => {
-  const ids = [...MODE_IDS, 'campaign'];
+  // the game modes, then the hand-built maps (levels/maps.json), then the campaign
+  const ids = [...MODE_IDS, ...MAP_IDS, 'campaign'];
   const m = P.gmode || 'gold';
   P.gmode = ids[(ids.indexOf(m) + 1) % ids.length];
   saveProfile();

@@ -106,6 +106,68 @@ const EN = {
     'Gold glitters next to the deep cave – it brings money at the castle.',
   Halbzeit: 'Halfway',
   'Zwei Wipfe sind frei, zwei warten noch.': 'Two wipfs are free, two are still waiting.',
+  'Die alte Mine': 'The old mine',
+  'Hier wurde früher Gold gegraben. Der alte Schacht führt zu drei Stollen – und ganz unten liegen die reichsten Adern.':
+    'Gold was mined here long ago. The old shaft leads to three galleries – and the richest veins lie at the very bottom.',
+  'Die alten Balken halten die Decke noch. Wo keine stehen, kann sie bei einem Beben einstürzen.':
+    'The old beams still hold the ceiling. Where there are none, it may come down in a quake.',
+  'Hier unten liegt das meiste Gold. Achtung: Rechts hält nur eine Lehmwand das Wasser zurück.':
+    'Most of the gold lies down here. Careful: on the right only a wall of loam holds back the water.',
+  'Insel im See': 'Island in the lake',
+  'Deine Insel ist klein und hat kaum Holz. Auf den Nachbarinseln liegt Gold – bau dir ein Floß.':
+    'Your island is small and has hardly any wood. There is gold on the islands nearby – build a raft.',
+  'Ein Floß (Bauen → Fahrzeuge, 4 Holz) trägt dich übers Wasser. Graben unter dem See flutet den Stollen.':
+    'A raft (Build → Vehicles, 4 wood) carries you across the water. Digging under the lake floods the tunnel.',
+  'Labyrinth': 'Labyrinth',
+  'Finde {goal} Schatztruhen': 'Find {goal} treasure chests',
+  'Unter der Wiese liegt ein Labyrinth aus Fels. Fünf Truhen sind darin versteckt – die Karte (M) zeigt dir die Gänge.':
+    'Under the meadow lies a labyrinth of rock. Five chests are hidden in it – the map (M) shows you the passages.',
+  'Die Wände sind aus Fels. Wo Erde durchschimmert, kannst du eine Abkürzung graben.':
+    'The walls are rock. Where earth shows through, you can dig a short cut.',
+  'Feuerinsel': 'Fire island',
+  'Hebe {goal} Schätze': 'Raise {goal} treasures',
+  'Auf der Feuerinsel liegen zwei Schatztruhen: eine unter der Lavakammer, eine im rechten Hang. Der Berg bricht immer wieder aus.':
+    'Two treasure chests lie on the fire island: one under the lava chamber, one in the right slope. The mountain erupts again and again.',
+  'Über dir glüht die Lavakammer. Grab seitlich herum – und halte Lehm bereit.':
+    'The lava chamber glows above you. Dig around it – and keep loam at hand.',
+  'Der Berg grollt': 'The mountain rumbles',
+  'Ein großer Ausbruch steht bevor.': 'A big eruption is coming.',
+  'Noch fünf Minuten, dann verschlingt die Lava die Insel.': 'Five more minutes, then the lava swallows the island.',
+  'Säuresee': 'Acid lake',
+  'Bringe {goal} Erz ins Lager': 'Bring {goal} ore to the store',
+  'Hinter dem Säuresee liegt ein reiches Erzfeld. Der Weg führt unter dem See hindurch – grab vorsichtig.':
+    'Behind the acid lake lies a rich field of ore. The way leads under the lake – dig carefully.',
+  'Vorsicht: Säure frisst Erde, Lehm und Wühler. Nur der Fels um den See hält sie – sprenge ihn nicht.':
+    'Careful: acid eats earth, loam and diggers. Only the rock around the lake holds it – do not blast it.',
+  'Das Erzfeld! Bring das Erz zur Burg, dort zählt es fürs Lager.':
+    'The ore field! Bring the ore to the castle, it counts for the store there.',
+  'Gipfelsturm': 'Summit assault',
+  'Erreiche den Gipfel und baue einen Wachturm': 'Reach the summit and build a watchtower',
+  'Der Berg hat einen Kern aus Granit. Steig außen hinauf – mit Treppen, Brücken, einer Seilbahn oder einem Fahrstuhl.':
+    'The mountain has a core of granite. Climb up on the outside – with stairs, bridges, a cable car or a lift.',
+  'Halb oben! Holztreppen (Bauen) helfen über steile Stellen.':
+    'Halfway up! Wooden stairs (Build) help over steep places.',
+  'Gipfel erreicht': 'Summit reached',
+  'Jetzt noch ein Wachturm – wo, ist egal.': 'Now a watchtower – it does not matter where.',
+  'Die Schlucht': 'The gorge',
+  'Baue ein Luftschiff und flieg über die Schlucht': 'Build an airship and fly across the gorge',
+  'Die Schlucht ist zu breit für eine Brücke. Erforsche die Luftfahrt, baue ein Luftschiff und flieg auf die andere Seite.':
+    'The gorge is too wide for a bridge. Research aviation, build an airship and fly to the other side.',
+  'Luftschiff fertig': 'Airship ready',
+  'Steig ein und flieg über die Schlucht.': 'Get in and fly across the gorge.',
+  'Auf der anderen Seite': 'On the other side',
+  'Zwei Burgen': 'Two castles',
+  'Zwei Burgen, eine Goldader in der Mitte unter einem Felsriegel. Wer zuerst genug Taler hat, gewinnt.':
+    'Two castles, one gold vein in the middle under a bar of rock. Whoever has enough coins first wins.',
+  'Wettgraben': 'Digging race',
+  'Erreiche als Erster {goal} m Tiefe': 'Be the first to reach a depth of {goal} m',
+  'Jedes Team gräbt auf seiner Seite nach unten. Felsplatten bremsen, Gold lockt zur Seite. Wer zuerst unten ist, gewinnt.':
+    'Each team digs down on its own side. Plates of rock slow you down, gold lures you aside. Whoever gets down first wins.',
+  'Expedition': 'Expedition',
+  'Erreicht gemeinsam die Kristallhöhle': 'Reach the crystal cave together',
+  'Ganz rechts, tief unten liegt die Kristallhöhle. Der Weg ist weit – teilt euch auf: Graben, Bauen, Versorgen.':
+    'Far to the right, deep down lies the crystal cave. It is a long way – split up: digging, building, supplying.',
+  'Kristallhöhle erreicht': 'Crystal cave reached',
   'Zwei Wühler sind rechts von der Burg tief verschüttet – grab dich zu ihnen durch. Der Bohrwagen ist schon erforscht.':
     'Two diggers are buried deep to the right of the castle – dig your way to them. The drill wagon is already researched.',
   'Unter der Wiese hausen Monster. Schwert und Langbogen kannst du an der Burg kaufen.':
@@ -761,4 +823,7 @@ function setLang(l) {
 }
 const getLang = () => lang;
 
-export { applyStatic, getLang, setLang, tr };
+// for the level test: is there an English text for this German one?
+const hasEnglish = k => k in EN;
+
+export { applyStatic, getLang, hasEnglish, setLang, tr };

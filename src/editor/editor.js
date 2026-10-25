@@ -1,7 +1,7 @@
 // Level editor (dev server only, /editor.html): paint the map of a level (map.txt) character by
 // character, place objects and areas, edit the rest of level.json, save it to src/levels/<id>/
 // and play it right away. Like painting Map.bmp and Objects.txt in the original Clonk.
-import { CHARS } from '../levels/palette.js';
+import { CHARS, unpackMap } from '../levels/palette.js';
 import ORDER from '../levels/order.json';
 import './editor.css';
 
@@ -50,6 +50,7 @@ const NAMES = {
 // what the object tool places: [label, object, has a height (else it stands on the ground)]
 const OBJS = [
   ['Burg', { t: 'base' }, false],
+  ['Burg Team 2 (Versus)', { t: 'base', team: 1 }, false],
   ['Baum', { t: 'tree', stage: 4 }, false],
   ['Feuerstein', { t: 'item', kind: 'flint' }, false],
   ['Sprengstoff', { t: 'item', kind: 'tnt' }, false],
@@ -81,7 +82,7 @@ let L = null, // level.json without the map
 function load(id) {
   const pack = PACKS[`../levels/${id}/level.json`];
   L = structuredClone(pack);
-  grid = MAPS[`../levels/${id}/map.txt`]
+  grid = unpackMap(MAPS[`../levels/${id}/map.txt`])
     .replace(/\r/g, '')
     .split('\n')
     .filter(r => r.length)
@@ -291,8 +292,8 @@ function placeObject(x, y, remove) {
   const [, proto, high] = OBJS[+$('objType').value];
   const o = { ...proto, x: wx };
   if (high) o.y = wy;
-  // only one castle
-  if (o.t === 'base') L.objects = L.objects.filter(q => q.t !== 'base');
+  // only one castle per team
+  if (o.t === 'base') L.objects = L.objects.filter(q => q.t !== 'base' || (q.team || 0) !== (o.team || 0));
   L.objects.push(o);
 }
 

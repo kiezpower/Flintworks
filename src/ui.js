@@ -254,8 +254,8 @@ function drawMini(full) {
       mctx.fillStyle = (G.tick >> 4) & 1 ? '#ffffff' : '#f2c230';
       mctx.fillRect(Math.floor(a.x / MK) - 1, Math.floor(a.y / MK) - 1, 4, 4);
     }
-  // treasure hunt: closed chests are marked on the map
-  if (G.mode === 'treasure' && G.chests)
+  // treasure hunt (and levels that ask for chests): closed chests are marked on the map
+  if ((G.mode === 'treasure' || mode().pkg?.goals.some(g => g.t === 'chests')) && G.chests)
     for (const ch of G.chests)
       if (!ch.open) {
         mctx.fillStyle = (G.tick >> 4) & 1 ? '#ffe066' : '#b8860b';

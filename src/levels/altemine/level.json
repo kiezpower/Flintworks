@@ -1,0 +1,47 @@
+{
+  "id": "altemine",
+  "v": 1,
+  "name": "Die alte Mine",
+  "icon": "dig",
+  "desc": "Verkaufe {goal} Goldklumpen",
+  "intro": "Hier wurde früher Gold gegraben. Der alte Schacht führt zu drei Stollen – und ganz unten liegen die reichsten Adern.",
+  "biome": "desert",
+  "size": [1000, 600],
+  "zoom": 4,
+  "rough": 0.35,
+  "seed": 8202,
+  "diff": "adventure",
+  "fill": {"gold": 0.4, "caves": 0.3, "gems": 0.5},
+  "start": {"money": 50, "crew": 3, "inv": [["flint", "rock"], ["loam"], ["wood"]], "store": {"wood": 4}},
+  "rules": {"meteors": false, "events": ["quake"], "evRate": 0.7},
+  "objects": [
+    {"t": "base", "x": 40},
+    {"t": "tree", "x": 130, "stage": 4},
+    {"t": "tree", "x": 300, "stage": 4},
+    {"t": "tree", "x": 520, "stage": 4},
+    {"t": "tree", "x": 760, "stage": 4},
+    {"t": "beam", "x": 278, "y0": 196, "y1": 207},
+    {"t": "beam", "x": 418, "y0": 196, "y1": 207},
+    {"t": "beam", "x": 278, "y0": 300, "y1": 311},
+    {"t": "beam", "x": 418, "y0": 300, "y1": 311},
+    {"t": "beam", "x": 558, "y0": 300, "y1": 311},
+    {"t": "beam", "x": 698, "y0": 300, "y1": 311},
+    {"t": "beam", "x": 278, "y0": 404, "y1": 415},
+    {"t": "beam", "x": 418, "y0": 404, "y1": 415},
+    {"t": "beam", "x": 558, "y0": 404, "y1": 415},
+    {"t": "beam", "x": 698, "y0": 404, "y1": 415},
+    {"t": "gas", "x": 700, "y": 280, "r": 9},
+    {"t": "gas", "x": 480, "y": 400, "r": 8},
+    {"t": "item", "kind": "tnt", "x": 256, "y": 302}
+  ],
+  "areas": {"unten": [248, 400, 720, 200], "stollen": [264, 160, 240, 160]},
+  "goals": [
+    {"t": "sell", "what": "nug", "n": 25}
+  ],
+  "lose": {"crewDead": true},
+  "stars": [12, 18],
+  "triggers": [
+    {"when": {"t": "enter", "area": "stollen"}, "do": [{"t": "say", "text": "Die alten Balken halten die Decke noch. Wo keine stehen, kann sie bei einem Beben einstürzen."}]},
+    {"when": {"t": "enter", "area": "unten"}, "do": [{"t": "say", "text": "Hier unten liegt das meiste Gold. Achtung: Rechts hält nur eine Lehmwand das Wasser zurück."}]}
+  ]
+}

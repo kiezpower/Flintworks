@@ -1,0 +1,34 @@
+{
+  "id": "expedition",
+  "v": 1,
+  "name": "Expedition",
+  "icon": "crew",
+  "desc": "Erreicht gemeinsam die Kristallhöhle",
+  "intro": "Ganz rechts, tief unten liegt die Kristallhöhle. Der Weg ist weit – teilt euch auf: Graben, Bauen, Versorgen.",
+  "biome": "winter",
+  "size": [2800, 700],
+  "zoom": 5,
+  "rough": 0.4,
+  "seed": 9111,
+  "diff": "adventure",
+  "fill": {"caves": 0.8},
+  "start": {"money": 80, "crew": 3},
+  "rules": {"meteors": false, "events": ["quake"], "evRate": 0.5},
+  "objects": [
+    {"t": "base", "x": 60},
+    {"t": "tree", "x": 160, "stage": 4},
+    {"t": "tree", "x": 200, "stage": 4},
+    {"t": "tree", "x": 700, "stage": 4},
+    {"t": "tree", "x": 1100, "stage": 4},
+    {"t": "tree", "x": 1500, "stage": 4},
+    {"t": "tree", "x": 1900, "stage": 4},
+    {"t": "tree", "x": 2300, "stage": 4}
+  ],
+  "areas": {"ziel": [2550, 560, 200, 70]},
+  "goals": [
+    {"t": "reach", "area": "ziel", "label": "Kristallhöhle erreicht"}
+  ],
+  "lose": {"crewDead": true, "time": 40},
+  "stars": [15, 25],
+  "triggers": []
+}

@@ -1,0 +1,38 @@
+{
+  "id": "feuerinsel",
+  "v": 1,
+  "name": "Feuerinsel",
+  "icon": "farrow",
+  "desc": "Hebe {goal} Schätze",
+  "intro": "Auf der Feuerinsel liegen zwei Schatztruhen: eine unter der Lavakammer, eine im rechten Hang. Der Berg bricht immer wieder aus.",
+  "biome": "desert",
+  "size": [1000, 450],
+  "zoom": 5,
+  "rough": 0.35,
+  "seed": 8505,
+  "diff": "adventure",
+  "fill": {"caves": 0.3, "gold": 0.5},
+  "start": {"money": 80, "crew": 3, "inv": [["flint", "flint"], ["loam", "loam"], ["rock"]], "research": ["metal"]},
+  "rules": {"meteors": false, "events": ["volcano", "quake"], "evRate": 2},
+  "objects": [
+    {"t": "base", "x": 110},
+    {"t": "tree", "x": 60, "stage": 3},
+    {"t": "tree", "x": 250, "stage": 3},
+    {"t": "tree", "x": 300, "stage": 3},
+    {"t": "tree", "x": 700, "stage": 3},
+    {"t": "tree", "x": 820, "stage": 3},
+    {"t": "chest", "x": 505, "y": 360},
+    {"t": "chest", "x": 750, "y": 230}
+  ],
+  "areas": {"kammer": [400, 200, 210, 200]},
+  "goals": [
+    {"t": "chests", "n": 2}
+  ],
+  "lose": {"crewDead": true, "time": 25},
+  "stars": [9, 15],
+  "triggers": [
+    {"when": {"t": "enter", "area": "kammer"}, "do": [{"t": "say", "text": "Über dir glüht die Lavakammer. Grab seitlich herum – und halte Lehm bereit."}]},
+    {"when": {"t": "after", "min": 8}, "do": [{"t": "banner", "title": "Der Berg grollt", "text": "Ein großer Ausbruch steht bevor."}, {"t": "event", "kind": "volcano"}]},
+    {"when": {"t": "after", "min": 20}, "do": [{"t": "say", "text": "Noch fünf Minuten, dann verschlingt die Lava die Insel."}]}
+  ]
+}

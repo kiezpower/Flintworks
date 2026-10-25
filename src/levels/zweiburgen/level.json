@@ -1,0 +1,34 @@
+{
+  "id": "zweiburgen",
+  "v": 1,
+  "name": "Zwei Burgen",
+  "icon": "castle",
+  "desc": "Verdiene {goal} Taler",
+  "intro": "Zwei Burgen, eine Goldader in der Mitte unter einem Felsriegel. Wer zuerst genug Taler hat, gewinnt.",
+  "biome": "meadow",
+  "size": [1600, 400],
+  "zoom": 5,
+  "rough": 0.3,
+  "seed": 8909,
+  "diff": "adventure",
+  "fill": {"gold": 0.5, "caves": 0.4},
+  "start": {"money": 40, "crew": 3},
+  "rules": {"meteors": false},
+  "objects": [
+    {"t": "base", "x": 60},
+    {"t": "base", "x": -96, "team": 1},
+    {"t": "tree", "x": 140, "stage": 4},
+    {"t": "tree", "x": 170, "stage": 4},
+    {"t": "tree", "x": 400, "stage": 4},
+    {"t": "tree", "x": 1200, "stage": 4},
+    {"t": "tree", "x": 1430, "stage": 4},
+    {"t": "tree", "x": 1460, "stage": 4}
+  ],
+  "areas": {},
+  "goals": [
+    {"t": "money", "n": 600}
+  ],
+  "lose": {},
+  "stars": [10, 16],
+  "triggers": []
+}

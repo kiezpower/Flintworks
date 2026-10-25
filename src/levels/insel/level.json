@@ -1,0 +1,44 @@
+{
+  "id": "insel",
+  "v": 1,
+  "name": "Insel im See",
+  "icon": "castle",
+  "desc": "Verdiene {goal} Taler",
+  "intro": "Deine Insel ist klein und hat kaum Holz. Auf den Nachbarinseln liegt Gold – bau dir ein Floß.",
+  "biome": "meadow",
+  "size": [1600, 350],
+  "zoom": 5,
+  "rough": 0.4,
+  "seed": 8303,
+  "diff": "adventure",
+  "fill": {"gold": 0.3, "caves": 0},
+  "start": {"money": 40, "crew": 3, "inv": [["flint", "rock"], ["loam"], ["rock"]], "store": {"wood": 2}},
+  "rules": {"meteors": false},
+  "objects": [
+    {"t": "base", "x": 50},
+    {"t": "tree", "x": 150, "stage": 4},
+    {"t": "tree", "x": 200, "stage": 4},
+    {"t": "tree", "x": 680, "stage": 4},
+    {"t": "tree", "x": 720, "stage": 4},
+    {"t": "tree", "x": 790, "stage": 4},
+    {"t": "tree", "x": 830, "stage": 4},
+    {"t": "tree", "x": 1380, "stage": 3},
+    {"t": "tree", "x": 1450, "stage": 3},
+    {"t": "tree", "x": 1530, "stage": 3},
+    {"t": "animal", "kind": "fish", "x": 400, "y": 200},
+    {"t": "animal", "kind": "fish", "x": 520, "y": 200},
+    {"t": "animal", "kind": "fish", "x": 950, "y": 200},
+    {"t": "animal", "kind": "fish", "x": 1100, "y": 200},
+    {"t": "animal", "kind": "fish", "x": 1220, "y": 200},
+    {"t": "animal", "kind": "wipf", "x": 760}
+  ],
+  "areas": {"ufer": [190, 100, 80, 80]},
+  "goals": [
+    {"t": "money", "n": 600}
+  ],
+  "lose": {"crewDead": true},
+  "stars": [12, 18],
+  "triggers": [
+    {"when": {"t": "enter", "area": "ufer"}, "do": [{"t": "say", "text": "Ein Floß (Bauen → Fahrzeuge, 4 Holz) trägt dich übers Wasser. Graben unter dem See flutet den Stollen."}]}
+  ]
+}

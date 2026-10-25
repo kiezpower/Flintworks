@@ -1,0 +1,35 @@
+{
+  "id": "saeuresee",
+  "v": 1,
+  "name": "Säuresee",
+  "icon": "dig",
+  "desc": "Bringe {goal} Erz ins Lager",
+  "intro": "Hinter dem Säuresee liegt ein reiches Erzfeld. Der Weg führt unter dem See hindurch – grab vorsichtig.",
+  "biome": "winter",
+  "size": [1200, 500],
+  "zoom": 4,
+  "rough": 0.4,
+  "seed": 8606,
+  "diff": "adventure",
+  "fill": {"ore": 0.2, "caves": 0.4},
+  "start": {"money": 70, "crew": 3, "inv": [["flint", "loam"], ["loam"], ["rock"]]},
+  "rules": {"meteors": false},
+  "objects": [
+    {"t": "base", "x": 40},
+    {"t": "tree", "x": 140, "stage": 4},
+    {"t": "tree", "x": 250, "stage": 4},
+    {"t": "tree", "x": 900, "stage": 4},
+    {"t": "tree", "x": 1050, "stage": 4},
+    {"t": "tree", "x": 1150, "stage": 4}
+  ],
+  "areas": {"see": [380, 100, 440, 200], "erz": [860, 160, 340, 300]},
+  "goals": [
+    {"t": "collect", "what": "ore", "n": 15}
+  ],
+  "lose": {"crewDead": true},
+  "stars": [11, 17],
+  "triggers": [
+    {"when": {"t": "enter", "area": "see"}, "do": [{"t": "say", "text": "Vorsicht: Säure frisst Erde, Lehm und Wühler. Nur der Fels um den See hält sie – sprenge ihn nicht."}]},
+    {"when": {"t": "enter", "area": "erz"}, "do": [{"t": "say", "text": "Das Erzfeld! Bring das Erz zur Burg, dort zählt es fürs Lager."}]}
+  ]
+}
