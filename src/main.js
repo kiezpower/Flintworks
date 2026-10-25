@@ -11,7 +11,7 @@ import { chosenBiome, hideLobby, lobbyFrame, lobbyOpen, showLobby } from './lobb
 import { P, finishGame, saveProfile } from './profile.js';
 import { biome } from './biomes.js';
 import { updAmbience } from './ambience.js';
-import { endTutorial, startTutorial, updTutorial } from './tutorial.js';
+import { endTutorial, resumeTutorial, startTutorial, updTutorial } from './tutorial.js';
 import { applyStatic, tr } from './i18n.js';
 import { openPanel, opt, sec } from './ui.js';
 import '@fontsource/pixelify-sans/500.css';
@@ -117,6 +117,7 @@ function play(withTutorial, level = null) {
   if (!G.inRun) {
     if (hasSave() && loadGame()) {
       G.crewKey = G.invKey = '';
+      if (G.tut) withTutorial = 'loaded'; // a saved tutorial goes on where it was
     } else {
       const L = level && GAME_MODES[level];
       G.nextBiome = L ? L.biome : chosenBiome();
@@ -170,7 +171,8 @@ const TEMPO = { calm: 0.7, normal: 0.85, fast: 1 };
 const TEMPO_NAME = { calm: 'Gemütlich', normal: 'Normal', fast: 'Schnell' };
 function startGame(withTutorial = false) {
   if (withTutorial === true) startTutorial();
-  else if (withTutorial !== 'resume') endTutorial(false);
+  else if (withTutorial === 'resume' || withTutorial === 'loaded') resumeTutorial();
+  else endTutorial();
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   const mine = sel_();

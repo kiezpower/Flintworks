@@ -344,8 +344,14 @@ function openOptions() {
     });
   opt(l, {
     title: tr('Tutorial spielen'),
-    sub: tr('Neue Welt mit Anleitung'),
+    sub: tr(hooks.hasRun() ? 'Ersetzt dein laufendes Spiel' : 'Eigene kleine Welt mit Anleitung'),
     onClick: () => {
+      // a running game would be lost: ask with a second tap
+      if (hooks.hasRun() && performance.now() - tutArmed > 3000) {
+        tutArmed = performance.now();
+        toast('Nochmal tippen: Tutorial starten, dein Spielstand geht verloren');
+        return;
+      }
       closePanel();
       hooks.play(true);
     },
@@ -409,7 +415,8 @@ function openCampaign() {
     },
   });
 }
-let newArmed = 0;
+let newArmed = 0,
+  tutArmed = 0;
 tap('lbNew', () => {
   if (performance.now() - newArmed > 3000) {
     newArmed = performance.now();

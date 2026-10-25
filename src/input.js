@@ -12,6 +12,8 @@ const keys = { l: 0, r: 0, u: 0, d: 0, dig: 0 };
 const held = { dig: false };
 G.digLatch = false;
 G.joyUpArmed = true;
+// what the player steers with right now ('touch' or 'keys'), so texts can name the right buttons
+G.inputKind = matchMedia('(hover: none), (pointer: coarse)').matches ? 'touch' : 'keys';
 function buzz(ms) {
   try {
     if (navigator.vibrate) navigator.vibrate(ms);
@@ -33,6 +35,7 @@ const KEYMAP = {
   KeyX: 'dig',
 };
 addEventListener('keydown', e => {
+  G.inputKind = 'keys';
   if (e.code === 'Escape') {
     closePanel();
     return;
@@ -85,6 +88,7 @@ function joyHome() {
   knob.style.transform = '';
 }
 game.addEventListener('pointerdown', e => {
+  if (e.pointerType === 'touch') G.inputKind = 'touch';
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   if (e.pointerType === 'mouse' && G.state === 'play' && panelEl.hidden && e.target === cv) {

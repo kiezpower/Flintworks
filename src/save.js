@@ -83,6 +83,7 @@ function serialize() {
       earned: G.earned || 0,
       biome: G.biome,
       mode: G.mode,
+      tut: (!G.net && G.tut) || null,
       relaxed: !!G.relaxed,
       store: G.store || {},
       tools: G.tools || {},
@@ -170,6 +171,7 @@ function deserialize(d) {
     G.earned = d.earned || 0;
     G.dayT = d.dayT;
     G.mode = d.mode || 'gold';
+    G.tut = d.tut || null;
     G.relaxed = !!d.relaxed;
     G.store = d.store || {};
     G.tools = d.tools || {};

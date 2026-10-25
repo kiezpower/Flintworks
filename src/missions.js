@@ -57,7 +57,7 @@ function startMission(i) {
   G.mis = { i, base: m && m.count ? m.count() : 0 };
 }
 function updMissions() {
-  if (G.frame % 30 || G.teams || mode().campaign) return; // no tasks in Versus and campaign
+  if (G.frame % 30 || G.teams || mode().campaign || G.tut) return; // no tasks in Versus, campaign, tutorial
   if (!G.mis) startMission(0);
   const m = cur();
   if (!m) return;

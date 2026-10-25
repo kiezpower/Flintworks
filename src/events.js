@@ -37,7 +37,7 @@ function updEvents() {
   if (G.netClient) return;
   if (G.quakeT > 0) shakeTick();
   if (G.volc) volcanoTick(G.volc);
-  if (G.relaxed || G.evRate === 0) return;
+  if (G.relaxed || G.evRate === 0 || G.tut) return;
   if (G.evNext == null) G.evNext = nextGap();
   if (--G.evNext > 0 || G.quakeT > 0 || G.volc) return;
   G.evNext = nextGap();

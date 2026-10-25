@@ -580,6 +580,21 @@ const EN = {
   'Grab zur Goldader und sammle Gold': 'Dig to the gold vein and collect gold',
   'Lauf mit dem Gold in die Basis – es wird sofort verkauft':
     'Walk into the base with the gold – it is sold right away',
+  // tutorial: texts per input, skipping, lobby
+  'Lauf ein Stück nach rechts: Stick nach rechts': 'Walk a bit to the right: push the stick right',
+  'Lauf ein Stück nach rechts: Pfeil → oder D': 'Walk a bit to the right: arrow → or D',
+  'Grab dich in die Erde: Pfeil ↓ oder S': 'Dig into the ground: arrow ↓ or S',
+  'Grab dich in die Erde: Shift oder X halten': 'Dig into the ground: hold Shift or X',
+  'Fälle einen Baum mit Aktion und heb 2 Holz auf': 'Chop a tree with Action and pick up 2 wood',
+  'Fälle einen Baum mit F und heb 2 Holz auf': 'Chop a tree with F and pick up 2 wood',
+  'Bau eine Hütte: B → Hütte, dann drin stehen bleiben': 'Build a hut: B → Hut, then stay inside',
+  'Für die Hütte fehlt noch Holz': 'You still need wood for the hut',
+  'Wirklich?': 'Really?',
+  'Tutorial übersprungen – du findest es in den Optionen': 'Tutorial skipped – you can find it in the options',
+  'Ersetzt dein laufendes Spiel': 'Replaces your current game',
+  'Eigene kleine Welt mit Anleitung': 'A small world of its own with a guide',
+  'Nochmal tippen: Tutorial starten, dein Spielstand geht verloren':
+    'Tap again: start the tutorial, your current game will be lost',
 };
 
 let lang = 'de';
