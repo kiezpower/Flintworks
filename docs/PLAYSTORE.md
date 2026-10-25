@@ -48,6 +48,27 @@ No ads, no purchases, no account.
 | Inhaltsbewertung (IARC) | Comic-Gewalt gering (Monster werden mit Steinen/Sprengstoff besiegt), keine Interaktion mit Fremden außer per Einladungslink, kein Chat (nur feste Zurufe) |
 | Zielgruppe | ab 10 Jahren (nicht „für Kinder“, sonst gelten Familienrichtlinien) |
 
-## Screenshots
+## Screenshots und Grafiken
 
-Mindestens 2 Bilder pro Gerätetyp (Querformat 16:9, z. B. 1920×1080): Lobby, Überwelt mit Burg, Stollen mit Helfern, Mehrspieler-Raum. Aus dem Spiel auf dem Handy aufnehmen oder im Browser mit 1920×1080.
+`npm run store-shots` erzeugt alles aus gestellten Szenen im aktuellen Spiel:
+
+| Datei | Verwendung |
+|---|---|
+| `docs/play/feature-de.png`, `feature-en.png` | Feature-Grafik (1024 × 500) |
+| `docs/itch/screenshot-1..5-de.png`, `-en.png` | Screenshots (1280 × 720, 16:9) |
+
+Mindestens 2 Screenshots pro Gerätetyp; die fünf aus `docs/itch/` passen.
+
+### Optional: Titelbild mit einem KI-Bildgenerator
+
+Für ein gemaltes Titelbild (statt der Szene aus dem Spiel) in einem Bildgenerator 3–4 Bilder
+mit diesem Prompt erzeugen und das beste als `docs/play/keyart.png` ablegen:
+
+> Pixel art key art for a cozy mining game, wide landscape 2:1. A small stone castle on a grassy
+> hill, a windmill and a sawmill beside it; below the ground a cross-section of warm brown earth
+> with tunnels, glowing gold veins, purple crystals and a lava pool deep down. Three little miners
+> with red, blue and green caps and pickaxes. Soft morning light, snowy mountains behind.
+> Crisp pixels, limited warm palette, dark brown outlines, no text.
+
+Die Nutzungsbedingungen des Generators für kommerzielle Nutzung prüfen; die Schrift kommt
+danach dazu (wie in `feature-*.png`), damit sie scharf und übersetzbar bleibt.

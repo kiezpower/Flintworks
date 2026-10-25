@@ -8,7 +8,7 @@ import { G, crew, vehicles } from '../state.js';
 import { unload } from '../store.js';
 import { toast } from '../ui.js';
 import { free } from '../world.js';
-import { box, defineVehicle } from './core.js';
+import { box, defineVehicle, wheel } from './core.js';
 
 G.rails = []; // tracks: [{ team, p: [[x, y], …] }]
 const SPACING = 3;
@@ -165,7 +165,7 @@ defineVehicle('train', {
       ctx.fillStyle = v.cargo.includes('nug') ? '#f2c230' : '#8a847c';
       ctx.fillRect(x + 2, y, v.w - 6, 2);
     }
-    for (const wx of [x + 2, x + v.w - 5]) box(ctx, wx, y + v.h - 3, 3, 3, (v.t | 0) % 2 ? '#24160c' : '#3a3a40');
+    for (const wx of [x + 2, x + v.w - 5]) wheel(ctx, wx + 1.5, y + v.h - 1.5, 1.6, (v.x || 0) / 1.6);
   },
 });
 // where a helper with a load can meet the train: the nearest point of its team's track, if

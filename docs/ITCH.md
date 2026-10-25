@@ -40,12 +40,13 @@ eingerichtet ist. Ohne Zugang werden die Schritte übersprungen, nichts schlägt
 
 ## Seite gestalten
 
-Bilder liegen in `docs/itch/`:
+Bilder liegen in `docs/itch/`. `npm run store-shots` erzeugt sie neu aus gestellten Szenen im
+aktuellen Spiel (nach jeder Grafikänderung einmal laufen lassen; braucht Chromium wie die Tests):
 
 | Datei | Verwendung |
 |---|---|
 | `cover.png` | Cover (630 × 500) |
-| `screenshot-1..5-en.png` | Screenshots englisch (1280 × 720): Siedlung, Mine mit Grubenbahn, Kampf, Vulkan und Luftschiff, Bohrwagen |
+| `screenshot-1..5-en.png` | Screenshots englisch (1280 × 720): Siedlung, Mine mit Goldadern, tief unten mit Kristallen und Lava, Bohrwagen und Luftschiff, Siedlung bei Nacht |
 | `screenshot-1..5-de.png` | dieselben auf Deutsch |
 
 | Feld | Inhalt |

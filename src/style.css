@@ -226,6 +226,43 @@ button:focus-visible {
     inset -2px -2px 0 #b8860b,
     inset 1px 1px 0 #fff2a8;
 }
+/* coins on their way from a sale to the money counter (see reward.js) */
+.flycoin {
+  position: fixed;
+  z-index: 60;
+  margin: -5px 0 0 -5px;
+  pointer-events: none;
+}
+/* a banner across the screen for big moments */
+.banner {
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 10px 26px 12px;
+  background: linear-gradient(#4a301e, #2a1a10);
+  border: 2px solid #24160c;
+  box-shadow:
+    inset 0 0 0 2px var(--gold),
+    0 6px 0 rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+  font-family: var(--font-display);
+  text-align: center;
+  pointer-events: none;
+}
+.banner b {
+  font-size: 22px;
+  color: var(--gold);
+  text-shadow: 0 2px 0 #24160c;
+}
+.banner small {
+  font-size: 14px;
+  color: #f4ead2;
+}
 .bar {
   height: 6px;
   background: #3a2618;
@@ -526,10 +563,10 @@ button:focus-visible {
 .opt canvas {
   grid-row: 1 / span 3;
   image-rendering: pixelated;
-  max-width: 40px;
+  max-width: 48px;
 }
 .opt {
-  grid-template-columns: 40px 1fr;
+  grid-template-columns: 48px 1fr;
 }
 .opt b {
   font-weight: 700;
