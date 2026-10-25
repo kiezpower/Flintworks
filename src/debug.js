@@ -3,7 +3,7 @@ import { G, animals, builds, crew, items, lorries, trees, vehicles } from './sta
 import { explode, ignite } from './objects.js';
 import { tryBuild, terrOK } from './buildings.js';
 import { calcTerr } from './render.js';
-import { openBase } from './ui.js';
+import { hud, openBase } from './ui.js';
 import { saveGame, loadGame, hasSave } from './save.js';
 import { lightning } from './weather.js';
 import { step } from './main.js';
@@ -23,6 +23,8 @@ import { LIQ, matAt, solid } from './world.js';
 import * as events from './events.js';
 import * as effects from './effects.js';
 import * as combat from './combat.js';
+import { TUT, ground, rockOpen } from './tutlevel.js';
+import { STEPS } from './tutsteps.js';
 
 window.__ww = {
   effects,
@@ -69,6 +71,7 @@ window.__ww = {
   get tut() {
     return G.tut;
   },
+  tutLevel: { TUT, ground, rockOpen, steps: () => STEPS.map(s => s.id) },
   matAt,
   get state() {
     return G.state;
@@ -91,6 +94,7 @@ window.__ww = {
   explode,
   tryBuild,
   openBase,
+  hud,
   calcTerr,
   terrOK,
   inp,

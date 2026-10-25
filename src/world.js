@@ -270,10 +270,21 @@ function setMat(x, y, m) {
   mat[i] = m;
   paint(i);
 }
+// wooden stairs and bridges (PLANK) are platforms for the Wühler: with setPlat(1) they only
+// hold the feet (the bottom two rows of the box), so you walk through them from the side;
+// with setPlat(2) (jumping up, dropping down) the body passes through them entirely
+let plat = 0;
+const setPlat = v => (plat = v);
 function boxFree(x, y, w, h) {
   const x0 = Math.floor(x),
     y0 = Math.floor(y);
-  for (let yy = y0; yy < y0 + h; yy++) for (let xx = x0; xx < x0 + w; xx++) if (solid(xx, yy)) return false;
+  for (let yy = y0; yy < y0 + h; yy++)
+    for (let xx = x0; xx < x0 + w; xx++) {
+      if (!solid(xx, yy)) continue;
+      if (plat && xx >= 0 && xx < W && yy < H && mat[yy * W + xx] === PLANK && (plat === 2 || yy < y0 + h - 2))
+        continue;
+      return false;
+    }
   return true;
 }
 // collision incl. elevator cases
@@ -368,6 +379,7 @@ export {
   getSeed,
   setSeed,
   setMat,
+  setPlat,
   shade,
   solid,
   stamp,

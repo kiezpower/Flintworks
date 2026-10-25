@@ -11,7 +11,7 @@ import { chosenBiome, hideLobby, lobbyFrame, lobbyOpen, showLobby } from './lobb
 import { P, finishGame, saveProfile } from './profile.js';
 import { biome } from './biomes.js';
 import { updAmbience } from './ambience.js';
-import { endTutorial, startTutorial, updTutorial } from './tutorial.js';
+import { endTutorial, resumeTutorial, setTutHooks, startTutorial, tutHud, updTutorial } from './tutorial.js';
 import { applyStatic, tr } from './i18n.js';
 import { openPanel, opt, sec } from './ui.js';
 import '@fontsource/pixelify-sans/500.css';
@@ -25,6 +25,7 @@ import { gen } from './gen.js';
 import { cycleCrew, readInput } from './input.js';
 import { helperAI } from './helpers.js';
 import { updBeams } from './mine.js';
+import { checkLessons } from './lessons.js';
 import { updMissions } from './missions.js';
 import { killAnimal, updAnimal, updItems, updParts, updTrees } from './objects.js';
 import { updArrows, updCombat } from './combat.js';
@@ -37,19 +38,7 @@ import { simulate } from './sim.js';
 import { audioInit, sfx } from './sound.js';
 import { initUiArt } from './uiart.js';
 import { G, animals, builds, crew, lorries } from './state.js';
-import {
-  $,
-  checkHints,
-  closePanel,
-  drawMini,
-  hud,
-  openBase,
-  openBuild,
-  panelEl,
-  toast,
-  toastEl,
-  toggleMap,
-} from './ui.js';
+import { $, closePanel, drawMini, hud, openBase, openBuild, panelEl, toast, toastEl, toggleMap } from './ui.js';
 import { register, send } from './commands.js';
 import { NET, inRoom, onGameMsg, sendTo } from './net/room.js';
 import { beginNet, endNet, resumeNet, startMessage } from './net/session.js';
@@ -114,11 +103,18 @@ function play(withTutorial, level = null) {
     clearSave();
     G.inRun = false;
   }
+  let bonus = 0;
   if (!G.inRun) {
     if (hasSave() && loadGame()) {
       G.crewKey = G.invKey = '';
+      if (G.tut) withTutorial = 'loaded'; // a saved tutorial goes on where it was
     } else {
+      // the very first game is the tutorial in its own small world (also when asked for)
+      if (!P.tutorialDone && !level) withTutorial = true;
+      if (withTutorial) level = 'tut';
       const L = level && GAME_MODES[level];
+      // start money earned in the tutorial, for the next free game
+      bonus = !withTutorial && !L && P.tutBonus ? P.tutBonus : 0;
       G.nextBiome = L ? L.biome : chosenBiome();
       G.nextMode = L ? level : GAME_MODES[P.gmode] ? P.gmode : 'gold';
       G.nextDiff = L ? L.diff || 'adventure' : P.diff || 'adventure';
@@ -126,11 +122,16 @@ function play(withTutorial, level = null) {
       G.nextVersus = false;
       gen();
       G.nextSeed = null;
-      if (!P.tutorialDone) withTutorial = true;
+      if (bonus) {
+        G.money += bonus;
+        P.tutBonus = 0;
+        saveProfile();
+      }
     }
     resetCam();
     G.inRun = true;
     startGame(withTutorial);
+    if (bonus) toast('Startgeld aus dem Tutorial: +{n} Taler', { n: bonus });
     return;
   }
   G.startT += performance.now() - (G.pauseAt || performance.now());
@@ -162,6 +163,7 @@ function discard() {
   G.inRun = false;
 }
 const lobbyHooks = { play, discard, hasRun, keysHtml };
+setTutHooks({ play, menu, discard });
 function menu() {
   showLobby(lobbyHooks);
 }
@@ -170,7 +172,8 @@ const TEMPO = { calm: 0.7, normal: 0.85, fast: 1 };
 const TEMPO_NAME = { calm: 'Gemütlich', normal: 'Normal', fast: 'Schnell' };
 function startGame(withTutorial = false) {
   if (withTutorial === true) startTutorial();
-  else if (withTutorial !== 'resume') endTutorial(false);
+  else if (withTutorial === 'resume' || withTutorial === 'loaded') resumeTutorial();
+  else endTutorial();
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   const mine = sel_();
@@ -380,6 +383,7 @@ function step() {
   readInput();
   // (a multiplayer game never pauses: the others keep playing)
   const paused = !panelEl.hidden && !G.net;
+  if (G.state === 'play' && paused) updTutorial(true);
   if (G.netClient) {
     clientStep(paused);
     stepTail();
@@ -437,7 +441,7 @@ function step() {
     updTutorial();
     if (G.frame % 15 === 0) updAmbience();
     if (G.frame % 30 === 0) updDecor();
-    if (G.frame % 60 === 0) checkHints();
+    if (G.frame % 60 === 0) checkLessons();
     if (G.frame % 3600 === 0) G.net ? saveNet() : saveGame();
     checkGoal();
   }
@@ -503,6 +507,7 @@ function loop(t) {
   G.tick++;
   if (G.tick % 5 === 0) {
     hud();
+    tutHud();
     updEmoBtn();
   }
   if (G.tick % 10 === 0) drawMini(G.tick % 60 === 0);

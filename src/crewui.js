@@ -71,7 +71,7 @@ function openCrew(n) {
           sfx('pick');
           openCrew(n);
         },
-      });
+      }).dataset.tut = 'f_' + f.id;
   }
   if (helpers.length) {
     const l = sec(p, mine ? 'Aufgabe für alle Helfer' : 'Für alle Helfer');

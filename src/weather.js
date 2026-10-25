@@ -12,7 +12,8 @@ import { AIR, H, LIQ, SOLID, W, bg, clamp, mat, ri, rnd } from './world.js';
 
 // ---- Weather & day ----
 function updWeather() {
-  G.dayT = (G.dayT + 1 / 36000) % 1; // one day = 10 minutes
+  // one day = 10 minutes (the tutorial stays at daytime)
+  if (!G.tut) G.dayT = (G.dayT + 1 / 36000) % 1;
   if (G.frame % 1500 === 0) G.windT = 0.25 + rnd() * 0.75;
   G.wind += ((G.rainT > 0 ? Math.min(1.2, G.windT + 0.35) : G.windT) - G.wind) * 0.002;
   for (const c of clouds) {
@@ -27,7 +28,7 @@ function updWeather() {
     if (b.x < -30) b.x = W + 30;
   }
   // (multiplayer clients only show the weather; meteors, lightning and rain are the host's)
-  if (--G.meteorNext <= 0 && !G.relaxed && !G.netClient) {
+  if (--G.meteorNext <= 0 && !G.relaxed && !G.netClient && !G.tut) {
     G.meteorNext = 9000 + rnd() * 9000;
     const n = ri(1, 3);
     for (let k = 0; k < n; k++) {
@@ -93,7 +94,7 @@ function updWeather() {
     if (G.rainT === 0) {
       G.rainNext = 4000 + rnd() * 5000;
     }
-  } else if (--G.rainNext <= 0 && !G.netClient) {
+  } else if (!G.tut && --G.rainNext <= 0 && !G.netClient) {
     G.rainT = (1300 + rnd() * 900) * biome().rain;
     toast(G.biome === 'winter' ? 'Es fängt an zu schneien' : 'Es fängt an zu regnen');
   }

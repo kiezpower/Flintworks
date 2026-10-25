@@ -10,7 +10,7 @@ mkdirSync(OUT, { recursive: true });
 const server = await createServer({ server: { port: 0 }, logLevel: 'error' });
 await server.listen();
 const base = server.resolvedUrls.local[0];
-const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined });
+const browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM || process.env.CHROMIUM_PATH || undefined });
 const failures = [];
 const check = (ok, msg) => {
   console.log(`${ok ? 'ok  ' : 'FAIL'} ${msg}`);

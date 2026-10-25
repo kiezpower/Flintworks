@@ -36,6 +36,7 @@ import {
   mat,
   paint,
   rnd,
+  setPlat,
   solid,
 } from './world.js';
 
@@ -43,6 +44,7 @@ import {
 function hurt(c, a, silent) {
   if (c.dead || c.puppet || G.netClient) return; // in multiplayer only the host deals damage
   c.energy -= a;
+  if (G.tut && c.energy < 20) c.energy = 20; // nobody gets exhausted in the tutorial
   if (a >= 5) {
     addFloat(c.x + 3, c.y - 3, '-' + Math.round(a), '#ff6a5a');
     if (c === sel_()) buzz(40 + Math.min(120, a * 4));
@@ -264,6 +266,13 @@ function nearTree(c) {
 }
 const NOIN = { ax: 0, ay: 0, dig: false, jumpP: false, jumpUp: false, throwP: false, actP: false };
 function updClonk(c, I) {
+  // wooden stairs and bridges hold the Wühler only from above (see setPlat)
+  if (c.dropT > 0) c.dropT--;
+  setPlat(c.vy < 0 || c.dropT > 0 ? 2 : 1);
+  updBody(c, I);
+  setPlat(0);
+}
+function updBody(c, I) {
   if (c.ride != null && !c.dead) return; // sitting in a vehicle: the vehicle moves it
   // (automatic digging is part of a player's input; helpers dig on purpose)
   if (I.auto && !I.dig && !c.dead) {
@@ -421,6 +430,14 @@ function updClonk(c, I) {
     }
     if (c.chop) return;
   }
+  // pushing down while standing on a wooden stair or bridge: drop through it
+  if (I.ay > 0.55 && Math.abs(I.ax) < 0.5 && !c.climb && !c.hangle && !c.dropT && !free(c.x, c.y + 1, 6, 10)) {
+    setPlat(2);
+    if (free(c.x, c.y + 1, 6, 10)) {
+      c.dropT = 10;
+      I = { ...I, dig: false };
+    } else setPlat(1);
+  }
   const contact = !boxFree(c.x - 3, c.y - 3, 12, 16);
   if (I.dig && contact && !c.climb && !c.hangle) {
     // Clonk-style digging: only horizontal or slanted, never straight up/down
@@ -481,7 +498,22 @@ function updClonk(c, I) {
     }
   }
   const fallV = c.vy;
-  const [bx, by] = moveBody(c, c.vx, c.vy, onG ? 3 : 0);
+  setPlat(c.vy < 0 || c.dropT > 0 ? 2 : 1);
+  let [bx, by] = moveBody(c, c.vx, c.vy, onG ? 3 : 0);
+  if (bx && onG && tvx && !inLiq) {
+    // walked under a wooden stair until it reaches the feet: step up onto it
+    setPlat(2);
+    const stair = free(c.x + c.face, c.y, 6, 10);
+    setPlat(1);
+    if (stair)
+      for (let u = 4; u <= 8; u++)
+        if (free(c.x + c.face, c.y - u, 6, 10)) {
+          c.x += c.face;
+          c.y -= u;
+          bx = false;
+          break;
+        }
+  }
   if (by && fallV > 1.6) {
     c.sqT = G.frame;
     if (fallV <= 3.9) sfx('land', c.x, c.y);
