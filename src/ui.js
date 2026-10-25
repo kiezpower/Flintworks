@@ -1,7 +1,6 @@
 import { stock, takeStock } from './store.js';
 import { toolSection } from './tools.js';
 import { knowsAll, needText, researchSection } from './research.js';
-const depthEl = document.getElementById('depthTxt');
 const misEl = document.getElementById('misTxt');
 import { GAME_MODES, mode } from './modes.js';
 const goalWrap = document.getElementById('goalWrap'),
@@ -24,14 +23,13 @@ import { canShoot } from './combat.js';
 import { isPlayer } from './players.js';
 import { missionText } from './missions.js';
 import { G, INV_MAX, animals, builds, crew, lorries } from './state.js';
-import { PLANK, AIR, GOLD, MINI, W, bg, hex, mat, surf } from './world.js';
+import { PLANK, AIR, GOLD, MINI, W, bg, hex, mat } from './world.js';
 
 // ---- HUD, panels, minimap ----
 const $ = id => document.getElementById(id);
-const pwrTxt = $('pwrTxt'),
-  whoTxt = $('whoTxt'),
-  moneyTxt = $('moneyTxt'),
-  hpBar = $('hpBar'),
+const moneyTxt = $('moneyTxt'),
+  statusBox = $('statusBox'),
+  netTxt = $('netTxt'),
   airWrap = $('airWrap'),
   airBar = $('airBar'),
   invEl = $('inv'),
@@ -66,39 +64,33 @@ function hud() {
     goalTxt.textContent = `${tr(M.name)} ${p}/${M.goal}`;
     goalBar.style.width = (p / M.goal) * 100 + '%';
   }
-  pwrTxt.hidden = true;
   // store contents as small icons with counts
   const sk = G.store ? Object.entries(G.store).filter(([, n]) => n > 0) : [];
   const key = sk.map(([t, n]) => t + n).join();
   if (key !== G.storeKey) {
     G.storeKey = key;
     storeRow.hidden = !sk.length;
+    storeRow.style.setProperty('--cols', Math.min(3, sk.length));
     storeRow.innerHTML = sk
       .sort((a, b) => b[1] - a[1])
       .slice(0, 6)
       .map(([t, n]) => `<span title="${resName(t)}"><img src="${iconUrl(t)}" alt="">${n}</span>`)
       .join('');
   }
-  if (c) {
-    // depth below the surface, 1 pixel ≈ 0.25 m
-    const d = Math.round((c.y + 10 - surf[Math.max(0, Math.min(W - 1, Math.floor(c.x + 3)))]) / 4);
-    depthEl.hidden = d < 3;
-    if (d >= 3) depthEl.textContent = tr('Tiefe {d} m', { d });
-    depthEl.classList.toggle('deep', d > 11);
-  }
   const mt = missionText();
   if (mt !== G.misKey) {
     G.misKey = mt;
     misEl.hidden = !mt;
     misEl.textContent = mt ? '➜ ' + mt : '';
+    misEl.title = misEl.textContent;
   }
-  if (c) whoTxt.textContent = c.inv[c.isel] ? `${c.name} · ${resName(c.inv[c.isel])}` : c.name;
   if (c) {
-    hpBar.style.width = Math.max(0, c.energy) + '%';
-    hpBar.style.background = c.energy < 30 ? '#e0572f' : '';
     airWrap.hidden = c.breath >= 100;
     airBar.style.width = c.breath + '%';
   }
+  // air and the connection share one small chip that only shows when one of them does
+  const st = airWrap.hidden && netTxt.hidden;
+  if (statusBox.hidden !== st) statusBox.hidden = st;
   const cx = context(c);
   actBtn.textContent = tr(cx.label);
   // the action button shows what it will do
@@ -112,14 +104,14 @@ function hud() {
   // (also with the bow and arrows, and in a catapult or airship)
   const thr = c && !c.dead && (c.ride != null ? THROWERS[vehicleOf(c)?.kind] : c.inv[c.isel] || canShoot(c));
   btnsEl.classList.toggle('noitem', !thr);
-  const ck = crew.map(o => `${o === c}${o.dead}${Math.round(o.energy / 10)}${o.focus}`).join();
+  const ck = crew.map(o => `${o === c}${o.dead}${Math.round(o.energy / 5)}${o.energy < 30}${o.focus}`).join();
   if (ck !== G.crewKey) {
     G.crewKey = ck;
     crewEl.innerHTML = '';
     crew.forEach((o, n) => {
       if ((o.team || 0) !== G.myTeam) return; // Versus: only your team
       const b = document.createElement('button');
-      b.className = 'cbtn' + (o === c ? ' sel' : '') + (o.dead ? ' dead' : '');
+      b.className = 'cbtn' + (o === c ? ' sel' : '') + (o.dead ? ' dead' : '') + (o.energy < 30 ? ' low' : '');
       b.setAttribute('aria-label', o.name);
       b.title = o.name;
       b.innerHTML = `<span class="cap" style="background:${o.cap}"></span><span class="face"></span><span class="hp"><b style="width:${Math.max(0, o.energy)}%"></b></span>${isPlayer(o) ? '' : focusBadge(o)}`;
@@ -504,7 +496,6 @@ export {
   closePanel,
   crewEl,
   drawMini,
-  hpBar,
   hud,
   invEl,
   mapView,
@@ -519,10 +510,8 @@ export {
   pBody,
   pTitle,
   panelEl,
-  pwrTxt,
   sec,
   toast,
   toastEl,
   toggleMap,
-  whoTxt,
 };
