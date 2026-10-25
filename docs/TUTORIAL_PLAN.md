@@ -1,5 +1,19 @@
 # Tutorial-Plan: „Die erste Schicht“
 
+> **Stand: umgesetzt (v1.22.0–v1.26.0).** Abweichungen vom ursprünglichen Plan:
+> - 10 statt 9 Schritte: „Holz aufheben“ und „Gold verkaufen“ sind eigene Schritte, die Karte wird
+>   geöffnet *und* wieder geschlossen.
+> - Der Fels ist eine schmale Felsnadel (8 px breit, 26 px hoch): Ein geworfener Feuerstein trifft
+>   9–22 px über dem Boden, eine Sprengung schneidet so ganz durch, der Rest lässt sich überspringen.
+>   Sprengsplitter auf dem Weg werden aufgeräumt.
+> - Messung bleibt lokal im Profil (`P.tutStats`: Dauer je Schritt, Abbrüche, Rettungen) – es gibt
+>   kein Analyse-Backend. Die Erfolgskriterien in Abschnitt 8 lassen sich erst mit einem solchen
+>   Backend oder per Erstspieler-Test prüfen.
+> - Belohnung: Grubenhelm (wird aufgesetzt, wenn kein Hut getragen wird) und 50 Taler Startgeld in
+>   der nächsten freien Runde.
+> - Code: `src/tutorial.js` (Ablauf), `src/tutsteps.js` (Schritte), `src/tutlevel.js` (Welt),
+>   `src/lessons.js` (Tipps + Aufträge, Spielhilfe), Tests in `tests/tutorial.spec.js`.
+
 Ziel: Ein neuer Spieler versteht in **6–8 Minuten** die Kernschleife von Flintworks –
 *graben → sammeln → bauen → verkaufen → Crew einsetzen* – und hat dabei nie das Gefühl,
 belehrt zu werden. Danach übernimmt ein System aus kontextuellen Lektionen und Aufträgen

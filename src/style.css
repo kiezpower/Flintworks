@@ -789,10 +789,13 @@ button:focus-visible {
   padding: 5px 6px;
   font-size: 9px;
 }
+/* small phones: between the crew bar and the pack, so the world stays free */
 @media (max-width: 700px) {
   #quest {
-    top: 112px;
-    max-width: calc(100% - 32px);
+    top: 6px;
+    max-width: calc(100% - 236px);
+    font-size: 12px;
+    padding: 4px 6px 4px 8px;
   }
 }
 
