@@ -1,6 +1,6 @@
 # Plan: Vorgebaute Level („Szenarien“ wie im Original-Clonk)
 
-> **Stand: Plan, noch nicht umgesetzt.** Baut auf v1.29.0 auf.
+> **Stand: Plan, noch nicht umgesetzt.** Baut auf v1.29.0 auf. Entscheidungen siehe Abschnitt 11.
 
 Ziel: Neben den Zufallswelten gibt es **von Hand gestaltete Level**. Jedes hat eine eigene
 Landschaft, eigene Startbedingungen, ein eigenes Ziel und kleine Ereignisse, so wie die Szenarien
@@ -114,8 +114,9 @@ Web-App und in der APK und brauchen keinen Server.
 
 ### 4.2 Kartenbild `map.png`
 
-- **Zoom** in `level.json` (`zoom: 4` → ein Kartenpixel = 4 × 4 Zellen; 350 × 100 px für die volle
-  Welt). Zoom 1 ist erlaubt für pixelgenaue Stellen (wie `Landscape.bmp`).
+- **Zoom** in `level.json` (`zoom: 4` → ein Kartenpixel = 4 × 4 Zellen; bei einer Welt von
+  1400 × 400 ist das Bild 350 × 100 px groß). Bildgröße × Zoom muss `size` ergeben, sonst meldet der
+  Loader einen Fehler. Zoom 1 ist erlaubt für pixelgenaue Stellen (wie `Landscape.bmp`).
 - **Farbe → Material**, feste Tabelle (in `src/levels/palette.js`, im Editor und als Bild in der
   Doku):
 
@@ -150,6 +151,7 @@ Web-App und in der APK und brauchen keinen Server.
   "desc": "Bring {goal} Wipfe heil zur Burg",
   "intro": "In den Höhlen unter dem Hügel sitzen Wipfe fest …",
   "biome": "meadow",
+  "size": [1024, 384],
   "zoom": 4,
   "rough": 0.5,
   "seed": 8101,
@@ -224,16 +226,45 @@ in `updScenario` geprüft, nur auf dem Host. Was mehr braucht, kommt als Hook in
 | U6 | Mehrspieler: Start-Nachricht mit `levelId` + `v`; Client mit fehlendem/anderem Level bekommt das Vollbild | `main.js` (`playNet`), `net/session.js` | S |
 | U7 | Lobby: Kapitel als Reiter, pro Level Vorschaubild (aus `map.png` mit Biom-Farben gerendert), Beschreibung, Sterne, Bestzeit | `scenarios.js`, `lobby.js`, `lobby.css` | M |
 | U8 | Tutorial-Welt als erstes echtes Level-Paket (`tut/map.png`), `tutlevel.js` behält nur noch Positionen und Prüfungen (`rockOpen`, `tidyRock`) | `tutlevel.js` | S |
-| U9 | *(später, optional)* Weltgröße pro Level: `W`/`H` veränderlich, Arrays beim Laden neu anlegen. Berührt alle Module, die `W`, `H`, `mat` importieren (Live-Bindings reichen, aber Puffer wie `px`, `dirty`, Chunk-Zahlen müssen mitwachsen). | `world.js` + viele | L |
+| U9 | Weltgröße pro Level (Abschnitt 5.1) | `world.js`, `tex.js`, `light.js`, `ui.js`, `render.js`, `net/terrain.js`, `gen.js`, `save.js` | L |
+| U10 | Alte Kampagnen-Level einfrieren (Abschnitt 7.1) | `scenarios.js`, `src/levels/` | S |
 
-Bis U9 kommt, haben alle Level 1400 × 400. Kleinere Karten entstehen mit Granit-Rändern, die
-die Kamera nicht zeigt (eine `bounds`-Angabe in `level.json` begrenzt die Kamera).
+### 5.1 Verschiedene Weltgrößen (U9)
+
+Heute ist die Welt fest 1400 × 400 Zellen. `W` und `H` sind Konstanten in `world.js`, und alle
+Puffer werden einmal beim Laden des Moduls angelegt. 19 Module importieren `W`/`H`.
+
+**Größen:** `size: [w, h]` in `level.json`. Breite 300–2800, Höhe 150–700 (die Chunk-Zahlen werden
+wie heute aufgerundet, die Größe muss also kein Vielfaches von 32 sein). Freies Spiel und Mehrspieler-Zufallswelten bleiben bei 1400 × 400.
+Die Obergrenze ergibt sich aus dem Speicher auf dem Handy. Pro Zelle liegen heute rund 31 Byte in
+Puffern (`mat`, `bg`, `shade`, `stamp`, `fresh`, die Schattierung `WSH`, `sent` und 4 Texel im
+Weltbild). 2800 × 700 sind knapp 2 Mio. Zellen, also rund 60 MB. Das ist das Maximum, das wir
+auf älteren Android-Geräten vertreten.
+
+**Umbau:**
+
+| Schritt | Was | Wo |
+|---|---|---|
+| a | `W`, `H`, `mat`, `bg`, `shade`, `stamp`, `surf`, `fresh`, Chunk-Zahlen (`CWn`, `CHn`) und Chunk-Puffer werden `export let`. `resizeWorld(w, h)` legt alles neu an. ES-Module sehen die neuen Werte über Live-Bindings, Code wie `mat[y * W + x]` muss sich also nicht ändern. | `world.js` |
+| b | Module, die beim Laden eigene Puffer nach `W`/`H` anlegen, melden sich mit `onResize(fn)` an: Lichtspalten `colTop`, Schattierung `worldShade`, Netz-Puffer `sent`/`liqT`. | `light.js`, `tex.js`, `net/terrain.js` |
+| c | **Weltbild in Kacheln:** Heute ist es *eine* Leinwand mit 2800 × 800 Texeln. Bei 2800 Zellen Breite wären es 5600 Texel, und viele Handy-GPUs schaffen nur 4096. Darum wird das Bild in Kacheln von 1024 × 1024 Texeln aufgeteilt; `render.js` zeichnet die 1–4 Kacheln im Bild. Der Upload der geänderten Chunks (`flush`) geht in die jeweilige Kachel. | `world.js`, `render.js` |
+| d | Übersichtskarte rechnet mit `W/4 × H/4` statt fest 350 × 100 und passt das Kartenfenster an das Seitenverhältnis an | `ui.js` |
+| e | Feste Annahmen über die Größe ersetzen: Oberflächen-Höhe 120 im Generator, Granitboden bei `H - 9`, Kamera-Grenzen, Tiefe in Metern, Wolken- und Vogelbereich, Ränder für Meteore | `gen.js`, `render.js`, `weather.js`, `hazards.js`, `scenarios.js` |
+| f | Speicherstand und Mehrspieler-Vollbild enthalten `w`/`h`; `deserialize` ruft vorher `resizeWorld`. Alte Speicherstände ohne `w`/`h` laden als 1400 × 400. | `save.js`, `net/session.js` |
+
+**Absichern:** Der Umbau kommt als **eigene Etappe vor dem Loader** (Etappe 1), mit nur dem
+Größenwechsel und ohne Level. Er wird geprüft, indem das freie Spiel mit `?size=700x300` und
+`?size=2800x700` startet (nur im Entwicklungsmodus). Dabei laufen alle vorhandenen Tests, das
+Graben durch jedes Material, das Tutorial und ein Mehrspieler-Spiel. Erst dann kommen die Level
+dazu.
 
 ---
 
 ## 6. Level-Editor (wie der Editor-Modus im Original)
 
-Ein Werkzeug im Spiel, aufrufbar mit `?editor` (zuerst nur für uns, Desktop):
+Ein Werkzeug **nur für uns**: Es gibt ihn nur im Entwicklungsserver (`npm run dev`, dann
+`?editor`), er wird über `import.meta.env.DEV` eingebunden und kommt so nicht in die Web-Version
+und nicht in die APK. Am Desktop bedient, übers WLAN aber auch auf dem Handy testbar.
 
 - Malen mit Pinsel, Linie, Rechteck und Füllen, Materialpalette wie in 4.2, Umschalter
   „mit Höhlenwand“. Gemalt wird direkt in die Welt, das Aufrauen sieht man live.
@@ -241,7 +272,9 @@ Ein Werkzeug im Spiel, aufrufbar mit `?editor` (zuerst nur für uns, Desktop):
   aufziehen und benennen.
 - Startausrüstung, Regeln und Ziele in einem einfachen Formular.
 - **Testspielen** auf Knopfdruck und zurück in den Editor, ohne dass Änderungen verloren gehen.
-- Export: `map.png` + `level.json` herunterladen (später: als Link teilen, siehe Etappe 7).
+- Weltgröße einstellen (vergrößern oder beschneiden, an jeder Seite).
+- Export: `map.png` + `level.json` direkt in `src/levels/<id>/` speichern (ein kleiner Vite-Endpunkt
+  im Entwicklungsserver) oder herunterladen.
 
 Der Editor nutzt die vorhandenen Bausteine: `setMat`/`paint` zum Malen, `render.js` zum Anzeigen,
 `input.js` für Maus und Touch. Er braucht kein Bildprogramm, aber man *kann* ein Level auch in
@@ -251,28 +284,41 @@ Aseprite oder GIMP malen, weil das Format ein normales PNG ist.
 
 ## 7. Inhalte: ein neues Kapitel „Klassiker“
 
-Die 7 vorhandenen Level bleiben als **Kapitel 1** (Sterne im Profil bleiben gültig). Neu kommt
-**Kapitel 2** mit 8 handgebauten Leveln, angelehnt an typische Clonk-Szenarien. Reihenfolge nach
-Lernkurve:
+### 7.1 Die vorhandenen 7 Level
 
-| # | Level | Idee | Ziel | Was es lehrt/prüft |
-|---|---|---|---|---|
-| 1 | Wipfrettung | Wipfe sitzen in Höhlen unter einem Hügel, Zugänge teils mit Fels verschlossen | 4 Wipfe zur Burg bringen | Graben, Sprengen, Tragen |
-| 2 | Die alte Mine | Verlassene Mine mit Schächten, morschen Balken, Grubenbahn-Resten und Gas | 25 Gold verkaufen | Stützbalken, Gas, Grubenbahn |
-| 3 | Insel im See | Kleine Insel, wenig Holz, Gold auf der Nachbarinsel | 600 Taler | Floß, Brücken, Holz sparen |
-| 4 | Labyrinth | Ein Höhlensystem mit Sackgassen und Wasserfallen, 5 Truhen | alle Truhen | Orientierung, Karte, Wasser ablassen |
-| 5 | Feuerinsel | Vulkaninsel, Lava steigt nach Auslöser-Zeit | Schatz bergen und überleben | Zeitdruck, Lava umleiten |
-| 6 | Säuresee | Der Weg zum Erz führt unter einem Säuresee durch | 15 Erz ins Lager | Lehmwände, vorsichtig graben |
-| 7 | Gipfelsturm | Hoher Berg (mit Granit-Kern), oben ein Turm-Bauplatz | `reach` Gipfel + Turm bauen | Treppen, Fahrstuhl, Seilbahn |
-| 8 | Die Schlucht | Zwei Plateaus über einer tiefen Schlucht | Luftschiff bauen und rüberfliegen | gesamte Produktionskette |
+**Entscheidung:** Sie bleiben, wie man sie heute spielt, werden aber **eingefroren**. Der Editor
+erzeugt jede Welt einmal aus ihrem Seed und speichert sie als Level-Paket mit Zoom 1 (das Bild ist
+die Welt Pixel für Pixel). `setup()`, Forschung, Lager und Ziele wandern nach `level.json` bzw. als
+Hook nach `level.js`. Danach hängen sie nicht mehr am Zufallsgenerator: Wenn wir später `gen()`
+ändern, bleiben die Kampagnen-Level gleich, und die Sternzeiten stimmen weiter. Die IDs `c1`–`c7`
+bleiben, damit die Sterne im Profil gültig bleiben. Umgestalten kann man sie danach im Editor
+nach und nach, das ist aber kein Teil dieses Plans.
+
+### 7.2 Kapitel 2 „Klassiker“
+
+Die 7 vorhandenen Level bilden **Kapitel 1**. Neu kommt
+**Kapitel 2** mit 8 handgebauten Leveln, angelehnt an typische Clonk-Szenarien. Reihenfolge nach
+Lernkurve. Die Größen sind Startwerte für den Entwurf: kleine Karten für Rätsel, große für
+Expeditionen.
+
+| # | Level | Größe | Idee | Ziel | Was es lehrt/prüft |
+|---|---|---|---|---|---|
+| 1 | Wipfrettung | 800 × 300 | Wipfe sitzen in Höhlen unter einem Hügel, Zugänge teils mit Fels verschlossen | 4 Wipfe zur Burg bringen | Graben, Sprengen, Tragen |
+| 2 | Die alte Mine | 1000 × 600 | Verlassene Mine mit Schächten, morschen Balken, Grubenbahn-Resten und Gas | 25 Gold verkaufen | Stützbalken, Gas, Grubenbahn |
+| 3 | Insel im See | 1600 × 350 | Kleine Insel, wenig Holz, Gold auf der Nachbarinsel | 600 Taler | Floß, Brücken, Holz sparen |
+| 4 | Labyrinth | 1200 × 600 | Ein Höhlensystem mit Sackgassen und Wasserfallen, 5 Truhen | alle Truhen | Orientierung, Karte, Wasser ablassen |
+| 5 | Feuerinsel | 1000 × 450 | Vulkaninsel, Lava steigt nach Auslöser-Zeit | Schatz bergen und überleben | Zeitdruck, Lava umleiten |
+| 6 | Säuresee | 1200 × 500 | Der Weg zum Erz führt unter einem Säuresee durch | 15 Erz ins Lager | Lehmwände, vorsichtig graben |
+| 7 | Gipfelsturm | 900 × 700 | Hoher Berg (mit Granit-Kern), oben ein Turm-Bauplatz | `reach` Gipfel + Turm bauen | Treppen, Fahrstuhl, Seilbahn |
+| 8 | Die Schlucht | 2400 × 500 | Zwei Plateaus über einer tiefen Schlucht | Luftschiff bauen und rüberfliegen | gesamte Produktionskette |
 
 Dazu **3 Mehrspieler-Karten** (in der Lobby bei Koop/Versus wählbar, statt Zufallswelt):
 
-| Karte | Modus | Idee |
-|---|---|---|
-| Zwei Burgen | Versus | Symmetrisch gespiegelt, Gold in der Mitte unter einem Felsriegel |
-| Wettgraben | Versus | Wer zuerst unten ankommt, Seitenwege mit Truhen |
-| Expedition | Koop | Große Karte, Burg links, Ziel ganz rechts tief unten, nur gemeinsam in der Zeit zu schaffen |
+| Karte | Modus | Größe | Idee |
+|---|---|---|---|
+| Zwei Burgen | Versus | 1600 × 400 | Symmetrisch gespiegelt, Gold in der Mitte unter einem Felsriegel |
+| Wettgraben | Versus | 1000 × 700 | Wer zuerst unten ankommt, Seitenwege mit Truhen |
+| Expedition | Koop | 2800 × 700 | Große Karte, Burg links, Ziel ganz rechts tief unten, nur gemeinsam in der Zeit zu schaffen |
 
 Jedes Level bekommt beim Bauen eine **Spielzeit-Messung** (Testrunden), daraus die Sternzeiten.
 
@@ -282,17 +328,23 @@ Jedes Level bekommt beim Bauen eine **Spielzeit-Messung** (Testrunden), daraus d
 
 | Etappe | Inhalt | Ergebnis | Aufwand |
 |---|---|---|---|
-| 1 | U1, U2, U3, U8: `gen()` aufteilen, Loader, Palette, Aufrauen; Tutorial-Welt als erstes Paket | Tutorial spielt sich wie vorher, kommt aber aus `map.png` | M |
-| 2 | U4: Ziele, Niederlage, Auslöser; HUD für Teilziele | Level 1 „Wipfrettung“ spielbar | M |
-| 3 | U5, U7: Speicherstand, Lobby mit Kapiteln und Vorschaubildern | Kapitel 2 in der Lobby, Freischalten | S–M |
-| 4 | Tests (Abschnitt 9) | Jedes Level wird bei `npm test` geladen und geprüft | S |
-| 5 | Level-Editor | Level ohne Code bauen und testspielen | M–L |
-| 6 | Inhalte: restliche 7 Level, Sternzeiten aus Testrunden, Texte DE/EN | Kapitel 2 fertig | L (Design-Arbeit) |
-| 7 | U6 + Mehrspieler-Karten | 3 Karten für Koop/Versus | S–M |
-| 8 | *(optional)* Eigene Level teilen: Export als Datei oder Link (komprimiert im Link-Fragment), Import in der Lobby; nur Daten, nie Code. U9 (Weltgröße). | Community-Level | M / L |
+| 1 | U9: verschiedene Weltgrößen, Weltbild in Kacheln | Freies Spiel läuft unverändert, im Entwicklungsmodus auch mit `?size=…`; alle Tests grün | L |
+| 2 | U1, U2, U3, U8: `gen()` aufteilen, Loader, Palette, Aufrauen; Tutorial-Welt als erstes Paket | Tutorial spielt sich wie vorher, kommt aber aus `map.png` | M |
+| 3 | U4: Ziele, Niederlage, Auslöser; HUD für Teilziele | Level 1 „Wipfrettung“ spielbar | M |
+| 4 | U5, U7: Speicherstand, Lobby mit Kapiteln und Vorschaubildern | Kapitel 2 in der Lobby, Freischalten | S–M |
+| 5 | Tests (Abschnitt 9) | Jedes Level wird bei `npm test` geladen und geprüft | S |
+| 6 | Level-Editor (nur Entwicklungsserver), danach U10: alte Level einfrieren | Level ohne Code bauen und testspielen; `c1`–`c7` hängen nicht mehr am Generator | M–L |
+| 7 | Inhalte: restliche 7 Level, Sternzeiten aus Testrunden, Texte DE/EN | Kapitel 2 fertig | L (Design-Arbeit) |
+| 8 | U6 + Mehrspieler-Karten | 3 Karten für Koop/Versus | S–M |
 
-Etappen 1–4 sind das Fundament (ein Release). Ab Etappe 5 lassen sich Editor und Inhalte
-parallel bauen. Die ersten Level können schon vor dem Editor in einem Bildprogramm gemalt werden.
+Jede Etappe ist ein eigener PR. Etappe 1 kommt zuerst und allein, weil sie am meisten bestehenden
+Code berührt; danach baut alles andere auf festem Grund. Etappen 1–5 sind das Fundament. Ab
+Etappe 6 lassen sich Editor und Inhalte parallel bauen. Die ersten Level können schon vor dem
+Editor in einem Bildprogramm gemalt werden.
+
+**Nicht in diesem Plan:** Level mit anderen Spielern teilen oder importieren und der Editor als
+Menüpunkt für Spieler. Das Format ist so gebaut, dass beides später ohne Umbau dazukommen kann
+(nur Daten, kein Code in Level-Dateien).
 
 ---
 
@@ -320,17 +372,18 @@ parallel bauen. Die ersten Level können schon vor dem Editor in einem Bildprogr
 | Helfer-KI verhält sich in engen Handkarten seltsam | Erreichbarkeits-Test; Level 1–2 früh mit Helfern spielen |
 | Level veralten bei Änderungen an Physik oder Preisen | Versionsnummer pro Level, Sternzeiten bei großen Änderungen neu messen |
 | Sternzeiten zu streng/zu locker | Messung aus mehreren Testrunden, im Zweifel großzügig |
-| Geteilte Level als Angriffsweg | Nur Daten (JSON + PNG), feste Größenobergrenze, kein Code aus Dateien |
+| Größenwechsel bricht Stellen, die `W`/`H` beim Laden festhalten | `onResize` für alle eigenen Puffer; Suche nach `new …Array(W`, `350`, `100`, `H - ` im Code; Tests mit kleiner und großer Welt |
+| Große Welten ruckeln oder sprengen den Speicher auf alten Handys | Obergrenze 2800 × 700; Simulation läuft ohnehin nur in aktiven Chunks; Messung auf einem schwachen Android-Gerät vor Etappe 7 |
+| Weltbild zu groß für die GPU | Kacheln mit 1024 × 1024 Texeln (Etappe 1) |
+| Speicherstand großer Welten passt nicht in den Browser-Speicher | Lauflängen-Code wie heute; Größe in Test messen (Ziel unter 1 MB) |
 
 ---
 
-## 11. Offene Fragen
+## 11. Entscheidungen
 
-1. Soll der **Editor für Spieler** freigeschaltet werden (eigener Menüpunkt), oder bleibt er erst
-   einmal ein Werkzeug für uns?
-2. Sollen die **7 vorhandenen Level** bleiben wie sie sind, oder nach und nach auf Handkarten
-   umgebaut werden (Sterne bleiben, aber die Welt ändert sich)?
-3. **Level teilen** (Etappe 8): gewünscht, und wenn ja, nur per Datei/Link oder mit einer
-   Levelliste auf `play.kiez-power.de`?
-4. Ist **variable Weltgröße** (U9) wichtig genug für den großen Umbau, oder reichen
-   1400 × 400 mit Granit-Rändern?
+| Frage | Entscheidung |
+|---|---|
+| Editor für Spieler? | Nein, erst einmal nur für uns: nur im Entwicklungsserver, nicht in Web-Version und APK |
+| Die 7 vorhandenen Level? | Bleiben wie gespielt, werden aber als feste Level-Pakete eingefroren (7.1), Sterne bleiben gültig |
+| Level teilen? | Erst einmal nicht |
+| Verschiedene Weltgrößen? | Ja, 300–2800 × 150–700, als erste Etappe (5.1) |
