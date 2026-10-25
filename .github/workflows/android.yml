@@ -49,3 +49,17 @@ jobs:
           body: APK zum Installieren auf Android. Automatisch gebaut aus ${{ github.sha }}.
           files: flintworks.apk
           make_latest: true
+      # dieselbe APK auch auf itch.io (Kanal "android"), wenn der Zugang eingerichtet ist (docs/ITCH.md)
+      - name: Auf itch.io hochladen
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          ITCH_GAME: ${{ vars.ITCH_GAME }}
+        run: |
+          if [ -z "$BUTLER_API_KEY" ] || [ -z "$ITCH_GAME" ]; then
+            echo "::notice::itch.io-Zugang fehlt – APK-Upload übersprungen"
+            exit 0
+          fi
+          curl -sSL -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -q butler.zip -d butler
+          chmod +x butler/butler
+          ./butler/butler push flintworks.apk "$ITCH_GAME:android" --userversion "$(node -p "require('./package.json').version")"

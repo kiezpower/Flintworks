@@ -1,5 +1,6 @@
 // Rooms: create or join with a 6-letter code, see who is in, get ready, start together.
 // The relay hands out the codes and player ids; the game messages go through sendTo().
+import { LIVE, ownWeb } from '../platform.js';
 import { P } from '../profile.js';
 import { G } from '../state.js';
 import { connect, disconnect, on, send, transport } from './transport.js';
@@ -118,12 +119,10 @@ function sendTo(to, d) {
 const inRoom = () => !!NET.room && NET.status === 'waiting';
 const others = () => NET.players.filter(p => p.pid !== NET.pid);
 
-// in the Android app the page runs on localhost: invite with the public web address
-const LIVE = 'https://kiezpower.github.io/Flintworks/';
-const isApp = () => !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+// in the Android app (localhost) and on itch.io (a frame) invite with the public web address
 function inviteLink() {
   if (!NET.room) return '';
-  return `${isApp() || location.hostname === 'localhost' ? LIVE : location.origin + location.pathname}?room=${NET.room}`;
+  return `${ownWeb() && location.hostname !== 'localhost' ? location.origin + location.pathname : LIVE}?room=${NET.room}`;
 }
 // share sheet on phones, clipboard elsewhere; resolves to 'shared' | 'copied' | 'failed'
 async function shareInvite(text) {

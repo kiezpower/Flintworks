@@ -1,6 +1,7 @@
 import { GAME_MODES, MODE_IDS, mode } from './modes.js';
 import { campaignPanel, totalStars } from './scenarios.js';
 import { canInstall, offerInstall, openInstall } from './install.js';
+import { LIVE, isNative, ownWeb } from './platform.js';
 // Lobby between games: the player's Wühler on a stage, resources on top, menus left, play button right.
 import { BIOMES } from './biomes.js';
 import './lobby.css';
@@ -18,10 +19,10 @@ import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
 const el = $('lobby');
 $('lbVersion').textContent = 'v' + __APP_VERSION__;
 // ask the live web version which version is current; offer the update if this copy is older
-const LIVE = 'https://kiezpower.github.io/Flintworks/';
+// (not on itch.io and other sites: they bring the new version themselves)
 let updateChecked = false;
 function checkUpdate() {
-  if (updateChecked || import.meta.env.DEV) return;
+  if (updateChecked || import.meta.env.DEV || (!isNative() && !ownWeb())) return;
   updateChecked = true;
   fetch(LIVE + 'version.json?t=' + Date.now(), { cache: 'no-store' })
     .then(r => r.json())
@@ -30,12 +31,12 @@ function checkUpdate() {
       const a = $('updateLink');
       a.textContent = tr('Neue Version v{v} verfügbar – tippen', { v: version });
       // the Android app gets a new APK, the web version simply reloads
-      a.href = window.Capacitor?.isNativePlatform?.()
+      a.href = isNative()
         ? 'https://github.com/kiezpower/Flintworks/releases/latest'
         : location.pathname + '?v=' + version;
       a.hidden = false;
       // web: drop the offline copy completely so the new version really loads
-      if (!window.Capacitor?.isNativePlatform?.())
+      if (!isNative())
         a.onclick = async e => {
           e.preventDefault();
           try {

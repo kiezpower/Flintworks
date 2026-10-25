@@ -1,3 +1,4 @@
+import { ownWeb } from './platform.js';
 import { tapGotoInput } from './tapgo.js';
 import { calcTerr } from './render.js';
 import { updHazards } from './hazards.js';
@@ -506,8 +507,8 @@ menu();
 requestAnimationFrame(loop);
 
 // Offline mode for the web version; the Android app ships its files itself
-// (window.Capacitor exists on the web too, since the core is bundled: ask for the platform)
-if (!window.Capacitor?.isNativePlatform?.() && 'serviceWorker' in navigator && !import.meta.env.DEV) {
+// (and not inside other sites like itch.io)
+if (ownWeb() && 'serviceWorker' in navigator && !import.meta.env.DEV) {
   import('virtual:pwa-register').then(({ registerSW }) => {
     const update = registerSW({
       immediate: true,

@@ -1,6 +1,7 @@
 // Offer to install the web version as an app (home screen icon, full screen, offline). Browsers
 // with an install prompt (Chrome, Edge, Samsung) get a button; iPhone/iPad get the share-menu
 // steps, everything else a short hint. Not in the Android app and not when already installed.
+import { ownWeb } from './platform.js';
 import { tr } from './i18n.js';
 import { P, saveProfile } from './profile.js';
 import { sfx } from './sound.js';
@@ -19,8 +20,9 @@ addEventListener('appinstalled', () => {
   toast('Flintworks ist jetzt als App installiert');
 });
 
+// (only the own web version: not the app, not inside itch.io or another site)
 const installed = () =>
-  !!window.Capacitor?.isNativePlatform?.() ||
+  !ownWeb() ||
   navigator.standalone === true ||
   ['standalone', 'fullscreen', 'minimal-ui'].some(m => matchMedia(`(display-mode: ${m})`).matches);
 const ua = navigator.userAgent;

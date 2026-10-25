@@ -1,0 +1,51 @@
+# Baut die Web-Version und lädt sie mit butler auf itch.io hoch (Kanal "html5").
+# Braucht das Secret BUTLER_API_KEY und die Variable ITCH_GAME (z. B. "kiezpower/flintworks").
+# Ohne Secret wird der Schritt einfach übersprungen. Anleitung: docs/ITCH.md
+name: itch.io veröffentlichen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: itch
+  cancel-in-progress: true
+
+jobs:
+  html5:
+    runs-on: ubuntu-latest
+    env:
+      BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+      ITCH_GAME: ${{ vars.ITCH_GAME }}
+    steps:
+      - name: Zugang prüfen
+        id: check
+        run: |
+          if [ -z "$BUTLER_API_KEY" ] || [ -z "$ITCH_GAME" ]; then
+            echo "::notice::BUTLER_API_KEY oder ITCH_GAME fehlt – itch.io-Upload übersprungen (siehe docs/ITCH.md)"
+            echo "go=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.check.outputs.go == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.check.outputs.go == 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+        if: steps.check.outputs.go == 'true'
+      - run: npm run build
+        if: steps.check.outputs.go == 'true'
+      - name: butler holen
+        if: steps.check.outputs.go == 'true'
+        run: |
+          curl -sSL -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -q butler.zip -d butler
+          chmod +x butler/butler
+          ./butler/butler -V
+      - name: Hochladen
+        if: steps.check.outputs.go == 'true'
+        run: ./butler/butler push dist "$ITCH_GAME:html5" --userversion "$(node -p "require('./package.json').version")"
