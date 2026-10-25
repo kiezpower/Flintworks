@@ -85,6 +85,10 @@ const diggable = m =>
   m === GEM ||
   (m === ROCK && hasTool('pick'));
 const digAtPx = (x, y) => diggable(mat[Math.floor(y) * W + Math.floor(x)]);
+// how hard each material is to dig: the Wühler gets through sand quickest, ore and gems slowest,
+// and swings the pick more slowly in hard ground (earth = 1 keeps the old pace; rock needs the
+// steel pick, which is faster anyway)
+const HARD = { [SAND]: 0.75, [EARTH]: 1, [LOAM]: 1.2, [GOLD]: 1.15, [COAL]: 1.25, [ORE]: 1.4, [GEM]: 1.5, [ROCK]: 1.7 };
 // automatic digging: walking into earth digs, stick down digs down-slanted, stick up under an
 // earth ceiling digs up-slanted. The test looks at exactly the area the next dig stroke would
 // remove (same centre and radius as in updClonk), so digging continues as long as there is
@@ -115,11 +119,21 @@ function strokeCells(c, dir, slope, fn, ahead = 4) {
       fn(x, y);
     }
 }
+// returns how hard the earth removed by this stroke was on average (0: nothing removed)
 function digStroke(c, dir, slope) {
+  let n = 0,
+    h = 0;
   strokeCells(c, dir, slope, (x, y) => {
-    if (x >= 0 && y >= 0 && x < W && y < H) digCell(x, y);
+    if (x < 0 || y < 0 || x >= W || y >= H) return;
+    const m = digCell(x, y, true);
+    if (m) {
+      n++;
+      h += HARD[m];
+      if (HARD[m] >= (HARD[c.digM] || 0) || n === 1) c.digM = m;
+    }
   });
   spawnFromDig(c.x + 3 + dir * 6, c.y + 5 + slope * 6);
+  return n ? h / n : 0;
 }
 // how much diggable earth the next stroke would remove (rows below yMax ignored)
 function digZone(c, dir, slope, yMax) {
@@ -195,13 +209,15 @@ const CRUMB = {
   [GOLD]: '#ffe066',
   [ROCK]: '#8a847c',
 };
-function digCell(x, y) {
+// removes one cell of diggable earth and returns its material (0 if nothing was dug).
+// paced: a Wühler's stroke, whose pace already follows the hardness; other diggers (machines)
+// chip through rock only now and then
+function digCell(x, y, paced = false) {
   const i = y * W + x,
     m = mat[i];
   if (m === ROCK) {
-    // the steel pick chips slowly through rock
-    if (!hasTool('pick') || rnd() > 0.3) return;
-  } else if (m !== EARTH && m !== SAND && m !== GOLD && m !== LOAM && m !== ORE && m !== COAL && m !== GEM) return;
+    if (!hasTool('pick') || (!paced && rnd() > 0.3)) return 0;
+  } else if (m !== EARTH && m !== SAND && m !== GOLD && m !== LOAM && m !== ORE && m !== COAL && m !== GEM) return 0;
   if (rnd() < 0.14)
     parts.push({
       x,
@@ -212,7 +228,6 @@ function digCell(x, y) {
       c: CRUMB[m],
       s: rnd() < 0.3 ? 2 : 1,
     });
-  if (m === ROCK) G.shake = Math.max(G.shake, 0.8);
   if (m === GOLD) {
     G.goldDust++;
     if (rnd() < 0.25) parts.push({ x, y, vx: (rnd() - 0.5) * 1.2, vy: -rnd() * 1.4, l: 25, c: '#ffe066' });
@@ -225,6 +240,7 @@ function digCell(x, y) {
   bg[i] = 1;
   paint(i);
   onDig(x, y);
+  return m;
 }
 function spawnFromDig(cx, cy) {
   while (G.goldDust >= 16) {
@@ -255,6 +271,23 @@ function spawnFromDig(cx, cy) {
   if (G.earthDug >= 260) {
     G.earthDug = 0;
     spawnItem(rnd() < 0.3 ? 'flint' : 'rock', cx - 1, cy - 2, rnd() - 0.5, -1, 30);
+  }
+}
+// the moment the pick strikes: sound, a shake in rock, a short buzz on the phone
+const STRIKE = 0.6;
+function digHit(c, slope) {
+  const fx = c.x + 3 + c.face * 6,
+    fy = c.y + 5 + slope * 6;
+  let m = mat[Math.floor(fy) * W + Math.floor(fx)];
+  if (!HARD[m] && m !== GRANITE) m = c.digM || EARTH;
+  sfx(m === SAND ? 'digSand' : m === ROCK || m === GRANITE ? 'digRock' : 'dig', c.x, c.y);
+  if (m === GOLD || m === GEM) {
+    sfx('ting', c.x, c.y);
+    glint(fx, fy);
+  }
+  if (c === sel_()) {
+    if (m === ROCK || m === GRANITE) G.shake = Math.max(G.shake, 1.1);
+    if (G.vibe !== false) buzz(m === ROCK || m === GRANITE ? 14 : 7);
   }
 }
 function nearTree(c) {
@@ -448,21 +481,26 @@ function updBody(c, I) {
     // (helpers pass their own slope: they may dig down more steeply to reach ore)
     const slope = I.slope !== undefined ? I.slope : raw > 0.45 ? SLOPE_DOWN : raw < -0.45 ? -SLOPE_UP : 0;
     const len = Math.hypot(1, slope);
+    if (!c.digging) {
+      // the first blow comes right away
+      c.digPh = 0.45;
+      c.digH = 1;
+    }
     c.digging = true;
     c.digDir = [c.face / len, slope / len];
-    digStroke(c, c.face, slope);
+    const h = digStroke(c, c.face, slope);
+    if (h) c.digH += (h - c.digH) * 0.3;
     c.vx = c.vy = 0;
-    const sp = hasTool('pick') ? 0.8 : 0.55;
+    // the pick swings in a beat (longer in hard ground): wind up, strike, and after the strike
+    // the Wühler pushes on into the loosened earth; on average as fast as the material allows
+    const ph0 = c.digPh;
+    c.digPh += 1 / (11 * c.digH);
+    if (c.digPh >= 1) c.digPh -= 1;
+    if (ph0 < STRIKE && c.digPh >= STRIKE) digHit(c, slope);
+    const surge = c.digPh >= STRIKE && c.digPh < STRIKE + 0.25 ? 1.9 : 0.7;
+    const sp = ((hasTool('pick') ? 0.8 : 0.55) / c.digH) * surge;
     moveBody(c, (c.face * sp) / len, (slope * sp) / len, 3);
     c.anim += 0.3;
-    if (G.frame % 9 === 0) {
-      const m = mat[Math.floor(c.y + 5 + slope * 6) * W + Math.floor(c.x + 3 + c.face * 6)];
-      sfx(m === SAND ? 'digSand' : m === ROCK || m === GRANITE ? 'digRock' : 'dig', c.x, c.y);
-      if (m === GOLD || m === GEM) {
-        sfx('ting', c.x, c.y);
-        glint(c.x + 3 + c.face * 6, c.y + 5 + slope * 6);
-      }
-    }
     return;
   }
   c.digging = false;
@@ -734,6 +772,7 @@ function lorryAct(c, L) {
 }
 
 export {
+  HARD,
   diggable,
   digZone,
   wantsDig,

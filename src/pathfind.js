@@ -14,14 +14,16 @@ function mkNav(o) {
         if (o.solid(xx, yy) && !(o.plat && (rise || yy < y + h - 2) && o.plat(xx, yy))) return false;
     return true;
   };
-  // how many cells must be dug to fit the body here (-1: something undiggable in the way)
+  // how much must be dug to fit the body here, cells weighed by hardness (-1: something undiggable in the way)
   const digNeed = (x, y) => {
     let n = 0;
     for (let yy = y; yy < y + h; yy++)
       for (let xx = x; xx < x + w; xx++)
         if (o.solid(xx, yy)) {
-          if (!o.dig(xx, yy)) return -1;
-          n++;
+          // dig() says how hard the cell is to dig (0: not at all)
+          const d = +o.dig(xx, yy);
+          if (!d) return -1;
+          n += d;
         }
     return n;
   };
