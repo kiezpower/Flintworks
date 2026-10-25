@@ -18,7 +18,7 @@ import { DIG, JUMP, mkNav } from './pathfind.js';
 import { ITEM } from './sprites.js';
 import { stock } from './store.js';
 import { G, INV_MAX, builds, crew, items, parts, trees } from './state.js';
-import { COAL, GEM, GOLD, H, LIQ, ORE, SOLID, W, WATER, free, mat, rnd, surf } from './world.js';
+import { COAL, GEM, GOLD, H, LIQ, ORE, PLANK, SOLID, W, WATER, free, mat, rnd, surf } from './world.js';
 
 const TOOLS = ['flint', 'tnt', 'loam'];
 // everything the base takes in (so a helper never walks home for nothing)
@@ -26,6 +26,8 @@ const cargo = c => c.inv.filter(t => ITEM[t]).length;
 const RICH = new Set([GOLD, ORE, COAL, GEM]);
 
 const solid = (x, y) => x < 0 || y < 0 || x >= W || y >= H || SOLID[mat[y * W + x]] === 1;
+// wooden stairs and bridges: walked through from the side, stood on from above
+const plat = (x, y) => x >= 0 && y >= 0 && x < W && y < H && mat[y * W + x] === PLANK;
 // keep away from lava, acid and deep water
 const bad = (x, y) => {
   const a = mat[Math.min(H - 1, y + 2) * W + Math.min(W - 1, x + 3)],
@@ -38,8 +40,18 @@ const nearBuild = (x, y) =>
     b => x > b.x - 24 && x < b.x + b.w + 24 && y > b.gy - b.h - 4 && y < b.gy + (b.type === 'base' ? 30 : 18),
   );
 const digOk = (x, y) => y < H - 4 && diggable(mat[y * W + x]) && !nearBuild(x, y);
-const nav = mkNav({ solid, bad, maxDrop: 36, jumpH: 15, maxNodes: 2500, budget: 5 });
-const navDig = mkNav({ solid, bad, dig: digOk, digCost: 0.35, maxDrop: 36, jumpH: 15, maxNodes: 2500, budget: 6 });
+const nav = mkNav({ solid, plat, bad, maxDrop: 36, jumpH: 15, maxNodes: 2500, budget: 5 });
+const navDig = mkNav({
+  solid,
+  plat,
+  bad,
+  dig: digOk,
+  digCost: 0.35,
+  maxDrop: 36,
+  jumpH: 15,
+  maxNodes: 2500,
+  budget: 6,
+});
 
 // blacklist for things a helper could not reach (item, tree or ore spot → frame)
 const noWay = new WeakMap();
