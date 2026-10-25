@@ -23,25 +23,18 @@
       <div id="hud">
         <div class="col">
           <div class="crew panel" id="crew"></div>
-          <div class="stats panel">
-            <div class="who" id="whoTxt"></div>
-            <div class="who pwr" id="pwrTxt" hidden></div>
-            <div class="who depth" id="depthTxt" hidden></div>
-            <div class="who net" id="netTxt" hidden></div>
+          <div class="purse panel">
             <div class="money"><span class="coin"></span><span id="moneyTxt">0</span></div>
-            <div class="mis" id="misTxt" hidden></div>
-            <div class="store" id="storeRow" hidden></div>
             <div class="goal" id="goalWrap" hidden>
               <span id="goalTxt"></span><span class="gbar"><b id="goalBar"></b></span>
             </div>
-            <div class="bar" title="Energie" data-i18n-title="Energie">
-              <b id="hpBar"></b>
-            </div>
-            <div class="bar air" id="airWrap" hidden title="Luft" data-i18n-title="Luft">
-              <b id="airBar"></b>
-            </div>
+          </div>
+          <div class="status panel" id="statusBox" hidden>
+            <span class="bar air" id="airWrap" hidden title="Luft" data-i18n-title="Luft"><b id="airBar"></b></span>
+            <span class="net" id="netTxt" hidden></span>
           </div>
         </div>
+        <div class="mis panel" id="misTxt" hidden></div>
         <div class="colr">
           <div class="inv panel" id="inv"></div>
           <div class="tools">
@@ -50,6 +43,7 @@
             <button class="small" id="menuBtn" data-i18n="Menü">Menü</button>
           </div>
           <canvas id="miniThumb" width="175" height="50" aria-label="Karte" data-i18n-aria="Karte"></canvas>
+          <div class="store panel" id="storeRow" hidden></div>
           <div hidden>
             <button id="zoomBtn">Zoom</button>
             <button id="mapBtn">Karte</button>

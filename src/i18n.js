@@ -319,7 +319,6 @@ const EN = {
   'Helleres Licht, zeigt Grubengas in der Nähe': 'Brighter light, shows mine gas nearby',
   '{name} braucht {m} Taler + {cost}': '{name} needs {m} coins + {cost}',
   '{name} gekauft': '{name} bought',
-  'Tiefe {d} m': 'Depth {d} m',
   'Grubengas! Kein Feuer – und schnell raus hier': 'Mine gas! No fire – get out fast',
   'Es knirscht über dir … Vorsicht!': 'The ceiling creaks … watch out!',
   'Das Gas ist explodiert!': 'The gas exploded!',

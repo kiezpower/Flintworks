@@ -139,13 +139,6 @@ button:focus-visible {
 .cbtn {
   position: relative;
 }
-.stats .mis {
-  max-width: 200px;
-  font-family: var(--font-display);
-  font-size: 13px;
-  line-height: 1.2;
-  color: #ffe9a8;
-}
 .cbtn .fo {
   position: absolute;
   right: -5px;
@@ -188,23 +181,51 @@ button:focus-visible {
   height: 100%;
   background: var(--leaf);
 }
-.stats {
-  padding: 6px 9px;
-  display: grid;
-  gap: 5px;
-  min-width: 150px;
+/* the energy of the chosen Wühler (there is no separate energy bar) */
+.cbtn.sel .hp {
+  height: 4px;
 }
-.who {
+.cbtn.low .hp b {
+  background: var(--ember);
+}
+/* HUD split into small pieces instead of one big box: money and goal under the crew, air and connection
+   only when they matter, the task in the middle at the top, the store under the map */
+.purse,
+.status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  padding: 4px 8px;
   font-family: var(--font-display);
   font-size: 13px;
-  color: var(--ink);
   white-space: nowrap;
 }
-.pwr {
-  color: #9fd3ff;
+.status {
+  padding: 3px 8px;
+  font-size: 12px;
 }
-.pwr.low {
-  color: var(--ember);
+.status .bar {
+  width: 54px;
+}
+.net {
+  color: #c9bba0;
+}
+.mis {
+  align-self: flex-start;
+  min-width: 0;
+  max-width: 340px;
+  margin: 0 auto;
+  padding: 5px 9px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  line-height: 1.25;
+  color: #ffe9a8;
+  /* at most two lines; the whole text is in the tooltip */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 .money {
   display: flex;
@@ -859,13 +880,13 @@ button:focus-visible {
 }
 
 .goal {
-  display: grid;
-  gap: 3px;
-  font-family: var(--font-display);
-  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: #ffe39a;
 }
 .gbar {
+  width: 48px;
   height: 5px;
   background: rgba(0, 0, 0, 0.5);
   border-radius: 2px;
@@ -875,13 +896,6 @@ button:focus-visible {
   display: block;
   height: 100%;
   background: var(--gold);
-}
-
-.depth {
-  color: #b8d4ff;
-}
-.depth.deep {
-  color: #ffb08a;
 }
 
 #miniThumb {
@@ -900,14 +914,26 @@ button:focus-visible {
     width: 140px;
     height: 40px;
   }
+  .store {
+    max-width: 140px;
+  }
+}
+@media (max-width: 700px) {
+  .mis {
+    font-size: 12px;
+    padding: 4px 7px;
+  }
 }
 
 .store {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px 8px;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 3), auto);
+  gap: 2px 8px;
+  max-width: 175px;
+  padding: 3px 7px;
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
   color: #e8dcc4;
 }
 .store span {
@@ -916,8 +942,8 @@ button:focus-visible {
   gap: 2px;
 }
 .store img {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   image-rendering: pixelated;
 }
 
