@@ -1,7 +1,7 @@
 // Mood lighting: the world dims with depth below the surface, lamps and lava glow warm through it,
 // and a soft vignette frames the picture. Everything is drawn in landscape pixels.
 import { G } from './state.js';
-import { H, LIQ, SOLID, W, mat } from './world.js';
+import { H, LIQ, SOLID, W, mat, onResize } from './world.js';
 
 const AMB_MAX = 0.58, // darkest the deep underground gets (lamps and lava cut holes into it)
   AMB_LEN = 60, // rows over which the dimming fades in below the surface
@@ -9,7 +9,8 @@ const AMB_MAX = 0.58, // darkest the deep underground gets (lamps and lava cut h
 const TINT = '14,8,22';
 
 // first solid or liquid cell of a column; refreshed a few times per second for the visible columns
-const colTop = new Int16Array(W).fill(-1);
+let colTop = new Int16Array(W).fill(-1);
+onResize(() => (colTop = new Int16Array(W).fill(-1)));
 function refreshTops(cx) {
   const x1 = Math.min(W, cx + G.VW + 1);
   for (let x = Math.max(0, cx); x < x1; x++) {

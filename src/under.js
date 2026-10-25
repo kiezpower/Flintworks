@@ -267,9 +267,12 @@ function prepareUnder(mat) {
     }
 }
 let HGT = 0;
+// also after the world changed its size: the caches that depend on it are made anew
 function setGround(s, w, h) {
   surf = s;
   W = w;
   HGT = h;
+  PATCH = SO = null;
+  fbx = fby = -1;
 }
 export { prepareUnder, setGround, underTexel, wallTexel };

@@ -36,14 +36,14 @@ npm run dev        # Entwicklungsserver mit Live-Reload, auch im WLAN fürs Hand
 npm run build      # fertige Web-Version in dist/
 npm run preview    # gebaute Version lokal testen
 npm run android    # Web-Version bauen und ins Android-Projekt kopieren
-npm test           # Browser-Tests: spielt das Tutorial durch und gräbt durch jedes Material (Playwright)
+npm test           # Browser-Tests: spielt das Tutorial durch, gräbt durch jedes Material, prüft Weltgrößen (Playwright)
 npm run test:visual # spielt eine Runde, speichert Screenshots in tests/out/ und prüft auf Fehler
 npm run store-shots # erzeugt Store-Bilder (Screenshots, Cover, Feature-Grafik) in docs/itch/ und docs/play/
 ```
 
 Für die Tests einmalig `npx playwright install chromium` ausführen oder einen vorhandenen Chromium mit `PW_CHROMIUM=/pfad/zu/chrome npm test` angeben.
 
-Mit `?seed=7` in der Adresse entsteht immer dieselbe Welt.
+Mit `?seed=7` in der Adresse entsteht immer dieselbe Welt. Nur im Entwicklungsserver: `?size=700x300` gibt dem freien Spiel eine andere Weltgröße (300–2800 × 150–700), auch für alle Mitspieler einer Runde.
 
 Der Bildtest (`npm run test:visual`) startet Vite selbst und versteht ebenfalls `PW_CHROMIUM=/pfad/zu/chrome`.
 

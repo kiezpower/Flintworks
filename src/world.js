@@ -3,9 +3,13 @@ import { T, TEX, setTopSoil, topTex, worldShade } from './tex.js';
 import { prepareUnder, setGround, underTexel, wallTexel } from './under.js';
 
 // ---- World & materials ----
-const W = 1400,
-  H = 400,
+// The world size changes per level (resizeWorld). W, H and all per-cell buffers are live
+// bindings, so code like mat[y * W + x] in other modules always sees the current world.
+const W0 = 1400,
+  H0 = 400,
   GOAL = 500;
+let W = W0,
+  H = H0;
 const AIR = 0,
   EARTH = 1,
   ROCK = 2,
@@ -23,11 +27,11 @@ const AIR = 0,
 const SOLID = [0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1];
 const LIQ = [0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0];
 const BLAST = [0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1];
-const mat = new Uint8Array(W * H),
+let mat = new Uint8Array(W * H),
   bg = new Uint8Array(W * H),
   shade = new Uint8Array(W * H),
   stamp = new Uint32Array(W * H);
-const surf = new Int16Array(W);
+let surf = new Int16Array(W);
 setGround(surf, W, H);
 const rgba = (r, g, b, a = 255) => ((a << 24) | (b << 16) | (g << 8) | r) >>> 0;
 const hex = (h, a = 255) =>
@@ -110,9 +114,9 @@ function setGroundTop(cols) {
 
 // The world image has double resolution: every landscape cell is painted as 2×2 texels taken
 // from the material texture, with a one-texel rim light on top edges and shade under ceilings.
-const RES = 2,
-  PW = W * RES;
-const WSH = worldShade(W, H);
+const RES = 2;
+let PW = W * RES;
+let WSH = worldShade(W, H);
 const solidAt = j => j >= 0 && j < W * H && SOLID[mat[j]] === 1;
 function texel(i, sx, sy) {
   const m = mat[i];
@@ -170,8 +174,8 @@ const cssOf = i => {
   return `rgb(${c & 255},${(c >> 8) & 255},${(c >> 16) & 255})`;
 };
 // freshly dug tunnel cells and the list of those still drying
-const fresh = new Uint8Array(W * H),
-  freshList = new Int32Array(8192);
+let fresh = new Uint8Array(W * H);
+const freshList = new Int32Array(8192);
 let freshN = 0;
 function markFresh(i) {
   if (!fresh[i]) {
@@ -207,20 +211,61 @@ const colorOf = i => {
   return PAL[m][m === EARTH ? shade[i] : shade[i] & 3];
 };
 
-const wc = document.createElement('canvas');
-wc.width = PW;
-wc.height = H * RES;
-const wctx = wc.getContext('2d');
-const img = wctx.createImageData(PW, H * RES);
-const px = new Uint32Array(img.data.buffer);
+// The world image is painted into one big pixel buffer and shown from tiles of TILE × TILE
+// texels: many phone GPUs cannot hold a canvas wider than 4096, a 2800 cell world is 5600.
+// TILE is a multiple of a chunk (CS * RES), so every chunk lies in exactly one tile.
+const TILE = 1024;
+let img, px, tiles;
+function makeImage() {
+  const tw = W * RES,
+    th = H * RES;
+  img = new ImageData(tw, th);
+  px = new Uint32Array(img.data.buffer);
+  tiles = [];
+  for (let y = 0; y < th; y += TILE)
+    for (let x = 0; x < tw; x += TILE) {
+      const cv = document.createElement('canvas');
+      cv.width = Math.min(TILE, tw - x);
+      cv.height = Math.min(TILE, th - y);
+      tiles.push({ x, y, cv, ctx: cv.getContext('2d') });
+    }
+}
+makeImage();
+const tilesAcross = () => Math.ceil((W * RES) / TILE);
+// copies a texel rectangle of the pixel buffer into the tiles it touches
+function upload(x, y, w, h) {
+  for (const t of tiles) {
+    const x0 = Math.max(x, t.x),
+      y0 = Math.max(y, t.y),
+      x1 = Math.min(x + w, t.x + t.cv.width),
+      y1 = Math.min(y + h, t.y + t.cv.height);
+    if (x0 < x1 && y0 < y1) t.ctx.putImageData(img, -t.x, -t.y, x0, y0, x1 - x0, y1 - y0);
+  }
+}
 function paintAll() {
   prepareUnder(mat);
   for (let i = 0; i < W * H; i++) paintCell(i);
-  wctx.putImageData(img, 0, 0);
+  upload(0, 0, W * RES, H * RES);
+}
+// draws the part of the world from landscape pixel (cx, cy), vw × vh big, at (0, 0)
+function drawWorld(ctx, cx, cy, vw, vh) {
+  const sx0 = cx * RES,
+    sy0 = cy * RES,
+    sx1 = (cx + vw) * RES,
+    sy1 = (cy + vh) * RES;
+  for (const t of tiles) {
+    const x0 = Math.max(sx0, t.x),
+      y0 = Math.max(sy0, t.y),
+      x1 = Math.min(sx1, t.x + t.cv.width),
+      y1 = Math.min(sy1, t.y + t.cv.height);
+    if (x0 >= x1 || y0 >= y1) continue;
+    const [dx, dy, dw, dh] = [x0 - sx0, y0 - sy0, x1 - x0, y1 - y0].map(v => v / RES);
+    ctx.drawImage(t.cv, x0 - t.x, y0 - t.y, x1 - x0, y1 - y0, dx, dy, dw, dh);
+  }
 }
 // changed chunks of the world image, uploaded once per frame
-const CS = 32,
-  CWn = Math.ceil(W / CS),
+const CS = 32;
+let CWn = Math.ceil(W / CS),
   CHn = Math.ceil(H / CS);
 // chunks that changed and must be simulated next frame
 let act = new Uint8Array(CWn * CHn),
@@ -234,11 +279,11 @@ function swapActive() {
 }
 const activateAll = () => actNext.fill(1);
 const markActive = c => (actNext[c] = 1);
-const acidChunk = new Uint8Array(CWn * CHn);
-const dirty = new Uint8Array(CWn * CHn),
+let acidChunk = new Uint8Array(CWn * CHn);
+let dirty = new Uint8Array(CWn * CHn),
   dirtyList = new Int32Array(CWn * CHn);
 // chunks changed since the host last sent them to the other players (multiplayer)
-const netDirty = new Uint8Array(CWn * CHn);
+let netDirty = new Uint8Array(CWn * CHn);
 let dirtyN = 0;
 function markDirty(x, y, r) {
   const cx0 = Math.max(0, (x - r) >> 5),
@@ -300,12 +345,52 @@ function flush() {
   for (let k = 0; k < dirtyN; k++) {
     const c = dirtyList[k];
     dirty[c] = 0;
-    const cx = c % CWn,
-      cy = (c / CWn) | 0;
-    wctx.putImageData(img, 0, 0, cx * CS * RES, cy * CS * RES, CS * RES, CS * RES);
+    const x = (c % CWn) * CS * RES,
+      y = ((c / CWn) | 0) * CS * RES,
+      t = tiles[((y / TILE) | 0) * tilesAcross() + ((x / TILE) | 0)];
+    t.ctx.putImageData(img, -t.x, -t.y, x, y, CS * RES, CS * RES);
   }
   dirtyN = 0;
 }
+// Sizes a level may have; free play and random multiplayer worlds stay at 1400 × 400.
+const SIZE_MIN = [300, 150],
+  SIZE_MAX = [2800, 700];
+const resizeHooks = [];
+// modules with their own per-column or per-cell buffers renew them here
+const onResize = fn => resizeHooks.push(fn);
+// gives the world a new size (all cells air); false when it already has that size
+function resizeWorld(w = W0, h = H0) {
+  w = clamp(Math.round(w), SIZE_MIN[0], SIZE_MAX[0]);
+  h = clamp(Math.round(h), SIZE_MIN[1], SIZE_MAX[1]);
+  if (w === W && h === H) return false;
+  W = w;
+  H = h;
+  mat = new Uint8Array(W * H);
+  bg = new Uint8Array(W * H);
+  shade = new Uint8Array(W * H);
+  stamp = new Uint32Array(W * H);
+  fresh = new Uint8Array(W * H);
+  freshN = dryK = 0;
+  surf = new Int16Array(W);
+  setGround(surf, W, H);
+  PW = W * RES;
+  WSH = worldShade(W, H);
+  CWn = Math.ceil(W / CS);
+  CHn = Math.ceil(H / CS);
+  act = new Uint8Array(CWn * CHn);
+  actNext = new Uint8Array(CWn * CHn);
+  acidChunk = new Uint8Array(CWn * CHn);
+  dirty = new Uint8Array(CWn * CHn);
+  dirtyList = new Int32Array(CWn * CHn);
+  netDirty = new Uint8Array(CWn * CHn);
+  dirtyN = 0;
+  makeImage();
+  for (const fn of resizeHooks) fn(W, H);
+  return true;
+}
+// ?size=700x300 in the address (dev server only) gives free play another world size
+const sizeParam = import.meta.env.DEV && new URLSearchParams(location.search).get('size');
+const devSize = sizeParam && /^\d+x\d+$/.test(sizeParam) ? sizeParam.split('x').map(Number) : null;
 const matAt = (x, y) => (x < 0 || x >= W || y < 0 || y >= H ? AIR : mat[y * W + x]);
 const solid = (x, y) => {
   if (x < 0 || x >= W || y >= H) return true;
@@ -372,6 +457,14 @@ const rnd = seeded,
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
 export {
+  W0,
+  H0,
+  SIZE_MAX,
+  SIZE_MIN,
+  devSize,
+  drawWorld,
+  onResize,
+  resizeWorld,
   paintNear,
   netDirty,
   paintCell,
@@ -436,6 +529,4 @@ export {
   solid,
   stamp,
   surf,
-  wc,
-  wctx,
 };

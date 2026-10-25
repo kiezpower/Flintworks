@@ -10,6 +10,7 @@ import { useMine } from '../teams.js';
 import { startClient, stopClient } from './client.js';
 import { sendWorld, startHost, stopHost, welcome } from './host.js';
 import { NET, onRoomChange } from './room.js';
+import { H, W, devSize } from '../world.js';
 
 let online = new Set(); // players that were online at the last room update
 
@@ -23,7 +24,7 @@ function startMessage() {
     .map(p => p.pid)
     .sort((a, b) => a - b)
     .forEach((pid, k) => (teams[pid] = versus ? k % 2 : 0));
-  return { k: 'start', seed: (Math.random() * 4294967296) >>> 0, players, versus, teams };
+  return { k: 'start', seed: (Math.random() * 4294967296) >>> 0, size: devSize, players, versus, teams };
 }
 // a player's Wühler at the castle of its team
 function addPlayerClonk(p, self = false) {
@@ -47,7 +48,11 @@ function teamFor(pid) {
 // after gen(): host adds a Wühler for every other player, a client waits for the host's
 function beginNet(d) {
   G.net = true;
-  G.netStart = { seed: d.seed, biome: d.biome, gmode: d.gmode, diff: d.diff, versus: d.versus, teams: { ...d.teams } };
+  // (late joiners get the size of the world as it is now)
+  G.netStart = {
+    ...{ seed: d.seed, size: [W, H], biome: d.biome, gmode: d.gmode, diff: d.diff, versus: d.versus },
+    teams: { ...d.teams },
+  };
   G.myTeam = (d.teams && d.teams[G.myId]) || 0;
   clearInputs();
   online = new Set(NET.players.filter(p => p.online).map(p => p.pid));
@@ -110,7 +115,7 @@ function resumeNet(s) {
   const teams = {};
   for (const c of crew) if (c.pid != null) teams[c.pid] = c.team || 0;
   G.net = true;
-  G.netStart = { ...s.start, teams };
+  G.netStart = { ...s.start, size: [W, H], teams };
   for (const p of cur) teamFor(p.pid);
   G.myTeam = G.netStart.teams[G.myId] || 0;
   clearInputs();

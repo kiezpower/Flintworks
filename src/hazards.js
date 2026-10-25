@@ -16,10 +16,10 @@ let caveT = -9999,
   pending = null;
 
 // gas pockets are invisible until dug into; placed once per world
-function placeGas() {
+function placeGas(n = 9) {
   G.gas = [];
   G.gasClouds = [];
-  for (let k = 0; k < 9; k++) {
+  for (let k = 0; k < n; k++) {
     const x = ri(250, W - 30);
     G.gas.push({ x, y: Math.floor(surf[x] + DEEP + rnd() * (H - surf[x] - DEEP - 40)), r: ri(6, 10), done: false });
   }
