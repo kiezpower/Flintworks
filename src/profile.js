@@ -8,7 +8,7 @@ const KEY = 'flintworks-profile';
 const HATS = {
   none: { name: 'Keiner' },
   flower: { name: 'Blume', t: 10 },
-  helm: { name: 'Grubenhelm', lvl: 3, sub: 'Leuchtet nachts weiter' },
+  helm: { name: 'Grubenhelm', lvl: 3, tut: true, sub: 'Leuchtet nachts weiter' }, // or for the tutorial
   cowboy: { name: 'Cowboyhut', lvl: 5 },
   viking: { name: 'Wikingerhelm', t: 60 },
   wizard: { name: 'Zauberhut', lvl: 8 },
@@ -25,7 +25,7 @@ const QUESTS = {
   gold: { text: 'Verkaufe {n} Goldnuggets', n: [4, 6, 10], xp: 60 },
 };
 // hats unlock by level or trophies
-const unlockText = h => (h.lvl ? `Level ${h.lvl}` : h.t ? `${h.t} 🏆` : '');
+const unlockText = h => (h.lvl ? `${h.tut ? 'Tutorial · ' : ''}Level ${h.lvl}` : h.t ? `${h.t} 🏆` : '');
 const XP = { sell: 0.2, build: 25, chop: 8, monster: 40, gem: 20, gold: 0, tutorial: 60, chest: 30 };
 
 const today = () => new Date().toISOString().slice(0, 10);

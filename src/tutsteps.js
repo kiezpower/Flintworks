@@ -3,7 +3,8 @@
 //   text     what to do: a string, { touch, keys } or a function giving one of them
 //   target   where the yellow arrow points (world position) – optional
 //   hl       CSS selector of a button to pulse – optional, may be a function
-//   hand     gesture of the ghost hand on touch screens: right, down, act, throw – optional
+//   hand     gesture of the ghost hand on touch screens: right, down (on the stick) or tap (on
+//            the pulsing button) – optional, may be a function
 //   enter    runs when the step starts, leave when it is done; tick runs every frame while it is on
 //   rescue   [{ after: seconds, text, run }] when the player is stuck for a while
 //   praise   short line after it is done
@@ -89,7 +90,7 @@ const STEPS = [
     target: c => treeTop(nearest(c, standing())),
     // only once the button says Fällen: before that it would open the build menu
     hl: c => (standing().some(t => Math.abs(c.x + 3 - t.x) < 8) ? '.pad.act' : null),
-    hand: 'act',
+    hand: 'tap',
     rescue: [
       { after: 25, text: { touch: 'Ganz nah an den Stamm, dann Aktion', keys: 'Ganz nah an den Stamm, dann F' } },
     ],
@@ -129,7 +130,7 @@ const STEPS = [
     },
     target: () => rockTop(),
     hl: '.pad.throw',
-    hand: 'throw',
+    hand: 'tap',
     rescue: [{ after: 30, text: 'Lauf bis kurz vor den Felsen, dann werfen' }],
     praise: 'Bumm! Feuersteine sprengen Fels',
     done: c => rockOpen() || c.x > TUT.rock.x1 + 2,
@@ -148,7 +149,7 @@ const STEPS = [
           : 'Grab dich zum Gold: Graben halten, der Stick lenkt',
     target: () => goldSpot(),
     hl: () => (G.autoDig ? null : '.pad.big'),
-    hand: 'down',
+    hand: () => (G.autoDig ? 'down' : 'tap'),
     rescue: [
       {
         after: 30,
@@ -201,6 +202,7 @@ const STEPS = [
       return b ? { x: b.x + b.w / 2, y: b.gy - b.h } : { x: TUT.plot, y: ground() - 2 };
     },
     hl: () => (hut() ? null : panelEl.hidden ? '#buildBtn' : '[data-tut=b_hut]'),
+    hand: 'tap',
     rescue: [{ after: 60, text: 'Neben der Burg ist ein ebener Bauplatz – dort Bauen → Hütte' }],
     praise: 'Fertig! In der Hütte erholt sich deine Crew',
     done: () => hut()?.done,
@@ -224,14 +226,24 @@ const STEPS = [
       return h && { x: h.x + 3, y: h.y - 2 };
     },
     hl: () => (panelEl.hidden ? '#crew .cbtn:not(.sel)' : '[data-tut=f_wood]'),
+    hand: 'tap',
     praise: 'Helfer arbeiten von selbst – mit einer Aufgabe gezielter',
     done: () => crew.some(o => !isPlayer(o) && (o.focus || 'all') !== 'all'),
   },
   {
     id: 'map',
-    text: { touch: 'Tippe oben rechts auf die kleine Karte', keys: 'Drück M oder klick oben rechts auf die Karte' },
-    hl: '#miniThumb',
-    done: () => !mapView.hidden,
+    // open the map, have a look, close it again
+    tick: (c, s) => (s.seen ||= !mapView.hidden),
+    text: (c, s) =>
+      s.seen
+        ? {
+            touch: 'Das ist die ganze Welt. Tippe sie an zum Schließen',
+            keys: 'Das ist die ganze Welt. M schließt sie',
+          }
+        : { touch: 'Tippe oben rechts auf die kleine Karte', keys: 'Drück M oder klick oben rechts auf die Karte' },
+    hl: (c, s) => (s.seen ? null : '#miniThumb'),
+    hand: 'tap',
+    done: (c, s) => s.seen && mapView.hidden,
   },
 ];
 

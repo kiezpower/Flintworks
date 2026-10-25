@@ -114,6 +114,7 @@ function play(withTutorial, level = null) {
     clearSave();
     G.inRun = false;
   }
+  let bonus = 0;
   if (!G.inRun) {
     if (hasSave() && loadGame()) {
       G.crewKey = G.invKey = '';
@@ -123,6 +124,8 @@ function play(withTutorial, level = null) {
       if (!P.tutorialDone && !level) withTutorial = true;
       if (withTutorial) level = 'tut';
       const L = level && GAME_MODES[level];
+      // start money earned in the tutorial, for the next free game
+      bonus = !withTutorial && !L && P.tutBonus ? P.tutBonus : 0;
       G.nextBiome = L ? L.biome : chosenBiome();
       G.nextMode = L ? level : GAME_MODES[P.gmode] ? P.gmode : 'gold';
       G.nextDiff = L ? L.diff || 'adventure' : P.diff || 'adventure';
@@ -130,10 +133,16 @@ function play(withTutorial, level = null) {
       G.nextVersus = false;
       gen();
       G.nextSeed = null;
+      if (bonus) {
+        G.money += bonus;
+        P.tutBonus = 0;
+        saveProfile();
+      }
     }
     resetCam();
     G.inRun = true;
     startGame(withTutorial);
+    if (bonus) toast('Startgeld aus dem Tutorial: +{n} Taler', { n: bonus });
     return;
   }
   G.startT += performance.now() - (G.pauseAt || performance.now());

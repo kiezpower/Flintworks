@@ -695,10 +695,95 @@ button:focus-visible {
     box-shadow: 0 0 14px 4px rgba(242, 194, 48, 0.55);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .tut-hl {
-    animation: none;
+/* ghost hand of the tutorial: a fingertip that slides the stick or taps a button */
+#tutHand {
+  position: absolute;
+  z-index: 60;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  border: 2px solid #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  display: none;
+}
+#tutHand.on {
+  display: block;
+}
+#tutHand.right {
+  animation: hand-right 1.5s ease-in-out infinite;
+}
+#tutHand.down {
+  animation: hand-down 1.5s ease-in-out infinite;
+}
+#tutHand.tap {
+  animation: hand-tap 1s ease-in-out infinite;
+}
+@keyframes hand-right {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
   }
+  20% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0.85);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(44px, 0) scale(0.85);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(44px, 0) scale(0.85);
+  }
+}
+@keyframes hand-down {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0.85);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(0, 38px) scale(0.85);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, 38px) scale(0.85);
+  }
+}
+@keyframes hand-tap {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(0.7);
+    opacity: 1;
+  }
+}
+.card .learned {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--gold);
+}
+.card .learned span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.card .learned img {
+  height: 20px;
+  image-rendering: pixelated;
 }
 #quest .small {
   padding: 5px 6px;
@@ -832,4 +917,10 @@ button:focus-visible {
   padding-left: 22px;
   line-height: 1.6;
   text-align: left;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tut-hl,
+  #tutHand {
+    animation: none !important;
+  }
 }

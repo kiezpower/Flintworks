@@ -596,6 +596,13 @@ const EN = {
   'Nochmal tippen: Tutorial starten, dein Spielstand geht verloren':
     'Tap again: start the tutorial, your current game will be lost',
   // tutorial: the first shift
+  'Belohnung: Grubenhelm und {n} Taler Startgeld für deine erste Runde':
+    'Reward: miner’s helmet and {n} coins start money for your first round',
+  'Startgeld aus dem Tutorial: +{n} Taler': 'Start money from the tutorial: +{n} coins',
+  'Das ist die ganze Welt. Tippe sie an zum Schließen': 'That is the whole world. Tap it to close',
+  'Das ist die ganze Welt. M schließt sie': 'That is the whole world. M closes it',
+  Sprengen: 'Blast',
+  Verkaufen: 'Sell',
   'Lauf nach rechts zu den Bäumen': 'Walk right to the trees',
   'Lauf nach rechts zu den Bäumen: Pfeil → oder D': 'Walk right to the trees: arrow → or D',
   'Daumen links auf den Bildschirm legen und nach rechts schieben':
