@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Flintworks · Level-Editor</title>
+    <link rel="icon" type="image/png" href="icons/favicon.png" />
+  </head>
+  <!-- Level editor for the dev server only (npm run dev, then /editor.html); not part of the build. -->
+  <body>
+    <div id="ed">
+      <aside id="side">
+        <h1>Level-Editor</h1>
+        <label>Level <select id="pick"></select></label>
+        <div class="row">
+          <button id="newBtn">Neu …</button>
+          <button id="saveBtn" class="go">Speichern</button>
+          <button id="playBtn" class="go">Probespielen</button>
+        </div>
+        <h2>Werkzeug</h2>
+        <div class="tools" id="tools"></div>
+        <label>Pinsel <input id="brush" type="range" min="0" max="6" value="1" /></label>
+        <h2>Material</h2>
+        <div class="pal" id="pal"></div>
+        <h2>Objekt</h2>
+        <select id="objType"></select>
+        <p class="hint">
+          Linksklick setzt, mit Umschalt entfernen. Rechtsklick nimmt das Material unter dem Zeiger. Strg+Z macht
+          rückgängig.
+        </p>
+        <h2>level.json</h2>
+        <textarea id="json" spellcheck="false"></textarea>
+        <div class="row"><button id="applyBtn">Übernehmen</button><button id="dlBtn">Herunterladen</button></div>
+        <p id="msg"></p>
+      </aside>
+      <main id="view"><canvas id="cv"></canvas><div id="pos"></div></main>
+    </div>
+    <script type="module" src="/src/editor/editor.js"></script>
+  </body>
+</html>

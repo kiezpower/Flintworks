@@ -550,6 +550,9 @@ if (ownWeb() && 'serviceWorker' in navigator && !import.meta.env.DEV) {
   });
 }
 if (import.meta.env.DEV) import('./debug.js');
+// the level editor's "play" button opens /?draft=1 (dev server only)
+if (import.meta.env.DEV && new URLSearchParams(location.search).has('draft'))
+  import('./levels/draft.js').then(m => m.playDraft(play));
 
 export { card, endScreen, loop, menu, overlay, resetCam, startGame, step };
 

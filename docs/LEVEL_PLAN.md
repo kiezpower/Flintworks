@@ -1,7 +1,15 @@
 # Plan: Vorgebaute Level („Szenarien“ wie im Original-Clonk)
 
-> **Stand: Etappen 1–5 umgesetzt (v1.33.0, v1.34.0), Etappen 6–8 offen.** Entscheidungen siehe
+> **Stand: Etappen 1–6 umgesetzt (v1.33.0–v1.35.0), Etappen 7–8 offen.** Entscheidungen siehe
 > Abschnitt 11. Wie man ein Level baut: `docs/LEVELS.md`.
+>
+> Abweichungen in Etappe 6:
+> - Der Editor ist eine eigene Seite (`/editor.html`, nur Entwicklungsserver, nicht im Build)
+>   statt ein Modus im Spiel. Er malt die Textkarte; Aufrauen und Zufalls-Zonen sieht man beim
+>   Probespielen. Gespeichert wird über einen Endpunkt des Entwicklungsservers (`vite.config.js`).
+> - **Die 7 alten Level werden über Prüfsummen eingefroren, nicht als gespeicherte Welten**
+>   (U10). Gespeicherte Welten hätten das Spiel um mehrere hundert KB vergrößert; der Test
+>   `tests/levels.spec.js` schlägt an, sobald eine Änderung am Generator eines der Level verändert.
 >
 > Abweichungen in Etappen 2 bis 5:
 > - **Karten als Text (`map.txt`) statt PNG.** Ein Zeichen = ein Material. Grund: lädt ohne

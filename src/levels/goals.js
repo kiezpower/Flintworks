@@ -29,7 +29,10 @@ const TYPES = {
     val: g => (G.sold && G.sold[g.what]) || 0,
     label: g => tr('{what} verkauft', { what: resName(g.what) }),
   },
-  collect: { val: g => (G.store && G.store[g.what]) || 0, label: g => tr('{what} im Lager', { what: resName(g.what) }) },
+  collect: {
+    val: g => (G.store && G.store[g.what]) || 0,
+    label: g => tr('{what} im Lager', { what: resName(g.what) }),
+  },
   rescue: { val: () => G.rescued || 0, label: () => tr('Gerettet') },
   kills: { val: () => G.kills || 0, label: () => tr('Monster besiegt') },
   chests: { val: () => G.chestsFound || 0, label: () => tr('Truhen') },
