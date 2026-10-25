@@ -9,6 +9,7 @@ import { lightning } from './weather.js';
 import { step } from './main.js';
 import { edge, inp, joy, keys } from './input.js';
 import { audioInit, sfx } from './sound.js';
+import * as under from './under.js';
 import { startCaveIn, onDig } from './hazards.js';
 import { chestNear, openChest } from './treasure.js';
 import { setGoal } from './tapgo.js';
@@ -115,5 +116,6 @@ window.__ww = {
   digZone,
   audioInit,
   sfx,
+  under,
   parts: () => parts,
 };

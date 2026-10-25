@@ -1,5 +1,6 @@
 import { builds } from './state.js';
 import { T, TEX, TUNNEL, setTopSoil, topTex, worldShade } from './tex.js';
+import { setGround, underTexel, wallTexel } from './under.js';
 
 // ---- World & materials ----
 const W = 1400,
@@ -27,6 +28,7 @@ const mat = new Uint8Array(W * H),
   shade = new Uint8Array(W * H),
   stamp = new Uint32Array(W * H);
 const surf = new Int16Array(W);
+setGround(surf, W);
 const rgba = (r, g, b, a = 255) => ((a << 24) | (b << 16) | (g << 8) | r) >>> 0;
 const hex = (h, a = 255) =>
   rgba(parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16), a);
@@ -126,12 +128,13 @@ function texel(i, sx, sy) {
     if (solidAt(i + 2 * W)) n++;
     let k = 1 - n * 0.055 - fresh[i] * 0.0005;
     if ((sx === 0 && solidAt(i - 1)) || (sx === 1 && solidAt(i + 1)) || (sy === 0 && solidAt(i - W))) k *= 0.72;
-    return tint(TUNNEL[ti], k * WSH[i]);
+    return tint(wallTexel(ti, ((i / W) | 0) - surf[i % W], TEX) ?? TUNNEL[ti], k * WSH[i]);
   }
   const tex = m === EARTH && shade[i] & 4 ? topTex() : TEX[m];
   let c = tex ? tex[ti] : PAL[m][shade[i] & 3];
   if (tex) c = tint(c, WSH[i]);
   if ((m === EARTH && !(shade[i] & 4)) || m === LOAM || m === ROCK) c = layerTint(c, ((i / W) | 0) - surf[i % W]);
+  c = underTexel(c, m, i, x, y, sx, sy, ((i / W) | 0) - surf[i % W], mat, SOLID, m === EARTH && shade[i] & 4);
   if (LIQ[m]) {
     // a bright line on open liquid surfaces
     if (sy === 0 && i >= W && mat[i - W] === AIR) c = tint(c, 1.35);
