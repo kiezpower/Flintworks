@@ -1,6 +1,6 @@
 # Plan: Vorgebaute Level („Szenarien“ wie im Original-Clonk)
 
-> **Stand: Etappe 1 umgesetzt (v1.30.0), Etappen 2–8 offen.** Entscheidungen siehe Abschnitt 11.
+> **Stand: Etappe 1 umgesetzt (v1.33.0), Etappen 2–8 offen.** Entscheidungen siehe Abschnitt 11.
 > Abweichungen und Erkenntnisse aus Etappe 1:
 > - Welten mit 1400 × 400 bleiben bitgenau wie vorher (geprüft mit Prüfsummen von v1.29.0 für
 >   freies Spiel, Versus und zwei Kampagnen-Level, `tests/worldsize.spec.js`). Andere Größen

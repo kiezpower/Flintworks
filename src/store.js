@@ -6,6 +6,7 @@ import { sfx } from './sound.js';
 import { ITEM } from './sprites.js';
 import { isPlayer } from './players.js';
 import { G } from './state.js';
+import { flyCoins } from './reward.js';
 
 const SELL = ['nug', 'gem'];
 const KEEP = ['flint', 'tnt', 'loam']; // tools stay in the hand
@@ -41,6 +42,7 @@ function unload(list, x, y, all = false) {
     const lv = (G.base && G.base.lvl) || 1;
     money = Math.round(sell.reduce((s, t) => s + ITEM[t].val, 0) * [1, 1, 1.2, 1.4][lv]);
     G.money += money;
+    flyCoins(x, y, money);
     sold(sell, money);
     addFloat(x, y, '+' + money, '#f2c230');
     sfx('coin');

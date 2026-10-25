@@ -1,7 +1,7 @@
 {
   "name": "flintworks",
   "private": true,
-  "version": "1.30.0",
+  "version": "1.33.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -9,7 +9,8 @@
     "preview": "vite preview --host",
     "android": "vite build && cap sync android",
     "test": "playwright test",
-    "test:visual": "node tests/visual.mjs"
+    "test:visual": "node tests/visual.mjs",
+    "store-shots": "node tests/store-shots.mjs"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.3",

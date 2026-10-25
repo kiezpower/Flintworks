@@ -45,4 +45,7 @@ function drawFloats(ctx, cx, cy) {
   ctx.globalAlpha = 1;
 }
 
-export { addFloat, drawFloats, updFloats };
+// (staged pictures start without leftover texts)
+const clearFloats = () => (floats.length = 0);
+
+export { addFloat, clearFloats, drawFloats, updFloats };

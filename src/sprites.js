@@ -515,8 +515,14 @@ PAD_ICONS.balloon = R => {
   R(8, 6, 1, 3, '#5a3a1a');
   R(3, 9, 6, 3, '#9a6a3a');
 };
-const padIcon = kind => sp(12, 12, PAD_ICONS[kind]).toDataURL();
-const toolIcon = kind => sp(12, 12, PAD_ICONS[kind]);
+// button and menu icons are drawn at 12×12 and shown through their 24×24 double-resolution copy
+// (hi: already double resolution, so menus show it at half its pixel size)
+const padIcon = kind => bevel2x(sp(12, 12, PAD_ICONS[kind])).toDataURL();
+const toolIcon = kind => {
+  const c = bevel2x(sp(12, 12, PAD_ICONS[kind]));
+  c.hi = true;
+  return c;
+};
 
 // Copy of a sprite with a 1px dark outline (canvas grows by 1px on each side), cached per sprite
 const outCache = new WeakMap();
@@ -596,9 +602,61 @@ function drawHi(ctx, spr, x, y) {
   const o = hiRes(spr);
   ctx.drawImage(o, x - 0.5, y - 0.5, o.width / 2, o.height / 2);
 }
+// Buildings get more detail in the double-resolution copy: every patch of colour is lit from
+// above (a bright texel along its top edge, a darker one along its bottom edge), so bricks,
+// planks, windows and roof tiles stand out, and a faint grain keeps flat areas from looking
+// painted on. Cached per sprite like hiRes.
+const detCache = new WeakMap(),
+  bevCache = new WeakMap();
+function detailed(spr, col = '#24160c') {
+  let o = detCache.get(spr);
+  if (!o) detCache.set(spr, (o = outlined(bevel2x(spr), col)));
+  return o;
+}
+// the double-resolution copy with light from above and grain, without an outline
+function bevel2x(spr) {
+  let o = bevCache.get(spr);
+  if (o) return o;
+  const big = scale2x(spr),
+    w = big.width,
+    h = big.height,
+    g = big.getContext('2d'),
+    id = g.getImageData(0, 0, w, h),
+    src = new Uint32Array(id.data.buffer),
+    d = src.slice();
+  const k = (c, f) => {
+    const r = Math.min(255, (c & 255) * f),
+      gg = Math.min(255, ((c >>> 8) & 255) * f),
+      b = Math.min(255, ((c >>> 16) & 255) * f);
+    return ((c & 0xff000000) | (b << 16) | (gg << 8) | r) >>> 0;
+  };
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const i = y * w + x,
+        c = src[i];
+      if (c >>> 24 < 200) continue;
+      const up = y > 0 ? src[i - w] : 0,
+        dn = y < h - 1 ? src[i + w] : 0;
+      // a pseudo-random grain from the position (the same every time)
+      let f = 0.96 + (((Math.imul(x * 73856093 ^ (y * 19349663), 0x9e3779b1) >>> 24) & 7) / 7) * 0.08;
+      if (up !== c && dn === c) f *= 1.16;
+      else if (dn !== c && up === c) f *= 0.8;
+      d[i] = k(c, f);
+    }
+  id.data.set(new Uint8ClampedArray(d.buffer));
+  g.putImageData(id, 0, 0);
+  bevCache.set(spr, big);
+  return big;
+}
+function drawDetailed(ctx, spr, x, y) {
+  const o = detailed(spr);
+  ctx.drawImage(o, x - 0.5, y - 0.5, o.width / 2, o.height / 2);
+}
 
 export {
   PAD_ICONS,
+  detailed,
+  drawDetailed,
   drawHi,
   hiRes,
   scale2x,

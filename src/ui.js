@@ -1,7 +1,6 @@
 import { stock, takeStock } from './store.js';
 import { toolSection } from './tools.js';
 import { knowsAll, needText, researchSection } from './research.js';
-const depthEl = document.getElementById('depthTxt');
 const misEl = document.getElementById('misTxt');
 import { GAME_MODES, mode } from './modes.js';
 const goalWrap = document.getElementById('goalWrap'),
@@ -13,7 +12,8 @@ import { addClonk, sel_, spawnItem } from './entities.js';
 import { held, joy, keys } from './input.js';
 import { calcTerr, cam } from './render.js';
 import { sfx } from './sound.js';
-import { ITEM, SPR, itemIcon, padIcon, toolIcon } from './sprites.js';
+import { ITEM, SPR, detailed, itemIcon, padIcon, toolIcon } from './sprites.js';
+import { shownMoney } from './reward.js';
 import { tr } from './i18n.js';
 import { focusBadge, openCrew } from './crewui.js';
 import { register, send } from './commands.js';
@@ -23,14 +23,13 @@ import { canShoot } from './combat.js';
 import { isPlayer } from './players.js';
 import { missionText } from './missions.js';
 import { G, INV_MAX, animals, builds, crew, lorries } from './state.js';
-import { PLANK, AIR, GOLD, H, MINI, W, bg, hex, mat, onResize, surf } from './world.js';
+import { PLANK, AIR, GOLD, H, MINI, W, bg, hex, mat, onResize } from './world.js';
 
 // ---- HUD, panels, minimap ----
 const $ = id => document.getElementById(id);
-const pwrTxt = $('pwrTxt'),
-  whoTxt = $('whoTxt'),
-  moneyTxt = $('moneyTxt'),
-  hpBar = $('hpBar'),
+const moneyTxt = $('moneyTxt'),
+  statusBox = $('statusBox'),
+  netTxt = $('netTxt'),
   airWrap = $('airWrap'),
   airBar = $('airBar'),
   invEl = $('inv'),
@@ -63,48 +62,44 @@ function hud() {
   const c = sel_();
   const M = mode();
   const goldMode = M === GAME_MODES.gold;
+  // (the counter counts up as the coins of a sale arrive)
+  const money = shownMoney();
   moneyTxt.textContent = goldMode
-    ? tr('{money} / {goal} Taler', { money: G.money, goal: M.goal })
-    : tr('{money} Taler', { money: G.money });
+    ? tr('{money} / {goal} Taler', { money, goal: M.goal })
+    : tr('{money} Taler', { money });
   goalWrap.hidden = goldMode || !!M.tutorial;
   if (!goalWrap.hidden) {
     const p = Math.min(M.goal, M.prog());
     goalTxt.textContent = `${tr(M.name)} ${p}/${M.goal}`;
     goalBar.style.width = (p / M.goal) * 100 + '%';
   }
-  pwrTxt.hidden = true;
   // store contents as small icons with counts
   const sk = G.store ? Object.entries(G.store).filter(([, n]) => n > 0) : [];
   const key = sk.map(([t, n]) => t + n).join();
   if (key !== G.storeKey) {
     G.storeKey = key;
     storeRow.hidden = !sk.length;
+    storeRow.style.setProperty('--cols', Math.min(3, sk.length));
     storeRow.innerHTML = sk
       .sort((a, b) => b[1] - a[1])
       .slice(0, 6)
       .map(([t, n]) => `<span title="${resName(t)}"><img src="${iconUrl(t)}" alt="">${n}</span>`)
       .join('');
   }
-  if (c) {
-    // depth below the surface, 1 pixel ≈ 0.25 m
-    const d = Math.round((c.y + 10 - surf[Math.max(0, Math.min(W - 1, Math.floor(c.x + 3)))]) / 4);
-    depthEl.hidden = d < 3;
-    if (d >= 3) depthEl.textContent = tr('Tiefe {d} m', { d });
-    depthEl.classList.toggle('deep', d > 11);
-  }
   const mt = missionText();
   if (mt !== G.misKey) {
     G.misKey = mt;
     misEl.hidden = !mt;
     misEl.textContent = mt ? '➜ ' + mt : '';
+    misEl.title = misEl.textContent;
   }
-  if (c) whoTxt.textContent = c.inv[c.isel] ? `${c.name} · ${resName(c.inv[c.isel])}` : c.name;
   if (c) {
-    hpBar.style.width = Math.max(0, c.energy) + '%';
-    hpBar.style.background = c.energy < 30 ? '#e0572f' : '';
     airWrap.hidden = c.breath >= 100;
     airBar.style.width = c.breath + '%';
   }
+  // air and the connection share one small chip that only shows when one of them does
+  const st = airWrap.hidden && netTxt.hidden;
+  if (statusBox.hidden !== st) statusBox.hidden = st;
   const cx = context(c);
   actBtn.textContent = tr(cx.label);
   // the action button shows what it will do
@@ -118,14 +113,14 @@ function hud() {
   // (also with the bow and arrows, and in a catapult or airship)
   const thr = c && !c.dead && (c.ride != null ? THROWERS[vehicleOf(c)?.kind] : c.inv[c.isel] || canShoot(c));
   btnsEl.classList.toggle('noitem', !thr);
-  const ck = crew.map(o => `${o === c}${o.dead}${Math.round(o.energy / 10)}${o.focus}`).join();
+  const ck = crew.map(o => `${o === c}${o.dead}${Math.round(o.energy / 5)}${o.energy < 30}${o.focus}`).join();
   if (ck !== G.crewKey) {
     G.crewKey = ck;
     crewEl.innerHTML = '';
     crew.forEach((o, n) => {
       if ((o.team || 0) !== G.myTeam) return; // Versus: only your team
       const b = document.createElement('button');
-      b.className = 'cbtn' + (o === c ? ' sel' : '') + (o.dead ? ' dead' : '');
+      b.className = 'cbtn' + (o === c ? ' sel' : '') + (o.dead ? ' dead' : '') + (o.energy < 30 ? ' low' : '');
       b.setAttribute('aria-label', o.name);
       b.title = o.name;
       b.innerHTML = `<span class="cap" style="background:${o.cap}"></span><span class="face"></span><span class="hp"><b style="width:${Math.max(0, o.energy)}%"></b></span>${isPlayer(o) ? '' : focusBadge(o)}`;
@@ -321,13 +316,21 @@ function opt(parent, { icon, title, sub, cost, short, disabled, onClick }) {
   b.className = 'opt' + (short ? ' short' : '');
   if (disabled) b.disabled = true;
   if (icon) {
+    // shown through its double-resolution copy (lit from above, outlined) at a whole multiple
+    // of its size; small icons on screens without fine pixels keep the simple version
+    const w = icon.hi ? icon.width / 2 : icon.width,
+      h = icon.hi ? icon.height / 2 : icon.height,
+      k = Math.max(1, Math.min(Math.floor(48 / w), Math.floor(40 / h))) || 1,
+      hi = icon.hi ? icon : k > 1 || devicePixelRatio >= 2 ? detailed(icon) : icon,
+      f0 = hi === icon && !icon.hi ? k : k / 2,
+      // (whole device pixels per texel, so no pixel comes out wider than its neighbours)
+      f = (f0 * devicePixelRatio) % 1 ? Math.max(1, Math.floor(f0)) : f0;
     const c = document.createElement('canvas');
-    c.width = icon.width;
-    c.height = icon.height;
-    c.getContext('2d').drawImage(icon, 0, 0);
-    const k = Math.max(1, Math.min(Math.floor(40 / icon.width), Math.floor(30 / icon.height))) || 1;
-    c.style.width = icon.width * k + 'px';
-    c.style.height = icon.height * k + 'px';
+    c.width = hi.width;
+    c.height = hi.height;
+    c.getContext('2d').drawImage(hi, 0, 0);
+    c.style.width = hi.width * f + 'px';
+    c.style.height = hi.height * f + 'px';
     c.style.justifySelf = 'center';
     b.appendChild(c);
   }
@@ -511,7 +514,6 @@ export {
   closePanel,
   crewEl,
   drawMini,
-  hpBar,
   hud,
   invEl,
   mapView,
@@ -526,10 +528,8 @@ export {
   pBody,
   pTitle,
   panelEl,
-  pwrTxt,
   sec,
   toast,
   toastEl,
   toggleMap,
-  whoTxt,
 };

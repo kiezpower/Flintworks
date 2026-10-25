@@ -4,7 +4,7 @@
 // The canvas fills the whole lobby; it has double resolution like the game view.
 import { BIOMES } from './biomes.js';
 import { drawPortrait } from './portrait.js';
-import { SPR, drawHi, treeSprite } from './sprites.js';
+import { SPR, drawDetailed, drawHi, treeSprite } from './sprites.js';
 import { T, TEX, TUNNEL } from './tex.js';
 import { drawWorkers, resetWorkers, updWorkers } from './lobbyworkers.js';
 
@@ -156,7 +156,7 @@ function paintTerrain() {
   const o = overlay.getContext('2d');
   o.setTransform(2, 0, 0, 2, 0, 0);
   o.imageSmoothingEnabled = false;
-  drawHi(o, SPR.base, land.castleX, groundY(land.castleX + 18) - SPR.base.height + 1);
+  drawDetailed(o, SPR.base, land.castleX, groundY(land.castleX + 18) - SPR.base.height + 1);
   const treeType = biomeName === 'desert' ? 'cactus' : biomeName === 'winter' ? 'snowpine' : 'oak';
   for (const [fx, stage, type] of [
     [0.5, 3, treeType],

@@ -119,23 +119,60 @@ function vehicleIcon(kind) {
   if (iconCache[kind]) return iconCache[kind];
   const K = VK[kind],
     cv = document.createElement('canvas');
-  cv.width = Math.max(10, K.w + 4);
-  cv.height = Math.max(10, K.h + 6);
+  // drawn straight at double resolution (the drawings use half pixels)
+  cv.width = Math.max(10, K.w + 4) * 2;
+  cv.height = Math.max(10, K.h + 6) * 2;
   const g = cv.getContext('2d');
+  g.scale(2, 2);
   K.draw(g, { kind, w: K.w, h: K.h, face: 1, t: 0, ang: 0.8, vx: 0, fuel: 100, icon: true }, 2, 4);
+  cv.hi = true;
   return (iconCache[kind] = cv);
 }
-// outlined box helper for the drawings
+// outlined box helper for the drawings, lit from above: a bright line along the top, a darker
+// one along the bottom
+const litCache = {};
+function lit(hex, k) {
+  const key = hex + k;
+  if (litCache[key]) return litCache[key];
+  const n = parseInt(hex.slice(1), 16),
+    ch = s => Math.max(0, Math.min(255, Math.round(((n >> s) & 255) * k)));
+  return (litCache[key] = `rgb(${ch(16)},${ch(8)},${ch(0)})`);
+}
 function box(ctx, x, y, w, h, col, line = '#24160c') {
   ctx.fillStyle = line;
   ctx.fillRect(x - 0.5, y - 0.5, w + 1, h + 1);
   ctx.fillStyle = col;
   ctx.fillRect(x, y, w, h);
+  if (h >= 2 && col[0] === '#') {
+    ctx.fillStyle = lit(col, 1.25);
+    ctx.fillRect(x, y, w, 0.5);
+    ctx.fillStyle = lit(col, 0.75);
+    ctx.fillRect(x, y + h - 0.5, w, 0.5);
+  }
+}
+// a round wheel with a hub and two spokes that turn with the distance travelled
+function wheel(ctx, cx, cy, r, turn, col = '#3a3a40') {
+  ctx.fillStyle = '#24160c';
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 0.5, 0, 7);
+  ctx.fill();
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, 7);
+  ctx.fill();
+  ctx.fillStyle = lit(col, 1.6);
+  for (let k = 0; k < 4; k++) {
+    const a = turn + (k * Math.PI) / 2;
+    ctx.fillRect(Math.round((cx + Math.cos(a) * (r - 0.6)) * 2) / 2 - 0.25, Math.round((cy + Math.sin(a) * (r - 0.6)) * 2) / 2 - 0.25, 0.5, 0.5);
+  }
+  ctx.fillStyle = '#24160c';
+  ctx.fillRect(cx - 0.5, cy - 0.5, 1, 1);
 }
 
 export {
   VK,
   box,
+  wheel,
   defineVehicle,
   drawVehicles,
   enter,
