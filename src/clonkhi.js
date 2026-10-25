@@ -4,7 +4,7 @@ import { ART, FIXED, hatRects } from './portrait.js';
 import { shade } from './render.js';
 import { ICOL } from './sprites.js';
 import { G } from './state.js';
-import { rnd } from './world.js';
+import { GEM, GRANITE, ORE, ROCK, SAND, rnd } from './world.js';
 
 // leg rows for stand / stride / stand / passing (built on first use: portrait.js and this
 // module import each other indirectly, so ART may not exist yet at load time)
@@ -24,14 +24,73 @@ const CLIMB = [
 ];
 const GREY = { s: '#9a8f84', d: '#7a7068', n: '#aaa094', T: '#6a6a72', t: '#55555c', L: '#7a7a82', g: '#8a8a8a' };
 
+// where in the swing of the pick a digging Wühler is (0…1, the strike at 0.6); the host
+// knows the beat, other players and the lobby workers just follow the animation
+function digPhase(c) {
+  if (c.digPh !== undefined && c.digging) return c.digPh;
+  return ((c.anim || G.frame * 0.3) * 0.11) % 1;
+}
+// the angle of the pick against the dig direction (negative: raised over the shoulder)
+function pickAngle(c, ph) {
+  if (ph < 0.45) {
+    const k = Math.min(1, ph / 0.4);
+    return 0.15 - 2.05 * (1 - (1 - k) * (1 - k));
+  }
+  if (ph < 0.6) return -1.9 + 1.9 * ((ph - 0.45) / 0.15) ** 2;
+  // after the strike the pick bounces back off hard ground and sinks a little into soft ground
+  const bounce = c.digM === ROCK || c.digM === GRANITE ? 0.5 : c.digM === ORE || c.digM === GEM ? 0.3 : c.digM === SAND ? -0.12 : 0.15;
+  if (ph < 0.75) return -bounce * Math.sin(((ph - 0.6) / 0.15) * Math.PI);
+  return 0.15 * ((ph - 0.75) / 0.25);
+}
+// pickaxe: handle from the hand, swung round the shoulder (see pickAngle), a curved steel
+// head across the end of the handle; drawn on the half-pixel grid so it stays crisp
+const q = v => Math.round(v * 2) / 2;
+const HEAD = [-1.5, -1, -0.5, 0, 0.5, 1, 1.5];
+const HEADC = ['#7a828a', '#8a929a', '#aab0b6', '#aab0b6', '#c0c6cc', '#d4d9de', '#eef1f4'];
+function drawPick(c, ox, oy, f, g, dph, lean, skin) {
+  const a = pickAngle(c, dph) * f,
+    [dx0, dy0] = c.digDir,
+    dx = dx0 * Math.cos(a) - dy0 * Math.sin(a),
+    dy = dx0 * Math.sin(a) + dy0 * Math.cos(a);
+  const hx = ox + 3 + lean * f * 0.5 + dx * 1.5,
+    hy = oy + 6 + (lean > 0 ? 0.5 : 0) + dy * 1.5;
+  g.fillStyle = '#24160c';
+  for (let k = 1; k <= 9; k++) g.fillRect(q(hx + dx * k * 0.5) - 0.5, q(hy + dy * k * 0.5) - 0.5, 1.5, 1.5);
+  g.fillStyle = '#8b5e34';
+  for (let k = 1; k <= 9; k++) g.fillRect(q(hx + dx * k * 0.5), q(hy + dy * k * 0.5), 0.5, 0.5);
+  // the head bends back towards the hand at both tips
+  const ex = hx + dx * 4.8,
+    ey = hy + dy * 4.8;
+  const at = k => [q(ex - dy * k * f - dx * 0.25 * k * k), q(ey + dx * k * f - dy * 0.25 * k * k)];
+  g.fillStyle = '#24160c';
+  for (const k of HEAD) {
+    const [tx, ty] = at(k);
+    g.fillRect(tx - 0.5, ty - 0.5, 1.5, 1.5);
+  }
+  HEAD.forEach((k, n) => {
+    const [tx, ty] = at(k);
+    g.fillStyle = HEADC[n];
+    g.fillRect(tx, ty, 0.5, 0.5);
+  });
+  // the fist round the handle
+  if (skin) {
+    g.fillStyle = '#24160c';
+    g.fillRect(q(hx) - 0.5, q(hy) - 0.5, 1.5, 1.5);
+    g.fillStyle = skin;
+    g.fillRect(q(hx), q(hy), 0.5, 0.5);
+  }
+}
 function drawClonkHi(c, ox, oy, f, g) {
   if (!BODY) init();
   const hurt = c.hurt > 0 && c.hurt & 2;
   const cap = c.dead ? '#77777f' : c.cap;
   const pal = { ...FIXED, C: cap, c: shade(cap, 0.72), h: shade(cap, 1.35) };
   if (c.dead) Object.assign(pal, GREY);
-  const X = ox * 2 - 2,
-    Y = oy * 2;
+  // digging: lean back while raising the pick, forward and down into the strike
+  const dph = c.digging || c.picking > 0 ? digPhase(c) : -1,
+    lean = dph < 0 ? 0 : dph >= 0.3 && dph < 0.45 ? -1 : dph >= 0.58 && dph < 0.72 ? 1 : 0;
+  const X = ox * 2 - 2 + lean * f,
+    Y = oy * 2 + (lean > 0 ? 1 : 0);
   const blink = !c.dead && (G.frame + c.x * 7) % 240 < 6;
   // one texel = half a landscape pixel
   const px = (x, y, w, h, col) => {
@@ -51,6 +110,9 @@ function drawClonkHi(c, ox, oy, f, g) {
   };
   const walking = Math.abs(c.vx || 0) > 0.15;
   const ph = Math.floor(((c.anim % (Math.PI * 2)) + Math.PI * 2) / (Math.PI / 2)) % 4;
+  // a pick raised over the shoulder is behind the head
+  const pickBehind = dph >= 0 && pickAngle(c, dph) < -0.7;
+  if (pickBehind) drawPick(c, ox, oy, f, g, dph, lean, null);
   rows(BODY, 0);
   if (c.climb) rows(CLIMB[ph < 2 ? 0 : 1], 16);
   else if (c.hangle) rows(CLIMB[ph % 2], 16);
@@ -73,19 +135,7 @@ function drawClonkHi(c, ox, oy, f, g) {
     px(13, up ? 2 : 6, 3, 5, FIXED.o);
     px(13, up ? 2 : 6, 2, 2, skin);
   } else if (c.digging || c.picking > 0) {
-    const [dx, dy] = c.digDir;
-    const wob = Math.sin(c.anim * 2) * 0.7;
-    // pickaxe: handle from the hand towards the dig direction, steel head at the end
-    const hx = ox + 3 + dx * 1.5,
-      hy = oy + 6 + dy * 1.5;
-    g.fillStyle = '#8b5e34';
-    for (let k = 1; k <= 5; k++) g.fillRect(hx + dx * k * 0.8 + wob * 0.3, hy + dy * k * 0.8, 1, 1);
-    g.fillStyle = '#24160c';
-    g.fillRect(hx + dx * 5 + wob - 1, hy + dy * 5 - 1.5, 3, 3);
-    g.fillStyle = '#aab0b6';
-    g.fillRect(hx + dx * 5 + wob - 0.5, hy + dy * 5 - 1, 2, 2);
-    g.fillStyle = '#e4e8ec';
-    g.fillRect(hx + dx * 5 + wob - 0.5, hy + dy * 5 - 1, 1, 0.5);
+    if (!pickBehind) drawPick(c, ox, oy, f, g, dph, lean, skin);
   } else if (c.hammer || c.chop || c.bridge) {
     const up = Math.sin(c.anim * 2) > 0;
     px(12, up ? 6 : 10, 3, 4, sleeve);

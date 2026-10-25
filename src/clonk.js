@@ -10,7 +10,7 @@ import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './
 import { inputOf } from './players.js';
 import { vehicleContext } from './vehicles/index.js';
 import { sfx } from './sound.js';
-import { G, builds, crew, lorries, parts, trees } from './state.js';
+import { G, builds, crew, flashes, lorries, parts, trees } from './state.js';
 import { toast } from './ui.js';
 import {
   ACID,
@@ -32,7 +32,9 @@ import {
   WATER,
   bg,
   boxFree,
+  cssOf,
   free,
+  markFresh,
   mat,
   paint,
   rnd,
@@ -85,6 +87,10 @@ const diggable = m =>
   m === GEM ||
   (m === ROCK && hasTool('pick'));
 const digAtPx = (x, y) => diggable(mat[Math.floor(y) * W + Math.floor(x)]);
+// how hard each material is to dig: the Wühler gets through sand quickest, ore and gems slowest,
+// and swings the pick more slowly in hard ground (earth = 1 keeps the old pace; rock needs the
+// steel pick, which is faster anyway)
+const HARD = { [SAND]: 0.75, [EARTH]: 1, [LOAM]: 1.2, [GOLD]: 1.15, [COAL]: 1.25, [ORE]: 1.4, [GEM]: 1.5, [ROCK]: 1.7 };
 // automatic digging: walking into earth digs, stick down digs down-slanted, stick up under an
 // earth ceiling digs up-slanted. The test looks at exactly the area the next dig stroke would
 // remove (same centre and radius as in updClonk), so digging continues as long as there is
@@ -95,7 +101,17 @@ const digAtPx = (x, y) => diggable(mat[Math.floor(y) * W + Math.floor(x)]);
 // effective steepness ends up the same both ways (gravity pulls down, stepping up is slower)
 const SLOPE_DOWN = 0.12,
   SLOPE_UP = 0.38;
-function strokeCells(c, dir, slope, fn, ahead = 4) {
+// the ceiling of a dug tunnel is a little uneven: up to two more rows of earth come away,
+// the same for every stroke over a spot (it depends on the place only, so all players agree)
+const hash1 = i => (Math.imul(i ^ 0x5bd1e995, 0x9e3779b1) >>> 22) / 1023;
+function ceilBump(x) {
+  const i = x >> 2,
+    f = (x & 3) / 4,
+    a = hash1(i),
+    v = a + (hash1(i + 1) - a) * f * f * (3 - 2 * f);
+  return v < 0.45 ? 0 : v < 0.8 ? 1 : 2;
+}
+function strokeCells(c, dir, slope, fn, ahead = 4, bumps = false) {
   const ox = c.x + dir * ahead,
     oy = c.y + slope * ahead;
   // the box sweeps from where the body is now to where it will be, so nothing between
@@ -114,12 +130,24 @@ function strokeCells(c, dir, slope, fn, ahead = 4) {
       if (cx && cy) continue;
       fn(x, y);
     }
+  if (bumps)
+    for (let x = x0 + 1; x < x1; x++) for (let y = y0 - ceilBump(x); y < y0; y++) fn(x, y);
 }
+// returns how hard the earth removed by this stroke was on average (0: nothing removed)
 function digStroke(c, dir, slope) {
+  let n = 0,
+    h = 0;
   strokeCells(c, dir, slope, (x, y) => {
-    if (x >= 0 && y >= 0 && x < W && y < H) digCell(x, y);
-  });
-  spawnFromDig(c.x + 3 + dir * 6, c.y + 5 + slope * 6);
+    if (x < 0 || y < 0 || x >= W || y >= H) return;
+    const m = digCell(x, y, true, c);
+    if (m) {
+      n++;
+      h += HARD[m];
+      if (HARD[m] >= (HARD[c.digM] || 0) || n === 1) c.digM = m;
+    }
+  }, 4, true);
+  spawnFromDig(c.x + 3 + dir * 6, c.y + 5 + slope * 6, c);
+  return n ? h / n : 0;
 }
 // how much diggable earth the next stroke would remove (rows below yMax ignored)
 function digZone(c, dir, slope, yMax) {
@@ -156,8 +184,10 @@ function wantsDig(c, I) {
     // no way up here: pushing up and sideways into a wall still digs sideways
     if (Math.abs(I.ax) < 0.35) return false;
   }
-  // keep going while the last stroke still finds earth (no flicker on/off)
-  const need = c.digging ? 1 : 3;
+  // keep going while the last stroke still finds earth (no flicker on/off); after a short
+  // pause (a step back, a look round) digging goes on at once
+  const recent = G.frame - (c.digEnd ?? -999) < 30;
+  const need = c.digging || recent ? 1 : 3;
   // digging down needs the stick clearly pointing down: a thumb that slips a bit while
   // walking must not start a hole
   if (I.ay > 0.55 && I.ay > Math.abs(I.ax) * 0.5)
@@ -167,7 +197,7 @@ function wantsDig(c, I) {
     // pushing for a moment – a short bump against a step does not dig yet
     const blocked = !free(c.x + dir * 0.7, c.y, 6, 10) && !free(c.x + dir * 0.7, c.y - 3, 6, 10);
     c.pushT = blocked ? (c.pushT || 0) + 1 : 0;
-    if (c.digging || (blocked && c.pushT > (G.jumpBtn ? 18 : 8))) return digZone(c, dir, 0, 9) >= 2 ? 'side' : false;
+    if (c.digging || (blocked && (recent || c.pushT > (G.jumpBtn ? 18 : 8)))) return digZone(c, dir, 0, 9) >= 2 ? 'side' : false;
   } else c.pushT = 0;
   return false;
 }
@@ -185,6 +215,9 @@ function digAt(cx, cy, r) {
   }
   spawnFromDig(cx, cy);
 }
+// colours of the cells dug last (taken from the texture, so crumbs match the ground)
+const crumbCols = [];
+let crumbN = 0;
 const CRUMB = {
   [EARTH]: '#7d5230',
   [SAND]: '#d9b56a',
@@ -195,14 +228,20 @@ const CRUMB = {
   [GOLD]: '#ffe066',
   [ROCK]: '#8a847c',
 };
-function digCell(x, y) {
+// removes one cell of diggable earth and returns its material (0 if nothing was dug).
+// paced: a Wühler's stroke, whose pace already follows the hardness; other diggers (machines)
+// chip through rock only now and then. acc: who collects the dust for nuggets, ore and coal
+// (the Wühler or machine digging; the world for the rest), so loot falls where it was dug
+function digCell(x, y, paced = false, acc = G) {
   const i = y * W + x,
     m = mat[i];
   if (m === ROCK) {
-    // the steel pick chips slowly through rock
-    if (!hasTool('pick') || rnd() > 0.3) return;
-  } else if (m !== EARTH && m !== SAND && m !== GOLD && m !== LOAM && m !== ORE && m !== COAL && m !== GEM) return;
-  if (rnd() < 0.14)
+    if (!hasTool('pick') || (!paced && rnd() > 0.3)) return 0;
+  } else if (m !== EARTH && m !== SAND && m !== GOLD && m !== LOAM && m !== ORE && m !== COAL && m !== GEM) return 0;
+  // a Wühler's stroke throws its crumbs on the strike (see digHit); it only notes their colours
+  if (paced) {
+    if (rnd() < 0.2) crumbCols[crumbN++ & 7] = cssOf(i);
+  } else if (rnd() < 0.14)
     parts.push({
       x,
       y,
@@ -212,49 +251,128 @@ function digCell(x, y) {
       c: CRUMB[m],
       s: rnd() < 0.3 ? 2 : 1,
     });
-  if (m === ROCK) G.shake = Math.max(G.shake, 0.8);
   if (m === GOLD) {
-    G.goldDust++;
-    if (rnd() < 0.25) parts.push({ x, y, vx: (rnd() - 0.5) * 1.2, vy: -rnd() * 1.4, l: 25, c: '#ffe066' });
-  } else if (m === EARTH) G.earthDug++;
-  else if (m === LOAM) G.loamDug++;
-  else if (m === ORE) G.oreDug++;
-  else if (m === COAL) G.coalDug++;
-  else if (m === GEM) G.gemDug = (G.gemDug || 0) + 1;
+    acc.goldDust = (acc.goldDust || 0) + 1;
+    // the last bit of a vein: what is left over makes a nugget if it is at least half of one
+    if (acc.goldDust % 16 >= 8 && !goldNear(x, y)) acc.veinEnd = true;
+    if (!paced && rnd() < 0.25) parts.push({ x, y, vx: (rnd() - 0.5) * 1.2, vy: -rnd() * 1.4, l: 25, c: '#ffe066', b: 1 });
+  } else if (m === EARTH) acc.earthDug = (acc.earthDug || 0) + 1;
+  else if (m === LOAM) acc.loamDug = (acc.loamDug || 0) + 1;
+  else if (m === ORE) acc.oreDug = (acc.oreDug || 0) + 1;
+  else if (m === COAL) acc.coalDug = (acc.coalDug || 0) + 1;
+  else if (m === GEM) acc.gemDug = (acc.gemDug || 0) + 1;
   mat[i] = AIR;
   bg[i] = 1;
+  markFresh(i);
   paint(i);
   onDig(x, y);
+  return m;
 }
-function spawnFromDig(cx, cy) {
-  while (G.goldDust >= 16) {
-    G.goldDust -= 16;
-    spawnItem('nug', cx - 1, cy - 1, (rnd() - 0.5) * 1.5, -1.2, 10);
-    sfx('pick', cx, cy);
+const SCALE = [1, 1.125, 1.25, 1.333, 1.5, 1.667, 1.875, 2];
+// any gold left around a cell that is being dug (the cell itself not counted)
+function goldNear(x, y) {
+  for (let yy = Math.max(0, y - 3); yy <= Math.min(H - 1, y + 3); yy++)
+    for (let xx = Math.max(0, x - 3); xx <= Math.min(W - 1, x + 3); xx++)
+      if (mat[yy * W + xx] === GOLD && (xx !== x || yy !== y)) return true;
+  return false;
+}
+function spawnFromDig(cx, cy, acc = G) {
+  if (acc.veinEnd) {
+    acc.veinEnd = false;
+    if (acc.goldDust % 16 >= 8) acc.goldDust += 16 - (acc.goldDust % 16);
+    else acc.goldDust -= acc.goldDust % 16;
   }
-  if (G.oreDug >= 45) {
-    G.oreDug = 0;
+  while (acc.goldDust >= 16) {
+    acc.goldDust -= 16;
+    spawnItem('nug', cx - 1, cy - 1, (rnd() - 0.5) * 1.5, -1.4, 10);
+    // the nugget pops out with a flash; nuggets in quick succession climb up the scale
+    flashes.push({ x: cx, y: cy, r: 5, l: 6 });
+    glint(cx, cy);
+    acc.nugN = G.frame - (acc.nugT ?? -999) < 150 ? Math.min(7, (acc.nugN || 0) + 1) : 0;
+    acc.nugT = G.frame;
+    sfx('nug', cx, cy, 1, SCALE[acc.nugN]);
+  }
+  if (acc.oreDug >= 45) {
+    acc.oreDug = 0;
     spawnItem('ore', cx - 1, cy - 2, rnd() - 0.5, -1, 20);
     sfx('pick', cx, cy);
   }
-  if (G.coalDug >= 45) {
-    G.coalDug = 0;
+  if (acc.coalDug >= 45) {
+    acc.coalDug = 0;
     spawnItem('coal', cx - 1, cy - 2, rnd() - 0.5, -1, 20);
     sfx('pick', cx, cy);
   }
-  if (G.gemDug >= 24) {
-    G.gemDug = 0;
+  if (acc.gemDug >= 24) {
+    acc.gemDug = 0;
     spawnItem('gem', cx - 1, cy - 2, rnd() - 0.5, -1.2, 10);
     track('gem');
     sfx('coin', cx, cy);
   }
-  if (G.loamDug >= 90) {
-    G.loamDug = 0;
+  if (acc.loamDug >= 90) {
+    acc.loamDug = 0;
     spawnItem('loam', cx - 2, cy - 2, rnd() - 0.5, -1, 20);
   }
-  if (G.earthDug >= 260) {
-    G.earthDug = 0;
+  if (acc.earthDug >= 260) {
+    acc.earthDug = 0;
     spawnItem(rnd() < 0.3 ? 'flint' : 'rock', cx - 1, cy - 2, rnd() - 0.5, -1, 30);
+  }
+}
+// what else comes off with the strike: sand and coal dust, sparks from hard stone
+const DUST = {
+  [SAND]: { n: 3, c: ['rgba(232,206,150,0.35)', 'rgba(215,186,128,0.3)'], s: 2, g: -0.004, l: 35 },
+  [EARTH]: { n: 1, c: ['rgba(120,84,52,0.3)'], s: 2, g: -0.003, l: 25 },
+  [LOAM]: { n: 1, c: ['rgba(150,104,62,0.3)'], s: 2, g: -0.003, l: 25 },
+  [COAL]: { n: 3, c: ['rgba(38,34,32,0.5)', 'rgba(60,56,52,0.4)'], s: 2, g: -0.003, l: 40 },
+  [ORE]: { n: 2, c: ['#ffd27a', '#fff3c0'], s: 1, g: 0.05, l: 7, spark: 1 },
+  [GEM]: { n: 2, c: ['#d8fbff', '#ffffff'], s: 1, g: 0.03, l: 9, spark: 1 },
+  [ROCK]: { n: 3, c: ['#fff3c0', '#ffd27a', '#ffffff'], s: 1, g: 0.05, l: 7, spark: 1 },
+  [GRANITE]: { n: 3, c: ['#fff3c0', '#ffd27a'], s: 1, g: 0.05, l: 7, spark: 1 },
+};
+const DIGSND = { [SAND]: 'digSand', [LOAM]: 'digLoam', [COAL]: 'digCoal', [ORE]: 'digOre', [GEM]: 'digOre', [ROCK]: 'digRock', [GRANITE]: 'digRock' };
+// the moment the pick strikes: sound, a shake in rock, a short buzz on the phone
+const STRIKE = 0.6;
+function digHit(c, slope) {
+  const fx = c.x + 3 + c.face * 6,
+    fy = c.y + 5 + slope * 6;
+  let m = mat[Math.floor(fy) * W + Math.floor(fx)];
+  if (!HARD[m] && m !== GRANITE) m = c.digM || EARTH;
+  sfx(DIGSND[m] || 'dig', c.x, c.y);
+  if (m === GOLD || m === GEM) {
+    sfx('ting', c.x, c.y);
+    glint(fx, fy);
+  }
+  // crumbs fly back from the face, plus dust, sparks or soot depending on the ground
+  const full = parts.length < (G.res === 1 ? 300 : 700);
+  const n = full ? 3 + Math.floor(rnd() * 3) : 1;
+  for (let k = 0; k < n; k++)
+    parts.push({
+      x: fx + (rnd() - 0.5) * 3,
+      y: fy + (rnd() - 0.5) * 6,
+      vx: -c.face * (0.3 + rnd() * 0.9),
+      vy: -0.4 - rnd() * 1.1,
+      l: 45 + rnd() * 30,
+      c: crumbCols[Math.floor(rnd() * Math.min(8, crumbN))] || CRUMB[m] || CRUMB[EARTH],
+      s: rnd() < 0.4 ? 2 : 1,
+      b: 1,
+    });
+  if (full) {
+    const fx2 = DUST[m];
+    if (fx2)
+      for (let k = 0; k < fx2.n; k++)
+        parts.push({
+          x: fx + (rnd() - 0.5) * 2,
+          y: fy + (rnd() - 0.5) * 5,
+          vx: fx2.spark ? (rnd() - 0.5) * 2.4 : -c.face * rnd() * 0.4 + (rnd() - 0.5) * 0.2,
+          vy: fx2.spark ? -rnd() * 1.4 : -0.1 - rnd() * 0.2,
+          l: fx2.l + rnd() * 10,
+          c: fx2.c[k % fx2.c.length],
+          s: fx2.s,
+          g: fx2.g,
+        });
+  }
+  if (c === sel_()) {
+    if (m === ROCK || m === GRANITE) G.shake = Math.max(G.shake, 1.1);
+    buzz(m === ROCK || m === GRANITE ? 14 : 7);
   }
 }
 function nearTree(c) {
@@ -446,25 +564,44 @@ function updBody(c, I) {
     const mag = Math.hypot(I.ax, I.ay);
     const raw = mag < 0.3 ? 0 : Math.atan2(I.ay, Math.max(0.001, Math.abs(I.ax)));
     // (helpers pass their own slope: they may dig down more steeply to reach ore)
-    const slope = I.slope !== undefined ? I.slope : raw > 0.45 ? SLOPE_DOWN : raw < -0.45 ? -SLOPE_UP : 0;
+    let slope = I.slope !== undefined ? I.slope : raw > 0.45 ? SLOPE_DOWN : raw < -0.45 ? -SLOPE_UP : 0;
+    if (!c.digging) {
+      // the first blow comes right away
+      c.digPh = 0.45;
+      c.digH = 1;
+    }
+    // a player's tunnel bends into a new direction over a few strokes instead of a sharp kink
+    if (I.slope === undefined) {
+      if (c.digging && c.digF === c.face) slope = c.digS += (slope - c.digS) * 0.3;
+      c.digS = slope;
+      c.digF = c.face;
+    }
     const len = Math.hypot(1, slope);
     c.digging = true;
     c.digDir = [c.face / len, slope / len];
-    digStroke(c, c.face, slope);
+    const h = digStroke(c, c.face, slope);
+    if (h) c.digH += (h - c.digH) * 0.3;
     c.vx = c.vy = 0;
-    const sp = hasTool('pick') ? 0.8 : 0.55;
+    // the pick swings in a beat (longer in hard ground): wind up, strike, and after the strike
+    // the Wühler pushes on into the loosened earth; on average as fast as the material allows
+    const ph0 = c.digPh;
+    c.digPh += 1 / (11 * c.digH);
+    if (c.digPh >= 1) c.digPh -= 1;
+    if (ph0 < STRIKE && c.digPh >= STRIKE) digHit(c, slope);
+    // gold and gems just ahead glitter in the face before the pick gets there
+    if (G.frame % 6 === 0) {
+      const gx = Math.floor(c.x + 3 + c.face * (7 + rnd() * 8)),
+        gy = Math.floor(c.y + rnd() * 10 + slope * 8),
+        gm = gx >= 0 && gx < W && gy >= 0 && gy < H ? mat[gy * W + gx] : AIR;
+      if (gm === GOLD || gm === GEM) parts.push({ x: gx, y: gy, vx: 0, vy: 0, l: 10, c: '#fffbe0', g: 0 });
+    }
+    const surge = c.digPh >= STRIKE && c.digPh < STRIKE + 0.25 ? 1.9 : 0.7;
+    const sp = ((hasTool('pick') ? 0.8 : 0.55) / c.digH) * surge;
     moveBody(c, (c.face * sp) / len, (slope * sp) / len, 3);
     c.anim += 0.3;
-    if (G.frame % 9 === 0) {
-      const m = mat[Math.floor(c.y + 5 + slope * 6) * W + Math.floor(c.x + 3 + c.face * 6)];
-      sfx(m === SAND ? 'digSand' : m === ROCK || m === GRANITE ? 'digRock' : 'dig', c.x, c.y);
-      if (m === GOLD || m === GEM) {
-        sfx('ting', c.x, c.y);
-        glint(c.x + 3 + c.face * 6, c.y + 5 + slope * 6);
-      }
-    }
     return;
   }
+  if (c.digging) c.digEnd = G.frame;
   c.digging = false;
   if (c.climb) {
     climbUpd(c, I);
@@ -734,6 +871,7 @@ function lorryAct(c, L) {
 }
 
 export {
+  HARD,
   diggable,
   digZone,
   wantsDig,

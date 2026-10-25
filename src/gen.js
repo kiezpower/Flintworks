@@ -45,6 +45,7 @@ import {
   WATER,
   activateAll,
   bg,
+  clearFresh,
   flush,
   mat,
   paint,
@@ -139,6 +140,7 @@ function gen() {
   G.rails = [];
   G.meteorNext = 15000 + rnd() * 8000;
   G.goldDust = G.earthDug = G.loamDug = G.oreDug = G.coalDug = 0;
+  clearFresh();
   G.hintsSeen = new Set();
   for (let i = 0; i < W * H; i++) shade[i] = (rnd() * 4) | 0;
   const p1 = rnd() * 6,

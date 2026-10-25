@@ -1,5 +1,5 @@
 // Dev-only hooks for the browser tests (never part of the production build).
-import { G, animals, builds, crew, items, lorries, trees, vehicles } from './state.js';
+import { G, animals, builds, crew, items, lorries, parts, trees, vehicles } from './state.js';
 import { explode, ignite } from './objects.js';
 import { tryBuild, terrOK } from './buildings.js';
 import { calcTerr } from './render.js';
@@ -8,6 +8,7 @@ import { saveGame, loadGame, hasSave } from './save.js';
 import { lightning } from './weather.js';
 import { step } from './main.js';
 import { edge, inp, joy, keys } from './input.js';
+import { audioInit, sfx } from './sound.js';
 import { startCaveIn, onDig } from './hazards.js';
 import { chestNear, openChest } from './treasure.js';
 import { setGoal } from './tapgo.js';
@@ -112,4 +113,7 @@ window.__ww = {
   gen,
   wantsDig,
   digZone,
+  audioInit,
+  sfx,
+  parts: () => parts,
 };

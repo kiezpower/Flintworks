@@ -20,7 +20,7 @@ import {
   trees,
   vehicles,
 } from './state.js';
-import { H, W, activateAll, bg, mat, paintAll, ri, rnd, shade, surf } from './world.js';
+import { H, W, activateAll, bg, clearFresh, mat, paintAll, ri, rnd, shade, surf } from './world.js';
 
 // ---- Save / load (per browser) ----
 const SAVEKEY = 'wuehlwelt-save-v1';
@@ -165,6 +165,7 @@ function deserialize(d) {
     for (let x = 0; x < W; x++) surf[x] = d.surf[x];
     for (const a of [meteors, items, parts, flashes, builds, trees, crew, animals, lorries, birds, clouds])
       a.length = 0;
+    clearFresh();
     paintAll();
     activateAll();
     G.money = d.money;

@@ -36,7 +36,7 @@ npm run dev        # Entwicklungsserver mit Live-Reload, auch im WLAN fürs Hand
 npm run build      # fertige Web-Version in dist/
 npm run preview    # gebaute Version lokal testen
 npm run android    # Web-Version bauen und ins Android-Projekt kopieren
-npm test           # Browser-Tests: spielt das Tutorial durch (Playwright)
+npm test           # Browser-Tests: spielt das Tutorial durch und gräbt durch jedes Material (Playwright)
 npm run test:visual # spielt eine Runde, speichert Screenshots in tests/out/ und prüft auf Fehler
 ```
 

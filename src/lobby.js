@@ -329,6 +329,16 @@ function openOptions() {
     },
   });
   opt(l, {
+    title: tr(P.vibe === false ? 'Vibration: aus' : 'Vibration: an'),
+    sub: tr('Kurzes Rütteln beim Graben, bei Treffern und Sprengungen'),
+    onClick: () => {
+      P.vibe = P.vibe === false;
+      G.vibe = P.vibe;
+      saveProfile();
+      openOptions();
+    },
+  });
+  opt(l, {
     title: tr(P.climbing ? 'Klettern an' : 'Klettern aus'),
     sub: tr('An Wänden hochklettern und an Decken hängen'),
     onClick: () => {

@@ -124,7 +124,7 @@ function texel(i, sx, sy) {
     if (solidAt(i + 2)) n++;
     if (solidAt(i - 2 * W)) n++;
     if (solidAt(i + 2 * W)) n++;
-    let k = 1 - n * 0.055;
+    let k = 1 - n * 0.055 - fresh[i] * 0.0005;
     if ((sx === 0 && solidAt(i - 1)) || (sx === 1 && solidAt(i + 1)) || (sy === 0 && solidAt(i - W))) k *= 0.72;
     return tint(TUNNEL[ti], k * WSH[i]);
   }
@@ -137,6 +137,9 @@ function texel(i, sx, sy) {
     if (sy === 0 && i >= W && mat[i - W] === AIR) c = tint(c, 1.35);
     return c;
   }
+  // earth at the edge of a freshly dug tunnel is dark and damp, drying within ~20 s (dryFresh)
+  const wet = Math.max(i >= W ? fresh[i - W] : 0, i < W * (H - 1) ? fresh[i + W] : 0, fresh[i - 1] || 0, fresh[i + 1] || 0);
+  if (wet) c = tint(c, 1 - wet * 0.0012);
   const up = i >= W ? mat[i - W] : AIR;
   if (sy === 0 && (up === AIR || LIQ[up])) return tint(c, 1.3);
   if (sy === 1 && i < W * (H - 1) && !SOLID[mat[i + W]]) return tint(c, 0.62);
@@ -152,6 +155,42 @@ function paintCell(i) {
   px[o + 1] = texel(i, 1, 0);
   px[o + PW] = texel(i, 0, 1);
   px[o + PW + 1] = texel(i, 1, 1);
+}
+// the colour a cell shows on screen, as CSS (crumbs flying off take the colour of the earth)
+const cssOf = i => {
+  const c = texel(i, i & 1, 0);
+  return `rgb(${c & 255},${(c >> 8) & 255},${(c >> 16) & 255})`;
+};
+// freshly dug tunnel cells and the list of those still drying
+const fresh = new Uint8Array(W * H),
+  freshList = new Int32Array(8192);
+let freshN = 0;
+function markFresh(i) {
+  if (!fresh[i]) {
+    if (freshN >= freshList.length) return;
+    freshList[freshN++] = i;
+  }
+  fresh[i] = 255;
+}
+// called every frame: each cell is visited once in 75 frames and dries in 16 steps; the work
+// is spread over the frames so long tunnels do not make the game stutter
+let dryK = 0;
+function dryFresh() {
+  const n = Math.ceil(freshN / 75);
+  for (let s = 0; s < n && freshN; s++) {
+    if (dryK >= freshN) dryK = 0;
+    const i = freshList[dryK];
+    fresh[i] = mat[i] === AIR && fresh[i] > 16 ? fresh[i] - 16 : 0;
+    // the earth around it dries along
+    for (const j of [i, i - 1, i + 1, i - W, i + W]) if (j >= 0 && j < W * H && (j === i || mat[j] !== AIR)) paintCell(j);
+    markDirty(i % W, (i / W) | 0, 1);
+    if (fresh[i]) dryK++;
+    else freshList[dryK] = freshList[--freshN];
+  }
+}
+function clearFresh() {
+  for (let k = 0; k < freshN; k++) fresh[freshList[k]] = 0;
+  freshN = 0;
 }
 // old single-colour lookup, still used for flat previews
 const colorOf = i => {
@@ -364,7 +403,11 @@ export {
   bg,
   boxFree,
   clamp,
+  clearFresh,
   colorOf,
+  cssOf,
+  dryFresh,
+  markFresh,
   flush,
   free,
   hex,

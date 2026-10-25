@@ -9,7 +9,7 @@
 //   rest     – nothing to do: wait in the base
 // Each helper has a focus the player sets in the crew panel (all, ore, wood, build, follow,
 // stay); a marker sends the miners to a chosen spot. Miners put up support beams as they dig.
-import { NOIN, digCell, diggable, nearTree, spawnFromDig } from './clonk.js';
+import { HARD, NOIN, digCell, diggable, nearTree, spawnFromDig } from './clonk.js';
 import { midMat } from './entities.js';
 import { jobBubble, tryBeam } from './mine.js';
 import { trainStop } from './vehicles/rails.js';
@@ -39,7 +39,8 @@ const nearBuild = (x, y) =>
   builds.some(
     b => x > b.x - 24 && x < b.x + b.w + 24 && y > b.gy - b.h - 4 && y < b.gy + (b.type === 'base' ? 30 : 18),
   );
-const digOk = (x, y) => y < H - 4 && diggable(mat[y * W + x]) && !nearBuild(x, y);
+// (the cost of a cell follows its hardness, so helpers prefer sand and earth to ore and rock)
+const digOk = (x, y) => (y < H - 4 && diggable(mat[y * W + x]) && !nearBuild(x, y) ? HARD[mat[y * W + x]] : 0);
 const nav = mkNav({ solid, plat, bad, maxDrop: 36, jumpH: 15, maxNodes: 2500, budget: 5 });
 const navDig = mkNav({
   solid,
@@ -417,8 +418,8 @@ function atWork(c, I) {
       dy = y - (c.y + 5),
       l = Math.hypot(dx, dy) || 1;
     c.digDir = [dx / l, dy / l];
-    digCell(x, y);
-    spawnFromDig(c.x + 3 + c.face * 4, c.y + 3);
+    digCell(x, y, false, c);
+    spawnFromDig(c.x + 3 + c.face * 4, c.y + 3, c);
     return I;
   }
   if (j.type === 'collect') {

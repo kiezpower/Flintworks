@@ -52,7 +52,7 @@ import { updEmoBtn } from './net/emotes.js';
 import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
-import { H, W, clamp, surf } from './world.js';
+import { H, W, clamp, dryFresh, surf } from './world.js';
 
 // ---- Screens & loop ----
 const overlay = $('overlay'),
@@ -182,6 +182,7 @@ function startGame(withTutorial = false) {
   G.climbOn = !!P.climbing;
   G.jumpBtn = P.jumpbtn !== false;
   G.lightFx = P.lightfx !== false;
+  G.vibe = P.vibe !== false;
   G.speed = TEMPO[P.tempo || 'normal'] || 0.85;
   if (!G.climbOn) for (const c of crew) c.climb = c.hangle = false;
   const res = P.gfx === 'low' || new URLSearchParams(location.search).get('res') === '1' ? 1 : 2;
@@ -327,6 +328,12 @@ function openMenu() {
     saveProfile();
     openMenu();
   });
+  item(G.vibe ? 'Vibration: an' : 'Vibration: aus', 'Kurzes Rütteln beim Graben, bei Treffern und Sprengungen', () => {
+    P.vibe = !G.vibe;
+    G.vibe = P.vibe;
+    saveProfile();
+    openMenu();
+  });
   item(G.climbOn ? 'Klettern an' : 'Klettern aus', 'An Wänden hochklettern und an Decken hängen', () => {
     P.climbing = !G.climbOn;
     G.climbOn = P.climbing;
@@ -448,6 +455,7 @@ function step() {
   if (!paused) {
     updWeather();
     updParts();
+    dryFresh();
     simulate();
     hostTick();
   }
