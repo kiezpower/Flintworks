@@ -1,0 +1,40 @@
+{
+  "id": "schlucht",
+  "v": 1,
+  "name": "Die Schlucht",
+  "icon": "balloon",
+  "desc": "Baue ein Luftschiff und flieg über die Schlucht",
+  "intro": "Die Schlucht ist zu breit für eine Brücke. Erforsche die Luftfahrt, baue ein Luftschiff und flieg auf die andere Seite.",
+  "biome": "meadow",
+  "size": [2400, 500],
+  "zoom": 5,
+  "rough": 0.4,
+  "seed": 8808,
+  "diff": "adventure",
+  "fill": {"caves": 0.5},
+  "start": {"money": 120, "crew": 3, "inv": [["flint", "rock"], ["loam"], ["rock"]], "research": ["mech", "metal"], "store": {"metal": 2, "plank": 4, "wood": 4, "coal": 4}},
+  "rules": {"meteors": false},
+  "objects": [
+    {"t": "base", "x": 60, "lvl": 2},
+    {"t": "tree", "x": 200, "stage": 4},
+    {"t": "tree", "x": 260, "stage": 4},
+    {"t": "tree", "x": 400, "stage": 4},
+    {"t": "tree", "x": 520, "stage": 4},
+    {"t": "tree", "x": 700, "stage": 4},
+    {"t": "tree", "x": 820, "stage": 4},
+    {"t": "tree", "x": 1600, "stage": 4},
+    {"t": "tree", "x": 1800, "stage": 4},
+    {"t": "tree", "x": 2100, "stage": 4},
+    {"t": "tree", "x": 2300, "stage": 4}
+  ],
+  "areas": {"drueben": [1500, 0, 900, 200]},
+  "goals": [
+    {"t": "build", "what": "airship", "n": 1},
+    {"t": "reach", "area": "drueben", "label": "Auf der anderen Seite"}
+  ],
+  "lose": {"crewDead": true},
+  "stars": [14, 22],
+  "triggers": [
+    {"when": {"t": "goal", "n": 0}, "do": [{"t": "banner", "title": "Luftschiff fertig", "text": "Steig ein und flieg über die Schlucht."}]}
+  ]
+}

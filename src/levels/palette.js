@@ -24,4 +24,15 @@ const CHARS = {
 // these keep their exact outline: borders, pools and pipes must not leak
 const FIXED = new Set([GRANITE, WATER, LAVA, ACID, PLANK]);
 
-export { CHARS, FIXED };
+// Maps are bundled run-length encoded (vite.config.js): "RLE1:" and per row runs like "12.3#"
+// (a count, then the character; the palette has no digits). Plain maps pass through.
+function unpackMap(t) {
+  if (!t.startsWith('RLE1:')) return t;
+  return t
+    .slice(5)
+    .split('\n')
+    .map(r => r.replace(/(\d+)(\D)/g, (_, n, c) => c.repeat(+n)))
+    .join('\n');
+}
+
+export { CHARS, FIXED, unpackMap };

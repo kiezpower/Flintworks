@@ -136,7 +136,8 @@ function gen() {
   if (G.nextSeed != null) setSeed(G.nextSeed);
   G.seed = getSeed();
   G.nextId = 0;
-  setBiome(G.nextBiome || ['meadow', 'desert', 'winter'][ri(0, 2)]);
+  // (a hand-built level or map has its own world type)
+  setBiome((LP && LP.biome) || G.nextBiome || ['meadow', 'desert', 'winter'][ri(0, 2)]);
   G.earned = 0;
   G.tools = {};
   G.mode = G.nextMode || 'gold';
@@ -331,10 +332,11 @@ function gen() {
   }
   finishWorld();
 }
-// sand and water settle before anybody looks; on an odd frame count, so that the same seed
-// always gives the same world (the sand falls left or right depending on the frame)
+// sand and water settle before anybody looks. The simulation depends on the frame count (sand
+// falls left or right on odd and even frames, lava moves every third, acid wakes every 30th), so
+// it starts on a frame that is 1 modulo 30: the same seed always gives the same world
 function settle() {
-  if (!(G.frame & 1)) G.frame++;
+  G.frame += (31 - (G.frame % 30)) % 30;
   paintAll();
   activateAll();
   for (let k = 0; k < 60; k++) simulate();

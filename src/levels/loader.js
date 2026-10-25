@@ -4,6 +4,7 @@
 // world was emptied and sized.
 import { addClonk, mkAnimal, newId, spawnItem } from '../entities.js';
 import { blob, clearFoot, finishWorld, plantTree, settle, topSolid } from '../gen.js';
+import { setupTeams } from '../teams.js';
 import { G, animals, builds, crew } from '../state.js';
 import { AIR, COAL, EARTH, GEM, GOLD, H, H0, LOAM, ORE, ROCK, SAND, W, W0 } from '../world.js';
 import { bg, mat, ri, rnd, shade, surf } from '../world.js';
@@ -120,13 +121,18 @@ function placeObjects(L) {
   G.gas = [];
   G.gasClouds = [];
   const objs = L.objects || [];
-  // the castle first: everything else may stand next to it
-  const b = objs.find(o => o.t === 'base') || { x: 60 };
-  const bx = ox(b.x);
-  G.base = { id: newId(), type: 'base', x: bx, gy: surf[bx + 18] + 1, w: 36, h: 30, prog: 1, done: true, busy: 0 };
-  G.base.lvl = b.lvl || 1;
-  clearFoot(G.base.x, G.base.gy, G.base.w, G.base.h);
-  builds.push(G.base);
+  // the castles first: everything else may stand next to them (team 1: the second castle, Versus only)
+  const castle = o => {
+    const x = Math.min(W - 37, Math.max(0, ox(o.x))),
+      b = { id: newId(), type: 'base', x, gy: surf[x + 18] + 1, w: 36, h: 30, prog: 1, done: true, busy: 0 };
+    b.lvl = o.lvl || 1;
+    clearFoot(b.x, b.gy, b.w, b.h);
+    builds.push(b);
+    return b;
+  };
+  G.base = castle(objs.find(o => o.t === 'base' && !o.team) || { x: 60 });
+  const b2 = G.nextVersus && objs.find(o => o.t === 'base' && o.team === 1);
+  const second = b2 && castle(b2);
   for (const o of objs) {
     const x = ox(o.x ?? 0);
     if (o.t === 'tree') plantTree(x, o.stage ?? 4);
@@ -142,6 +148,8 @@ function placeObjects(L) {
       c.focus = 'stay';
     } else if (o.t === 'chest') G.chests.push({ x: x - 4, y: o.y - 6, open: false });
     else if (o.t === 'gas') G.gas.push({ x, y: o.y, r: o.r || 8, done: false });
+    // an old support beam from y0 down to y1 (holds the ceiling like a built one)
+    else if (o.t === 'beam') (G.beams ||= []).push({ x, y0: o.y0, y1: o.y1 });
   }
   // the crew at the castle (the trapped ones above are already in the list, they go last)
   const trapped = crew.splice(0);
@@ -152,8 +160,16 @@ function placeObjects(L) {
     c.inv = [...(inv[k] || [])];
   }
   crew[0].pid = G.myId;
-  for (const c of trapped) crew.push(c);
   G.money = st.money ?? 40;
+  // Versus: two helpers at the second castle, which gets the same start money
+  if (second) {
+    for (let k = 0; k < 2; k++) {
+      const c = addClonk(second.x + 16 + k * 6, second.gy - 10);
+      Object.assign(c, { team: 1, inv: [k ? 'rock' : 'loam'] });
+    }
+    setupTeams([G.base, second]);
+  }
+  for (const c of trapped) crew.push(c);
 }
 
 function genLevel(L) {

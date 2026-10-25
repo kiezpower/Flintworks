@@ -20,12 +20,19 @@ Web-Version oder der App).
 - **Speichern** schreibt `level.json` und `map.txt` nach `src/levels/<id>/` und hängt ein neues
   Level hinten an `order.json` an. Texte danach in `src/i18n.js` übersetzen.
 
-Karten lassen sich auch von Hand oder mit einem Skript schreiben: es sind normale Textdateien.
+Karten lassen sich auch von Hand oder mit einem Skript schreiben: es sind normale Textdateien. Im
+Build werden sie lauflängenkodiert eingepackt (`vite.config.js`), im Repository bleiben sie lesbar.
 
 | Datei | Inhalt |
 |---|---|
 | `map.txt` | Die Landschaft als Text: ein Zeichen = ein Material, gezoomt |
 | `level.json` | Name, Größe, Start, Regeln, Objekte, Bereiche, Ziele, Auslöser |
+
+Dasselbe Format haben die **Karten** für freies Spiel, Koop und Versus. Sie stehen in
+`src/levels/maps.json` statt in `order.json`, werden in der Lobby als Spielmodus gewählt
+(„Karte · …“) und laufen auch im Mehrspieler. Eine Karte mit einer zweiten Burg
+(`{"t": "base", "team": 1}`) ist für Versus; ohne Versus bleibt die zweite Burg weg. Ziele zählen
+dort je Team (Taler, Tiefe, erreichte Bereiche).
 
 ## Die Karte (`map.txt`)
 
@@ -82,13 +89,14 @@ Bodenschicht kommen von allein.
 
 | `t` | Felder | |
 |---|---|---|
-| `base` | `x`, `lvl` | die Burg (Pflicht, sonst x = 60) |
+| `base` | `x`, `lvl`, `team` | die Burg (Pflicht, sonst x = 60); `team: 1` = zweite Burg für Versus |
 | `tree` | `x`, `stage` (1–4) | |
 | `item` | `kind`, `x`, `y` | ohne `y` auf dem Boden |
 | `animal` | `kind` (wipf, monster, bat, fish), `x`, `y`, `lost` | `lost`: wartet auf Rettung |
 | `trapped` | `x`, `y` | ein verschütteter Wühler, wartet auf Rettung |
 | `chest` | `x`, `y` | Schatztruhe (Höhle dafür in der Karte malen) |
 | `gas` | `x`, `y`, `r` | Grubengas-Tasche |
+| `beam` | `x`, `y0`, `y1` | alter Stützbalken (hält die Decke wie ein gebauter) |
 
 ### Ziele
 
@@ -120,6 +128,17 @@ Bodenschicht kommen von allein.
 | | | | `win` / `lose` | `text` (bei lose) |
 
 Alle Texte brauchen einen englischen Eintrag in `src/i18n.js`. Der Test prüft das.
+
+### Was man beim Bauen wissen sollte
+
+- **Säure** frisst Erde, Sand und Lehm (und verbraucht sich dabei langsam). Nur Fels und Granit
+  halten sie. Ein Säuresee braucht also ein Becken aus Fels.
+- **Lava** fließt nur in jedem dritten Bild und wird mit Wasser zu Fels. Lavakammern mit Fels
+  umgeben.
+- **Große Wasserflächen** kosten Rechenzeit, weil die Oberfläche nie ganz zur Ruhe kommt (der
+  1600 breite See in „Insel im See“ etwa doppelt so viel wie eine freie Welt).
+- `?`-Zonen werden mit dem Seed des Levels gefüllt, in Karten für freies Spiel mit einem
+  zufälligen Seed: jede Runde ist darin etwas anders.
 
 ## Prüfen
 

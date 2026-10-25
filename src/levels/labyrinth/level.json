@@ -1,0 +1,43 @@
+{
+  "id": "labyrinth",
+  "v": 1,
+  "name": "Labyrinth",
+  "icon": "trophy",
+  "desc": "Finde {goal} Schatztruhen",
+  "intro": "Unter der Wiese liegt ein Labyrinth aus Fels. Fünf Truhen sind darin versteckt – die Karte (M) zeigt dir die Gänge.",
+  "biome": "meadow",
+  "size": [1200, 600],
+  "zoom": 4,
+  "rough": 0.2,
+  "seed": 8404,
+  "diff": "adventure",
+  "fill": {},
+  "start": {"money": 60, "crew": 3, "inv": [["flint", "flint"], ["loam"], ["rock"]]},
+  "rules": {"meteors": false},
+  "objects": [
+    {"t": "base", "x": 80},
+    {"t": "tree", "x": 20, "stage": 4},
+    {"t": "tree", "x": 150, "stage": 4},
+    {"t": "tree", "x": 400, "stage": 4},
+    {"t": "tree", "x": 700, "stage": 4},
+    {"t": "tree", "x": 1000, "stage": 4},
+    {"t": "chest", "x": 1134, "y": 416},
+    {"t": "chest", "x": 1022, "y": 224},
+    {"t": "chest", "x": 686, "y": 416},
+    {"t": "chest", "x": 182, "y": 464},
+    {"t": "chest", "x": 182, "y": 320},
+    {"t": "animal", "kind": "bat", "x": 964, "y": 552},
+    {"t": "animal", "kind": "bat", "x": 1020, "y": 216},
+    {"t": "animal", "kind": "bat", "x": 740, "y": 504},
+    {"t": "animal", "kind": "bat", "x": 628, "y": 168}
+  ],
+  "areas": {"eingang": [60, 120, 20, 80]},
+  "goals": [
+    {"t": "chests", "n": 5}
+  ],
+  "lose": {"crewDead": true},
+  "stars": [10, 16],
+  "triggers": [
+    {"when": {"t": "enter", "area": "eingang"}, "do": [{"t": "say", "text": "Die Wände sind aus Fels. Wo Erde durchschimmert, kannst du eine Abkürzung graben."}]}
+  ]
+}

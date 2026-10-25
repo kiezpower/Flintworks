@@ -2,26 +2,45 @@
 // firm ground, can reach all its goals, comes out the same every time, and can be won, lost,
 // saved and loaded: npm test
 import { expect, test } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+
+// one star on every level of chapter 2, so all of them are open in the campaign list
+const ORDER = JSON.parse(readFileSync(new URL('../src/levels/order.json', import.meta.url), 'utf8'));
+const OPEN = Object.fromEntries(ORDER.map(id => [id, 1]));
 
 async function lobby(page) {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.goto('/');
-  await page.evaluate(() => {
+  await page.evaluate(open => {
     localStorage.clear();
     localStorage.setItem('flintworks-lang', 'de');
     localStorage.setItem(
       'flintworks-profile',
-      JSON.stringify({ tutorialDone: true, installAsked: 'done', gmode: 'campaign' }),
+      JSON.stringify({ tutorialDone: true, installAsked: 'done', gmode: 'campaign', campaign: open }),
     );
-  });
+  }, OPEN);
   await page.reload();
   await page.waitForFunction(() => window.__ww);
   return errors;
 }
-const levelIds = page => page.evaluate(() => import('/src/levels/index.js').then(m => m.CHAPTER2));
-// a level started like a player does: campaign list in the lobby, click on the level
+// chapter 2 and the maps for free play, Koop and Versus
+const levelIds = page => page.evaluate(() => import('/src/levels/index.js').then(m => [...m.CHAPTER2, ...m.MAP_IDS]));
+// a level started like a player does: campaign list in the lobby, click on the level; a map is
+// chosen as the game mode and played
 async function start(page, id) {
+  const map = await page.evaluate(id => import('/src/modes.js').then(m => m.GAME_MODES[id].map), id);
+  if (map) {
+    await page.evaluate(id => {
+      const p = JSON.parse(localStorage.getItem('flintworks-profile'));
+      localStorage.setItem('flintworks-profile', JSON.stringify({ ...p, gmode: id }));
+    }, id);
+    await page.reload();
+    await page.waitForFunction(() => window.__ww);
+    await page.click('#lbPlay');
+    await page.waitForFunction(() => window.__ww.state === 'play');
+    return;
+  }
   await page.click('#lbPlay');
   // (taps right after a panel opens are ignored)
   await page.waitForTimeout(500);
@@ -34,9 +53,10 @@ test('every level loads in its size, on firm ground, with every goal within reac
   const errors = await lobby(page);
   const ids = await levelIds(page);
   expect(ids.length).toBeGreaterThan(0);
+
   for (const id of ids) {
-    await page.reload();
-    await page.waitForFunction(() => window.__ww);
+    // a fresh profile for each level (otherwise "play" goes on with the round before)
+    errors.push(...(await lobby(page)));
     await start(page, id);
     await page.waitForFunction(() => document.getElementById('goalTxt').textContent !== '');
     const r = await page.evaluate(() => {
@@ -193,17 +213,16 @@ test('a level is lost when the crew is gone, and saved and loaded with its progr
 test('every text of every level has an English version', async ({ page }) => {
   await lobby(page);
   const missing = await page.evaluate(async () => {
-    const { CHAPTER2 } = await import('/src/levels/index.js'),
+    const { CHAPTER2, MAP_IDS } = await import('/src/levels/index.js'),
       { GAME_MODES } = await import('/src/modes.js'),
-      { setLang, tr } = await import('/src/i18n.js');
-    setLang('en');
+      { hasEnglish } = await import('/src/i18n.js');
     const out = [];
-    for (const id of CHAPTER2) {
+    for (const id of [...CHAPTER2, ...MAP_IDS]) {
       const L = GAME_MODES[id].pkg,
         texts = [L.name, L.desc, L.intro];
       for (const t of L.triggers || []) for (const d of t.do) texts.push(d.text, d.title);
       for (const g of L.goals) texts.push(g.label);
-      for (const s of texts) if (s && tr(s) === s) out.push(`${id}: ${s}`);
+      for (const s of texts) if (s && !hasEnglish(s)) out.push(`${id}: ${s}`);
     }
     return out;
   });
@@ -251,5 +270,35 @@ test('the seven levels of chapter 1 stay exactly as they are', async ({ page }) 
     return out;
   }, Object.keys(want));
   expect(got).toEqual(want);
+  expect(errors).toEqual([]);
+});
+
+test('a Versus map gets two castles, two teams and a winner', async ({ page }) => {
+  const errors = await lobby(page);
+  const r = await page.evaluate(async () => {
+    const { MAP_IDS } = await import('/src/levels/index.js'),
+      { GAME_MODES } = await import('/src/modes.js'),
+      w = window.__ww,
+      G = w.G,
+      out = {};
+    for (const id of MAP_IDS) {
+      const M = GAME_MODES[id];
+      if (!M.pkg.objects.some(o => o.t === 'base' && o.team === 1)) continue;
+      Object.assign(G, { nextMode: id, nextSeed: 5, nextBiome: M.biome, nextDiff: 'adventure', nextVersus: true });
+      w.gen();
+      G.nextSeed = null;
+      G.nextVersus = false;
+      const bases = w.builds.filter(b => b.type === 'base');
+      out[id] = {
+        bases: bases.length,
+        teams: G.teams ? G.teams.length : 0,
+        apart: bases.length === 2 && Math.abs(bases[0].x - bases[1].x) > w.world.W / 2,
+        team1: w.crew.filter(c => c.team === 1).length,
+      };
+    }
+    return out;
+  });
+  expect(Object.keys(r).length).toBeGreaterThan(0);
+  for (const id in r) expect(r[id], id).toEqual({ bases: 2, teams: 2, apart: true, team1: 2 });
   expect(errors).toEqual([]);
 });
