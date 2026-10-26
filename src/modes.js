@@ -2,8 +2,10 @@
 import { G, builds } from './state.js';
 
 // Multiplayer: Koop goals grow by half for every further player, Versus goals are smaller
-// because the round has a clock (G.mp is made for every new world, see versus.js)
-const goalScale = (np = G.mp?.np || 1, vs = !!G.mp?.vs) => (vs ? 0.65 : 1 + 0.5 * (np - 1));
+// because the round has a clock, and smaller still for the shorter quick play clock (G.mp is
+// made for every new world, see versus.js)
+const vsShare = () => 0.25 + (0.75 * Math.min(8, G.mp?.vsMin || 8)) / 8;
+const goalScale = (np = G.mp?.np || 1, vs = !!G.mp?.vs) => (vs ? 0.65 * vsShare() : 1 + 0.5 * (np - 1));
 const scaled = (n, step = 1, max = 1e9, np, vs) => Math.min(max, Math.round((n * goalScale(np, vs)) / step) * step);
 // treasure hunt: chests to find, for the number of chests the world gets
 const treasureGoal = (np, vs) => scaled(4, 1, 1e9, np, vs);

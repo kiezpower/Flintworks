@@ -96,3 +96,37 @@ test('a quick play room counts down and starts the mode of the hour by itself', 
   await expect(e.page.locator('#mpCountdown')).toBeHidden();
   for (const p of [e, f]) expect(p.errors).toEqual([]);
 });
+
+test('Jeder gegen jeden over the network: three players, three castles, each their own', async ({ browser }) => {
+  const g = await player(browser, 'Gero');
+  const h = await player(browser, 'Hanna');
+  const i = await player(browser, 'Ida');
+  await g.page.waitForTimeout(500);
+  await g.page.locator('#lbCreate').click();
+  await expect(g.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  const code = await g.page.locator('.lb-codetap b').textContent();
+  for (const p of [h, i]) {
+    await p.page.locator('#lbCodeIn').fill(code);
+    await p.page.locator('#lbJoinBtn').click();
+    await expect(p.page.locator('.lb-codetap b')).toHaveText(code);
+  }
+  await expect(g.page.locator('.lb-players .opt')).toHaveCount(3);
+  await g.page.waitForTimeout(500);
+  await g.page.locator('.opt', { hasText: 'Jeder gegen jeden' }).click();
+  // the guests see the host's choice
+  await expect(i.page.locator('.opt', { hasText: 'Jeder gegen jeden' })).toContainText('✓');
+  await g.page.waitForTimeout(500);
+  await g.page.locator('.opt', { hasText: 'Spiel starten' }).click();
+  for (const p of [g, h, i])
+    await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.teams?.length === 3, null, {
+      timeout: 15000,
+    });
+  const mine = await Promise.all([g, h, i].map(p => p.page.evaluate(() => window.__ww.G.myTeam)));
+  expect([...mine].sort()).toEqual([0, 1, 2]);
+  // every device built the same wide world
+  const bases = await Promise.all(
+    [g, h, i].map(p => p.page.evaluate(() => window.__ww.builds.filter(b => b.type === 'base').length)),
+  );
+  expect(bases).toEqual([3, 3, 3]);
+  for (const p of [g, h, i]) expect(p.errors).toEqual([]);
+});

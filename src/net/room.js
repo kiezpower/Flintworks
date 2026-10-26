@@ -19,6 +19,7 @@ const NET = {
   status: 'offline', // offline | connecting | waiting (in a room) | error
   error: null,
   versus: false, // the host's choice: together (Koop) or against each other
+  ffa: false, // against each other: everybody for themselves ("Jeder gegen jeden", from three players)
   gmode: null, // the host's game mode or map
   pub: false, // open room: anybody can find and join it without a code
   rooms: null, // the open rooms while looking for one: [{code, host, n, versus, playing, tag}]
@@ -61,7 +62,7 @@ on('room', m => {
   NET.players = m.players;
   NET.pub = !!m.pub;
   NET.auto = fromTag(m.tag);
-  if (NET.auto) Object.assign(NET, { versus: NET.auto.versus, gmode: NET.auto.gmode });
+  if (NET.auto) Object.assign(NET, { versus: NET.auto.versus, ffa: NET.auto.ffa, gmode: NET.auto.gmode });
   NET.status = 'waiting';
   quick = false;
   browseRooms(false);
@@ -93,15 +94,18 @@ on('rooms', m => {
   changed();
 });
 // the host's choices, shown to everybody in the room: Koop/Versus and the game mode or map
-const sendCfg = () => sendTo('all', { k: 'cfg', versus: !!NET.versus, gmode: NET.gmode });
+const sendCfg = () => sendTo('all', { k: 'cfg', versus: !!NET.versus, ffa: !!NET.ffa, gmode: NET.gmode });
 onGameMsg('cfg', d => {
   NET.versus = !!d.versus;
+  NET.ffa = !!d.ffa;
   NET.gmode = d.gmode || null;
   changed();
 });
-function setVersus(v) {
+// v: false Koop, true Versus; ffa: everybody for themselves
+function setVersus(v, ffa = false) {
   if (NET.auto) return;
   NET.versus = v;
+  NET.ffa = !!(v && ffa);
   sendCfg();
   changed();
 }

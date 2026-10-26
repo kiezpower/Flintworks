@@ -83,7 +83,9 @@ function openChest(ch) {
   track('chest');
   // (G.cmdPid: the player whose action opened it)
   addStat(G.cmdPid, 'chests');
-  if (G.teams) announce(`${TEAM[G.curTeam || 0]} hat eine Truhe geöffnet!`, null, 1 - (G.curTeam || 0));
+  if (G.teams)
+    for (let t = 0; t < G.teams.length; t++)
+      if (t !== (G.curTeam || 0)) announce(`${TEAM[G.curTeam || 0]} hat eine Truhe geöffnet!`, null, t);
 }
 
 function drawChests(ctx, cx, cy) {

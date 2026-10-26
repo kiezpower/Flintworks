@@ -1,4 +1,5 @@
-// Versus rules that bring the two castles together: castles have hit points and can be stormed
+// Versus rules that bring the castles together (two teams, or three or four in "Jeder gegen
+// jeden", where a stormed castle is out and the last one standing wins): castles have hit points and can be stormed
 // (flint, TNT, arrows, the sword), a hill in the middle pays the team that holds it, a chest in
 // the middle fills up again, the round has a clock with a loud last minute, and a team that
 // falls behind gets supplies from the sky. Everything is decided on the host; clients get the
@@ -14,8 +15,8 @@ import { TEAM_COLS, teamOf, useTeam } from './teams.js';
 import { AIR, GRANITE, H, ROCK, W, bg, clamp, mat, paint, rnd, solid, surf } from './world.js';
 
 const CASTLE_HP = 400;
-const ROUND_MIN = 8; // minutes of a Versus round, unless the map says otherwise (rules.vsTime)
-const TEAM = ['Rot', 'Blau'];
+const ROUND_MIN = 8; // minutes of a Versus round, unless the map (rules.vsTime) or quick play says otherwise
+const TEAM = ['Rot', 'Blau', 'Gelb', 'Grün'];
 const MIN = 3600;
 
 // ---- a new world: castles, hill, the chest in the middle, the clock ----
@@ -26,10 +27,13 @@ function setupRound() {
   if (!M.vs) return;
   for (const b of builds) if (b.type === 'base') b.hp = CASTLE_HP;
   const L = mode().pkg;
-  M.len = Math.round((L?.rules?.vsTime || ROUND_MIN) * MIN);
+  M.len = Math.round((M.vsMin || L?.rules?.vsTime || ROUND_MIN) * MIN);
+  M.out = []; // teams whose castle fell
   const h = L?.objects?.find(o => o.t === 'hill'),
     hx = clamp(h ? Math.round(h.x < 0 ? W + h.x : h.x) : Math.round(W / 2), 10, W - 10);
-  M.hill = { x: hx, y: surf[hx], r: h?.r || 34, own: -1, cap: 0 };
+  // (three castles: the middle one stands where the hill would be, so there is none)
+  if (!builds.some(b => b.type === 'base' && Math.abs(b.x + b.w / 2 - hx) < 80))
+    M.hill = { x: hx, y: surf[hx], r: h?.r || 34, own: -1, tm: -1, cap: 0 };
   M.sup = 2 * MIN; // first supply check after two minutes
   M.mark = [0, 0]; // how far each team has been announced (¾, almost there)
   if (!L) centerChest();
@@ -89,6 +93,7 @@ function damageCastle(b, dmg, by, pid = null) {
   }
   if (b.hp <= 0) {
     G.mp.fallen = t;
+    (G.mp.out ||= []).push(t);
     sfx('boom', cx, top);
     announceBanner('Burg gefallen', `${TEAM[t]}e Burg ist gestürmt!`);
   }
@@ -119,23 +124,35 @@ const onHill = (c, h) => Math.abs(c.x + 3 - h.x) < h.r && Math.abs(c.y + 10 - h.
 function hillTick() {
   const h = G.mp.hill;
   if (!h) return;
+  // (a round saved before there were more than two teams: cap went from -1 red to +1 blue)
+  if (h.tm == null) Object.assign(h, { tm: h.cap ? (h.cap < 0 ? 0 : 1) : -1, cap: Math.abs(h.cap) });
   // (the flag stands on the ground as it is now, also after digging or blasting)
   let y = 0;
   while (y < H - 1 && !solid(h.x, y)) y++;
   h.y = y;
-  const n = [0, 0];
+  const n = G.teams.map(() => 0);
   for (const c of crew)
     if (!c.dead && !c.trapped && onHill(c, h)) {
-      n[teamOf(c) ? 1 : 0]++;
+      n[teamOf(c)]++;
       if (c.pid != null && G.frame % 60 === 0) addStat(c.pid, 'hill', 3);
     }
-  // red pulls towards -1, blue towards +1; one Wühler alone takes it in about ten seconds
-  const d = Math.max(-3, Math.min(3, n[1] - n[0]));
-  if (d) h.cap = clamp(h.cap + d * 0.05, -1, 1);
+  // the team with the most Wühler on it pulls: first the other team's hold down to nothing,
+  // then up for itself; one Wühler alone takes it in about ten seconds
+  const order = n.map((v, t) => t).sort((a, b) => n[b] - n[a]),
+    top = order[0],
+    d = Math.min(3, n[top] - n[order[1]]);
+  if (d > 0) {
+    if (h.tm === top || h.tm < 0) {
+      h.tm = top;
+      h.cap = Math.min(1, h.cap + d * 0.05);
+    } else if ((h.cap -= d * 0.05) <= 0) {
+      h.cap = 0;
+      h.tm = -1;
+    }
+  }
   const was = h.own;
-  if (h.cap <= -1) h.own = 0;
-  else if (h.cap >= 1) h.own = 1;
-  else if ((h.own === 0 && h.cap > 0) || (h.own === 1 && h.cap < 0)) h.own = -1;
+  if (h.cap >= 1) h.own = h.tm;
+  else if (h.own !== h.tm) h.own = -1;
   if (h.own !== was) {
     if (h.own >= 0) announce(`${TEAM[h.own]} hält den Hügel!`);
     else announce('Der Hügel ist wieder frei');
@@ -166,12 +183,12 @@ function drawHill(ctx, cx, cy) {
   const wave = (G.frame >> 4) & 1;
   ctx.fillStyle = h.own >= 0 ? TEAM_COLS[h.own] : '#e8e2d0';
   ctx.fillRect(x + 1, y - 20 + wave, 8, 5);
-  // how far the hill is taken: red from the left, blue from the right
+  // how far the hill is taken, in the colour of the team taking it
   ctx.fillStyle = '#24160c';
   ctx.fillRect(x - 9, y - 25, 19, 3);
-  ctx.fillStyle = TEAM_COLS[h.cap < 0 ? 0 : 1];
-  const w = Math.round(Math.abs(h.cap) * 8);
-  ctx.fillRect(h.cap < 0 ? x - w : x + 1, y - 24, w, 1);
+  if (h.tm == null || h.tm < 0) return;
+  ctx.fillStyle = TEAM_COLS[h.tm];
+  ctx.fillRect(x - 8, y - 24, Math.round(h.cap * 17), 1);
 }
 
 // ---- the clock, the last minute, supplies, news about the other team ----
@@ -218,6 +235,7 @@ function clockTick() {
   const r = ratios();
   // news about the other team: three quarters, almost there
   r.forEach((v, t) => {
+    if (outList().includes(t)) return;
     const m = M.mark[t] || 0;
     if (v >= 0.9 && m < 2) {
       M.mark[t] = 2;
@@ -227,22 +245,35 @@ function clockTick() {
       announce(`${TEAM[t]} hat schon drei Viertel geschafft!`);
     }
   });
-  // every 90 seconds: the team that is well behind gets explosives dropped at its castle
+  // every 90 seconds: the team that is well behind the best gets explosives dropped at its castle
   if ((G.playTicks || 0) >= M.sup) {
     M.sup += 1.5 * MIN;
-    const hp = [0, 1].map(t => castleOf(t)?.hp ?? CASTLE_HP),
-      lag = t => r[1 - t] - r[t] >= 0.2 || hp[t] - hp[1 - t] <= -120;
-    const t = lag(0) ? 0 : lag(1) ? 1 : -1;
-    if (t >= 0) supply(t);
+    const ts = alive(),
+      hp = G.teams.map((x, t) => castleOf(t)?.hp ?? CASTLE_HP),
+      bestR = Math.max(...ts.map(t => r[t])),
+      bestHp = Math.max(...ts.map(t => hp[t])),
+      lag = ts.filter(t => bestR - r[t] >= 0.2 || hp[t] - bestHp <= -120);
+    // (the one furthest behind)
+    lag.sort((a, b) => r[a] - r[b]);
+    if (lag.length) supply(lag[0]);
   }
+}
+// the teams still in the round (in "Jeder gegen jeden" a stormed castle is out)
+// (a round saved before: only .fallen)
+const outList = () => G.mp.out || (G.mp.fallen != null ? [G.mp.fallen] : []);
+const alive = () => G.teams.map((x, t) => t).filter(t => !outList().includes(t));
+// a message for every team but one
+function announceOthers(key, t) {
+  for (let k = 0; k < G.teams.length; k++) if (k !== t) announce(key, null, k);
 }
 function supply(t) {
   const b = castleOf(t);
   if (!b) return;
-  const x = t ? b.x - 14 : b.x + b.w + 10;
+  // (towards the middle of the world)
+  const x = b.x + b.w / 2 > W / 2 ? b.x - 14 : b.x + b.w + 10;
   ['tnt', 'flint', 'flint'].forEach((k, n) => spawnItem(k, x + n * 4, 4, 0, 0.5, 30));
   announceBanner('Nachschub!', 'Sprengstoff fällt vor eurer Burg vom Himmel', null, t);
-  announce('Der Gegner bekommt Nachschub', null, 1 - t);
+  announceOthers(G.teams.length > 2 ? 'Ein Gegner bekommt Nachschub' : 'Der Gegner bekommt Nachschub', t);
   sfx('whoosh');
 }
 
@@ -268,22 +299,37 @@ function chestTick() {
 // the end of a Versus round: a castle fell, the goal was reached, or the time is up.
 // winner: team index, -2 for a draw, null while the round goes on
 function vsResult() {
-  const M = G.mp;
-  if (M.fallen != null) return { winner: 1 - M.fallen, why: `${TEAM[M.fallen]}e Burg ist gestürmt!` };
+  const ts = alive();
+  // the last castle standing wins (with two teams: the other one fell)
+  if (ts.length === 1) {
+    const f = outList().at(-1);
+    return { winner: ts[0], why: G.teams.length > 2 ? `${TEAM[ts[0]]} steht als Letzter` : `${TEAM[f]}e Burg ist gestürmt!` };
+  }
   const cur = G.curTeam;
   let winner = null;
-  for (let t = 0; t < G.teams.length && winner == null; t++) {
+  for (const t of ts) {
+    if (winner != null) break;
     useTeam(t);
     if (goalReached()) winner = t;
   }
   useTeam(cur);
   if (winner != null) return { winner, why: `${TEAM[winner]} hat das Ziel erreicht` };
   if (left() == null || left() > 0) return null;
+  // time is up: the team furthest ahead, then the strongest castle
   const r = ratios(),
-    hp = [0, 1].map(t => castleOf(t)?.hp ?? 0);
-  if (Math.abs(r[0] - r[1]) > 0.001) return { winner: r[0] > r[1] ? 0 : 1, why: 'Zeit um: das weitere Team gewinnt' };
-  if (hp[0] !== hp[1]) return { winner: hp[0] > hp[1] ? 0 : 1, why: 'Zeit um: die stärkere Burg gewinnt' };
-  return { winner: -2, why: 'Zeit um: beide gleich weit' };
+    hp = G.teams.map((x, t) => castleOf(t)?.hp ?? 0),
+    best = (key, why) => {
+      const top = Math.max(...ts.map(key)),
+        lead = ts.filter(t => Math.abs(key(t) - top) <= 0.001);
+      return lead.length === 1 ? { winner: lead[0], why } : null;
+    };
+  return (
+    best(t => r[t], 'Zeit um: das weitere Team gewinnt') ||
+    best(t => hp[t], 'Zeit um: die stärkere Burg gewinnt') || {
+      winner: -2,
+      why: ts.length > 2 ? 'Zeit um: alle gleich weit' : 'Zeit um: beide gleich weit',
+    }
+  );
 }
 
 export { CASTLE_HP, TEAM, castleOf, chestTick, clockText, damageCastle, drawCastleHp, drawHill, setupRound, updVersus, vsResult };

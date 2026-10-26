@@ -96,10 +96,11 @@ function play(withTutorial, level = null) {
       }
       toast('Der Spielstand ließ sich nicht laden');
     }
-    const d = startMessage();
-    d.biome = chosenBiome() || ['meadow', 'desert', 'winter'][Math.floor(Math.random() * 3)];
     // (a quick play room plays its mode of the hour)
-    d.gmode = NET.auto ? NET.auto.gmode : GAME_MODES[P.gmode] && !GAME_MODES[P.gmode].campaign ? P.gmode : 'gold';
+    const d = startMessage(
+      NET.auto ? NET.auto.gmode : GAME_MODES[P.gmode] && !GAME_MODES[P.gmode].campaign ? P.gmode : 'gold',
+    );
+    d.biome = chosenBiome() || ['meadow', 'desert', 'winter'][Math.floor(Math.random() * 3)];
     d.diff = P.diff || 'adventure';
     sendTo('all', d);
     playNet(d);
@@ -160,11 +161,14 @@ function playNet(d) {
   G.nextMode = d.gmode;
   G.nextDiff = d.diff;
   G.nextVersus = !!d.versus;
+  G.nextFfa = d.ffa || 0;
+  G.nextVsMin = d.vsMin || null;
   G.nextNp = d.np || (d.players && d.players.length) || 1;
   G.nextSize = d.size || [W0, H0];
   gen();
-  G.nextSeed = G.nextSize = null;
+  G.nextSeed = G.nextSize = G.nextVsMin = null;
   G.nextVersus = false;
+  G.nextFfa = 0;
   beginNet(d);
   resetCam();
   G.inRun = true;

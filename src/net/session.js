@@ -10,23 +10,32 @@ import { useMine } from '../teams.js';
 import { startClient, stopClient } from './client.js';
 import { sendWorld, startHost, stopHost, welcome } from './host.js';
 import { NET, onRoomChange } from './room.js';
-import { H, W, devSize } from '../world.js';
+import { GAME_MODES } from '../modes.js';
+import { H, H0, W, W0, devSize } from '../world.js';
 
 let online = new Set(); // players that were online at the last room update
 
-// the start message the host sends to everybody
-function startMessage() {
+// the start message the host sends to everybody (gmode: the game mode or map)
+function startMessage(gmode) {
   const players = NET.players.filter(p => p.online).map(({ pid, name, cap, hat }) => ({ pid, name, cap, hat }));
   const versus = !!NET.versus && players.length >= 2;
-  // Versus: players in turn to the red and the blue castle (1:1, 2:1, 2:2)
+  // "Jeder gegen jeden": a castle for every player, from three on and in generated worlds (the
+  // maps are built for two castles); with two it is plain Versus
+  const ffa = versus && NET.ffa && players.length >= 3 && !GAME_MODES[gmode]?.pkg ? players.length : 0;
+  // Versus: players in turn to the red and the blue castle (1:1, 2:1, 2:2); each to its own
   const teams = {};
   players
     .map(p => p.pid)
     .sort((a, b) => a - b)
-    .forEach((pid, k) => (teams[pid] = versus ? k % 2 : 0));
+    .forEach((pid, k) => (teams[pid] = ffa ? k : versus ? k % 2 : 0));
   const np = players.length; // (Koop goals grow with the players)
-  return { k: 'start', seed: (Math.random() * 4294967296) >>> 0, size: devSize, players, versus, teams, np };
+  // more castles need a wider world: 1700 for three, 2000 for four
+  const size = ffa ? [W0 + 300 * (ffa - 2), H0] : devSize;
+  // quick play: shorter Versus rounds
+  const vsMin = versus && NET.auto ? QUICK_MIN : null;
+  return { k: 'start', seed: (Math.random() * 4294967296) >>> 0, size, players, versus, ffa, vsMin, teams, np, gmode };
 }
+const QUICK_MIN = 4;
 // a player's Wühler at the castle of its team
 function addPlayerClonk(p, self = false) {
   if ((p.pid === G.myId && !self) || clonkOf(p.pid)) return;
@@ -36,13 +45,13 @@ function addPlayerClonk(p, self = false) {
   Object.assign(c, { pid: p.pid, name: p.name, cap: p.cap, hat: p.hat, inv: [], team });
 }
 const teamBase = t => (G.teams && G.teams[t] && t !== G.curTeam ? G.teams[t].base : G.base);
-// a late joiner goes to the smaller team
+// a late joiner goes to the smallest team (in "Jeder gegen jeden" a castle nobody plays)
 function teamFor(pid) {
   const T = G.netStart.teams || (G.netStart.teams = {});
   if (T[pid] == null) {
-    const n = [0, 0];
+    const n = (G.teams || [0]).map(() => 0);
     for (const k in T) n[T[k]]++;
-    T[pid] = G.netStart.versus && n[1] < n[0] ? 1 : 0;
+    T[pid] = G.netStart.versus ? n.indexOf(Math.min(...n)) : 0;
   }
   return T[pid];
 }
@@ -52,6 +61,7 @@ function beginNet(d) {
   // (late joiners get the size of the world as it is now)
   G.netStart = {
     ...{ seed: d.seed, size: [W, H], biome: d.biome, gmode: d.gmode, diff: d.diff, versus: d.versus, np: d.np },
+    ...{ ffa: d.ffa || 0, vsMin: d.vsMin || null },
     teams: { ...d.teams },
   };
   G.myTeam = (d.teams && d.teams[G.myId]) || 0;
