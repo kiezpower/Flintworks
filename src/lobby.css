@@ -760,6 +760,22 @@
     inset 0 2px 0 rgba(255, 255, 255, 0.6),
     0 2px 0 #24160c;
 }
+.lb-create small {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 400;
+  text-shadow: none;
+  opacity: 0.8;
+}
+.lb-friends {
+  width: 100%;
+}
+.lb-rooms .hint {
+  margin: 2px 0;
+  font-size: 12px;
+  opacity: 0.8;
+}
 .lb-or {
   text-align: center;
   font-size: 11px;
@@ -858,13 +874,16 @@
   opacity: 0.7;
 }
 /* player rows have no icon: the name gets the full width, the state goes below it */
-.lb-players .opt {
+.lb-players .opt,
+.lb-rooms .opt {
   grid-template-columns: 1fr auto;
 }
-.lb-players .opt small {
+.lb-players .opt small,
+.lb-rooms .opt small {
   grid-column: 1;
 }
-.lb-players .opt .cost {
+.lb-players .opt .cost,
+.lb-rooms .opt .cost {
   grid-row: 1 / span 2;
   grid-column: 2;
   font-size: 14px;

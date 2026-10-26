@@ -1,4 +1,5 @@
-// Lobby: playing together. Create a room or join one with a code, invite friends (WhatsApp, the
+// Lobby: playing together. Play with anybody (quick play or the list of open rooms), create a room
+// or join one with a code, invite friends (WhatsApp, the
 // share sheet, Telegram, SMS, e-mail, copy, QR code), see who is in and get ready. The "+" slots next
 // to the hero show the players in the room.
 import qrcode from 'qrcode-generator';
@@ -7,6 +8,7 @@ import { openName } from './lobbyname.js';
 import {
   MAX_PLAYERS,
   NET,
+  browseRooms,
   copyText,
   createRoom,
   inviteLink,
@@ -15,6 +17,8 @@ import {
   leaveRoom,
   onRoomChange,
   others,
+  quickPlay,
+  setPublic,
   setReady,
   setVersus,
   shareInvite,
@@ -25,10 +29,13 @@ import { G } from './state.js';
 import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
 
 const ERRORS = { nope: 'Raum nicht gefunden', full: 'Der Raum ist voll', bad: 'Verbindung unterbrochen' };
-let open = false;
+let open = false,
+  shown = ''; // the room state the panel was drawn for
+const stateKey = () => `${NET.status}|${NET.room}|${NET.error}`;
 
 function openInvite() {
   open = true;
+  shown = stateKey();
   const p = openPanel('Zusammen spielen');
   const box = document.createElement('div');
   box.className = 'lb-invite';
@@ -39,14 +46,29 @@ function openInvite() {
     return;
   }
   if (!NET.room) {
-    // straight to the point: one tap creates the room, a code joins one
+    // straight to the point: one tap and you play with whoever is there, no code needed; below
+    // the open rooms to pick one, a room for friends and joining with a code
     if (NET.status === 'error' && NET.error)
       box.innerHTML = `<p class="hint">${tr(ERRORS[NET.error] || 'Keine Verbindung zum Server')}</p>`;
     box.appendChild(meRow());
+    const quick = document.createElement('button');
+    quick.className = 'lb-create';
+    quick.id = 'lbQuick';
+    quick.innerHTML = `${tr('Schnell spielen')}<small>${tr('Mit anderen Spielern, ohne Code')}</small>`;
+    quick.addEventListener('click', () => fresh() && quickPlay());
+    box.appendChild(quick);
+    box.insertAdjacentHTML('beforeend', `<p class="lb-or">${tr('oder einen offenen Raum wählen')}</p>`);
+    const list = document.createElement('div');
+    list.className = 'plist lb-rooms';
+    list.id = 'lbRooms';
+    box.appendChild(list);
+    drawRooms();
+    browseRooms(true, () => open && !panelEl.hidden && !!$('lbRooms'));
+    box.insertAdjacentHTML('beforeend', `<p class="lb-or">${tr('oder mit Freunden spielen')}</p>`);
     const go = document.createElement('button');
-    go.className = 'lb-create';
+    go.className = 'lb-way lb-friends';
     go.id = 'lbCreate';
-    go.textContent = tr('Raum erstellen');
+    go.textContent = tr('Raum für Freunde erstellen');
     go.addEventListener('click', () => fresh() && createRoom());
     box.appendChild(go);
     box.insertAdjacentHTML('beforeend', `<p class="lb-or">${tr('oder mit Code beitreten')}</p>`);
@@ -70,6 +92,7 @@ function openInvite() {
     </button>
     <div class="lb-qr" title="${tr('Mit der Kamera scannen')}">${qrSvg(inviteLink())}</div>
   </div>`;
+  if (NET.pub) box.insertAdjacentHTML('afterbegin', `<p class="hint">${tr('Offener Raum: weitere Spieler können jederzeit dazukommen')}</p>`);
   $('lbCodeTap').addEventListener('click', async () => {
     if (fresh()) toast((await copyText(NET.room)) ? 'Code kopiert' : 'Kopieren nicht möglich');
   });
@@ -132,7 +155,38 @@ function openInvite() {
       },
     });
   }
+  // an open room: anybody finds it in the list and through quick play, the code works too
+  if (NET.host)
+    opt(sec(p, ''), {
+      title: tr('Offener Raum'),
+      sub: tr(NET.pub ? 'Jeder kann ohne Code beitreten' : 'Nur mit Code oder Einladung'),
+      cost: NET.pub ? '✓' : '',
+      short: true,
+      onClick: () => setPublic(!NET.pub),
+    });
   leaveOpt(p, 'Raum verlassen');
+}
+// the open rooms: who hosts, how many are in, Koop or Versus, a round running (join it late)
+function drawRooms() {
+  const l = $('lbRooms');
+  if (!l) return;
+  l.innerHTML = '';
+  if (!NET.rooms) {
+    l.innerHTML = `<p class="hint">${tr('Suche offene Räume …')}</p>`;
+    return;
+  }
+  if (!NET.rooms.length) {
+    l.innerHTML = `<p class="hint">${tr('Gerade ist kein Raum offen. Mit „Schnell spielen“ eröffnest du einen, andere finden ihn hier.')}</p>`;
+    return;
+  }
+  for (const r of NET.rooms)
+    opt(l, {
+      title: tr('Raum von {name}', { name: esc(r.host || '?') }),
+      sub: `${tr(r.versus ? 'Versus' : 'Koop')}${r.playing ? ' · ' + tr('Spiel läuft') : ''}`,
+      cost: `${r.n}/${MAX_PLAYERS}`,
+      short: true,
+      onClick: () => fresh() && joinRoom(r.code),
+    });
 }
 function leaveOpt(p, title) {
   opt(sec(p, ''), {
@@ -218,9 +272,12 @@ function refreshSlots() {
 onRoomChange(() => {
   refreshSlots();
   G.onRoomChange?.();
-  // keep the open room panel up to date
-  if (open && !panelEl.hidden) openInvite();
-  else open = false;
+  // keep the open room panel up to date; a new room list only redraws the list (so a code being
+  // typed stays)
+  if (open && !panelEl.hidden) {
+    if (stateKey() === shown && $('lbRooms')) drawRooms();
+    else openInvite();
+  } else open = false;
 });
 
 export { openInvite, refreshSlots };
