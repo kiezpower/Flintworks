@@ -46,6 +46,21 @@ const P = {
 try {
   Object.assign(P, JSON.parse(localStorage.getItem(KEY) || '{}'));
 } catch {}
+// a fresh digger gets a made-up name instead of everybody being "Kurt"; it can be changed any time
+const NAME_A = ['Flink', 'Kies', 'Erz', 'Moos', 'Stein', 'Funken', 'Kohlen', 'Gold', 'Lehm', 'Fels', 'Rost', 'Kupfer', 'Silber', 'Torf', 'Quarz', 'Ruß'];
+const NAME_B = ['bart', 'hacke', 'zahn', 'nase', 'faust', 'bein', 'kopf', 'hand', 'ohr', 'beule'];
+const pick = a => a[Math.floor(Math.random() * a.length)];
+function randomName() {
+  let n;
+  do n = pick(NAME_A) + pick(NAME_B);
+  while (n.length > 12 || n === P.name);
+  return n;
+}
+const cleanName = s => String(s).replace(/[<>&"]/g, '').trim().slice(0, 12);
+if (!P.name) {
+  P.name = randomName();
+  saveProfile();
+}
 delete P.crystals;
 delete P.chestDay;
 delete P.road;
@@ -150,7 +165,9 @@ export {
   QUESTS,
   addXp,
   claimQuest,
+  cleanName,
   finishGame,
+  randomName,
   rollQuests,
   saveProfile,
   sold,
