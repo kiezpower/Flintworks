@@ -36,7 +36,7 @@ npm run dev        # Entwicklungsserver mit Live-Reload, auch im WLAN fürs Hand
 npm run build      # fertige Web-Version in dist/
 npm run preview    # gebaute Version lokal testen
 npm run android    # Web-Version bauen und ins Android-Projekt kopieren
-npm test           # Browser-Tests: spielt das Tutorial durch, gräbt durch jedes Material, prüft Weltgrößen (Playwright)
+npm test           # Browser-Tests: spielt das Tutorial durch, gräbt durch jedes Material, prüft Weltgrößen und Versus-Regeln (Playwright)
 npm run test:visual # spielt eine Runde, speichert Screenshots in tests/out/ und prüft auf Fehler
 npm run previews   # Vorschaubilder der Level für die Levelauswahl neu erzeugen (nach Änderungen an Leveln)
 npm run store-shots # erzeugt Store-Bilder (Screenshots, Cover, Feature-Grafik) in docs/itch/ und docs/play/
@@ -96,6 +96,9 @@ src/
   tutsteps.js         Die zehn Schritte des Tutorials
   tutlevel.js         Die Tutorial-Welt mit festem Lehrpfad
   lessons.js          Tipps und Aufträge nach dem Tutorial, Spielhilfe in der Lobby
+  versus.js           Versus: Burg-Lebenspunkte, Hügel, Rundenuhr, Nachschub, Sieger
+  coop.js             Koop: Teamaufgaben
+  stats.js            Mehrspieler: Rangliste und Auszeichnungen am Rundenende
   i18n.js             Übersetzungen (Deutsch ist der Schlüssel, Englisch die Übersetzung)
   debug.js            Test-Zugang, nur im Entwicklungsmodus
   style.css           Gestaltung

@@ -24,10 +24,16 @@ import { LIQ, matAt, solid } from './world.js';
 import * as events from './events.js';
 import * as effects from './effects.js';
 import * as combat from './combat.js';
+import * as room from './net/room.js';
+import * as modes from './modes.js';
+import * as versus from './versus.js';
 import { TUT, ground, rockOpen } from './tutlevel.js';
 import { STEPS } from './tutsteps.js';
 
 window.__ww = {
+  room,
+  modes,
+  versus,
   effects,
   events,
   combat,

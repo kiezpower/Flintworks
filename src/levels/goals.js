@@ -7,9 +7,10 @@ import { mkAnimal, spawnItem } from '../entities.js';
 import { startQuake, startVolcano } from '../events.js';
 import { addFloat } from '../floats.js';
 import { tr } from '../i18n.js';
+import { goalScale } from '../modes.js';
 import { G, animals, builds, crew, vehicles } from '../state.js';
 import { VK } from '../vehicles/index.js';
-import { W, surf } from '../world.js';
+import { AIR, H, LAVA, W, activate, mat, paint, surf } from '../world.js';
 
 const lvl = () => G.lvl || (G.lvl = { fired: {}, flags: {}, reached: {}, depth: {} });
 // areas reached and the deepest point count per team (Versus maps; otherwise all are team 0)
@@ -48,7 +49,9 @@ const TYPES = {
   reach: { val: g => (lvl().reached[team() + ':' + g.area] ? 1 : 0), label: g => tr(g.label || 'Ziel erreicht') },
   survive: { val: () => Math.floor((G.playTicks || 0) / 3600), label: () => tr('Minuten') },
 };
-const need = g => g.n ?? 1;
+// money and deliveries grow in Koop and shrink in Versus (see goalScale), the rest stays
+const SCALED = { money: 1, sell: 1, collect: 1 };
+const need = g => (SCALED[g.t] ? Math.max(1, Math.round((g.n ?? 1) * goalScale())) : g.n ?? 1);
 // a goal as a sentence, for the level selection ("Verdiene 600 Taler")
 const PHRASE = {
   money: g => tr('Verdiene {n} Taler', { n: need(g) }),
@@ -125,9 +128,31 @@ function act(d, L) {
   else if (d.t === 'lose') G.onLevelEnd?.(false, d.text);
 }
 
+// rules.rise: lava climbs up from the bottom, from minute `start` one row every `every`
+// seconds up to row `top`; it fills tunnels and caves, the earth in between stays
+function riseTick(L) {
+  const r = L.rules && L.rules.rise,
+    s = lvl();
+  if (!r) return;
+  const t = (G.playTicks || 0) - (r.start || 0) * 3600,
+    rows = t < 0 ? 0 : Math.floor(t / ((r.every || 10) * 60));
+  while ((s.rose || 0) < rows && H - 2 - (s.rose || 0) > (r.top || 0)) {
+    const y = H - 2 - (s.rose || 0);
+    for (let x = 0; x < W; x++) {
+      const i = y * W + x;
+      if (mat[i] !== AIR) continue;
+      mat[i] = LAVA;
+      paint(i);
+      activate(x, y);
+    }
+    s.rose = (s.rose || 0) + 1;
+  }
+}
+
 // every half second: rescues, areas reached, the deepest point, triggers, defeats
 function levelTick(L) {
   const s = lvl();
+  riseTick(L);
   rescueTick();
   for (const c of alive()) {
     const t = teamOfC(c);

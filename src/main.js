@@ -45,13 +45,16 @@ import { beginNet, endNet, resumeNet, startMessage } from './net/session.js';
 import { clearNetSave, loadNetSave, saveNet } from './net/netsave.js';
 import { clientStep } from './net/client.js';
 import { hostEnd, hostTick } from './net/host.js';
-import { teamOf, useMine, useTeam } from './teams.js';
+import { TEAM_COLS, teamOf, useMine, useTeam } from './teams.js';
 import { updVehicles } from './vehicles/core.js';
 import { playerVehicleTick } from './vehicles/index.js';
 import { updEmoBtn } from './net/emotes.js';
 import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
+import { chestTick, updVersus, vsResult } from './versus.js';
+import { updCoop } from './coop.js';
+import { statsHtml } from './stats.js';
 import { H, H0, W, W0, clamp, dryFresh, surf } from './world.js';
 
 // ---- Screens & loop ----
@@ -127,6 +130,7 @@ function play(withTutorial, level = null) {
       // tutorial and levels have their own size; free play is 1400 × 400 (or ?size= when developing)
       G.nextSize = L ? L.size || [W0, H0] : null;
       G.nextVersus = false;
+      G.nextNp = 1;
       gen();
       G.nextSeed = G.nextSize = null;
       if (bonus) {
@@ -153,6 +157,7 @@ function playNet(d) {
   G.nextMode = d.gmode;
   G.nextDiff = d.diff;
   G.nextVersus = !!d.versus;
+  G.nextNp = d.np || (d.players && d.players.length) || 1;
   G.nextSize = d.size || [W0, H0];
   gen();
   G.nextSeed = G.nextSize = null;
@@ -210,31 +215,36 @@ function startGame(withTutorial = false) {
   }
   if (!G.tut && withTutorial !== 'resume') toast('Welt: {name}', { name: tr(biome().name) });
 }
-// a client hears from the host that the round is over (Versus: which team won)
-G.onNetEnd = (won, winner) => G.state === 'play' && endScreen(winner == null ? won : winner === G.myTeam);
+// a client hears from the host that the round is over (Versus: which team won, -2 a draw)
+G.onNetEnd = (won, winner, why, stats) => {
+  if (G.state !== 'play') return;
+  if (G.mp && stats) G.mp.stats = stats;
+  endScreen(winner == null ? won : winner === G.myTeam, why, winner);
+};
 // a hand-built level ends early: won by a trigger, or lost (crew gone, time up) with a reason
 G.onLevelEnd = (won, why) => G.state === 'play' && endScreen(won, why);
-// the goal: in Versus the first team to reach it wins
+// the goal: in Versus the first team to reach it wins, or the one that storms the other
+// castle, or the one further ahead when the clock runs out (versus.js)
 function checkGoal() {
   if (!G.teams) {
     if (goalReached()) endScreen(true);
     return;
   }
-  let winner = -1;
   G.vs = [];
   for (let t = 0; t < G.teams.length; t++) {
     useTeam(t);
     G.vs[t] = mode().prog();
-    if (winner < 0 && goalReached()) winner = t;
   }
   useMine();
-  if (winner >= 0) {
-    hostEnd(winner === G.myTeam, winner);
-    endScreen(winner === G.myTeam);
+  const r = vsResult();
+  if (r) {
+    hostEnd(r.winner === G.myTeam, r.winner, r.why, G.mp.stats);
+    endScreen(r.winner === G.myTeam, r.why, r.winner);
   }
 }
-function endScreen(won, why) {
-  if (!G.teams) hostEnd(won);
+// winner: in Versus the team that won (-2: a draw)
+function endScreen(won, why, winner = null) {
+  if (!G.teams) hostEnd(won, null, why, G.mp && G.mp.stats);
   if (G.netHost) clearNetSave();
   G.state = won ? 'won' : 'lost';
   if (won) sfx('fanfare');
@@ -248,20 +258,37 @@ function endScreen(won, why) {
   const tro = finishGame(won, G.earned || 0, stars);
   const time = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   const M = mode();
-  card.innerHTML = won
-    ? `<h1>${tr('Geschafft')}</h1><p class="stars">${'★'.repeat(stars)}<span>${'★'.repeat(3 - stars)}</span></p>
+  if (G.teams || winner != null) {
+    // Versus: victory, defeat or a draw, with the reason
+    const draw = winner === -2;
+    card.innerHTML = `<h1>${tr(draw ? 'Unentschieden' : won ? 'Sieg!' : 'Niederlage')}</h1>
+      <p>${tr(why || '')}</p><p class="hint">${tr(M.name)} · ${tr('Zeit {time}', { time })}</p>`;
+  } else
+    card.innerHTML = won
+      ? `<h1>${tr('Geschafft')}</h1><p class="stars">${'★'.repeat(stars)}<span>${'★'.repeat(3 - stars)}</span></p>
        <p>${tr(M.name)} · ${tr(M.desc, { goal: M.goal })} · ${tr('Zeit {time}', { time })}</p>
        <p class="hint">${tr('3 Sterne unter {a} Min., 2 Sterne unter {b} Min.', { a: M.stars[0], b: M.stars[1] })}</p>`
-    : `<h1>${tr(why ? 'Level verloren' : 'Crew verloren')}</h1><p>${tr(why || 'Alle Wühler sind erschöpft und die Kasse reicht für keinen neuen.')}</p>`;
+      : `<h1>${tr(why ? 'Level verloren' : 'Crew verloren')}</h1><p>${tr(why || 'Alle Wühler sind erschöpft und die Kasse reicht für keinen neuen.')}</p>`;
+  // multiplayer: who did what, with awards
+  if (G.net) card.innerHTML += statsHtml(G.mp && G.mp.stats, G.teams ? TEAM_COLS : null);
   // after a won campaign level: straight on to the next one
   const next = won && !G.net && nextLevel(G.mode);
   card.innerHTML += `<p class="trophy-gain">${tr('{n} Trophäen', { n: (tro >= 0 ? '+' : '') + tro })}</p>`;
   if (next) card.innerHTML += `<button class="go" id="nextBtn">${tr('Nächstes Level: {name}', { name: tr(GAME_MODES[next].name) })}</button>`;
-  card.innerHTML += `<button class="go${next ? ' alt' : ''}" id="goBtn">${tr('Zur Lobby')}</button>`;
+  // multiplayer: the host starts the next round for everybody with the same settings
+  const again = G.net && inRoom();
+  if (again && NET.host) card.innerHTML += `<button class="go" id="againBtn">${tr('Revanche!')}</button>`;
+  else if (again) card.innerHTML += `<p class="hint">${tr('Der Host kann gleich eine Revanche starten')}</p>`;
+  card.innerHTML += `<button class="go${next || (again && NET.host) ? ' alt' : ''}" id="goBtn">${tr('Zur Lobby')}</button>`;
   $('goBtn').onclick = () => {
     overlay.hidden = true;
     menu();
   };
+  if (again && NET.host)
+    $('againBtn').onclick = () => {
+      overlay.hidden = true;
+      play(false);
+    };
   if (next)
     $('nextBtn').onclick = () => {
       overlay.hidden = true;
@@ -448,6 +475,9 @@ function step() {
     updEvents();
     updCombat();
     updArrows();
+    updVersus();
+    updCoop();
+    if (G.frame % 30 === 0) chestTick();
     updItems();
     for (const L of lorries) updLorry(L);
     for (let k = animals.length - 1; k >= 0; k--)

@@ -91,8 +91,8 @@ function openInvite() {
   // Koop or Versus: the host chooses, everybody sees it
   const m = sec(p, 'Spielart');
   for (const [v, title, sub] of [
-    [false, 'Koop', 'Zusammen: eine Burg, eine Kasse, ein Ziel'],
-    [true, 'Versus', 'Gegeneinander: rote gegen blaue Burg – wer zuerst das Ziel schafft'],
+    [false, 'Koop', 'Zusammen: eine Burg, eine Kasse, ein Ziel, das mit jedem Spieler wächst, und Teamaufgaben'],
+    [true, 'Versus', 'Gegeneinander, 8 Minuten: Ziel schaffen, den Hügel halten oder die andere Burg stürmen'],
   ])
     opt(m, {
       title: tr(title),

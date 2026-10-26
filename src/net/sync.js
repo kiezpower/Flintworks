@@ -161,6 +161,7 @@ const KINDS = {
       on: b.on ? 1 : 0,
       pp: b.pipe,
       te: b.team || 0,
+      hp: b.hp,
     }),
     create: d => {
       const b = { id: d.id, type: d.ty, x: d.x, gy: d.gy, w: d.w, h: d.h, prog: 0, done: false, busy: 0, team: d.te };
@@ -170,6 +171,8 @@ const KINDS = {
     apply: (b, d) => {
       Object.assign(b, { prog: d.pr, done: !!d.dn, busy: d.bs, out: d.out, lvl: d.lv, open: d.op, moving: d.mv });
       Object.assign(b, { on: !!d.on, pipe: d.pp });
+      if (d.hp != null && d.hp < (b.hp ?? 1e9)) b.hitT = G.frame; // (the bar flashes on a hit)
+      b.hp = d.hp;
       if (b.cs && d.cs != null) b.cs.y = d.cs;
       if (b.type === 'base' && (b.team || 0) === G.myTeam) G.base = b;
     },
@@ -261,6 +264,9 @@ function packGame() {
     rainT: G.rainT,
     ticks: G.playTicks,
     rails: G.rails,
+    // the round: clock, hill, team task, what every player did (versus.js, coop.js, stats.js);
+    // a new host carries on with it (a copy: the delta compares it with the last one sent)
+    mp: G.mp && structuredClone(G.mp),
   };
 }
 function applyGame(d) {
@@ -278,6 +284,7 @@ function applyGame(d) {
     rails: d.rails || [],
   });
   G.vs = d.vs || null;
+  if (d.mp) G.mp = d.mp;
   const own = d.teams && d.teams[G.myTeam];
   if (own) {
     Object.assign(G, { money: own.money, earned: own.earned, store: own.store, tools: own.tools });

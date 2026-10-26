@@ -115,9 +115,9 @@ function sendSnapshot(full) {
   lastGame = { id: 0, ...g };
   sendTo('all', snap);
 }
-// the round is over for everybody
-function hostEnd(won, winner) {
-  if (G.netHost) sendTo('all', { k: 'end', won, winner });
+// the round is over for everybody: who won, why, and what every player did
+function hostEnd(won, winner, why, stats) {
+  if (G.netHost) sendTo('all', { k: 'end', won, winner, why: why || null, stats: stats || null });
 }
 
 // a player joins late or comes back: same world, the whole landscape, then a full snapshot

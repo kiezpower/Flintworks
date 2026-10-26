@@ -1,0 +1,40 @@
+{
+  "id": "burgsturm",
+  "v": 1,
+  "name": "Burgsturm",
+  "icon": "sword",
+  "desc": "Verdiene {goal} Taler",
+  "intro": "Zwei Burgen, ein Hügel und ein Goldtresor in der Mitte. Halte den Hügel, plündere den Tresor – oder sprenge die feindliche Burg.",
+  "biome": "meadow",
+  "size": [900, 350],
+  "zoom": 5,
+  "rough": 0.3,
+  "seed": 9212,
+  "diff": "adventure",
+  "fill": {"gold": 0.6, "caves": 0.5, "rock": 0.6},
+  "start": {"money": 60, "crew": 3, "inv": [["flint", "flint"], ["loam"], ["rock"]]},
+  "rules": {"meteors": false, "events": ["quake"], "evRate": 0.6, "vsTime": 8},
+  "objects": [
+    {"t": "base", "x": 40},
+    {"t": "base", "x": -76, "team": 1},
+    {"t": "tree", "x": 125, "stage": 4},
+    {"t": "tree", "x": 145, "stage": 4},
+    {"t": "tree", "x": 300, "stage": 3},
+    {"t": "tree", "x": 600, "stage": 3},
+    {"t": "tree", "x": 755, "stage": 4},
+    {"t": "tree", "x": 775, "stage": 4},
+    {"t": "item", "kind": "flint", "x": 100},
+    {"t": "item", "kind": "flint", "x": 800},
+    {"t": "hill", "x": 450, "r": 34},
+    {"t": "chest", "x": 450, "y": 220, "re": 2}
+  ],
+  "areas": {"tresor": [400, 180, 100, 60]},
+  "goals": [
+    {"t": "money", "n": 600}
+  ],
+  "lose": {},
+  "stars": [8, 12],
+  "triggers": [
+    {"when": {"t": "enter", "area": "tresor"}, "do": [{"t": "say", "text": "Der Goldtresor! Die Truhe hier füllt sich alle zwei Minuten neu."}]}
+  ]
+}

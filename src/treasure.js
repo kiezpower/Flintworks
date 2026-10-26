@@ -3,6 +3,9 @@ import { celebrate } from './effects.js';
 import { spawnItem } from './entities.js';
 import { addFloat } from './floats.js';
 import { track } from './profile.js';
+import { announce } from './announce.js';
+import { addStat } from './stats.js';
+import { TEAM } from './versus.js';
 import { sfx } from './sound.js';
 import { drawHi, sp } from './sprites.js';
 import { G } from './state.js';
@@ -78,6 +81,9 @@ function openChest(ch) {
   addFloat(ch.x + CW / 2, ch.y - 4, '★', '#ffe066');
   toast('Schatztruhe geöffnet!');
   track('chest');
+  // (G.cmdPid: the player whose action opened it)
+  addStat(G.cmdPid, 'chests');
+  if (G.teams) announce(`${TEAM[G.curTeam || 0]} hat eine Truhe geöffnet!`, null, 1 - (G.curTeam || 0));
 }
 
 function drawChests(ctx, cx, cy) {

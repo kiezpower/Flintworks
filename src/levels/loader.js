@@ -132,7 +132,7 @@ function placeObjects(L) {
   };
   G.base = castle(objs.find(o => o.t === 'base' && !o.team) || { x: 60 });
   const b2 = G.nextVersus && objs.find(o => o.t === 'base' && o.team === 1);
-  const second = b2 && castle(b2);
+  const second = b2 && Object.assign(castle(b2), { team: 1 });
   for (const o of objs) {
     const x = ox(o.x ?? 0);
     if (o.t === 'tree') plantTree(x, o.stage ?? 4);
@@ -146,7 +146,7 @@ function placeObjects(L) {
       const c = addClonk(x - 3, o.y - 10);
       c.trapped = true;
       c.focus = 'stay';
-    } else if (o.t === 'chest') G.chests.push({ x: x - 4, y: o.y - 6, open: false });
+    } else if (o.t === 'chest') G.chests.push({ x: x - 4, y: o.y - 6, open: false, re: o.re || 0 });
     else if (o.t === 'gas') G.gas.push({ x, y: o.y, r: o.r || 8, done: false });
     // an old support beam from y0 down to y1 (holds the ceiling like a built one)
     else if (o.t === 'beam') (G.beams ||= []).push({ x, y0: o.y0, y1: o.y1 });

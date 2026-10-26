@@ -178,6 +178,24 @@ const LESSONS = [
     when: c => terrOn() && !terrOK(c.x),
     tip: 'Du bist außerhalb deines Gebiets. Flaggen erweitern es',
   },
+  {
+    id: 'storm',
+    name: 'Burgsturm',
+    when: () => !!G.teams && G.frame > 300,
+    tip: 'Feuersteine, Sprengladungen und Pfeile beschädigen die feindliche Burg. Fällt sie, habt ihr gewonnen',
+  },
+  {
+    id: 'hill',
+    name: 'Hügel',
+    when: () => !!(G.teams && G.mp && G.mp.hill) && G.frame > 2400,
+    tip: 'Wer den Hügel in der Mitte hält, bekommt laufend Taler',
+  },
+  {
+    id: 'teamtask',
+    name: 'Teamaufgabe',
+    when: () => !!(G.mp && G.mp.coop),
+    tip: 'Teamaufgaben schafft ihr nur gemeinsam. Sie bringen viele Taler',
+  },
   { id: 'hang', name: 'Hangeln', when: c => c.hangle, tip: 'Du hängst an der Decke. Runter lässt los' },
   {
     id: 'night',

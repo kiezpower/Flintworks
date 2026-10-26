@@ -24,7 +24,8 @@ function startMessage() {
     .map(p => p.pid)
     .sort((a, b) => a - b)
     .forEach((pid, k) => (teams[pid] = versus ? k % 2 : 0));
-  return { k: 'start', seed: (Math.random() * 4294967296) >>> 0, size: devSize, players, versus, teams };
+  const np = players.length; // (Koop goals grow with the players)
+  return { k: 'start', seed: (Math.random() * 4294967296) >>> 0, size: devSize, players, versus, teams, np };
 }
 // a player's Wühler at the castle of its team
 function addPlayerClonk(p, self = false) {
@@ -50,12 +51,14 @@ function beginNet(d) {
   G.net = true;
   // (late joiners get the size of the world as it is now)
   G.netStart = {
-    ...{ seed: d.seed, size: [W, H], biome: d.biome, gmode: d.gmode, diff: d.diff, versus: d.versus },
+    ...{ seed: d.seed, size: [W, H], biome: d.biome, gmode: d.gmode, diff: d.diff, versus: d.versus, np: d.np },
     teams: { ...d.teams },
   };
   G.myTeam = (d.teams && d.teams[G.myId]) || 0;
   clearInputs();
   online = new Set(NET.players.filter(p => p.online).map(p => p.pid));
+  // more goes on in a shared round: natural events come half again as often
+  if (!G.relaxed && G.evRate) G.evRate *= 1.5;
   if (NET.host) {
     // your own Wühler (made by gen at the red castle) moves to its team's castle
     const me = clonkOf(G.myId);

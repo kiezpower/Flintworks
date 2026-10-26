@@ -13,6 +13,12 @@ const EMOTES = [
   ['🆘', 'Hilfe!'],
   ['👍', 'Gut gemacht!'],
   ['🏰', 'Zur Basis!'],
+  ['⚔️', 'Angriff!'],
+  ['🛡️', 'Verteidigen!'],
+  ['🚩', 'Zum Hügel!'],
+  ['💣', 'Gleich knallt es!'],
+  ['😈', 'Na warte!'],
+  ['😂', 'Haha!'],
 ];
 function show(pid, k) {
   const c = clonkOf(pid);

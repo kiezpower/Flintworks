@@ -5,6 +5,7 @@ import { sold } from './profile.js';
 import { sfx } from './sound.js';
 import { ITEM } from './sprites.js';
 import { isPlayer } from './players.js';
+import { addStat } from './stats.js';
 import { G } from './state.js';
 import { flyCoins } from './reward.js';
 
@@ -54,7 +55,9 @@ function unload(list, x, y, all = false) {
   return !!(money || stored);
 }
 function arriveAtBase(c) {
+  const was = G.money;
   if (unload(c.inv, G.base.x + G.base.w / 2, G.base.gy - G.base.h - 4, !isPlayer(c))) {
+    if (isPlayer(c)) addStat(c.pid, 'sold', G.money - was);
     c.isel = Math.min(c.isel, Math.max(0, c.inv.length - 1));
     G.invKey = '';
   }
