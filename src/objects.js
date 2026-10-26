@@ -9,7 +9,8 @@ import { midMat, moveBody, overlap, spawnItem, unstuck } from './entities.js';
 import { canPlantAt, plantTree } from './gen.js';
 import { sfx } from './sound.js';
 import { treeSprite } from './sprites.js';
-import { INV_MAX, G, animals, crew, flashes, items, lorries, parts, trees } from './state.js';
+import { INV_MAX, G, animals, builds, crew, flashes, items, lorries, parts, trees } from './state.js';
+import { damageCastle } from './versus.js';
 import { toast } from './ui.js';
 import {
   ACID,
@@ -62,7 +63,7 @@ function updItems() {
         });
       if (--it.fuse === 0) {
         items.splice(k, 1);
-        explode(it.x + 1, it.y + 1, it.t === 'tnt' ? 19 : 11);
+        explode(it.x + 1, it.y + 1, it.t === 'tnt' ? 19 : 11, it.thrower);
         continue;
       }
     }
@@ -75,7 +76,7 @@ function updItems() {
     }
     if (inL === LAVA && (it.t === 'flint' || it.t === 'tnt')) {
       items.splice(k, 1);
-      explode(it.x + 1, it.y + 1, it.t === 'tnt' ? 19 : 11);
+      explode(it.x + 1, it.y + 1, it.t === 'tnt' ? 19 : 11, it.thrower);
       continue;
     }
     const inW = LIQ[inL];
@@ -123,7 +124,7 @@ function updItems() {
     if (Math.abs(it.vx) < 0.03) it.vx = 0;
     if (it.armed && impact > 0.8 && it.pd < 34) {
       items.splice(k, 1);
-      explode(it.x + 1, it.y + 1, 11);
+      explode(it.x + 1, it.y + 1, 11, it.thrower);
       continue;
     }
     // hits
@@ -134,10 +135,11 @@ function updItems() {
         if (e.dead || (e === it.thrower && it.pd > 0) || !overlap(it, e, 0)) continue;
         if (it.armed) {
           items.splice(k, 1);
-          explode(it.x + 1, it.y + 1, 11);
+          explode(it.x + 1, it.y + 1, 11, it.thrower);
           break;
         }
         if (e.kind === 'clonk') {
+          if (it.thrower) e.lastHit = { pid: it.thrower.pid ?? null, team: it.thrower.team || 0, f: G.frame };
           hurt(e, sp * 3 * guard(e, 'hit'));
           if (sp > 3.2) startTumble(e, it.vx * 0.6, -1);
         } else {
@@ -433,7 +435,9 @@ const DEBCOL = {
   [COAL]: '#2a2626',
   [PLANK]: '#a0703f',
 };
-function explode(cx, cy, r) {
+// by: the Wühler that threw or lit it (Versus: it hurts the other team's castle, and a
+// knocked-out Wühler counts for the thrower)
+function explode(cx, cy, r, by = null) {
   if (G.netHost) G.netEvent(['x', cx | 0, cy | 0, r]);
   let gc = 0;
   for (let y = Math.floor(cy - r - 2); y <= cy + r + 2; y++) {
@@ -501,10 +505,19 @@ function explode(cx, cy, r) {
       dy = c.y + 5 - cy,
       d = Math.hypot(dx, dy) || 1;
     if (d < r + 9) {
+      if (by && by !== c) c.lastHit = { pid: by.pid ?? null, team: by.team || 0, f: G.frame };
       hurt(c, (r + 9 - d) * 2.1);
       startTumble(c, (dx / d) * 2.6, -2.2 + dy / d);
     }
   }
+  if (by && G.teams)
+    for (const b of builds) {
+      if (b.type !== 'base') continue;
+      // distance from the blast to the nearest point of the castle
+      const nx = Math.max(b.x, Math.min(cx, b.x + b.w)),
+        ny = Math.max(b.gy - b.h, Math.min(cy, b.gy));
+      if (Math.hypot(nx - cx, ny - cy) < r + 4) damageCastle(b, r * 3, by.team || 0, by.pid ?? null);
+    }
   for (const a of animals) {
     const dx = a.x + a.w / 2 - cx,
       dy = a.y + a.h / 2 - cy,

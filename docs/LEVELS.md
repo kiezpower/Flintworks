@@ -75,7 +75,9 @@ Bodenschicht kommen von allein.
                                   // rock sand loam caves coal ore gold gems
   "start": { "money": 60, "crew": 3, "inv": [["flint"], ["loam"], []],
              "research": ["mech"], "store": { "plank": 4 } },
-  "rules": { "meteors": false, "events": ["quake"], "evRate": 1 },
+  "rules": { "meteors": false, "events": ["quake"], "evRate": 1,
+             "vsTime": 8,                      // Versus: Minuten bis zum Rundenende
+             "rise": { "start": 2, "every": 2, "top": 160 } },  // steigende Lava, s. u.
   "objects": [ … ],
   "areas": { "name": [x, y, w, h] },   // x < 0 zählt vom rechten Rand
   "goals": [ … ],                       // alle müssen erfüllt sein
@@ -94,7 +96,8 @@ Bodenschicht kommen von allein.
 | `item` | `kind`, `x`, `y` | ohne `y` auf dem Boden |
 | `animal` | `kind` (wipf, monster, bat, fish), `x`, `y`, `lost` | `lost`: wartet auf Rettung |
 | `trapped` | `x`, `y` | ein verschütteter Wühler, wartet auf Rettung |
-| `chest` | `x`, `y` | Schatztruhe (Höhle dafür in der Karte malen) |
+| `chest` | `x`, `y`, `re` | Schatztruhe (Höhle dafür in der Karte malen); `re`: füllt sich so viele Minuten nach dem Öffnen wieder |
+| `hill` | `x`, `r` | Versus: der Hügel, der dem haltenden Team Taler bringt (ohne: Mitte der Karte, `r` = 34) |
 | `gas` | `x`, `y`, `r` | Grubengas-Tasche |
 | `beam` | `x`, `y0`, `y1` | alter Stützbalken (hält die Decke wie ein gebauter) |
 
@@ -128,6 +131,19 @@ Bodenschicht kommen von allein.
 | | | | `win` / `lose` | `text` (bei lose) |
 
 Alle Texte brauchen einen englischen Eintrag in `src/i18n.js`. Der Test prüft das.
+
+### Steigende Lava (`rules.rise`)
+
+Ab Minute `start` steigt die Lava alle `every` Sekunden um eine Zellreihe, vom unteren Rand bis
+zur Reihe `top`. Sie füllt nur Luft (Stollen, Höhlen, gegrabene Gänge), die Erde dazwischen
+bleibt. Beispiel: „Lavaflucht“.
+
+### Mehrspieler
+
+- **Koop:** Ziele vom Typ `money`, `sell` und `collect` wachsen mit jedem weiteren Spieler um die
+  Hälfte, alle anderen bleiben.
+- **Versus:** dieselben Ziele schrumpfen auf 65 %, dazu haben die Burgen 400 Lebenspunkte, der
+  Hügel bringt Taler, und nach `vsTime` Minuten (sonst 8) gewinnt das Team, das weiter ist.
 
 ### Was man beim Bauen wissen sollte
 

@@ -132,6 +132,7 @@ function serialize() {
       nextId: G.nextId || 0,
       seed: G.seed,
       teams: G.teams && G.teams.map(t => ({ ...t, base: t.base && t.base.id })),
+      mp: G.mp || null,
     };
     return data;
   } finally {
@@ -256,6 +257,8 @@ function deserialize(d) {
     G.teams = d.teams ? d.teams.map(t => ({ ...t, base: builds.find(b => b.id === t.base) })) : null;
     G.curTeam = 0;
     if (G.teams) G.teams[0].base = G.base = builds.find(b => b.type === 'base' && !b.team) || G.base;
+    // the round (players, clock, hill …); older saves are a single game
+    G.mp = d.mp || { np: 1, vs: !!G.teams, stats: {} };
     // old saves: give every entity an id
     for (const a of [crew, items, builds, trees, animals, lorries]) for (const e of a) e.id ??= G.nextId = G.nextId + 1;
     return true;

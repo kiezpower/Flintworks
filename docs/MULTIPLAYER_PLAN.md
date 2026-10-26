@@ -221,3 +221,26 @@ GitHub Pages liefert nur statische Dateien. Signaling und Relay müssen deshalb 
 |---|---|---|
 | 1 | Server und Subdomain | ✅ dogado-vServer, `play.kiez-power.de` |
 | 3 | Gilt das Spieltempo für alle? | Ja, der Host bestimmt es |
+
+---
+
+## 7. Mehr Spannung (v1.39.0)
+
+Rückmeldung nach einer Runde: Versus fühlte sich an wie zwei Einzelspiele nebeneinander, Koop
+wie ein Einzelspiel zu zweit. Was sich dafür geändert hat:
+
+| Bereich | Änderung | Dateien |
+|---|---|---|
+| Burgen | 400 Lebenspunkte. Feuersteine, Sprengladungen, Pfeile, Brandpfeile und das Schwert beschädigen die Burg des anderen Teams (die eigene nicht). Jeder Treffer schüttelt Gold aus der Kasse, das jeder aufheben kann. Nach 10 s Ruhe heilt die Burg langsam. Fällt eine Burg, ist die Runde vorbei. | `versus.js`, `objects.js`, `combat.js` |
+| Kämpfe | Schwert und Bogen treffen Wühler des anderen Teams. Helfer mit Schwert und Wachtürme verteidigen sich auch gegen sie. „… hat … erwischt!“ für alle. | `combat.js`, `buildings.js` |
+| Mitte | Ein Hügel mit Fahne: wer ihn hält, bekommt 3 Taler alle 2 s. Darunter eine Truhe, die sich alle 2 Minuten neu füllt. | `versus.js`, `treasure.js` |
+| Uhr | Versus-Runden dauern 8 Minuten (Karten: `rules.vsTime`). Noch 2 Minuten: Ansage. Letzte Minute: Meteore zwischen den Burgen. Zeit um: das Team, das weiter ist, gewinnt, sonst die stärkere Burg, sonst unentschieden. | `versus.js`, `missions.js` |
+| Aufholen | Alle 90 s bekommt ein Team, das deutlich zurückliegt, Sprengstoff vor die Burg geworfen. | `versus.js` |
+| Ziele | Koop: Ziele wachsen mit jedem Spieler um die Hälfte. Versus: 65 % der Ziele. Ereignisse im Mehrspieler 1,5× so oft. | `modes.js`, `levels/goals.js`, `net/session.js` |
+| Koop | Teamaufgaben alle paar Minuten: zwei Runensteine gleichzeitig besetzen, Waren gegen die Uhr liefern, alle zugleich 25 m tief. | `coop.js` |
+| Karten | „Burgsturm“ (Versus, klein, Hügel und Goldtresor in der Mitte), „Lavaflucht“ (Koop, Lava steigt, `rules.rise`) | `levels/` |
+| Ende | Rangliste mit Auszeichnungen (Goldgräber, Maulwurf, Sprengmeister, Kämpfer, Schatzjäger, Hügelkönig), Revanche-Knopf für den Host | `stats.js`, `main.js` |
+| Kleinkram | Ansagen zum Gegner (¾, kurz vor dem Ziel, Truhe geöffnet, Burg angegriffen), sechs neue Zurufe, Trefferfunken | `versus.js`, `net/emotes.js`, `combat.js` |
+
+Fehler dabei behoben: Auf Karten bekam die zweite Burg kein Team, sodass Blau dort nichts
+verkaufen konnte.

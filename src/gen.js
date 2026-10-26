@@ -5,7 +5,8 @@ import { scatterDecor } from './decor.js';
 import { biome, setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
 import { resetEvents } from './events.js';
-import { GAME_MODES, applyModeSetup } from './modes.js';
+import { GAME_MODES, applyModeSetup, treasureGoal } from './modes.js';
+import { setupRound } from './versus.js';
 import { genLevel } from './levels/loader.js';
 import { addClonk, mkAnimal, newId, spawnItem } from './entities.js';
 import { calcTerr } from './render.js';
@@ -142,6 +143,8 @@ function gen() {
   G.earned = 0;
   G.tools = {};
   G.mode = G.nextMode || 'gold';
+  // the round: how many players, together or against each other (see versus.js)
+  G.mp = { np: G.nextNp || 1, vs: !!G.nextVersus, stats: {} };
   G.relaxed = G.nextDiff === 'relaxed';
   G.store = {};
   G.beams = [];
@@ -267,7 +270,7 @@ function gen() {
       }
     }
   }
-  placeChests(perWidth(6));
+  placeChests(Math.max(perWidth(6), treasureGoal() + 2));
   placeGas(perArea(9));
   if (G.relaxed) G.gas = [];
   for (let x = 0; x < W; x++)
@@ -362,6 +365,7 @@ function finishWorld() {
   resetEvents();
   G.kills = G.rescued = 0;
   applyModeSetup();
+  setupRound();
   calcTerr();
   scatterDecor();
 }

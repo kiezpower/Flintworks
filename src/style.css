@@ -692,6 +692,38 @@ button:focus-visible {
 .card .go {
   justify-self: start;
 }
+/* multiplayer: the ranking and the awards at the end of a round */
+.card .ranking {
+  border-collapse: collapse;
+  font-size: 13px;
+  width: 100%;
+}
+.card .ranking th,
+.card .ranking td {
+  padding: 2px 5px;
+  text-align: right;
+  white-space: nowrap;
+}
+.card .ranking th:nth-child(2),
+.card .ranking td:nth-child(2) {
+  text-align: left;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
+}
+.card .ranking tr:nth-child(2) td {
+  color: var(--gold);
+}
+.card .awards {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 13px;
+}
 .btnrow {
   display: flex;
   gap: 10px;

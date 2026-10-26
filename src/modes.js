@@ -1,18 +1,29 @@
 // Game modes chosen in the lobby: each has its own win condition and star times.
 import { G, builds } from './state.js';
 
+// Multiplayer: Koop goals grow by half for every further player, Versus goals are smaller
+// because the round has a clock (G.mp is made for every new world, see versus.js)
+const goalScale = (np = G.mp?.np || 1, vs = !!G.mp?.vs) => (vs ? 0.65 : 1 + 0.5 * (np - 1));
+const scaled = (n, step = 1, max = 1e9, np, vs) => Math.min(max, Math.round((n * goalScale(np, vs)) / step) * step);
+// treasure hunt: chests to find, for the number of chests the world gets
+const treasureGoal = (np, vs) => scaled(4, 1, 1e9, np, vs);
+
 const GAME_MODES = {
   gold: {
     name: 'Goldrausch',
     desc: 'Verdiene {goal} Taler',
-    goal: 800,
+    get goal() {
+      return scaled(800, 10);
+    },
     prog: () => G.money,
     stars: [8, 14],
   },
   build: {
     name: 'Siedler',
     desc: 'Errichte {goal} verschiedene Gebäude',
-    goal: 6,
+    get goal() {
+      return scaled(6, 1, 12);
+    },
     prog: () =>
       new Set(builds.filter(b => b.done && b.type !== 'base' && (b.team || 0) === (G.curTeam || 0)).map(b => b.type))
         .size,
@@ -21,7 +32,9 @@ const GAME_MODES = {
   treasure: {
     name: 'Schatzsucher',
     desc: 'Finde {goal} Schatztruhen',
-    goal: 4,
+    get goal() {
+      return treasureGoal();
+    },
     prog: () => G.chestsFound || 0,
     stars: [9, 15],
   },
@@ -49,4 +62,4 @@ function starsFor(sec) {
   return sec <= a * 60 ? 3 : sec <= b * 60 ? 2 : 1;
 }
 
-export { GAME_MODES, MODE_IDS, applyModeSetup, goalReached, mode, starsFor };
+export { GAME_MODES, MODE_IDS, applyModeSetup, goalReached, goalScale, mode, starsFor, treasureGoal };

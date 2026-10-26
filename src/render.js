@@ -6,6 +6,8 @@ import { drawBackdrop } from './backdrop.js';
 import { hasTool } from './tools.js';
 import { drawHazards } from './hazards.js';
 import { drawChests } from './treasure.js';
+import { drawCastleHp, drawHill } from './versus.js';
+import { drawCoop } from './coop.js';
 import { drawBuildFx, drawWindowGlow } from './bfx.js';
 import { drawBeams, drawBubbles, drawMark } from './mine.js';
 import { drawFloats } from './floats.js';
@@ -393,8 +395,9 @@ function render() {
       else if (!b.done) drawSite(ctx, b, spr, sx, sy);
       drawBuildFx(ctx, b, sx, sy);
       if (b.type === 'base') {
-        // (Versus: the team colour)
-        drawFlag(sx + 4, sy - 10, 14, 7, TEAM_COLS[b.team || 0]);
+        // (Versus: the team colour, and the castle's hit points)
+        if (!(b.hp <= 0)) drawFlag(sx + 4, sy - 10, 14, 7, TEAM_COLS[b.team || 0]);
+        drawCastleHp(ctx, b, sx, sy);
       }
       if (b.type === 'shop' && b.busy) {
         ctx.fillStyle = (G.frame >> 3) & 1 ? '#ffe066' : '#ff9a3a';
@@ -528,6 +531,8 @@ function render() {
     for (const wx of [x + 2.5, x + 9.5]) wheel(ctx, wx, y + 5.5, 1.5, L.x / 1.5, '#2a2a2a');
   }
   drawChests(ctx, cx, cy);
+  drawHill(ctx, cx, cy);
+  drawCoop(ctx, cx, cy);
   drawHazards(ctx, cx, cy);
   // items
   for (const it of items) {

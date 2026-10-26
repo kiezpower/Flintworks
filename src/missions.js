@@ -3,6 +3,8 @@
 // part of the lessons (lessons.js), whose tip explains a mission when it starts.
 import { celebrate } from './effects.js';
 import { addFloat } from './floats.js';
+import { clockText } from './versus.js';
+import { coopText } from './coop.js';
 import { tr } from './i18n.js';
 import { MISSIONS } from './lessons.js';
 import { mode } from './modes.js';
@@ -39,12 +41,17 @@ function updMissions() {
 }
 // text for the HUD (empty when all are done)
 function missionText() {
-  // Versus: how far the other team is instead of a task
+  // Versus: the clock and how far the other team is instead of a task
   if (G.vs)
-    return G.vs
-      .map((v, t) => (t === G.myTeam ? null : tr('Gegner {v}/{g}', { v, g: mode().goal })))
+    return [
+      clockText(),
+      ...G.vs.map((v, t) => (t === G.myTeam ? null : tr('Gegner {v}/{g}', { v, g: mode().goal }))),
+    ]
       .filter(Boolean)
       .join(' · ');
+  // Koop: a running team task comes first
+  const ct = coopText();
+  if (ct) return ct;
   const M = mode();
   if (M.campaign) return ''; // the goal bar shows the level's goal
   const m = cur();

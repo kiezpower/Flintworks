@@ -5,6 +5,7 @@ import { buzz } from './sound.js';
 import { chestNear, openChest } from './treasure.js';
 import { addFloat } from './floats.js';
 import { track } from './profile.js';
+import { addStat } from './stats.js';
 import { dust, glint, splash } from './effects.js';
 import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './entities.js';
 import { inputOf } from './players.js';
@@ -64,6 +65,7 @@ function killClonk(c) {
   for (const t of c.inv) spawnItem(t, c.x + 2, c.y + 2, (rnd() - 0.5) * 1.5, -1.2, 30);
   c.inv = [];
   toast('{name} ist erschöpft', { name: c.name });
+  G.onKill?.(c);
   sfx('hurt', c.x, c.y);
 }
 function startTumble(c, vx, vy) {
@@ -140,6 +142,7 @@ function digStroke(c, dir, slope) {
   strokeCells(c, dir, slope, (x, y) => {
     if (x < 0 || y < 0 || x >= W || y >= H) return;
     const m = digCell(x, y, true, c);
+    if (m && c.pid != null) addStat(c.pid, 'dig');
     if (m) {
       n++;
       h += HARD[m];
@@ -827,7 +830,7 @@ function context(c) {
       label: 'Zünden',
       fn: () => {
         c.inv.splice(c.isel, 1);
-        const s = spawnItem('tnt', c.x + 2, c.y + 6, 0, 0, 999);
+        const s = spawnItem('tnt', c.x + 2, c.y + 6, 0, 0, 999, c);
         s.fuse = 150;
         toast('Lauf!');
         sfx('fuse', c.x, c.y);

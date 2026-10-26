@@ -464,21 +464,23 @@ function updBuilds() {
           oy = b.gy - b.h + 2;
         let tgt = null,
           bd = 120;
-        for (const a of animals) {
-          if (a.kind !== 'monster') continue;
-          const d = Math.hypot(a.x + 6 - ox, a.y + 4 - oy);
+        // monsters, and in Versus the other team's Wühler (the tower shoots for its team)
+        const foes = animals.filter(a => a.kind === 'monster');
+        if (G.teams) foes.push(...crew.filter(o => !o.dead && teamOf(o) !== teamOf(b)));
+        for (const a of foes) {
+          const d = Math.hypot(a.x + a.w / 2 - ox, a.y + 4 - oy);
           if (d < bd) {
             bd = d;
             tgt = a;
           }
         }
         if (tgt) {
-          const dx = tgt.x + 6 - ox,
+          const dx = tgt.x + tgt.w / 2 - ox,
             dy = tgt.y + 4 - oy,
             d = Math.hypot(dx, dy),
             sp = 4.2,
             t = d / sp;
-          fireArrow({ x: ox, y: oy, vx: dx / t, vy: dy / t - 0.03 * t, l: 120 });
+          fireArrow({ x: ox, y: oy, vx: dx / t, vy: dy / t - 0.03 * t, l: 120, tm: G.teams ? teamOf(b) : undefined });
           b.cd = 50;
           sfx('bow', ox, oy);
         }

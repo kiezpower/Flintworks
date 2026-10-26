@@ -37,7 +37,9 @@ function registerLevel(L, n = 0, map = false) {
     store: st.store,
     evRate: ru.evRate ?? (ru.events ? 1 : 0),
     evKinds: ru.events,
-    goal: total(L),
+    get goal() {
+      return total(L);
+    },
     prog: () => progress(L),
     status: () => status(L),
     tick: () => levelTick(L),

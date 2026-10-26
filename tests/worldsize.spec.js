@@ -41,10 +41,11 @@ const GEN = ([mode, seed, biome, versus, size]) => {
 
 test('worlds of 1400 × 400 come out exactly as before', async ({ page }) => {
   const errors = await open(page);
-  // checksums taken from v1.29.0, before worlds could change their size
+  // checksums taken from v1.29.0, before worlds could change their size (the Versus world from
+  // v1.39.0, which carves the chest cave under the hill in the middle)
   const want = [
     [['gold', 7, 'meadow', false], 3541873457],
-    [['gold', 99, 'desert', true], 3525443043],
+    [['gold', 99, 'desert', true], 4144550017],
     [['c3', 3303, 'winter', false], 3226257325],
     [['c4', 4404, 'meadow', false], 4017410677],
   ];

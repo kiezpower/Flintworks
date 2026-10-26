@@ -1,0 +1,39 @@
+{
+  "id": "lavaflucht",
+  "v": 1,
+  "name": "Lavaflucht",
+  "icon": "farrow",
+  "desc": "Verkaufe {goal} Goldklumpen",
+  "intro": "Tief unter der Ebene liegt reiches Gold – aber darunter brodelt Lava, und sie steigt. Teilt euch auf: graben, tragen, verkaufen.",
+  "biome": "desert",
+  "size": [1000, 500],
+  "zoom": 5,
+  "rough": 0.35,
+  "seed": 9313,
+  "diff": "adventure",
+  "fill": {"gold": 0.4, "caves": 0.6},
+  "start": {"money": 80, "crew": 3, "inv": [["flint", "rock"], ["loam"], ["loam"]], "store": {"wood": 4}},
+  "rules": {"meteors": false, "rise": {"start": 2, "every": 2, "top": 160}},
+  "objects": [
+    {"t": "base", "x": 30},
+    {"t": "tree", "x": 110, "stage": 4},
+    {"t": "tree", "x": 170, "stage": 4},
+    {"t": "tree", "x": 420, "stage": 3},
+    {"t": "tree", "x": 640, "stage": 3},
+    {"t": "tree", "x": 880, "stage": 3},
+    {"t": "item", "kind": "flint", "x": 90},
+    {"t": "item", "kind": "tnt", "x": 250}
+  ],
+  "areas": {"tiefe": [0, 330, 1000, 120]},
+  "goals": [
+    {"t": "sell", "what": "nug", "n": 20}
+  ],
+  "lose": {"crewDead": true, "time": 12},
+  "stars": [7, 10],
+  "triggers": [
+    {"when": {"t": "after", "min": 2}, "do": [{"t": "banner", "title": "Die Lava steigt!", "text": "Holt das Gold, bevor die Stollen volllaufen."}]},
+    {"when": {"t": "enter", "area": "tiefe"}, "do": [{"t": "say", "text": "Hier unten liegt das meiste Gold. Behaltet die Lava im Auge!"}]},
+    {"when": {"t": "after", "min": 8}, "do": [{"t": "say", "text": "Die Lava ist schon weit oben – beeilt euch!"}]},
+    {"when": {"t": "after", "min": 11}, "do": [{"t": "say", "text": "Noch eine Minute!"}]}
+  ]
+}
