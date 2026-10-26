@@ -69,4 +69,30 @@ test('quick play brings two strangers into one room, friends rooms stay hidden',
   expect(await d.page.locator('.lb-codetap b').textContent()).not.toBe(code);
 
   for (const p of [a, b, c, d]) expect(p.errors).toEqual([]);
+  for (const p of [a, b, c, d]) await p.page.close();
+});
+
+test('a quick play room counts down and starts the mode of the hour by itself', async ({ browser }) => {
+  const e = await player(browser, 'Emil');
+  const f = await player(browser, 'Fine');
+  await e.page.waitForTimeout(500);
+  await e.page.locator('#lbQuick').click();
+  await expect(e.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  // alone: waiting for somebody, the mode of the hour is shown
+  await expect(e.page.locator('#mpCountdown')).toContainText('Warte auf Mitspieler');
+  await f.page.waitForTimeout(500);
+  await f.page.locator('#lbQuick').click();
+  await expect(f.page.locator('.lb-codetap b')).toHaveText(await e.page.locator('.lb-codetap b').textContent());
+  // two players: the countdown runs for both
+  await expect(e.page.locator('#mpCountdown')).toContainText('Nächste Runde in');
+  await expect(f.page.locator('#mpCountdown')).toContainText('Nächste Runde in');
+  // the guest is ready: it starts within a few seconds, nobody pressed "Spielen"
+  await f.page.waitForTimeout(500);
+  await f.page.locator('.opt', { hasText: 'Bereit?' }).click();
+  for (const p of [e, f])
+    await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net, null, { timeout: 8000 });
+  const modes = await Promise.all([e, f].map(p => p.page.evaluate(() => window.__ww.G.mode)));
+  expect(modes[0]).toBe(modes[1]);
+  await expect(e.page.locator('#mpCountdown')).toBeHidden();
+  for (const p of [e, f]) expect(p.errors).toEqual([]);
 });

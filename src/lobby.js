@@ -139,7 +139,7 @@ function refresh() {
   const wait = inRoom() && !NET.host && !run;
   setTxt(
     'lbPlayTxt',
-    tr(run ? 'Weiterspielen' : wait ? 'Warte auf Host' : inRoom() ? 'Spielen ({n})' : 'Spielen', {
+    tr(run ? 'Weiterspielen' : wait ? (NET.auto ? 'Startet gleich' : 'Warte auf Host') : inRoom() ? 'Spielen ({n})' : 'Spielen', {
       n: NET.players.length,
     }),
   );
@@ -150,7 +150,7 @@ function refresh() {
   const camp = !run && gid === 'campaign';
   const GM = GAME_MODES[gid] || GAME_MODES.gold;
   // a guest in a room sees the host's choice and cannot change it
-  $('lbGMode').disabled = run || (inRoom() && !NET.host);
+  $('lbGMode').disabled = run || (inRoom() && (!NET.host || !!NET.auto));
   const gm = run ? mode() : GM;
   const gmName = gm.map
     ? `${tr('Karte')} · ${tr(gm.name)}`
@@ -437,6 +437,7 @@ tap('lbDaily', () => openDaily(hooks));
 // what is chosen to play: the profile's choice; in a room the host's (no campaign there)
 function chosen() {
   if (!inRoom()) return P.gmode || 'gold';
+  if (NET.auto) return NET.auto.gmode;
   if (!NET.host) return NET.gmode || 'gold';
   const g = GAME_MODES[P.gmode] && !GAME_MODES[P.gmode].campaign ? P.gmode : 'gold';
   if (NET.gmode !== g) setGMode(g);
@@ -458,6 +459,7 @@ function openSelection(tab) {
   });
 }
 tap('lbGMode', () => {
+  if (inRoom() && NET.auto) return toast('Schnell spielen: der Modus der Stunde');
   if (inRoom() && !NET.host) return toast('Der Host wählt den Modus');
   openSelection();
 });

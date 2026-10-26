@@ -45,6 +45,7 @@ import { beginNet, endNet, resumeNet, startMessage } from './net/session.js';
 import { clearNetSave, loadNetSave, saveNet } from './net/netsave.js';
 import { clientStep } from './net/client.js';
 import { hostEnd, hostTick } from './net/host.js';
+import './net/countdown.js';
 import { TEAM_COLS, teamOf, useMine, useTeam } from './teams.js';
 import { updVehicles } from './vehicles/core.js';
 import { playerVehicleTick } from './vehicles/index.js';
@@ -97,7 +98,8 @@ function play(withTutorial, level = null) {
     }
     const d = startMessage();
     d.biome = chosenBiome() || ['meadow', 'desert', 'winter'][Math.floor(Math.random() * 3)];
-    d.gmode = GAME_MODES[P.gmode] && !GAME_MODES[P.gmode].campaign ? P.gmode : 'gold';
+    // (a quick play room plays its mode of the hour)
+    d.gmode = NET.auto ? NET.auto.gmode : GAME_MODES[P.gmode] && !GAME_MODES[P.gmode].campaign ? P.gmode : 'gold';
     d.diff = P.diff || 'adventure';
     sendTo('all', d);
     playNet(d);
@@ -168,6 +170,14 @@ function playNet(d) {
   G.inRun = true;
   startGame(false);
 }
+// the countdown of a quick play room is over (net/countdown.js): the host starts the round
+G.autoPlay = () => {
+  if (G.inRun && G.net) return;
+  G.inRun = false;
+  overlay.hidden = true;
+  closePanel();
+  play(false);
+};
 onGameMsg('start', d => {
   if (!NET.host) playNet(d);
 });

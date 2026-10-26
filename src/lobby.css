@@ -924,3 +924,34 @@
 .lb-dice:active {
   transform: translateY(2px) rotate(20deg);
 }
+
+/* quick play: the countdown to the next round (net/countdown.js) */
+#mpCountdown {
+  position: fixed;
+  left: 50%;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 35;
+  max-width: calc(100vw - 32px);
+  padding: 5px 14px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #f4ead2;
+  background: rgba(36, 22, 12, 0.92);
+  border: 2px solid #6b4528;
+  border-radius: 6px;
+  pointer-events: none;
+}
+#mpCountdown.on {
+  border-color: #f2c230;
+}
+#mpCountdown b {
+  color: #f2c230;
+  font-size: 16px;
+}
+#mpCountdown[hidden] {
+  display: none;
+}

@@ -24,6 +24,7 @@ import {
   shareInvite,
 } from './net/room.js';
 import { netSaveInfo } from './net/netsave.js';
+import { fromTag, modeName, rotation } from './net/rotation.js';
 import { P } from './profile.js';
 import { G } from './state.js';
 import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
@@ -54,7 +55,7 @@ function openInvite() {
     const quick = document.createElement('button');
     quick.className = 'lb-create';
     quick.id = 'lbQuick';
-    quick.innerHTML = `${tr('Schnell spielen')}<small>${tr('Mit anderen Spielern, ohne Code')}</small>`;
+    quick.innerHTML = `${tr('Schnell spielen')}<small>${tr('Mit anderen Spielern, ohne Code')} · ${modeName(rotation(), tr)}</small>`;
     quick.addEventListener('click', () => fresh() && quickPlay());
     box.appendChild(quick);
     box.insertAdjacentHTML('beforeend', `<p class="lb-or">${tr('oder einen offenen Raum wählen')}</p>`);
@@ -111,26 +112,35 @@ function openInvite() {
       onClick: () => pl.pid === NET.pid && !G.net && openName(openInvite),
     });
   }
-  // Koop or Versus: the host chooses, everybody sees it
-  const m = sec(p, 'Spielart');
-  for (const [v, title, sub] of [
-    [false, 'Koop', 'Zusammen: eine Burg, eine Kasse, ein Ziel, das mit jedem Spieler wächst, und Teamaufgaben'],
-    [true, 'Versus', 'Gegeneinander, 8 Minuten: Ziel schaffen, den Hügel halten oder die andere Burg stürmen'],
-  ])
-    opt(m, {
-      title: tr(title),
-      sub: tr(sub),
+  // a quick play room: the mode of the hour, and it starts by itself (net/countdown.js)
+  if (NET.auto)
+    opt(sec(p, 'Modus der Stunde'), {
+      title: modeName(NET.auto, tr),
+      sub: tr('Startet von selbst, sobald zwei Spieler da sind'),
       short: true,
-      cost: !!NET.versus === v ? '✓' : '',
-      disabled: !NET.host && !!NET.versus !== v,
-      onClick: () => NET.host && setVersus(v),
     });
+  // Koop or Versus: the host chooses, everybody sees it
+  else {
+    const m = sec(p, 'Spielart');
+    for (const [v, title, sub] of [
+      [false, 'Koop', 'Zusammen: eine Burg, eine Kasse, ein Ziel, das mit jedem Spieler wächst, und Teamaufgaben'],
+      [true, 'Versus', 'Gegeneinander, 8 Minuten: Ziel schaffen, den Hügel halten oder die andere Burg stürmen'],
+    ])
+      opt(m, {
+        title: tr(title),
+        sub: tr(sub),
+        short: true,
+        cost: !!NET.versus === v ? '✓' : '',
+        disabled: !NET.host && !!NET.versus !== v,
+        onClick: () => NET.host && setVersus(v),
+      });
+  }
   const a = sec(p, '');
   if (!NET.host) {
     const mine = NET.players.find(q => q.pid === NET.pid);
     opt(a, {
       title: tr(mine && mine.ready ? 'Bereit ✓' : 'Bereit?'),
-      sub: tr('Der Host startet das Spiel'),
+      sub: tr(NET.auto ? 'Sind alle bereit, geht es gleich los' : 'Der Host startet das Spiel'),
       onClick: () => setReady(!(mine && mine.ready)),
     });
   } else {
@@ -148,7 +158,7 @@ function openInvite() {
       });
     opt(a, {
       title: tr('Spiel starten'),
-      sub: tr('Mit „Spielen“ in der Lobby geht es für alle los'),
+      sub: tr(NET.auto ? 'Sofort, ohne auf den Countdown zu warten' : 'Mit „Spielen“ in der Lobby geht es für alle los'),
       onClick: () => {
         closePanel();
         $('lbPlay').click();
@@ -179,14 +189,16 @@ function drawRooms() {
     l.innerHTML = `<p class="hint">${tr('Gerade ist kein Raum offen. Mit „Schnell spielen“ eröffnest du einen, andere finden ihn hier.')}</p>`;
     return;
   }
-  for (const r of NET.rooms)
+  for (const r of NET.rooms) {
+    const t = fromTag(r.tag);
     opt(l, {
       title: tr('Raum von {name}', { name: esc(r.host || '?') }),
-      sub: `${tr(r.versus ? 'Versus' : 'Koop')}${r.playing ? ' · ' + tr('Spiel läuft') : ''}`,
+      sub: `${t ? modeName(t, tr) : tr(r.versus ? 'Versus' : 'Koop')}${r.playing ? ' · ' + tr('Spiel läuft') : ''}`,
       cost: `${r.n}/${MAX_PLAYERS}`,
       short: true,
       onClick: () => fresh() && joinRoom(r.code),
     });
+  }
 }
 function leaveOpt(p, title) {
   opt(sec(p, ''), {

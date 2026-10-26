@@ -7,6 +7,7 @@ import { tr } from '../i18n.js';
 import { LIVE, isNative, ownWeb } from '../platform.js';
 import { P } from '../profile.js';
 import { G } from '../state.js';
+import { fromTag, rotation } from './rotation.js';
 import { connect, disconnect, on, send, transport } from './transport.js';
 
 const NET = {
@@ -20,7 +21,9 @@ const NET = {
   versus: false, // the host's choice: together (Koop) or against each other
   gmode: null, // the host's game mode or map
   pub: false, // open room: anybody can find and join it without a code
-  rooms: null, // the open rooms while looking for one: [{code, host, n, versus, playing}]
+  rooms: null, // the open rooms while looking for one: [{code, host, n, versus, playing, tag}]
+  auto: null, // a quick play room: its mode {gmode, versus}, fixed; it starts by itself
+  cdEnd: 0, // the next round starts at this time (performance.now()), 0: no countdown
 };
 let quick = false, // the next room to enter is any open one
   wantPub = false; // a room about to be created is open
@@ -57,6 +60,8 @@ on('room', m => {
   NET.host = m.host === m.pid;
   NET.players = m.players;
   NET.pub = !!m.pub;
+  NET.auto = fromTag(m.tag);
+  if (NET.auto) Object.assign(NET, { versus: NET.auto.versus, gmode: NET.auto.gmode });
   NET.status = 'waiting';
   quick = false;
   browseRooms(false);
@@ -95,11 +100,13 @@ onGameMsg('cfg', d => {
   changed();
 });
 function setVersus(v) {
+  if (NET.auto) return;
   NET.versus = v;
   sendCfg();
   changed();
 }
 function setGMode(id) {
+  if (NET.auto) return;
   NET.gmode = id;
   sendCfg();
   changed();
@@ -112,7 +119,7 @@ on('msg', m => {
 // (re)connect and enter the room; with no room yet a new one is created (or any open one taken)
 function enter() {
   if (NET.room) send({ t: 'join', code: NET.room, ...me() });
-  else if (quick) send({ t: 'quick', ...me() });
+  else if (quick) send({ t: 'quick', tag: rotation().tag, ...me() });
   else send({ t: 'create', pub: wantPub, ...me() });
 }
 function go() {
@@ -169,7 +176,7 @@ function leaveRoom(keepError) {
   if (NET.room) send({ t: 'leave' });
   disconnect();
   quick = false;
-  Object.assign(NET, { room: null, pid: null, host: false, pub: false, players: [], gmode: null, status: keepError ? 'error' : 'offline' });
+  Object.assign(NET, { room: null, pid: null, host: false, pub: false, auto: null, cdEnd: 0, players: [], gmode: null, status: keepError ? 'error' : 'offline' });
   G.myId = 0;
   changed();
 }

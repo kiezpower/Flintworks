@@ -5,7 +5,8 @@
 // Messages are JSON. Client → server:
 //   {t:'create', name, cap, hat, token}      open a room, you are host
 //   {t:'join', code, name, cap, hat, token}  join a room (same token = same player again)
-//   {t:'quick', name, cap, hat, token}       join any open room with space, or open a new one
+//   {t:'quick', tag, name, cap, hat, token}  join an open room with space (one for the mode
+//                                            of the hour, tag, first), or open a new one
 //   {t:'list'}                               which open rooms are there?
 //   {t:'public', on}                         host: open the room to everybody (or not)
 //   {t:'ready', ready}                       lobby ready flag
@@ -14,9 +15,10 @@
 //   {t:'leave'}                              leave the room
 //   {t:'ping', ts}
 // Server → client:
-//   {t:'room', code, pid, host, players, pub} you are in (players: [{pid,name,cap,hat,ready,host,online}])
+//   {t:'room', code, pid, host, players, pub, tag} you are in (players: [{pid,name,cap,hat,ready,online}]);
+//                                            tag: the mode of a quick play room (it starts by itself)
 //   {t:'players', players, host, pub}        someone joined, left, got ready or became host
-//   {t:'rooms', rooms}                       open rooms: [{code, host, n, versus, playing}]
+//   {t:'rooms', rooms}                       open rooms: [{code, host, n, versus, playing, tag}]
 //   {t:'msg', from, d}                       forwarded message
 //   {t:'snap', d}                            latest snapshot (sent on join/reconnect while a game runs)
 //   {t:'error', e}                           'full' | 'nope' (room unknown) | 'bad'
@@ -47,8 +49,9 @@ function broadcast(room, m, except) {
 function playersMsg(room) {
   return { t: 'players', host: room.host, pub: room.pub, players: room.players.map(pubP) };
 }
-function newRoom(pub) {
-  const r = { code: newCode(), players: [], host: 0, nextPid: 0, snap: null, empty: 0, hostGone: 0, pub, versus: false, playing: false };
+function newRoom(pub, tag = null) {
+  const r = { code: newCode(), players: [], host: 0, nextPid: 0, snap: null, empty: 0, hostGone: 0 };
+  Object.assign(r, { pub, tag, versus: false, playing: false });
   rooms.set(r.code, r);
   return r;
 }
@@ -60,7 +63,7 @@ function openRooms() {
   for (const r of rooms.values()) {
     if (!joinable(r)) continue;
     const h = r.players.find(p => p.pid === r.host);
-    out.push({ code: r.code, host: h ? h.name : '', n: r.players.length, versus: r.versus, playing: r.playing });
+    out.push({ code: r.code, host: h ? h.name : '', n: r.players.length, versus: r.versus, playing: r.playing, tag: r.tag });
   }
   // fullest first: a room that already has company gets going sooner
   return out.sort((a, b) => b.n - a.n).slice(0, 20);
@@ -82,7 +85,8 @@ function join(ws, room, m) {
   ws.player = p;
   room.empty = 0;
   if (room.host === p.pid) room.hostGone = 0;
-  send(ws, { t: 'room', code: room.code, pid: p.pid, host: room.host, pub: room.pub, players: room.players.map(pubP) });
+  const players = room.players.map(pubP);
+  send(ws, { t: 'room', code: room.code, pid: p.pid, host: room.host, pub: room.pub, tag: room.tag, players });
   if (room.snap) send(ws, { t: 'snap', d: room.snap });
   broadcast(room, playersMsg(room), p);
 }
@@ -102,10 +106,11 @@ function onMessage(ws, raw) {
     case 'create':
       return join(ws, newRoom(!!m.pub), m);
     case 'quick': {
-      // a room still in the lobby before one with a game running, the fullest first
+      // a room with the mode of the hour first, then one still in the lobby, the fullest first
+      const tag = clean(m.tag, 24) || null;
       const all = [...rooms.values()].filter(joinable);
-      all.sort((a, b) => a.playing - b.playing || b.players.length - a.players.length);
-      return join(ws, all[0] || newRoom(true), m);
+      all.sort((a, b) => (b.tag === tag) - (a.tag === tag) || a.playing - b.playing || b.players.length - a.players.length);
+      return join(ws, all[0] || newRoom(true, tag), m);
     }
     case 'list':
       return send(ws, { t: 'rooms', rooms: openRooms() });
