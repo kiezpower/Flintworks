@@ -1,6 +1,7 @@
-import { GAME_MODES, MODE_IDS, mode } from './modes.js';
-import { ALL_IDS, campaignPanel, totalStars } from './scenarios.js';
-import { MAP_IDS } from './levels/index.js';
+import { GAME_MODES, mode } from './modes.js';
+import { ALL_IDS, totalStars, unlocked } from './scenarios.js';
+import { openSelect, selectOpen } from './levelselect.js';
+import { previewOf } from './levels/preview.js';
 import { lessonsPanel } from './lessons.js';
 import { canInstall, offerInstall, openInstall } from './install.js';
 import { LIVE, isNative, ownWeb } from './platform.js';
@@ -10,7 +11,7 @@ import './lobby.css';
 import { getLang, setLang, tr } from './i18n.js';
 import { CAPS, HATS, P, QUESTS, claimQuest, saveProfile, unlockText, xpNeed } from './profile.js';
 import { openInvite, refreshSlots } from './lobbyinvite.js';
-import { NET, inRoom, others } from './net/room.js';
+import { NET, inRoom, others, setGMode } from './net/room.js';
 import { drawPortrait } from './portrait.js';
 import { drawScene, friendDx, heroOrigin, heroScreen, sizeScene } from './lobbyscene.js';
 import { audioInit, sfx } from './sound.js';
@@ -140,12 +141,29 @@ function refresh() {
   $('lbPlay').classList.toggle('wait', wait);
   $('lbNew').hidden = !run;
   $('lbMode').disabled = run;
-  const camp = !run && P.gmode === 'campaign';
-  const GM = GAME_MODES[P.gmode] || GAME_MODES.gold;
-  $('lbGMode').disabled = run;
+  const gid = chosen();
+  const camp = !run && gid === 'campaign';
+  const GM = GAME_MODES[gid] || GAME_MODES.gold;
+  // a guest in a room sees the host's choice and cannot change it
+  $('lbGMode').disabled = run || (inRoom() && !NET.host);
   const gm = run ? mode() : GM;
-  const gmName = gm.map ? `${tr('Karte')} · ${tr(gm.name)}` : gm.n ? `${gm.n} · ${tr(gm.name)}` : tr(gm.name);
+  const gmName = gm.map
+    ? `${tr('Karte')} · ${tr(gm.name)}`
+    : gm.campaign
+      ? `${tr('Kampagne')} ${gm.chapter === 2 ? 2 : 1} · ${gm.n} · ${tr(gm.name)}`
+      : tr(gm.name);
   setTxt('lbGModeTxt', camp ? tr('Kampagne') : gmName);
+  // a small picture of the chosen level or map
+  const pvId = run ? G.mode : gid,
+    pvEl = $('lbGModePv');
+  if (pvEl.dataset.id !== pvId) {
+    pvEl.dataset.id = pvId;
+    pvEl.innerHTML = '';
+    const pm = GAME_MODES[pvId],
+      pic = pm && (pm.pkg || pm.campaign) && previewOf(pvId, pm.pkg);
+    if (pic) pvEl.appendChild(pic);
+    pvEl.hidden = !pic;
+  }
   setTxt(
     'lbGModeDesc',
     camp
@@ -416,13 +434,32 @@ tap('lbSlot2', openInvite);
 tap('lbQuest', openQuests);
 tap('lbRoad', openWho);
 tap('lbOpt', openOptions);
+// what is chosen to play: the profile's choice; in a room the host's (no campaign there)
+function chosen() {
+  if (!inRoom()) return P.gmode || 'gold';
+  if (!NET.host) return NET.gmode || 'gold';
+  const g = GAME_MODES[P.gmode] && !GAME_MODES[P.gmode].campaign ? P.gmode : 'gold';
+  if (NET.gmode !== g) setGMode(g);
+  return g;
+}
+// the level selection: in a room the host only chooses (modes and maps), alone a choice starts
+function openSelection(tab) {
+  const room = inRoom();
+  openSelect({
+    tab,
+    current: chosen(),
+    tabs: room ? ['modes', 'maps'] : null,
+    pick: room,
+    onClose: refresh,
+    onPick: id => {
+      if (room) return setGMode(id);
+      hooks.play(false, GAME_MODES[id].campaign ? id : null);
+    },
+  });
+}
 tap('lbGMode', () => {
-  // the game modes, then the hand-built maps (levels/maps.json), then the campaign
-  const ids = [...MODE_IDS, ...MAP_IDS, 'campaign'];
-  const m = P.gmode || 'gold';
-  P.gmode = ids[(ids.indexOf(m) + 1) % ids.length];
-  saveProfile();
-  refresh();
+  if (inRoom() && !NET.host) return toast('Der Host wählt den Modus');
+  openSelection();
 });
 tap('lbDiff', () => {
   P.diff = P.diff === 'relaxed' ? 'adventure' : 'relaxed';
@@ -438,18 +475,16 @@ tap('lbMode', () => {
   saveProfile();
   refresh();
 });
-tap('lbPlay', () => (P.gmode === 'campaign' && !hooks.hasRun() && !inRoom() ? openCampaign() : hooks.play(false)));
-function openCampaign() {
-  const p = openPanel('Kampagne');
-  campaignPanel(p, {
-    opt,
-    sec,
-    start: id => {
-      closePanel();
-      hooks.play(false, id);
-    },
-  });
-}
+tap('lbPlay', () => {
+  if (selectOpen()) return;
+  const g = P.gmode,
+    M = GAME_MODES[g];
+  if (hooks.hasRun() || inRoom()) return hooks.play(false);
+  // a chosen campaign level starts as that level; "campaign" (older profiles) opens the choice
+  if (M && M.campaign && unlocked(g)) return hooks.play(false, g);
+  if (g === 'campaign' || (M && M.campaign)) return openSelection();
+  hooks.play(false);
+});
 // (−Infinity: the first tap always asks, also right after the page opened)
 let newArmed = -Infinity,
   tutArmed = -Infinity;

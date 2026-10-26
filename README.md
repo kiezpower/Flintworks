@@ -38,6 +38,7 @@ npm run preview    # gebaute Version lokal testen
 npm run android    # Web-Version bauen und ins Android-Projekt kopieren
 npm test           # Browser-Tests: spielt das Tutorial durch, gräbt durch jedes Material, prüft Weltgrößen (Playwright)
 npm run test:visual # spielt eine Runde, speichert Screenshots in tests/out/ und prüft auf Fehler
+npm run previews   # Vorschaubilder der Level für die Levelauswahl neu erzeugen (nach Änderungen an Leveln)
 npm run store-shots # erzeugt Store-Bilder (Screenshots, Cover, Feature-Grafik) in docs/itch/ und docs/play/
 ```
 

@@ -1,6 +1,24 @@
 # Plan: Bessere Levelauswahl mit Bildvorschau
 
-> **Stand: Plan, noch nicht umgesetzt.** Baut auf v1.36.0 auf.
+> **Stand: umgesetzt (v1.37.0), alle drei Etappen in einem PR.** Entscheidungen: Spielmodi
+> gehören in den Bildschirm, Vorschau als Kartenübersicht, „Nächstes Level“ nach einem Sieg.
+> Abweichungen und Erkenntnisse:
+> - Etappen 2 und 3 kamen zusammen, damit es keinen Zwischenstand mit alter und neuer Auswahl gibt.
+> - Die Bilder sind echte Palette-PNGs mit eigenem Encoder (`tests/previews.mjs`): 18 Bilder,
+>   63 KB zusammen. Die Prüfsummen liegen in `src/levels/previews.json` statt in `public/`, damit
+>   die Auswahl sie ohne Laden kennt.
+> - **Gefunden:** Säure-Chunks der vorigen Welt wurden beim Erzeugen der nächsten noch geweckt
+>   und verbrauchten Zufallszahlen; jetzt setzt `resetSim()` die Simulation vor dem Setzen zurück.
+>   Eingefrorene Welten (Kapitel 1) und Prüfsummen von v1.29 bleiben gleich.
+> - **Gefunden:** Bei einem gesperrten Level fiel der Tastaturfokus ins Leere und Escape kam nicht
+>   mehr an; die Tasten hört der Bildschirm jetzt am Fenster ab.
+> - Ein Level mit nur einem Ziel zeigt in der Detailansicht seinen eigenen Satz („Rette 4 Wipfe
+>   aus ihren Höhlen“), mehrere Ziele stehen als Liste da.
+> - Ein Tipp öffnet die Detailansicht, ein zweiter Tipp auf dieselbe Karte startet.
+> - Im Mehrspieler-Raum trägt die `cfg`-Nachricht des Hosts jetzt auch den Modus; Gäste sehen ihn
+>   mit Bild und können ihn nicht ändern.
+> - Die Lobby zeigt die Wahl als Namen mit kleinem Bild. Mit einer gespeicherten Runde zeigt sie
+>   (wie schon vorher) die Welt aus dem Lobby-Hintergrund, nicht die gespeicherte; das bleibt offen.
 
 **Kurz:** Eine Bildvorschau ist **nicht zu viel Aufwand**. Ein Prototyp (unten) hat Vorschaubilder
 aller 18 Level und Karten aus den echten Welten erzeugt; jedes Bild ist 1–6 KB groß, alle

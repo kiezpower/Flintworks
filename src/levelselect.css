@@ -1,0 +1,269 @@
+/* Level selection (levelselect.js): full screen over the lobby, wood and parchment like it */
+#levelsel {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(#3a2416, #24160c);
+  padding: max(6px, env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) 8px
+    max(10px, env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
+  font-family: var(--font-display);
+  color: var(--parch);
+}
+#levelsel[hidden] {
+  display: none;
+}
+#levelsel header {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex: none;
+  margin-bottom: 6px;
+}
+#levelsel nav {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ls-back,
+.ls-tab,
+.ls-go {
+  font-family: inherit;
+  cursor: pointer;
+  border: 3px solid var(--line);
+  border-radius: 6px;
+  background: linear-gradient(var(--wood-hi), var(--wood) 45%, var(--wood-lo));
+  color: var(--parch);
+  text-shadow: 1px 2px 0 var(--line);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 230, 180, 0.35),
+    0 2px 0 rgba(0, 0, 0, 0.45);
+}
+.ls-back {
+  flex: none;
+  width: 38px;
+  height: 34px;
+  font-size: 22px;
+  line-height: 1;
+}
+.ls-tab {
+  flex: none;
+  padding: 5px 10px;
+  font-size: 13px;
+  white-space: nowrap;
+  opacity: 0.8;
+}
+.ls-tab small {
+  font-size: 10px;
+  color: #ffe066;
+}
+.ls-tab.on {
+  opacity: 1;
+  background: linear-gradient(#c58a4e, var(--wood-hi) 45%, var(--wood));
+  outline: 2px solid #ffe066;
+}
+
+/* the cards */
+.ls-grid {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(200px, 31%), 1fr));
+  gap: 8px;
+  align-content: start;
+  padding: 2px;
+}
+.ls-card {
+  position: relative;
+  display: grid;
+  gap: 3px;
+  padding: 4px 4px 5px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  color: var(--inkb);
+  background: var(--parch);
+  border: 3px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.45);
+}
+.ls-card:focus-visible,
+.ls-card.cur {
+  outline: 3px solid #ffe066;
+  outline-offset: 1px;
+}
+.ls-card:active {
+  transform: translateY(2px);
+}
+.ls-card.locked .ls-pv {
+  filter: brightness(0.45) saturate(0.5);
+}
+.ls-t {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.15;
+}
+.ls-t b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ls-t span {
+  flex: none;
+  color: #a0700e;
+}
+.ls-d {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  color: #7a5a30;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ls-ribbon {
+  position: absolute;
+  top: 8px;
+  left: -4px;
+  padding: 1px 8px;
+  font-style: normal;
+  font-size: 11px;
+  background: #ffe066;
+  color: var(--inkb);
+  border: 2px solid var(--line);
+  border-radius: 3px;
+}
+
+/* the picture: the whole level fitted in, the sky colour around it */
+.ls-pv {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border: 2px solid var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.ls-pv > img,
+.ls-pv > canvas:not(.ls-badge):not(.ls-icon) {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom;
+}
+.ls-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.6));
+}
+.ls-icon {
+  align-self: center;
+  width: 30%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+/* the detail view: big picture left, text right (stacked on low screens) */
+.ls-detail {
+  display: none;
+  flex: 1;
+  min-height: 0;
+  gap: 12px;
+}
+#levelsel.detail .ls-grid {
+  display: none;
+}
+#levelsel.detail .ls-detail {
+  display: flex;
+}
+.ls-pv.big {
+  flex: 1.2;
+  align-self: center;
+  max-height: 100%;
+}
+.ls-info {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--parch);
+  color: var(--inkb);
+  border: 3px solid var(--line);
+  border-radius: 6px;
+}
+.ls-info h3 {
+  margin: 0;
+  font-size: 17px;
+}
+.ls-story {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.ls-row {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 6px;
+  font-size: 12px;
+}
+.ls-row small {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  color: #7a5a30;
+  padding-top: 2px;
+}
+.ls-row ul,
+.ls-row p {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ls-chip {
+  display: inline-block;
+  margin: 0 4px 3px 0;
+  padding: 0 5px;
+  border: 1px solid #a07040;
+  border-radius: 3px;
+  background: #f6e9c4;
+  font-size: 11px;
+}
+.ls-stars {
+  color: #c08a10;
+}
+.ls-go {
+  margin-top: auto;
+  padding: 7px;
+  font-size: 16px;
+  background: linear-gradient(#ffe27a, #f2c230 50%, #c99a16);
+  color: var(--inkb);
+  text-shadow: none;
+}
+.ls-go:disabled {
+  background: #bba57a;
+  font-size: 12px;
+  cursor: default;
+}
+@media (max-height: 420px) {
+  .ls-pv.big {
+    flex: 1;
+  }
+  .ls-info h3 {
+    font-size: 15px;
+  }
+}
+@media (max-width: 560px) {
+  #levelsel.detail .ls-detail {
+    flex-direction: column;
+  }
+}
