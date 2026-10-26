@@ -159,7 +159,7 @@ LEVEL_IDS.forEach((id, n) => {
 // every half second on the host / in a single game
 function updScenario() {
   const M = GAME_MODES[G.mode];
-  if (!M || !(M.campaign || M.pkg)) return;
+  if (!M || !(M.campaign || M.pkg || M.daily)) return;
   if (M.intro && !G.introDone && G.frame > 90) {
     G.introDone = true;
     announce(M.intro);

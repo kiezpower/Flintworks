@@ -904,6 +904,45 @@ const EN = {
   'Hier unten liegt das meiste Gold. Behaltet die Lava im Auge!': 'Most of the gold is down here. Keep an eye on the lava!',
   'Die Lava ist schon weit oben – beeilt euch!': 'The lava is high already – hurry!',
   'Noch eine Minute!': 'One minute left!',
+  // Tagesschacht (daily.js)
+  Tagesschacht: 'Daily Shaft',
+  'Tagesschacht #{n}': 'Daily Shaft #{n}',
+  'Verdiene in 8 Minuten so viel du kannst': 'Earn as much as you can in 8 minutes',
+  Vulkantag: 'Volcano Day',
+  Bebentag: 'Quake Day',
+  Bohrtag: 'Drill Day',
+  Startkapital: 'Head Start',
+  'Ein ganz normaler Schacht: grab, verkauf, werd reich!': 'A perfectly normal shaft: dig, sell, get rich!',
+  'Heute brechen oft Vulkane aus. Sie spucken Gold und Edelsteine – und Lava.':
+    'Volcanoes erupt a lot today. They spit out gold and gems – and lava.',
+  'Die Erde bebt heute oft. Stütz deine Stollen ab!': 'The ground shakes a lot today. Prop up your tunnels!',
+  'Der Bohrwagen ist schon erforscht, Kohle und Metall liegen im Lager.':
+    'The drill cart is already researched, coal and metal are in the store.',
+  'Heute startest du mit 200 Talern extra.': 'Today you start with 200 extra coins.',
+  '{n} Taler': '{n} coins',
+  '{n} Tage in Folge': '{n} days in a row',
+  'Schaffst du mehr?': 'Can you beat it?',
+  'Ergebnis teilen': 'Share result',
+  'Ergebnis kopiert – füg es in den Chat ein': 'Result copied – paste it into the chat',
+  'Neuer Schacht in {h} h {m} min': 'New shaft in {h} h {m} min',
+  'Neu!': 'New!',
+  'Jeden Tag eine neue Welt – für alle gleich. 8 Minuten: verdiene so viel du kannst.':
+    'A new world every day – the same for everybody. 8 minutes: earn as much as you can.',
+  Heute: 'Today',
+  Serie: 'Streak',
+  'Beste Serie': 'Best streak',
+  'Nochmal versuchen': 'Try again',
+  'Los geht’s!': 'Let’s go!',
+  'Dein bestes Ergebnis zählt': 'Your best result counts',
+  'Die Uhr läuft ab dem Start': 'The clock starts right away',
+  'Den Tagesschacht spielst du allein – verlass erst den Raum': 'The Daily Shaft is played alone – leave the room first',
+  'Nochmal tippen: Tagesschacht starten, dein Spielstand geht verloren':
+    'Tap again: start the Daily Shaft, your game in progress will be lost',
+  'Fordere deine Freunde heraus': 'Challenge your friends',
+  'Neuer Tagesrekord!': 'New best of the day!',
+  'Dein Bestes heute: {n} Taler': 'Your best today: {n} coins',
+  'Nächste Medaille: {m} ab {n} Taler': 'Next medal: {m} from {n} coins',
+  'Gold! Besser geht’s nicht.': 'Gold! It doesn’t get better.',
 };
 
 let lang = 'de';

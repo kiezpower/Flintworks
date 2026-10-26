@@ -55,6 +55,7 @@ import { updWeather } from './weather.js';
 import { chestTick, updVersus, vsResult } from './versus.js';
 import { updCoop } from './coop.js';
 import { statsHtml } from './stats.js';
+import { dayNo, endCard, shareAndTell } from './daily.js';
 import { H, H0, W, W0, clamp, dryFresh, surf } from './world.js';
 
 // ---- Screens & loop ----
@@ -253,12 +254,15 @@ function endScreen(won, why, winner = null) {
   G.inRun = false;
   // counted in game ticks: a slower tempo or a pause does not cost stars
   const s = Math.round((G.playTicks || 0) / 60);
-  const stars = won ? starsFor(s) : 0;
+  const M = mode();
+  // the Tagesschacht: medals instead of stars, the result kept for today (daily.js)
+  const D = M.daily ? endCard() : null;
+  const stars = D ? D.stars : won ? starsFor(s) : 0;
   if (won) recordCampaign(stars, s);
   const tro = finishGame(won, G.earned || 0, stars);
   const time = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-  const M = mode();
-  if (G.teams || winner != null) {
+  if (D) card.innerHTML = D.html;
+  else if (G.teams || winner != null) {
     // Versus: victory, defeat or a draw, with the reason
     const draw = winner === -2;
     card.innerHTML = `<h1>${tr(draw ? 'Unentschieden' : won ? 'Sieg!' : 'Niederlage')}</h1>
@@ -274,12 +278,13 @@ function endScreen(won, why, winner = null) {
   // after a won campaign level: straight on to the next one
   const next = won && !G.net && nextLevel(G.mode);
   card.innerHTML += `<p class="trophy-gain">${tr('{n} Trophäen', { n: (tro >= 0 ? '+' : '') + tro })}</p>`;
+  if (D) card.innerHTML += `<button class="go" id="shareBtn">${tr('Ergebnis teilen')}</button>`;
   if (next) card.innerHTML += `<button class="go" id="nextBtn">${tr('Nächstes Level: {name}', { name: tr(GAME_MODES[next].name) })}</button>`;
   // multiplayer: the host starts the next round for everybody with the same settings
   const again = G.net && inRoom();
   if (again && NET.host) card.innerHTML += `<button class="go" id="againBtn">${tr('Revanche!')}</button>`;
   else if (again) card.innerHTML += `<p class="hint">${tr('Der Host kann gleich eine Revanche starten')}</p>`;
-  card.innerHTML += `<button class="go${next || (again && NET.host) ? ' alt' : ''}" id="goBtn">${tr('Zur Lobby')}</button>`;
+  card.innerHTML += `<button class="go${next || D || (again && NET.host) ? ' alt' : ''}" id="goBtn">${tr('Zur Lobby')}</button>`;
   $('goBtn').onclick = () => {
     overlay.hidden = true;
     menu();
@@ -289,6 +294,7 @@ function endScreen(won, why, winner = null) {
       overlay.hidden = true;
       play(false);
     };
+  if (D) $('shareBtn').onclick = () => shareAndTell(G.daily?.n ?? dayNo());
   if (next)
     $('nextBtn').onclick = () => {
       overlay.hidden = true;

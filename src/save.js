@@ -110,6 +110,7 @@ function serialize() {
       goldSold: G.goldSold || 0,
       sold: G.sold || {},
       lvl: G.lvl || null,
+      daily: G.daily || null,
       ev: { kills: G.kills, rescued: G.rescued, rate: G.evRate, kinds: G.evKinds, next: G.evNext },
       mineMark: G.mineMark || null,
       chestsFound: G.chestsFound,
@@ -254,6 +255,7 @@ function deserialize(d) {
     G.playTicks = d.playTicks || 0;
     G.nextId = d.nextId || 0;
     G.seed = d.seed;
+    G.daily = d.daily || null;
     G.teams = d.teams ? d.teams.map(t => ({ ...t, base: builds.find(b => b.id === t.base) })) : null;
     G.curTeam = 0;
     if (G.teams) G.teams[0].base = G.base = builds.find(b => b.type === 'base' && !b.team) || G.base;
