@@ -45,8 +45,10 @@ function applyModeSetup() {
   G.evRate = 1;
   G.evKinds = null;
   G.introDone = false;
+  G.daily = null;
   const M = mode();
-  if (!M.campaign) return;
+  // (campaign levels and the Tagesschacht, daily.js)
+  if (!M.campaign && !M.daily) return;
   if (M.evRate != null) G.evRate = M.evRate;
   if (M.evKinds) G.evKinds = M.evKinds;
   if (M.money != null) G.money = M.money;

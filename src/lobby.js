@@ -11,6 +11,7 @@ import './lobby.css';
 import { getLang, setLang, tr } from './i18n.js';
 import { CAPS, HATS, P, QUESTS, claimQuest, saveProfile, unlockText, xpNeed } from './profile.js';
 import { openInvite, refreshSlots } from './lobbyinvite.js';
+import { badge, dailyFromLink, dayNo, openDaily } from './daily.js';
 import { openName } from './lobbyname.js';
 import { NET, inRoom, others, setGMode } from './net/room.js';
 import { drawPortrait } from './portrait.js';
@@ -111,6 +112,9 @@ function refresh() {
   $('lbXp').style.width = Math.round((P.xp / xpNeed()) * 100) + '%';
   setTxt('lbXpTxt', `${P.xp}/${xpNeed()}`);
   setTxt('lbTro', P.trophies);
+  // the Tagesschacht glows until today's shaft is played
+  setTxt('lbDailyTxt', badge());
+  $('lbDaily').classList.toggle('fresh', P.daily?.best?.[dayNo()] == null);
   const nm = P.name;
   setTxt('lbHat', P.hat === 'none' ? `${nm} · ${tr('Level')} ${P.level}` : `${nm} · ${tr(HATS[P.hat].name)}`);
   $('lbQuest').classList.toggle(
@@ -429,6 +433,7 @@ tap('lbSlot2', openInvite);
 tap('lbQuest', openQuests);
 tap('lbRoad', openWho);
 tap('lbOpt', openOptions);
+tap('lbDaily', () => openDaily(hooks));
 // what is chosen to play: the profile's choice; in a room the host's (no campaign there)
 function chosen() {
   if (!inRoom()) return P.gmode || 'gold';
@@ -517,6 +522,7 @@ function showLobby(h) {
   });
   refresh();
   offerInstall();
+  dailyFromLink(hooks);
 }
 function hideLobby() {
   el.hidden = true;

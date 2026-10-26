@@ -2,6 +2,8 @@
 
 Ein Aufbau- und Grabespiel mit Pixel-Physik im Stil der Klassiker, inspiriert von den Clonk-Spielen: Führe deine Crew, grabe nach Gold, fälle Bäume, baue eine Produktionskette und verkaufe alles an der Heimatbasis.
 
+**Tagesschacht:** Jeden Tag eine neue Welt, für alle Spieler gleich. Acht Minuten Zeit, so viel Taler wie möglich verdienen, Medaillen und eine Serie von Tagen in Folge sammeln und das Ergebnis mit Freunden teilen (WhatsApp, Teilen-Menü oder Zwischenablage). Der geteilte Link `?daily` öffnet direkt den Schacht des Tages.
+
 Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch und Englisch (Umschalter im Startbildschirm). Das erste Spiel ist ein geführtes Tutorial in einer eigenen kleinen Welt („Die erste Schicht“); danach erklären Tipps und kleine Aufträge den Rest, nachzulesen unter Optionen → Spielhilfe.
 
 ## Spielen
@@ -98,6 +100,7 @@ src/
   lessons.js          Tipps und Aufträge nach dem Tutorial, Spielhilfe in der Lobby
   versus.js           Versus: Burg-Lebenspunkte, Hügel, Rundenuhr, Nachschub, Sieger
   coop.js             Koop: Teamaufgaben
+  daily.js            Tagesschacht: Welt des Tages, Uhr, Medaillen, Serie, Ergebnis teilen
   stats.js            Mehrspieler: Rangliste und Auszeichnungen am Rundenende
   i18n.js             Übersetzungen (Deutsch ist der Schlüssel, Englisch die Übersetzung)
   debug.js            Test-Zugang, nur im Entwicklungsmodus

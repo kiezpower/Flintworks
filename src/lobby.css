@@ -314,6 +314,81 @@
   opacity: 0.6;
 }
 
+/* the Tagesschacht: a golden sign that glows until today's shaft is played */
+.lb-daily {
+  background: linear-gradient(#ffe36a, #f2c230 50%, #b9822a);
+  color: var(--inkb);
+  text-shadow: 1px 1px 0 #fff3b0;
+}
+.lb-daily.fresh {
+  animation: lb-glow 1.6s ease-in-out infinite;
+}
+@keyframes lb-glow {
+  50% {
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.6),
+      0 3px 0 rgba(0, 0, 0, 0.45),
+      0 0 14px 4px rgba(255, 220, 90, 0.75);
+  }
+}
+.lb-dbox {
+  display: grid;
+  min-width: 0;
+}
+.lb-dbox small {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* the Tagesschacht panel and end card */
+.dl-box {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.dl-box p {
+  margin: 0;
+}
+.dl-world {
+  font-size: 17px;
+}
+.dl-medals,
+.dl-week {
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+.dl-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  text-align: center;
+}
+.dl-stats span {
+  display: grid;
+  padding: 6px 4px;
+  border: 2px solid var(--edge);
+  border-radius: 6px;
+}
+.dl-stats small {
+  font-size: 10px;
+  opacity: 0.75;
+}
+.dl-stats b {
+  font-size: 17px;
+}
+.dl-go {
+  justify-self: stretch;
+  margin-top: 4px;
+  font-size: 18px;
+}
+.dl-big {
+  font-size: 28px;
+  color: var(--gold);
+}
+
 /* right: parchment scroll with the game setup and the play button */
 .lb-play {
   position: absolute;
@@ -454,6 +529,9 @@
   .lb-b {
     font-size: 12px;
     flex: 1 1 30%;
+  }
+  .lb-daily {
+    flex-basis: 100%;
   }
   .lb-play {
     left: 12px;
