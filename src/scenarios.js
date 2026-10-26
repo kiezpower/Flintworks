@@ -8,7 +8,6 @@ import { CHAPTER2 } from './levels/index.js';
 import { rescueTick } from './levels/goals.js';
 import { GAME_MODES } from './modes.js';
 import { P, saveProfile } from './profile.js';
-import { toolIcon } from './sprites.js';
 import { G, animals, crew, vehicles } from './state.js';
 import { AIR, H, W, bg, mat, paint, surf } from './world.js';
 
@@ -184,31 +183,26 @@ const unlocked = id => {
   return n <= 0 || starsOf(ids[n - 1]) > 0;
 };
 const totalStars = () => ALL_IDS.reduce((s, id) => s + starsOf(id), 0);
-function recordCampaign(stars) {
+// stars and the best time (seconds) of a level that was won
+P.campaignTime = P.campaignTime || {};
+const bestTime = id => P.campaignTime[id] || 0;
+function recordCampaign(stars, sec) {
   if (!ALL_IDS.includes(G.mode)) return;
   P.campaign[G.mode] = Math.max(starsOf(G.mode), stars);
+  if (sec && (!bestTime(G.mode) || sec < bestTime(G.mode))) P.campaignTime[G.mode] = sec;
   saveProfile();
 }
-
-// the level list in the lobby; start(id) begins a level
-function campaignPanel(p, { opt, sec, start }) {
-  for (const ch of CHAPTERS) {
-    const got = ch.ids.reduce((s, id) => s + starsOf(id), 0);
-    const l = sec(p, `${tr(ch.name)} · ${tr('Sterne: {n}/{m}', { n: got, m: ch.ids.length * 3 })}`);
-    ch.ids.forEach((id, n) => {
-      const L = GAME_MODES[id],
-        open = unlocked(id),
-        s = starsOf(id);
-      opt(l, {
-        icon: toolIcon(L.icon),
-        title: `${n + 1} · ${tr(L.name)}`,
-        sub: tr(L.desc, { goal: L.goal }),
-        cost: open ? '★'.repeat(s) + '☆'.repeat(3 - s) : '🔒',
-        disabled: !open,
-        onClick: () => start(id),
-      });
-    });
-  }
+// the level after this one in its chapter, if there is one and it is open
+function nextLevel(id) {
+  const ch = CHAPTERS.find(c => c.ids.includes(id)),
+    n = ch ? ch.ids.indexOf(id) : -1;
+  const nx = n >= 0 && ch.ids[n + 1];
+  return nx && unlocked(nx) ? nx : null;
 }
+// what keeps a level locked: the level before it in the chapter
+const lockedBy = id => {
+  const ids = CHAPTERS.find(c => c.ids.includes(id)).ids;
+  return unlocked(id) ? null : ids[ids.indexOf(id) - 1];
+};
 
-export { ALL_IDS, LEVELS, campaignPanel, recordCampaign, totalStars, updScenario };
+export { ALL_IDS, CHAPTERS, LEVEL_IDS as CHAPTER1, LEVELS, bestTime, lockedBy, nextLevel, recordCampaign, starsOf, totalStars, unlocked, updScenario };

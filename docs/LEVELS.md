@@ -140,6 +140,13 @@ Alle Texte brauchen einen englischen Eintrag in `src/i18n.js`. Der Test prüft d
 - `?`-Zonen werden mit dem Seed des Levels gefüllt, in Karten für freies Spiel mit einem
   zufälligen Seed: jede Runde ist darin etwas anders.
 
+## Vorschaubild
+
+Die Levelauswahl zeigt jedes Level als Bild aus `public/previews/<id>.png`. Nach jeder Änderung an
+einem Level (oder am Generator) `npm run previews` ausführen; der Level-Test meldet sonst, dass das
+Bild nicht mehr zur Welt passt. Ein neues Level ohne Bild wird bis dahin direkt aus `map.txt`
+gemalt.
+
 ## Prüfen
 
 `npm test` lädt jedes Level (`tests/levels.spec.js`). Geprüft wird: richtige Größe, die Burg

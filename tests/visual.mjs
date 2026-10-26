@@ -81,6 +81,37 @@ async function run(name, viewport, query = '') {
   await page.close();
 }
 
+// the level selection: chapter 2 and the detail of a level, everything inside the screen
+async function selection(name, viewport, lang) {
+  const page = await browser.newPage({ viewport });
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.addInitScript(l => {
+    localStorage.setItem('flintworks-lang', l);
+    const camp = { wipfrettung: 3, altemine: 1 };
+    localStorage.setItem('flintworks-profile', JSON.stringify({ installAsked: 'done', tutorialDone: true, campaign: camp }));
+  }, lang);
+  await page.goto(base);
+  await page.waitForFunction(() => window.__ww);
+  await page.click('#lbGMode');
+  await page.click('.ls-tab[data-t="k2"]');
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: `${OUT}${name}-select.png` });
+  await page.click('.ls-card[data-id="altemine"]');
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${OUT}${name}-select-detail.png` });
+  const fit = await page.evaluate(() => {
+    const go = document.querySelector('.ls-go').getBoundingClientRect(),
+      el = document.scrollingElement;
+    return go.bottom <= innerHeight && go.right <= innerWidth && el.scrollWidth <= innerWidth;
+  });
+  check(errors.length === 0, `${name}: level selection without page errors ${errors.join(' | ')}`);
+  check(fit, `${name}: level selection fits the screen, the play button is visible`);
+  await page.close();
+}
+
+await selection('select-desktop', { width: 1280, height: 720 }, 'de');
+await selection('select-phone', { width: 740, height: 360 }, 'en');
 await run('desktop', { width: 1280, height: 720 });
 await run('phone', { width: 844, height: 390 });
 await run('fast', { width: 1280, height: 720 }, '&res=1');

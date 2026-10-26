@@ -636,6 +636,11 @@ button:focus-visible {
 .go[disabled] {
   opacity: 0.5;
 }
+/* a second, quieter button next to the main one (end screen: lobby after "next level") */
+.go.alt {
+  background: #d8c49a;
+  box-shadow: 0 4px 0 #8a7448;
+}
 
 #overlay {
   position: absolute;

@@ -31,7 +31,7 @@ import { killAnimal, updAnimal, updItems, updParts, updTrees } from './objects.j
 import { updArrows, updCombat } from './combat.js';
 import { updResearch } from './research.js';
 import { updEvents } from './events.js';
-import { recordCampaign, updScenario } from './scenarios.js';
+import { ALL_IDS, nextLevel, recordCampaign, updScenario } from './scenarios.js';
 import { cam, render, resize } from './render.js';
 import { clearSave, hasSave, loadGame, saveGame } from './save.js';
 import { simulate } from './sim.js';
@@ -113,6 +113,11 @@ function play(withTutorial, level = null) {
       if (!P.tutorialDone && !level) withTutorial = true;
       if (withTutorial) level = 'tut';
       const L = level && GAME_MODES[level];
+      // a campaign level stays chosen in the lobby for next time
+      if (ALL_IDS.includes(level) && P.gmode !== level) {
+        P.gmode = level;
+        saveProfile();
+      }
       // start money earned in the tutorial, for the next free game
       bonus = !withTutorial && !L && P.tutBonus ? P.tutBonus : 0;
       G.nextBiome = L ? L.biome : chosenBiome();
@@ -239,7 +244,7 @@ function endScreen(won, why) {
   // counted in game ticks: a slower tempo or a pause does not cost stars
   const s = Math.round((G.playTicks || 0) / 60);
   const stars = won ? starsFor(s) : 0;
-  if (won) recordCampaign(stars);
+  if (won) recordCampaign(stars, s);
   const tro = finishGame(won, G.earned || 0, stars);
   const time = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   const M = mode();
@@ -248,11 +253,20 @@ function endScreen(won, why) {
        <p>${tr(M.name)} · ${tr(M.desc, { goal: M.goal })} · ${tr('Zeit {time}', { time })}</p>
        <p class="hint">${tr('3 Sterne unter {a} Min., 2 Sterne unter {b} Min.', { a: M.stars[0], b: M.stars[1] })}</p>`
     : `<h1>${tr(why ? 'Level verloren' : 'Crew verloren')}</h1><p>${tr(why || 'Alle Wühler sind erschöpft und die Kasse reicht für keinen neuen.')}</p>`;
-  card.innerHTML += `<p class="trophy-gain">${tr('{n} Trophäen', { n: (tro >= 0 ? '+' : '') + tro })}</p><button class="go" id="goBtn">${tr('Zur Lobby')}</button>`;
+  // after a won campaign level: straight on to the next one
+  const next = won && !G.net && nextLevel(G.mode);
+  card.innerHTML += `<p class="trophy-gain">${tr('{n} Trophäen', { n: (tro >= 0 ? '+' : '') + tro })}</p>`;
+  if (next) card.innerHTML += `<button class="go" id="nextBtn">${tr('Nächstes Level: {name}', { name: tr(GAME_MODES[next].name) })}</button>`;
+  card.innerHTML += `<button class="go${next ? ' alt' : ''}" id="goBtn">${tr('Zur Lobby')}</button>`;
   $('goBtn').onclick = () => {
     overlay.hidden = true;
     menu();
   };
+  if (next)
+    $('nextBtn').onclick = () => {
+      overlay.hidden = true;
+      play(false, next);
+    };
   overlay.hidden = false;
 }
 $('newBtn').addEventListener('click', () => {

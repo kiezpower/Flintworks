@@ -49,6 +49,20 @@ const TYPES = {
   survive: { val: () => Math.floor((G.playTicks || 0) / 3600), label: () => tr('Minuten') },
 };
 const need = g => g.n ?? 1;
+// a goal as a sentence, for the level selection ("Verdiene 600 Taler")
+const PHRASE = {
+  money: g => tr('Verdiene {n} Taler', { n: need(g) }),
+  sell: g => tr('Verkaufe {n} × {what}', { n: need(g), what: resName(g.what) }),
+  collect: g => tr('Bringe {n} × {what} ins Lager', { n: need(g), what: resName(g.what) }),
+  rescue: g => tr('Rette {n} Eingeschlossene', { n: need(g) }),
+  kills: g => tr('Besiege {n} Monster', { n: need(g) }),
+  chests: g => tr('Finde {n} Schatztruhen', { n: need(g) }),
+  depth: g => tr('Erreiche {n} m Tiefe', { n: need(g) }),
+  build: g => (need(g) > 1 ? `${need(g)} × ${nameOf(g.what)}` : tr('Baue: {what}', { what: nameOf(g.what) })),
+  reach: g => tr(g.label || 'Ziel erreicht'),
+  survive: g => tr('Halte {n} Minuten durch', { n: need(g) }),
+};
+const goalText = g => PHRASE[g.t](g);
 const valOf = g => Math.min(need(g), TYPES[g.t].val(g));
 const done = g => TYPES[g.t].val(g) >= need(g);
 
@@ -131,4 +145,4 @@ function levelTick(L) {
   else if (lose.time && (G.playTicks || 0) >= lose.time * 3600) G.onLevelEnd?.(false, 'Die Zeit ist um.');
 }
 
-export { levelTick, progress, rescueTick, status, total, TYPES };
+export { goalText, levelTick, progress, rescueTick, status, total, TYPES };
