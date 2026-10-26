@@ -1,11 +1,16 @@
-// Lobby: playing together. Create a room or join one with a code, share the invite link,
-// see who is in and get ready. The "+" slots next to the hero show the players in the room.
+// Lobby: playing together. Create a room or join one with a code, invite friends (WhatsApp, the
+// share sheet, Telegram, SMS, e-mail, copy, QR code), see who is in and get ready. The "+" slots next
+// to the hero show the players in the room.
+import qrcode from 'qrcode-generator';
 import { tr } from './i18n.js';
+import { openName } from './lobbyname.js';
 import {
   MAX_PLAYERS,
   NET,
+  copyText,
   createRoom,
   inviteLink,
+  inviteText,
   joinRoom,
   leaveRoom,
   onRoomChange,
@@ -15,6 +20,7 @@ import {
   shareInvite,
 } from './net/room.js';
 import { netSaveInfo } from './net/netsave.js';
+import { P } from './profile.js';
 import { G } from './state.js';
 import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
 
@@ -36,6 +42,7 @@ function openInvite() {
     // straight to the point: one tap creates the room, a code joins one
     if (NET.status === 'error' && NET.error)
       box.innerHTML = `<p class="hint">${tr(ERRORS[NET.error] || 'Keine Verbindung zum Server')}</p>`;
+    box.appendChild(meRow());
     const go = document.createElement('button');
     go.className = 'lb-create';
     go.id = 'lbCreate';
@@ -55,22 +62,22 @@ function openInvite() {
     $('lbCodeIn').addEventListener('keydown', e => e.key === 'Enter' && $('lbJoinBtn').click());
     return;
   }
-  // the code and the share button come first: inviting is what a new room is for
-  box.innerHTML = `<div class="lb-code"><small>${tr('Raum-Code')}</small><b>${NET.room}</b><small class="lb-link">${esc(inviteLink())}</small></div>`;
-  if (NET.players.length < MAX_PLAYERS) {
-    const share = document.createElement('button');
-    share.className = 'lb-create';
-    share.textContent = tr('Link teilen');
-    share.addEventListener('click', async () => {
-      if (!fresh()) return;
-      const r = await shareInvite(tr('Grab mit mir in Flintworks!'));
-      if (r === 'copied') toast('Link kopiert');
-      else if (r === 'failed') toast('Teilen nicht möglich');
-    });
-    box.firstChild.appendChild(share);
-  }
+  // the code, a QR code for friends right next to you and the ways to send the link come first:
+  // inviting is what a new room is for
+  box.innerHTML = `<div class="lb-code">
+    <button class="lb-codetap" id="lbCodeTap" title="${tr('Tippen zum Kopieren')}">
+      <small>${tr('Raum-Code')}</small><b>${NET.room}</b><small>${tr('Tippen zum Kopieren')}</small>
+    </button>
+    <div class="lb-qr" title="${tr('Mit der Kamera scannen')}">${qrSvg(inviteLink())}</div>
+  </div>`;
+  $('lbCodeTap').addEventListener('click', async () => {
+    if (fresh()) toast((await copyText(NET.room)) ? 'Code kopiert' : 'Kopieren nicht möglich');
+  });
+  if (NET.players.length < MAX_PLAYERS) box.appendChild(shareRow());
+  box.appendChild(meRow());
   // who is in
   const l = sec(p, tr('Spieler {n}/{max}', { n: NET.players.length, max: MAX_PLAYERS }));
+  l.classList.add('lb-players');
   for (const pl of NET.players) {
     const host = pl.pid === NET.hostPid;
     opt(l, {
@@ -78,7 +85,7 @@ function openInvite() {
       sub: !pl.online ? tr('getrennt') : host ? tr('Host') : pl.ready ? tr('bereit') : tr('noch nicht bereit'),
       cost: host ? '★' : pl.ready ? '✓' : '',
       short: true,
-      onClick: () => {},
+      onClick: () => pl.pid === NET.pid && !G.net && openName(openInvite),
     });
   }
   // Koop or Versus: the host chooses, everybody sees it
@@ -136,6 +143,58 @@ function leaveOpt(p, title) {
       G.onLeaveRoom?.();
     },
   });
+}
+// "You play as …": tap to change the name others see
+function meRow() {
+  const b = document.createElement('button');
+  b.className = 'lb-me';
+  b.innerHTML = `${tr('Du spielst als')} <b>${esc(P.name)}</b> <i>✎</i>`;
+  b.addEventListener('click', () => fresh() && openName(openInvite));
+  return b;
+}
+// the invite link as a QR code: friends on the same sofa scan it and are in the room
+function qrSvg(url) {
+  const q = qrcode(0, 'M');
+  q.addData(url);
+  q.make();
+  return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+}
+// WhatsApp big (it is how most friends are reached), the system share sheet next to it, then
+// Telegram, SMS, e-mail and copying for everything else
+const enc = encodeURIComponent;
+function shareRow() {
+  const wrap = document.createElement('div');
+  wrap.className = 'lb-share';
+  const msg = () => `${inviteText()}\n${inviteLink()}`;
+  const go = url => () => {
+    // https links open the app or a new tab; sms: and mailto: hand over to the phone
+    if (url().startsWith('http')) window.open(url(), '_blank');
+    else location.href = url();
+  };
+  const ways = [
+    ['wa', 'WhatsApp', go(() => `https://wa.me/?text=${enc(msg())}`)],
+    [
+      'more',
+      tr('Teilen …'),
+      async () => {
+        const r = await shareInvite();
+        if (r === 'copied') toast('Einladung kopiert');
+        else if (r === 'failed') toast('Teilen nicht möglich');
+      },
+    ],
+    ['tg', 'Telegram', go(() => `https://t.me/share/url?url=${enc(inviteLink())}&text=${enc(inviteText())}`)],
+    ['sms', 'SMS', go(() => `sms:?&body=${enc(msg())}`)],
+    ['mail', tr('E-Mail'), go(() => `mailto:?subject=${enc(tr('Spiel mit mir Flintworks!'))}&body=${enc(msg())}`)],
+    ['copy', tr('Kopieren'), async () => toast((await copyText(msg())) ? 'Einladung kopiert' : 'Kopieren nicht möglich')],
+  ];
+  for (const [k, label, fn] of ways) {
+    const b = document.createElement('button');
+    b.className = 'lb-way lb-way-' + k;
+    b.textContent = label;
+    b.addEventListener('click', () => fresh() && fn());
+    wrap.appendChild(b);
+  }
+  return wrap;
 }
 // ignore the tap that opened the panel landing on the button beneath it (like opt() does)
 const fresh = () => performance.now() - G.panelT >= 450;

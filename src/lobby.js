@@ -10,6 +10,7 @@ import './lobby.css';
 import { getLang, setLang, tr } from './i18n.js';
 import { CAPS, HATS, P, QUESTS, claimQuest, saveProfile, unlockText, xpNeed } from './profile.js';
 import { openInvite, refreshSlots } from './lobbyinvite.js';
+import { openName } from './lobbyname.js';
 import { NET, inRoom, others } from './net/room.js';
 import { drawPortrait } from './portrait.js';
 import { drawScene, friendDx, heroOrigin, heroScreen, sizeScene } from './lobbyscene.js';
@@ -109,7 +110,7 @@ function refresh() {
   $('lbXp').style.width = Math.round((P.xp / xpNeed()) * 100) + '%';
   setTxt('lbXpTxt', `${P.xp}/${xpNeed()}`);
   setTxt('lbTro', P.trophies);
-  const nm = P.name || 'Kurt';
+  const nm = P.name;
   setTxt('lbHat', P.hat === 'none' ? `${nm} · ${tr('Level')} ${P.level}` : `${nm} · ${tr(HATS[P.hat].name)}`);
   $('lbQuest').classList.toggle(
     'alert',
@@ -188,18 +189,11 @@ function openWho() {
   const p = openPanel('Dein Wühler');
   // the name others see in a shared game
   opt(sec(p, 'Name'), {
-    title: P.name || 'Kurt',
+    title: P.name,
     sub: tr('Tippen zum Ändern'),
+    cost: '✎',
     short: true,
-    onClick: () => {
-      const n = (prompt(tr('Wie heißt dein Wühler?'), P.name || 'Kurt') || '').trim().slice(0, 12);
-      if (n) {
-        P.name = n.replace(/[<>&"]/g, '');
-        saveProfile();
-        refresh();
-      }
-      openWho();
-    },
+    onClick: () => openName(openWho),
   });
   const l = sec(p, 'Hut');
   for (const id in HATS) {
@@ -411,6 +405,7 @@ function tap(id, fn) {
   });
 }
 tap('lbWho', openWho);
+tap('lbNameTag', () => openName());
 tap('lbSlot1', openInvite);
 tap('lbSlot2', openInvite);
 tap('lbQuest', openQuests);
@@ -501,6 +496,7 @@ addEventListener('resize', () => {
 });
 G.nextBiome = null;
 G.onRoomChange = () => !el.hidden && refresh();
+G.onNameChange = () => !el.hidden && refresh();
 G.onLeaveRoom = () => {
   if (G.net) hooks.discard?.();
   if (!el.hidden) refresh();

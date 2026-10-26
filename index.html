@@ -9,6 +9,21 @@
       content="Grabe, baue und sprenge dich durch eine Pixelwelt – ein Aufbauspiel im Stil der Klassiker."
     />
     <meta name="theme-color" content="#1a120c" />
+    <!-- the card WhatsApp, Telegram, Discord & co. show for an invite link -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Flintworks" />
+    <meta property="og:title" content="Flintworks – grab mit!" />
+    <meta
+      property="og:description"
+      content="Grabe, baue und sprenge dich zusammen mit Freunden durch eine Pixelwelt. Tippe auf den Link und du bist im Raum."
+    />
+    <meta property="og:url" content="https://kiezpower.github.io/Flintworks/" />
+    <meta property="og:image" content="https://kiezpower.github.io/Flintworks/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Ein Wühler steht vor seiner Burg, daneben zwei Plätze für Mitspieler" />
+    <meta property="og:locale" content="de_DE" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/png" href="icons/favicon.png" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -145,7 +160,9 @@
         <button class="lb-slot" id="lbSlot2" aria-label="Mitspieler einladen" data-i18n-aria="Mitspieler einladen">
           <b>+</b>
         </button>
-        <div class="lb-name"><span id="lbHat"></span></div>
+        <button class="lb-name" id="lbNameTag" aria-label="Name ändern" data-i18n-aria="Name ändern">
+          <span id="lbHat"></span><i class="lb-pen">✎</i>
+        </button>
         <section class="lb-play">
           <h2 data-i18n="Neues Spiel">Neues Spiel</h2>
           <button class="lb-sel" id="lbGMode">

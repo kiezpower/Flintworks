@@ -1,6 +1,8 @@
 // Rooms: create or join with a 6-letter code, see who is in, get ready, start together.
 // The relay hands out the codes and player ids; the game messages go through sendTo().
-import { LIVE, ownWeb } from '../platform.js';
+import { Share } from '@capacitor/share';
+import { tr } from '../i18n.js';
+import { LIVE, isNative, ownWeb } from '../platform.js';
 import { P } from '../profile.js';
 import { G } from '../state.js';
 import { connect, disconnect, on, send, transport } from './transport.js';
@@ -124,20 +126,53 @@ function inviteLink() {
   if (!NET.room) return '';
   return `${ownWeb() && location.hostname !== 'localhost' ? location.origin + location.pathname : LIVE}?room=${NET.room}`;
 }
-// share sheet on phones, clipboard elsewhere; resolves to 'shared' | 'copied' | 'failed'
-async function shareInvite(text) {
+// the message friends get: who invites, the code (to type in if the link is not clickable), the link
+function inviteText() {
+  return tr('{name} lädt dich zu Flintworks ein! Raum-Code: {code}', { name: P.name, code: NET.room });
+}
+// share sheet: the app's own one in the Android app (the WebView has none), the browser's on
+// phones, clipboard elsewhere; resolves to 'shared' | 'copied' | 'failed'
+async function shareInvite() {
   const url = inviteLink();
   if (!url) return 'failed';
+  const text = inviteText();
   try {
+    if (isNative()) {
+      await Share.share({ title: 'Flintworks', text, url, dialogTitle: tr('Freunde einladen') });
+      return 'shared';
+    }
     if (navigator.share) {
       await navigator.share({ title: 'Flintworks', text, url });
       return 'shared';
     }
-    await navigator.clipboard.writeText(url);
-    return 'copied';
-  } catch {
-    return 'failed';
+    return (await copyText(`${text}\n${url}`)) ? 'copied' : 'failed';
+  } catch (e) {
+    // closing the share sheet is not an error
+    return /cancel|abort/i.test(String(e?.message || e?.name)) ? 'shared' : 'failed';
   }
+}
+// clipboard, with the old textarea way for WebViews without the clipboard API
+async function copyText(s) {
+  try {
+    await navigator.clipboard.writeText(s);
+    return true;
+  } catch {
+    const t = document.createElement('textarea');
+    t.value = s;
+    t.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(t);
+    t.select();
+    let ok = false;
+    try {
+      ok = document.execCommand('copy');
+    } catch {}
+    t.remove();
+    return ok;
+  }
+}
+// a new name or hat while waiting in a room: joining again with the same token updates us
+function updateMe() {
+  if (inRoom() && !G.net) send({ t: 'join', code: NET.room, ...me() });
 }
 
 // app in the background: hang up (saves battery; as host the others get a new host after a
@@ -159,10 +194,12 @@ if (fromUrl && /^[A-Z0-9]{6}$/i.test(fromUrl)) joinRoom(fromUrl);
 export {
   MAX_PLAYERS,
   NET,
+  copyText,
   createRoom,
   setVersus,
   inRoom,
   inviteLink,
+  inviteText,
   joinRoom,
   leaveRoom,
   onGameMsg,
@@ -171,4 +208,5 @@ export {
   sendTo,
   setReady,
   shareInvite,
+  updateMe,
 };
