@@ -1,10 +1,13 @@
-// Rooms: create or join with a 6-letter code, see who is in, get ready, start together.
+// Rooms: create or join with a 6-letter code, or without one: "quick play" takes any open room
+// with space (or opens one), and the list shows the open rooms. See who is in, get ready, start
+// together.
 // The relay hands out the codes and player ids; the game messages go through sendTo().
 import { Share } from '@capacitor/share';
 import { tr } from '../i18n.js';
 import { LIVE, isNative, ownWeb } from '../platform.js';
 import { P } from '../profile.js';
 import { G } from '../state.js';
+import { fromTag, rotation } from './rotation.js';
 import { connect, disconnect, on, send, transport } from './transport.js';
 
 const NET = {
@@ -17,7 +20,13 @@ const NET = {
   error: null,
   versus: false, // the host's choice: together (Koop) or against each other
   gmode: null, // the host's game mode or map
+  pub: false, // open room: anybody can find and join it without a code
+  rooms: null, // the open rooms while looking for one: [{code, host, n, versus, playing, tag}]
+  auto: null, // a quick play room: its mode {gmode, versus}, fixed; it starts by itself
+  cdEnd: 0, // the next round starts at this time (performance.now()), 0: no countdown
 };
+let quick = false, // the next room to enter is any open one
+  wantPub = false; // a room about to be created is open
 const MAX_PLAYERS = 4;
 const listeners = [];
 const msgHandlers = new Map(); // game message kind → fn(d, from)
@@ -50,7 +59,12 @@ on('room', m => {
   NET.hostPid = m.host;
   NET.host = m.host === m.pid;
   NET.players = m.players;
+  NET.pub = !!m.pub;
+  NET.auto = fromTag(m.tag);
+  if (NET.auto) Object.assign(NET, { versus: NET.auto.versus, gmode: NET.auto.gmode });
   NET.status = 'waiting';
+  quick = false;
+  browseRooms(false);
   NET.error = null;
   G.myId = m.pid;
   changed();
@@ -59,6 +73,7 @@ on('players', m => {
   NET.players = m.players;
   NET.hostPid = m.host;
   NET.host = m.host === NET.pid;
+  NET.pub = !!m.pub;
   if (NET.host) sendCfg();
   changed();
 });
@@ -72,6 +87,11 @@ on('status', () => {
   if (transport.status !== 'open' && NET.room) NET.status = 'connecting';
   changed();
 });
+on('rooms', m => {
+  if (!browsing || NET.room) return;
+  NET.rooms = m.rooms || [];
+  changed();
+});
 // the host's choices, shown to everybody in the room: Koop/Versus and the game mode or map
 const sendCfg = () => sendTo('all', { k: 'cfg', versus: !!NET.versus, gmode: NET.gmode });
 onGameMsg('cfg', d => {
@@ -80,11 +100,13 @@ onGameMsg('cfg', d => {
   changed();
 });
 function setVersus(v) {
+  if (NET.auto) return;
   NET.versus = v;
   sendCfg();
   changed();
 }
 function setGMode(id) {
+  if (NET.auto) return;
   NET.gmode = id;
   sendCfg();
   changed();
@@ -94,28 +116,67 @@ on('msg', m => {
   if (fn) fn(m.d, m.from);
 });
 
-// (re)connect and enter the room; with no room yet a new one is created
+// (re)connect and enter the room; with no room yet a new one is created (or any open one taken)
 function enter() {
   if (NET.room) send({ t: 'join', code: NET.room, ...me() });
-  else send({ t: 'create', ...me() });
+  else if (quick) send({ t: 'quick', tag: rotation().tag, ...me() });
+  else send({ t: 'create', pub: wantPub, ...me() });
 }
-function createRoom() {
-  if (NET.room && transport.status === 'open') return;
+function go() {
   NET.status = 'connecting';
   changed();
+  // (connect() only remembers enter for later reconnects when the line is already open)
+  const open = transport.status === 'open';
   connect(enter);
+  if (open) enter();
+}
+// pub: an open room others find in the list and through quick play
+function createRoom(pub = false) {
+  if (NET.room && transport.status === 'open') return;
+  quick = false;
+  wantPub = !!pub;
+  go();
+}
+// play with anybody: into an open room with space, or a new open one others will find
+function quickPlay() {
+  if (NET.room) return;
+  quick = true;
+  go();
+}
+// the host opens the room to everybody or closes it again (the code works either way)
+function setPublic(on) {
+  if (NET.host) send({ t: 'public', on: !!on });
+}
+// while the room panel is open without a room: ask the relay for the open rooms every few seconds
+// (until stillOpen() says the panel is gone)
+let browsing = false,
+  browseT = 0;
+const askRooms = () => send({ t: 'list' });
+function browseRooms(on, stillOpen) {
+  if (on === browsing) return;
+  browsing = on;
+  clearInterval(browseT);
+  if (on) {
+    const open = transport.status === 'open';
+    connect(askRooms);
+    if (open) askRooms();
+    browseT = setInterval(() => (stillOpen && !stillOpen() ? browseRooms(false) : askRooms()), 3000);
+  } else {
+    NET.rooms = null;
+    // only looking, no room: hang up
+    if (!NET.room && NET.status !== 'connecting') disconnect();
+  }
 }
 function joinRoom(code) {
   NET.room = String(code).toUpperCase();
-  NET.status = 'connecting';
-  changed();
-  if (transport.status === 'open') enter();
-  else connect(enter);
+  go();
 }
 function leaveRoom(keepError) {
+  browseRooms(false);
   if (NET.room) send({ t: 'leave' });
   disconnect();
-  Object.assign(NET, { room: null, pid: null, host: false, players: [], gmode: null, status: keepError ? 'error' : 'offline' });
+  quick = false;
+  Object.assign(NET, { room: null, pid: null, host: false, pub: false, auto: null, cdEnd: 0, players: [], gmode: null, status: keepError ? 'error' : 'offline' });
   G.myId = 0;
   changed();
 }
@@ -202,6 +263,7 @@ if (fromUrl && /^[A-Z0-9]{6}$/i.test(fromUrl)) joinRoom(fromUrl);
 export {
   MAX_PLAYERS,
   NET,
+  browseRooms,
   copyText,
   createRoom,
   setGMode,
@@ -214,7 +276,9 @@ export {
   onGameMsg,
   onRoomChange,
   others,
+  quickPlay,
   sendTo,
+  setPublic,
   setReady,
   shareInvite,
   updateMe,
