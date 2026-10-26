@@ -1,6 +1,6 @@
 // "Jeder gegen jeden" and quick play rounds without a network: three or four castles, a hill the
 // strongest team takes, stormed castles are out and the last one standing wins; quick play
-// Versus rounds last four minutes with smaller goals: npm test
+// Versus rounds last four minutes: npm test
 import { expect, test } from '@playwright/test';
 
 async function open(page) {
@@ -53,14 +53,13 @@ test('four castles: spread over the world, each with helpers, a hill in the midd
   expect(errors).toEqual([]);
 });
 
-test('quick play Versus: a four minute clock and a smaller goal', async ({ page }) => {
+test('quick play Versus: a four minute clock, the same goal', async ({ page }) => {
   const errors = await open(page);
   const long = await page.evaluate(NEW, ['gold', 0, null]);
   const quick = await page.evaluate(NEW, ['gold', 0, 4]);
   expect(long.teams).toBe(2);
   expect(quick.len).toBe(4);
-  expect(quick.goal).toBeLessThan(long.goal);
-  expect(quick.goal).toBeGreaterThan(long.goal / 3);
+  expect(quick.goal).toBe(long.goal);
   expect(errors).toEqual([]);
 });
 

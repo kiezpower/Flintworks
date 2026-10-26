@@ -78,8 +78,8 @@ test('a quick play room counts down and starts the mode of the hour by itself', 
   await e.page.waitForTimeout(500);
   await e.page.locator('#lbQuick').click();
   await expect(e.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
-  // alone: waiting for somebody, the mode of the hour is shown
-  await expect(e.page.locator('#mpCountdown')).toContainText('Warte auf Mitspieler');
+  // alone: the longer countdown (then it starts anyway), the mode of the hour is shown
+  await expect(e.page.locator('#mpCountdown')).toContainText('Noch allein');
   await f.page.waitForTimeout(500);
   await f.page.locator('#lbQuick').click();
   await expect(f.page.locator('.lb-codetap b')).toHaveText(await e.page.locator('.lb-codetap b').textContent());
@@ -95,6 +95,39 @@ test('a quick play room counts down and starts the mode of the hour by itself', 
   expect(modes[0]).toBe(modes[1]);
   await expect(e.page.locator('#mpCountdown')).toBeHidden();
   for (const p of [e, f]) expect(p.errors).toEqual([]);
+  for (const p of [e, f]) await p.page.close();
+});
+
+test('alone in a quick play room: after 30 s a Versus round against a bot, a late joiner takes it over', async ({
+  browser,
+}) => {
+  const s = await player(browser, 'Solo');
+  await s.page.waitForTimeout(500);
+  await s.page.locator('#lbQuick').click();
+  await expect(s.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  // (whatever the mode of the hour is: this room plays Versus)
+  await s.page.evaluate(() =>
+    Object.assign(window.__ww.room.NET, { auto: { gmode: 'gold', versus: true, ffa: false }, versus: true, ffa: false }),
+  );
+  await expect(s.page.locator('#mpCountdown')).toContainText('gegen Bots');
+  await s.page.waitForFunction(() => window.__ww.G.state === 'play', null, { timeout: 40000 });
+  const bot = await s.page.evaluate(() => {
+    const c = window.__ww.crew.find(o => o.bot);
+    return c && { team: c.team, name: c.name, pid: c.pid };
+  });
+  expect(bot.team).toBe(1);
+  expect(bot.name).toContain('(Bot)');
+  // somebody comes along: quick play takes them into the running round, onto the bot's castle
+  const l = await player(browser, 'Lea');
+  await l.page.waitForTimeout(500);
+  await l.page.locator('#lbQuick').click();
+  await l.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net, null, { timeout: 20000 });
+  await s.page.waitForFunction(() => !window.__ww.crew.some(o => o.bot), null, { timeout: 10000 });
+  const lea = await s.page.evaluate(() => window.__ww.crew.find(o => o.name === 'Lea')?.team);
+  expect(lea).toBe(1);
+  expect(await l.page.evaluate(() => window.__ww.G.myTeam)).toBe(1);
+  for (const p of [s, l]) expect(p.errors).toEqual([]);
+  for (const p of [s, l]) await p.page.close();
 });
 
 test('Jeder gegen jeden over the network: three players, three castles, each their own', async ({ browser }) => {

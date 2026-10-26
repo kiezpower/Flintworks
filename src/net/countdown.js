@@ -1,6 +1,7 @@
 // A quick play room starts by itself, like a match in a phone arena game: as soon as two players
 // are in, the host counts down and starts the round for everybody; after a round the next one
-// follows the same way. When every guest is ready it goes off sooner. The host sends the time
+// follows the same way. When every guest is ready it goes off sooner. Alone, it starts after a
+// longer wait anyway: in Versus bots take the other castles (bots.js). The host sends the time
 // left every second, the others show it.
 import { tr } from '../i18n.js';
 import { G } from '../state.js';
@@ -8,6 +9,7 @@ import { NET, inRoom, onGameMsg, onRoomChange, sendTo, setReady } from './room.j
 import { modeName } from './rotation.js';
 
 const WAIT = 20000, // ms from two players to the start
+  SOLO = 30000, // ms alone until the round starts anyway (against bots)
   READY = 3000; // ms left once everybody is ready
 let end = 0, // host: when the round starts (performance.now()), 0: not counting
   sent = -1, // host: the seconds left last sent
@@ -20,7 +22,7 @@ const online = () => NET.players.filter(p => p.online);
 
 function hostTick() {
   const now = performance.now();
-  const go = NET.host && NET.auto && inRoom() && idle() && online().length >= 2;
+  const go = NET.host && NET.auto && inRoom() && idle() && online().length >= 1;
   if (!go) {
     if (end) {
       end = NET.cdEnd = 0;
@@ -29,9 +31,11 @@ function hostTick() {
     }
     return;
   }
-  if (!end) end = now + WAIT;
   const guests = online().filter(p => p.pid !== NET.pid);
-  if (guests.every(p => p.ready)) end = Math.min(end, now + READY);
+  if (!end) end = now + (guests.length ? WAIT : SOLO);
+  // somebody came: the usual wait at most
+  if (guests.length) end = Math.min(end, now + WAIT);
+  if (guests.length && guests.every(p => p.ready)) end = Math.min(end, now + READY);
   NET.cdEnd = end;
   if (now >= end) {
     end = NET.cdEnd = 0;
@@ -72,10 +76,16 @@ function draw() {
   el.hidden = !show;
   if (!show) return;
   const what = modeName(NET.auto, tr);
+  const solo = online().length < 2,
+    n = `<b>${left}</b>`;
   el.classList.toggle('on', left > 0);
-  el.innerHTML = left
-    ? `${tr('Nächste Runde in {n} s', { n: `<b>${left}</b>` })} · ${what}`
-    : `${tr('Warte auf Mitspieler …')} · ${what}`;
+  el.innerHTML = !left
+    ? `${tr('Warte auf Mitspieler …')} · ${what}`
+    : solo && NET.auto.versus
+      ? `${tr('Noch allein: in {n} s geht es gegen Bots los', { n })} · ${what}`
+      : solo
+        ? `${tr('Noch allein: in {n} s geht es los', { n })} · ${what}`
+        : `${tr('Nächste Runde in {n} s', { n })} · ${what}`;
 }
 
 setInterval(() => {

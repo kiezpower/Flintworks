@@ -24,6 +24,7 @@ import { addClonk, insideB, sel_ } from './entities.js';
 import { gen } from './gen.js';
 import { cycleCrew, readInput } from './input.js';
 import { helperAI } from './helpers.js';
+import { botAI } from './bots.js';
 import { updBeams } from './mine.js';
 import { checkLessons } from './lessons.js';
 import { updMissions } from './missions.js';
@@ -465,10 +466,11 @@ function step() {
   if (G.state === 'play' && !paused) {
     G.playTicks = (G.playTicks || 0) + 1;
     tapGotoInput(sel_());
-    // players are steered by their input (yours from this device), helpers by their own AI
+    // players are steered by their input (yours from this device), bots by their own mind,
+    // helpers by their AI
     crew.forEach((c, n) => {
       useTeam(teamOf(c)); // Versus: castle, cash and store of this Wühler's team
-      const I = isPlayer(c) ? inputOf(c.pid) : c.dead ? NOIN : helperAI(c, n);
+      const I = c.dead ? (isPlayer(c) ? inputOf(c.pid) : NOIN) : c.bot ? botAI(c, n) : isPlayer(c) ? inputOf(c.pid) : helperAI(c, n);
       updClonk(c, I);
       if (isPlayer(c)) playerVehicleTick(c);
       if (isPlayer(c) && !c.dead) {

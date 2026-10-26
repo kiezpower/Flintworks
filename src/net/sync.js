@@ -46,6 +46,7 @@ const KINDS = {
       rd: c.ride ?? null,
       ly: c.laying ? 1 : 0,
       sw: c.swing > 0 ? c.swing : 0,
+      bot: c.bot ? 1 : 0,
     }),
     create: d => ({
       id: d.id,
@@ -73,6 +74,7 @@ const KINDS = {
     apply: (c, d) => {
       Object.assign(c, {
         pid: d.pid,
+        bot: !!d.bot,
         name: d.nm,
         cap: d.cap,
         hat: d.hat,

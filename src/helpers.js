@@ -9,6 +9,8 @@
 //   rest     – nothing to do: wait in the base
 // Each helper has a focus the player sets in the crew panel (all, ore, wood, build, follow,
 // stay); a marker sends the miners to a chosen spot. Miners put up support beams as they dig.
+// Bots (bots.js) think for themselves and only borrow the walking: a "goto" job takes them to a
+// spot and keeps them there.
 import { HARD, NOIN, digCell, diggable, nearTree, spawnFromDig } from './clonk.js';
 import { midMat } from './entities.js';
 import { jobBubble, tryBeam } from './mine.js';
@@ -175,6 +177,7 @@ function target(c, n) {
     return { x: me.x, y: me.y, r: 14, ry: 10 };
   }
   if (j.type === 'train') return { x: j.x - 3, y: j.y - 10, r: 4 };
+  if (j.type === 'goto') return { x: j.x - 3, y: j.y, r: j.r || 5, ry: j.ry || 8 };
   if (j.type === 'build') return { x: j.ref.x + j.ref.w / 2 - 3, y: j.ref.gy - 10, r: j.ref.w / 2 - 5 };
   if (j.type === 'collect') return { x: j.ref.x - 2, y: j.ref.y - 6, r: 3, ry: 8 };
   if (j.type === 'chop') return { x: j.ref.x - 3, y: j.ref.gy - 10, r: 6 };
@@ -393,6 +396,11 @@ function atWork(c, I) {
       c.path = null;
       if (++c.fails > 3) (block(j.ref), (c.job = null));
     }
+    return I;
+  }
+  // a bot's spot: stay there, the bot decides what happens next
+  if (j.type === 'goto') {
+    j.arrived = true;
     return I;
   }
   if (j.type === 'mine' && j.approach) {
