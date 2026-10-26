@@ -18,7 +18,7 @@
 //   {t:'room', code, pid, host, players, pub, tag} you are in (players: [{pid,name,cap,hat,ready,online}]);
 //                                            tag: the mode of a quick play room (it starts by itself)
 //   {t:'players', players, host, pub}        someone joined, left, got ready or became host
-//   {t:'rooms', rooms}                       open rooms: [{code, host, n, versus, playing, tag}]
+//   {t:'rooms', rooms}                       open rooms: [{code, host, n, versus, ffa, playing, tag}]
 //   {t:'msg', from, d}                       forwarded message
 //   {t:'snap', d}                            latest snapshot (sent on join/reconnect while a game runs)
 //   {t:'error', e}                           'full' | 'nope' (room unknown) | 'bad'
@@ -51,7 +51,7 @@ function playersMsg(room) {
 }
 function newRoom(pub, tag = null) {
   const r = { code: newCode(), players: [], host: 0, nextPid: 0, snap: null, empty: 0, hostGone: 0 };
-  Object.assign(r, { pub, tag, versus: false, playing: false });
+  Object.assign(r, { pub, tag, versus: false, ffa: false, playing: false });
   rooms.set(r.code, r);
   return r;
 }
@@ -63,7 +63,8 @@ function openRooms() {
   for (const r of rooms.values()) {
     if (!joinable(r)) continue;
     const h = r.players.find(p => p.pid === r.host);
-    out.push({ code: r.code, host: h ? h.name : '', n: r.players.length, versus: r.versus, playing: r.playing, tag: r.tag });
+    const { code, versus, ffa, playing, tag } = r;
+    out.push({ code, host: h ? h.name : '', n: r.players.length, versus, ffa, playing, tag });
   }
   // fullest first: a room that already has company gets going sooner
   return out.sort((a, b) => b.n - a.n).slice(0, 20);
@@ -138,7 +139,7 @@ function onMessage(ws, raw) {
     case 'msg': {
       // what the room list shows: Koop or Versus, and whether a round is running
       const k = m.d && me.pid === room.host && m.d.k;
-      if (k === 'cfg') room.versus = !!m.d.versus;
+      if (k === 'cfg') Object.assign(room, { versus: !!m.d.versus, ffa: !!m.d.ffa });
       else if (k === 'start' && m.to === 'all') room.playing = true;
       else if (k === 'end') room.playing = false;
       const out = { t: 'msg', from: me.pid, d: m.d };

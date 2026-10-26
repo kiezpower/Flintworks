@@ -1,7 +1,9 @@
 // A multiplayer round. Every device builds the same world from the host's seed. The host
 // simulates it (with a Wühler for every player) and sends what happens; the others show it
 // and send their input (see host.js and client.js). Players may drop out and come back, join
-// late, and the host role moves to another player when the host is gone.
+// late, and the host role moves to another player when the host is gone. A quick play room
+// fills empty castles with bots (bots.js); a late joiner takes over a bot's castle.
+import { addBot, takeOverBot } from '../bots.js';
 import { addClonk } from '../entities.js';
 import { clearInputs, clonkOf } from '../players.js';
 import { deserialize } from '../save.js';
@@ -10,39 +12,58 @@ import { useMine } from '../teams.js';
 import { startClient, stopClient } from './client.js';
 import { sendWorld, startHost, stopHost, welcome } from './host.js';
 import { NET, onRoomChange } from './room.js';
-import { H, W, devSize } from '../world.js';
+import { GAME_MODES } from '../modes.js';
+import { H, H0, W, W0, devSize } from '../world.js';
 
 let online = new Set(); // players that were online at the last room update
 
-// the start message the host sends to everybody
-function startMessage() {
+// the start message the host sends to everybody (gmode: the game mode or map)
+function startMessage(gmode) {
   const players = NET.players.filter(p => p.online).map(({ pid, name, cap, hat }) => ({ pid, name, cap, hat }));
-  const versus = !!NET.versus && players.length >= 2;
-  // Versus: players in turn to the red and the blue castle (1:1, 2:1, 2:2)
+  const n = players.length;
+  // "Jeder gegen jeden": a castle for every player, from three on and in generated worlds (the
+  // maps are built for two castles); with two it is plain Versus
+  const free = NET.versus && NET.ffa && !GAME_MODES[gmode]?.pkg;
+  // quick play: bots take the castles nobody plays (alone in Versus one, "Jeder gegen jeden" up
+  // to three castles)
+  const fill = !!NET.auto && !!NET.versus;
+  const castles = free ? Math.max(n, fill ? 3 : 0) : fill && n < 2 ? 2 : 0;
+  const bots = [];
+  for (let t = n; t < castles; t++) bots.push(free ? t : 1);
+  const versus = !!NET.versus && n + bots.length >= 2;
+  const ffa = versus && free && n + bots.length >= 3 ? n + bots.length : 0;
+  // Versus: players in turn to the red and the blue castle (1:1, 2:1, 2:2); each to its own
   const teams = {};
   players
     .map(p => p.pid)
     .sort((a, b) => a - b)
-    .forEach((pid, k) => (teams[pid] = versus ? k % 2 : 0));
-  const np = players.length; // (Koop goals grow with the players)
-  return { k: 'start', seed: (Math.random() * 4294967296) >>> 0, size: devSize, players, versus, teams, np };
+    .forEach((pid, k) => (teams[pid] = ffa ? k : versus ? k % 2 : 0));
+  const np = n; // (Koop goals grow with the players)
+  // more castles need a wider world: 1700 for three, 2000 for four
+  const size = ffa ? [W0 + 300 * (ffa - 2), H0] : devSize;
+  // quick play: shorter Versus rounds
+  const vsMin = versus && NET.auto ? QUICK_MIN : null;
+  return { k: 'start', seed: (Math.random() * 4294967296) >>> 0, size, players, versus, ffa, vsMin, teams, np, gmode, bots };
 }
+const QUICK_MIN = 4;
 // a player's Wühler at the castle of its team
 function addPlayerClonk(p, self = false) {
   if ((p.pid === G.myId && !self) || clonkOf(p.pid)) return;
   const team = (G.netStart.teams && G.netStart.teams[p.pid]) || 0;
+  // (a castle a bot plays: the player takes over the bot's Wühler)
+  if (takeOverBot(team, p)) return;
   const base = teamBase(team);
   const c = addClonk(base.x + 8 + (p.pid % 4) * 6, base.gy - 10);
   Object.assign(c, { pid: p.pid, name: p.name, cap: p.cap, hat: p.hat, inv: [], team });
 }
 const teamBase = t => (G.teams && G.teams[t] && t !== G.curTeam ? G.teams[t].base : G.base);
-// a late joiner goes to the smaller team
+// a late joiner goes to the smallest team (in "Jeder gegen jeden" a castle nobody plays)
 function teamFor(pid) {
   const T = G.netStart.teams || (G.netStart.teams = {});
   if (T[pid] == null) {
-    const n = [0, 0];
+    const n = (G.teams || [0]).map(() => 0);
     for (const k in T) n[T[k]]++;
-    T[pid] = G.netStart.versus && n[1] < n[0] ? 1 : 0;
+    T[pid] = G.netStart.versus ? n.indexOf(Math.min(...n)) : 0;
   }
   return T[pid];
 }
@@ -52,6 +73,7 @@ function beginNet(d) {
   // (late joiners get the size of the world as it is now)
   G.netStart = {
     ...{ seed: d.seed, size: [W, H], biome: d.biome, gmode: d.gmode, diff: d.diff, versus: d.versus, np: d.np },
+    ...{ ffa: d.ffa || 0, vsMin: d.vsMin || null },
     teams: { ...d.teams },
   };
   G.myTeam = (d.teams && d.teams[G.myId]) || 0;
@@ -67,6 +89,7 @@ function beginNet(d) {
       Object.assign(me, { team: G.myTeam, x: b.x + 10, y: b.gy - 10 });
     }
     for (const p of d.players) addPlayerClonk(p);
+    (d.bots || []).forEach((t, k) => addBot(t, k + (d.seed % 6)));
     useMine();
     startHost();
   } else startClient();
@@ -108,7 +131,7 @@ function resumeNet(s) {
   const cur = NET.players.filter(p => p.online),
     used = new Set();
   for (const c of crew) {
-    if (c.pid == null) continue;
+    if (c.pid == null || c.bot) continue; // (bots play on)
     const p = cur.find(q => q.name === c.name && !used.has(q.pid));
     if (p) {
       used.add(p.pid);

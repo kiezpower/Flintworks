@@ -144,7 +144,8 @@ function gen() {
   G.tools = {};
   G.mode = G.nextMode || 'gold';
   // the round: how many players, together or against each other (see versus.js)
-  G.mp = { np: G.nextNp || 1, vs: !!G.nextVersus, stats: {} };
+  // (vsMin: a shorter clock for quick play)
+  G.mp = { np: G.nextNp || 1, vs: !!G.nextVersus, stats: {}, vsMin: G.nextVsMin || null };
   G.relaxed = G.nextDiff === 'relaxed';
   G.store = {};
   G.beams = [];
@@ -248,17 +249,19 @@ function gen() {
     blob(x, H - 30 - rnd() * 80, ri(2, 4), ri(2, 3), GEM);
   }
   // balancing: one shallow gold vein close to the base for the first sale
+  const xs = castleXs();
   {
     const x = ri(135, 165);
     blob(x, surf[x] + 16, 5, 3, GOLD);
-    // Versus: the same for the second castle on the right
-    if (G.nextVersus) blob(W - x, surf[W - x] + 16, 5, 3, GOLD);
+    // Versus: the same for the second castle on the right and the ones in between
+    if (xs.length > 1) blob(W - x, surf[W - x] + 16, 5, 3, GOLD);
+    for (const cx of xs.slice(2)) blob(cx + x - 90, surf[cx + x - 90] + 16, 5, 3, GOLD);
   }
   // fair worlds: every castle gets about the same treasure within the helpers' reach
-  balanceAround(90);
-  if (G.nextVersus) balanceAround(W - 90);
-  // surface pond
-  const x0 = ri(Math.floor(W * 0.45), Math.floor(W * 0.75));
+  for (const cx of xs) balanceAround(cx);
+  // surface pond (not where a castle stands)
+  let x0 = ri(Math.floor(W * 0.45), Math.floor(W * 0.75));
+  for (let k = 0; k < 20 && xs.some(cx => Math.abs(cx - x0) < 100); k++) x0 = ri(Math.floor(W * 0.2), Math.floor(W * 0.8));
   for (let x = x0 - 50; x <= x0 + 50; x++) {
     const t = (x - x0) / 50,
       dep = Math.floor(16 * (1 - t * t));
@@ -313,7 +316,8 @@ function gen() {
   crew[0].inv = ['flint', 'rock'];
   crew[1].inv = ['loam'];
   crew[2].inv = ['rock'];
-  if (G.nextVersus) genSecondBase();
+  for (let t = 1; t < xs.length; t++) genBase(t, xs[t]);
+  if (xs.length > 1) setupTeams(builds.filter(b => b.type === 'base').sort((a, b) => (a.team || 0) - (b.team || 0)));
   // animals
   for (let k = 0, n = perWidth(6); k < n; k++) {
     const x = ri(200, W - 20);
@@ -369,11 +373,18 @@ function finishWorld() {
   calcTerr();
   scatterDecor();
 }
-// Versus: a second castle at the right edge with its own two helpers and trees
-function genSecondBase() {
-  const bx = W - 72 - 36;
+// where the castles stand (their middle): one; Versus a second at the right edge; "Jeder gegen
+// jeden" (G.nextFfa: three or four teams) the others in between
+function castleXs() {
+  if (!G.nextVersus) return [90];
+  const n = Math.max(2, Math.min(4, G.nextFfa || 2));
+  return [90, W - 90, ...(n === 3 ? [W / 2] : n === 4 ? [W * 0.36, W * 0.64] : [])].map(Math.round);
+}
+// another castle (team t) with its own two helpers and trees
+function genBase(t, cx) {
+  const bx = cx - 18;
   const b = { id: newId(), type: 'base', x: bx, gy: surf[bx + 18] + 1, w: 36, h: 30, prog: 1, done: true, busy: 0 };
-  Object.assign(b, { lvl: 1, team: 1 });
+  Object.assign(b, { lvl: 1, team: t });
   clearFoot(b.x, b.gy, b.w, b.h);
   for (let k = trees.length - 1; k >= 0; k--)
     if (trees[k].x > b.x - 8 && trees[k].x < b.x + b.w + 8) trees.splice(k, 1);
@@ -385,9 +396,8 @@ function genSecondBase() {
     }
   for (let k = 0; k < 2; k++) {
     const c = addClonk(b.x + 16 + k * 6, b.gy - 10);
-    Object.assign(c, { team: 1, inv: [k ? 'rock' : 'loam'] });
+    Object.assign(c, { team: t, inv: [k ? 'rock' : 'loam'] });
   }
-  setupTeams([G.base, b]);
 }
 function clearFoot(bx, gy, w, h) {
   for (let y = gy - h; y < gy; y++)

@@ -1,11 +1,11 @@
-// Teams for Versus: every team has its own castle, cash, store, tools and progress. The game
+// Teams for Versus (two) and "Jeder gegen jeden" (three or four, one player each): every team has its own castle, cash, store, tools and progress. The game
 // code works with G.money, G.store, G.base … of "the current team"; useTeam(t) swaps those
 // values before the host simulates something of team t. Without teams (single game, Koop)
 // everything here does nothing.
 import { G } from './state.js';
 
 const KEYS = ['money', 'store', 'tools', 'earned', 'base', 'mineMark', 'goldSold', 'sold', 'chestsFound', 'mis'];
-const TEAM_COLS = ['#c8402c', '#2f7fd0'];
+const TEAM_COLS = ['#c8402c', '#2f7fd0', '#e0b020', '#3a9a40'];
 G.teams = null;
 G.curTeam = 0;
 G.myTeam = 0;

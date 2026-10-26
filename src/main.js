@@ -24,6 +24,7 @@ import { addClonk, insideB, sel_ } from './entities.js';
 import { gen } from './gen.js';
 import { cycleCrew, readInput } from './input.js';
 import { helperAI } from './helpers.js';
+import { botAI } from './bots.js';
 import { updBeams } from './mine.js';
 import { checkLessons } from './lessons.js';
 import { updMissions } from './missions.js';
@@ -96,10 +97,11 @@ function play(withTutorial, level = null) {
       }
       toast('Der Spielstand ließ sich nicht laden');
     }
-    const d = startMessage();
-    d.biome = chosenBiome() || ['meadow', 'desert', 'winter'][Math.floor(Math.random() * 3)];
     // (a quick play room plays its mode of the hour)
-    d.gmode = NET.auto ? NET.auto.gmode : GAME_MODES[P.gmode] && !GAME_MODES[P.gmode].campaign ? P.gmode : 'gold';
+    const d = startMessage(
+      NET.auto ? NET.auto.gmode : GAME_MODES[P.gmode] && !GAME_MODES[P.gmode].campaign ? P.gmode : 'gold',
+    );
+    d.biome = chosenBiome() || ['meadow', 'desert', 'winter'][Math.floor(Math.random() * 3)];
     d.diff = P.diff || 'adventure';
     sendTo('all', d);
     playNet(d);
@@ -160,11 +162,14 @@ function playNet(d) {
   G.nextMode = d.gmode;
   G.nextDiff = d.diff;
   G.nextVersus = !!d.versus;
+  G.nextFfa = d.ffa || 0;
+  G.nextVsMin = d.vsMin || null;
   G.nextNp = d.np || (d.players && d.players.length) || 1;
   G.nextSize = d.size || [W0, H0];
   gen();
-  G.nextSeed = G.nextSize = null;
+  G.nextSeed = G.nextSize = G.nextVsMin = null;
   G.nextVersus = false;
+  G.nextFfa = 0;
   beginNet(d);
   resetCam();
   G.inRun = true;
@@ -461,10 +466,11 @@ function step() {
   if (G.state === 'play' && !paused) {
     G.playTicks = (G.playTicks || 0) + 1;
     tapGotoInput(sel_());
-    // players are steered by their input (yours from this device), helpers by their own AI
+    // players are steered by their input (yours from this device), bots by their own mind,
+    // helpers by their AI
     crew.forEach((c, n) => {
       useTeam(teamOf(c)); // Versus: castle, cash and store of this Wühler's team
-      const I = isPlayer(c) ? inputOf(c.pid) : c.dead ? NOIN : helperAI(c, n);
+      const I = c.dead ? (isPlayer(c) ? inputOf(c.pid) : NOIN) : c.bot ? botAI(c, n) : isPlayer(c) ? inputOf(c.pid) : helperAI(c, n);
       updClonk(c, I);
       if (isPlayer(c)) playerVehicleTick(c);
       if (isPlayer(c) && !c.dead) {

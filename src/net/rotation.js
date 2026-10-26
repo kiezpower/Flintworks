@@ -11,6 +11,8 @@ const ROTATION = [
   { gmode: 'zweiburgen', versus: true },
   { gmode: 'build', versus: false },
   { gmode: 'gold', versus: true },
+  { gmode: 'gold', versus: true, ffa: true },
+  { gmode: 'treasure', versus: true, ffa: true },
 ];
 const HOUR = 3600 * 1000;
 
@@ -21,12 +23,15 @@ function rotation(t = Date.now()) {
   const k = Math.floor(t / HOUR) % list.length;
   return { ...list[k], tag: tagOf(list[k]), until: (Math.floor(t / HOUR) + 1) * HOUR };
 }
-const tagOf = r => `${r.gmode}:${r.versus ? 'v' : 'k'}`;
+// k: Koop, v: Versus, f: everybody for themselves ("Jeder gegen jeden")
+const tagOf = r => `${r.gmode}:${r.ffa ? 'f' : r.versus ? 'v' : 'k'}`;
 function fromTag(tag) {
   const [gmode, v] = String(tag || '').split(':');
-  return GAME_MODES[gmode] && !GAME_MODES[gmode].campaign ? { gmode, versus: v === 'v' } : null;
+  if (!GAME_MODES[gmode] || GAME_MODES[gmode].campaign) return null;
+  return { gmode, versus: v === 'v' || v === 'f', ffa: v === 'f' };
 }
 // "Burgsturm · Versus"
-const modeName = (r, tr) => `${tr(GAME_MODES[r.gmode].name)} · ${tr(r.versus ? 'Versus' : 'Koop')}`;
+const kindName = r => (r.ffa ? 'Jeder gegen jeden' : r.versus ? 'Versus' : 'Koop');
+const modeName = (r, tr) => `${tr(GAME_MODES[r.gmode].name)} · ${tr(kindName(r))}`;
 
-export { fromTag, modeName, rotation };
+export { fromTag, kindName, modeName, rotation };

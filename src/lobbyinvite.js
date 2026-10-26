@@ -24,7 +24,7 @@ import {
   shareInvite,
 } from './net/room.js';
 import { netSaveInfo } from './net/netsave.js';
-import { fromTag, modeName, rotation } from './net/rotation.js';
+import { fromTag, kindName, modeName, rotation } from './net/rotation.js';
 import { P } from './profile.js';
 import { G } from './state.js';
 import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
@@ -116,23 +116,29 @@ function openInvite() {
   if (NET.auto)
     opt(sec(p, 'Modus der Stunde'), {
       title: modeName(NET.auto, tr),
-      sub: tr('Startet von selbst, sobald zwei Spieler da sind'),
+      sub: tr('Startet von selbst; allein nach 30 s, im Versus gegen Bots'),
       short: true,
     });
-  // Koop or Versus: the host chooses, everybody sees it
+  // Koop, Versus or everybody for themselves: the host chooses, everybody sees it
   else {
     const m = sec(p, 'Spielart');
-    for (const [v, title, sub] of [
-      [false, 'Koop', 'Zusammen: eine Burg, eine Kasse, ein Ziel, das mit jedem Spieler wächst, und Teamaufgaben'],
-      [true, 'Versus', 'Gegeneinander, 8 Minuten: Ziel schaffen, den Hügel halten oder die andere Burg stürmen'],
+    const cur = NET.ffa ? 2 : NET.versus ? 1 : 0;
+    for (const [k, title, sub] of [
+      [0, 'Koop', 'Zusammen: eine Burg, eine Kasse, ein Ziel, das mit jedem Spieler wächst, und Teamaufgaben'],
+      [1, 'Versus', 'Gegeneinander, 8 Minuten: Ziel schaffen, den Hügel halten oder die andere Burg stürmen'],
+      [
+        2,
+        'Jeder gegen jeden',
+        'Ab 3 Spielern: jeder mit eigener Burg, eine gestürmte Burg ist raus, der Letzte gewinnt (zu zweit Versus)',
+      ],
     ])
       opt(m, {
         title: tr(title),
         sub: tr(sub),
         short: true,
-        cost: !!NET.versus === v ? '✓' : '',
-        disabled: !NET.host && !!NET.versus !== v,
-        onClick: () => NET.host && setVersus(v),
+        cost: cur === k ? '✓' : '',
+        disabled: !NET.host && cur !== k,
+        onClick: () => NET.host && setVersus(k > 0, k === 2),
       });
   }
   const a = sec(p, '');
@@ -193,7 +199,7 @@ function drawRooms() {
     const t = fromTag(r.tag);
     opt(l, {
       title: tr('Raum von {name}', { name: esc(r.host || '?') }),
-      sub: `${t ? modeName(t, tr) : tr(r.versus ? 'Versus' : 'Koop')}${r.playing ? ' · ' + tr('Spiel läuft') : ''}`,
+      sub: `${t ? modeName(t, tr) : tr(kindName(r))}${r.playing ? ' · ' + tr('Spiel läuft') : ''}`,
       cost: `${r.n}/${MAX_PLAYERS}`,
       short: true,
       onClick: () => fresh() && joinRoom(r.code),

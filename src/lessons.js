@@ -181,8 +181,14 @@ const LESSONS = [
   {
     id: 'storm',
     name: 'Burgsturm',
-    when: () => !!G.teams && G.frame > 300,
+    when: () => G.teams?.length === 2 && G.frame > 300,
     tip: 'Feuersteine, Sprengladungen und Pfeile beschädigen die feindliche Burg. Fällt sie, habt ihr gewonnen',
+  },
+  {
+    id: 'ffa',
+    name: 'Jeder gegen jeden',
+    when: () => G.teams?.length > 2 && G.frame > 300,
+    tip: 'Jeder hat eine eigene Burg. Eine gestürmte Burg ist raus, wer als Letzter steht, gewinnt',
   },
   {
     id: 'hill',

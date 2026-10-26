@@ -41,14 +41,16 @@ function updMissions() {
 }
 // text for the HUD (empty when all are done)
 function missionText() {
-  // Versus: the clock and how far the other team is instead of a task
-  if (G.vs)
-    return [
-      clockText(),
-      ...G.vs.map((v, t) => (t === G.myTeam ? null : tr('Gegner {v}/{g}', { v, g: mode().goal }))),
-    ]
-      .filter(Boolean)
-      .join(' · ');
+  // Versus: the clock and how far the other team is instead of a task (with more teams: the
+  // one furthest ahead)
+  if (G.vs) {
+    const rivals = G.vs.filter((v, t) => t !== G.myTeam);
+    const rival =
+      rivals.length > 1
+        ? tr('Bester Gegner {v}/{g}', { v: Math.max(...rivals), g: mode().goal })
+        : rivals.map(v => tr('Gegner {v}/{g}', { v, g: mode().goal }));
+    return [clockText(), rival].flat().filter(Boolean).join(' · ');
+  }
   // Koop: a running team task comes first
   const ct = coopText();
   if (ct) return ct;
