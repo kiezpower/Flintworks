@@ -49,6 +49,7 @@ import {
   activateAll,
   devSize,
   resizeWorld,
+  resetSim,
   bg,
   clearFresh,
   flush,
@@ -337,6 +338,7 @@ function gen() {
 // it starts on a frame that is 1 modulo 30: the same seed always gives the same world
 function settle() {
   G.frame += (31 - (G.frame % 30)) % 30;
+  resetSim();
   paintAll();
   activateAll();
   for (let k = 0; k < 60; k++) simulate();

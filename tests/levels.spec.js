@@ -26,26 +26,16 @@ async function lobby(page) {
 }
 // chapter 2 and the maps for free play, Koop and Versus
 const levelIds = page => page.evaluate(() => import('/src/levels/index.js').then(m => [...m.CHAPTER2, ...m.MAP_IDS]));
-// a level started like a player does: campaign list in the lobby, click on the level; a map is
-// chosen as the game mode and played
+// a level or map started like from the lobby: chosen in the level selection (the profile keeps
+// the choice), then "play"
 async function start(page, id) {
-  const map = await page.evaluate(id => import('/src/modes.js').then(m => m.GAME_MODES[id].map), id);
-  if (map) {
-    await page.evaluate(id => {
-      const p = JSON.parse(localStorage.getItem('flintworks-profile'));
-      localStorage.setItem('flintworks-profile', JSON.stringify({ ...p, gmode: id }));
-    }, id);
-    await page.reload();
-    await page.waitForFunction(() => window.__ww);
-    await page.click('#lbPlay');
-    await page.waitForFunction(() => window.__ww.state === 'play');
-    return;
-  }
+  await page.evaluate(id => {
+    const p = JSON.parse(localStorage.getItem('flintworks-profile'));
+    localStorage.setItem('flintworks-profile', JSON.stringify({ ...p, gmode: id }));
+  }, id);
+  await page.reload();
+  await page.waitForFunction(() => window.__ww);
   await page.click('#lbPlay');
-  // (taps right after a panel opens are ignored)
-  await page.waitForTimeout(500);
-  const name = await page.evaluate(id => import('/src/modes.js').then(m => m.GAME_MODES[id].name), id);
-  await page.locator('button.opt').filter({ hasText: name }).first().click();
   await page.waitForFunction(() => window.__ww.state === 'play');
 }
 
@@ -300,5 +290,36 @@ test('a Versus map gets two castles, two teams and a winner', async ({ page }) =
   });
   expect(Object.keys(r).length).toBeGreaterThan(0);
   for (const id in r) expect(r[id], id).toEqual({ bases: 2, teams: 2, apart: true, team1: 2 });
+  expect(errors).toEqual([]);
+});
+
+// The pictures in the level selection are made ahead (npm run previews); each one keeps the
+// checksum of the world it shows. When a level or the generator changes, run it again.
+test('every level and map has an up-to-date preview picture', async ({ page }) => {
+  const errors = await lobby(page);
+  const r = await page.evaluate(async () => {
+    const { CHAPTER1 } = await import('/src/scenarios.js'),
+      { CHAPTER2, MAP_IDS } = await import('/src/levels/index.js'),
+      { GAME_MODES } = await import('/src/modes.js'),
+      { PREVIEWS, worldHash } = await import('/src/levels/preview.js'),
+      w = window.__ww,
+      G = w.G,
+      out = {};
+    for (const id of [...CHAPTER1, ...CHAPTER2, ...MAP_IDS]) {
+      const M = GAME_MODES[id];
+      Object.assign(G, { nextMode: id, nextSeed: M.seed, nextBiome: M.biome, nextDiff: M.diff || 'adventure' });
+      G.nextVersus = !!(M.map && M.pkg.objects.some(o => o.t === 'base' && o.team === 1));
+      G.nextSize = null;
+      w.gen();
+      G.nextSeed = null;
+      G.nextVersus = false;
+      // (the checksum right away: while waiting for the picture the game goes on and water flows)
+      const current = !!PREVIEWS[id] && PREVIEWS[id].hash === worldHash();
+      const res = await fetch(`previews/${id}.png`);
+      out[id] = { picture: res.ok && res.headers.get('content-type') === 'image/png', current };
+    }
+    return out;
+  });
+  for (const id in r) expect(r[id], `${id} (npm run previews)`).toEqual({ picture: true, current: true });
   expect(errors).toEqual([]);
 });

@@ -16,6 +16,7 @@ const NET = {
   status: 'offline', // offline | connecting | waiting (in a room) | error
   error: null,
   versus: false, // the host's choice: together (Koop) or against each other
+  gmode: null, // the host's game mode or map
 };
 const MAX_PLAYERS = 4;
 const listeners = [];
@@ -58,7 +59,7 @@ on('players', m => {
   NET.players = m.players;
   NET.hostPid = m.host;
   NET.host = m.host === NET.pid;
-  if (NET.host) sendTo('all', { k: 'cfg', versus: !!NET.versus });
+  if (NET.host) sendCfg();
   changed();
 });
 on('error', m => {
@@ -71,14 +72,21 @@ on('status', () => {
   if (transport.status !== 'open' && NET.room) NET.status = 'connecting';
   changed();
 });
-// the host's choice Koop/Versus, shown to everybody in the room
+// the host's choices, shown to everybody in the room: Koop/Versus and the game mode or map
+const sendCfg = () => sendTo('all', { k: 'cfg', versus: !!NET.versus, gmode: NET.gmode });
 onGameMsg('cfg', d => {
   NET.versus = !!d.versus;
+  NET.gmode = d.gmode || null;
   changed();
 });
 function setVersus(v) {
   NET.versus = v;
-  sendTo('all', { k: 'cfg', versus: v });
+  sendCfg();
+  changed();
+}
+function setGMode(id) {
+  NET.gmode = id;
+  sendCfg();
   changed();
 }
 on('msg', m => {
@@ -107,7 +115,7 @@ function joinRoom(code) {
 function leaveRoom(keepError) {
   if (NET.room) send({ t: 'leave' });
   disconnect();
-  Object.assign(NET, { room: null, pid: null, host: false, players: [], status: keepError ? 'error' : 'offline' });
+  Object.assign(NET, { room: null, pid: null, host: false, players: [], gmode: null, status: keepError ? 'error' : 'offline' });
   G.myId = 0;
   changed();
 }
@@ -196,6 +204,7 @@ export {
   NET,
   copyText,
   createRoom,
+  setGMode,
   setVersus,
   inRoom,
   inviteLink,

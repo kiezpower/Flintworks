@@ -278,6 +278,13 @@ function swapActive() {
   return act;
 }
 const activateAll = () => actNext.fill(1);
+// a new world: nothing of the old one's simulation may carry over (chunks with acid are woken
+// every 30 frames and use random numbers, which would change the new world)
+function resetSim() {
+  act.fill(0);
+  actNext.fill(0);
+  acidChunk.fill(0);
+}
 const markActive = c => (actNext[c] = 1);
 let acidChunk = new Uint8Array(CWn * CHn);
 let dirty = new Uint8Array(CWn * CHn),
@@ -457,6 +464,7 @@ const rnd = seeded,
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
 export {
+  resetSim,
   W0,
   H0,
   SIZE_MAX,
