@@ -33,28 +33,42 @@ function openInvite() {
     return;
   }
   if (!NET.room) {
-    box.innerHTML = `<p>${tr('Grabt zu zweit bis zu viert in einer Welt. Erstelle einen Raum und lade Freunde ein – oder tritt mit einem Code bei.')}</p>`;
+    // straight to the point: one tap creates the room, a code joins one
     if (NET.status === 'error' && NET.error)
-      box.innerHTML += `<p class="hint">${tr(ERRORS[NET.error] || 'Keine Verbindung zum Server')}</p>`;
-    const l = sec(p, 'Raum');
-    opt(l, {
-      title: tr('Raum erstellen'),
-      sub: tr('Du bist Host: dein Handy rechnet das Spiel'),
-      onClick: () => createRoom(),
-    });
-    // join with a code
+      box.innerHTML = `<p class="hint">${tr(ERRORS[NET.error] || 'Keine Verbindung zum Server')}</p>`;
+    const go = document.createElement('button');
+    go.className = 'lb-create';
+    go.id = 'lbCreate';
+    go.textContent = tr('Raum erstellen');
+    go.addEventListener('click', () => fresh() && createRoom());
+    box.appendChild(go);
+    box.insertAdjacentHTML('beforeend', `<p class="lb-or">${tr('oder mit Code beitreten')}</p>`);
     const row = document.createElement('div');
     row.className = 'lb-join';
     row.innerHTML = `<input id="lbCodeIn" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="${tr('Code')}"><button class="opt short" id="lbJoinBtn"><b>${tr('Beitreten')}</b></button>`;
-    p.appendChild(row);
+    box.appendChild(row);
     $('lbJoinBtn').addEventListener('click', () => {
       const code = $('lbCodeIn').value.trim().toUpperCase();
       if (!/^[A-Z0-9]{6}$/.test(code)) return toast('Der Code hat 6 Zeichen');
       joinRoom(code);
     });
+    $('lbCodeIn').addEventListener('keydown', e => e.key === 'Enter' && $('lbJoinBtn').click());
     return;
   }
-  box.innerHTML = `<div class="lb-code"><small>${tr('Raum-Code')}</small><b>${NET.room}</b></div>`;
+  // the code and the share button come first: inviting is what a new room is for
+  box.innerHTML = `<div class="lb-code"><small>${tr('Raum-Code')}</small><b>${NET.room}</b><small class="lb-link">${esc(inviteLink())}</small></div>`;
+  if (NET.players.length < MAX_PLAYERS) {
+    const share = document.createElement('button');
+    share.className = 'lb-create';
+    share.textContent = tr('Link teilen');
+    share.addEventListener('click', async () => {
+      if (!fresh()) return;
+      const r = await shareInvite(tr('Grab mit mir in Flintworks!'));
+      if (r === 'copied') toast('Link kopiert');
+      else if (r === 'failed') toast('Teilen nicht möglich');
+    });
+    box.firstChild.appendChild(share);
+  }
   // who is in
   const l = sec(p, tr('Spieler {n}/{max}', { n: NET.players.length, max: MAX_PLAYERS }));
   for (const pl of NET.players) {
@@ -81,17 +95,7 @@ function openInvite() {
       disabled: !NET.host && !!NET.versus !== v,
       onClick: () => NET.host && setVersus(v),
     });
-  const a = sec(p, 'Einladen');
-  if (NET.players.length < MAX_PLAYERS)
-    opt(a, {
-      title: tr('Link teilen'),
-      sub: tr('Schicke deinen Freunden den Einladungslink'),
-      onClick: async () => {
-        const r = await shareInvite(tr('Grab mit mir in Flintworks!'));
-        if (r === 'copied') toast('Link kopiert');
-        else if (r === 'failed') toast('Teilen nicht möglich');
-      },
-    });
+  const a = sec(p, '');
   if (!NET.host) {
     const mine = NET.players.find(q => q.pid === NET.pid);
     opt(a, {
@@ -121,10 +125,6 @@ function openInvite() {
       },
     });
   }
-  const link = document.createElement('p');
-  link.className = 'hint lb-link';
-  link.textContent = inviteLink();
-  p.appendChild(link);
   leaveOpt(p, 'Raum verlassen');
 }
 function leaveOpt(p, title) {
@@ -137,6 +137,8 @@ function leaveOpt(p, title) {
     },
   });
 }
+// ignore the tap that opened the panel landing on the button beneath it (like opt() does)
+const fresh = () => performance.now() - G.panelT >= 450;
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
 
 // the two "+" slots beside the hero show the other players
