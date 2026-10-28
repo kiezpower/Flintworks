@@ -11,16 +11,19 @@ test.beforeAll(async () => {
 });
 test.afterAll(() => relay?.kill());
 
-async function player(browser, name) {
+async function player(browser, name, extra = {}) {
   const page = await browser.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.goto(`/?mp=ws://localhost:${PORT}`);
-  await page.evaluate(n => {
-    localStorage.clear();
-    localStorage.setItem('flintworks-lang', 'de');
-    localStorage.setItem('flintworks-profile', JSON.stringify({ tutorialDone: true, installAsked: 'done', name: n }));
-  }, name);
+  await page.evaluate(
+    ([n, x]) => {
+      localStorage.clear();
+      localStorage.setItem('flintworks-lang', 'de');
+      localStorage.setItem('flintworks-profile', JSON.stringify({ tutorialDone: true, installAsked: 'done', name: n, ...x }));
+    },
+    [name, extra],
+  );
   await page.reload();
   await page.waitForFunction(() => window.__ww);
   await page.locator('#lbSlot1').click();
@@ -96,6 +99,38 @@ test('a quick play room counts down and starts the mode of the hour by itself', 
   await expect(e.page.locator('#mpCountdown')).toBeHidden();
   for (const p of [e, f]) expect(p.errors).toEqual([]);
   for (const p of [e, f]) await p.page.close();
+});
+
+test('skins travel with the player: the others see the outfit, the castle and new buildings in their style', async ({
+  browser,
+}) => {
+  const g = await player(browser, 'Gero', { outfit: 'royal', bstyle: 'gold', owned: ['o:royal', 'b:gold'] });
+  const h = await player(browser, 'Hanna');
+  await g.page.waitForTimeout(500);
+  await g.page.locator('#lbQuick').click();
+  await expect(g.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  await h.page.waitForTimeout(500);
+  await h.page.locator('#lbQuick').click();
+  await expect(h.page.locator('.lb-codetap b')).toHaveText(await g.page.locator('.lb-codetap b').textContent());
+  // the relay passes the skin on: Hanna's lobby knows Gero's look
+  const seen = await h.page.evaluate(() =>
+    import('/src/net/room.js').then(({ NET }) => NET.players.find(p => p.name === 'Gero')?.skin),
+  );
+  expect(seen).toBe('royal.gold');
+  await h.page.waitForTimeout(500);
+  await h.page.locator('.opt', { hasText: 'Bereit?' }).click();
+  for (const p of [g, h])
+    await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net, null, { timeout: 8000 });
+  // on Hanna's screen (a client): Gero's Wühler in his outfit, his castle in gold
+  await h.page.waitForFunction(() => window.__ww.crew.some(c => c.name === 'Gero' && c.skin === 'royal.gold'), null, {
+    timeout: 8000,
+  });
+  const castles = await h.page.evaluate(() =>
+    window.__ww.builds.filter(b => b.type === 'base').map(b => b.skin || 'wood'),
+  );
+  expect(castles).toContain('gold');
+  for (const p of [g, h]) expect(p.errors).toEqual([]);
+  for (const p of [g, h]) await p.page.close();
 });
 
 test('alone in a quick play room: after 30 s a Versus round against a bot, a late joiner takes it over', async ({

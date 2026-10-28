@@ -6,7 +6,7 @@ import { sfx } from './sound.js';
 import { ITEM } from './sprites.js';
 import { isPlayer } from './players.js';
 import { addStat } from './stats.js';
-import { G } from './state.js';
+import { G, builds } from './state.js';
 import { flyCoins } from './reward.js';
 
 const SELL = ['nug', 'gem'];
@@ -110,4 +110,10 @@ function idleReason(b) {
   }
   return null;
 }
-export { idleReason, AUTO, AUTO_INFO, addStock, arriveAtBase, stock, takeStock, unload, updProduction };
+// the production chain at a glance (castle panel): every finished production building of your
+// team, whether it runs, and if not what it waits for
+const chainStatus = (team = G.myTeam || 0) =>
+  builds
+    .filter(b => b.done && AUTO[b.type] && (b.team || 0) === team)
+    .map(b => ({ b, busy: b.busy > 0, why: idleReason(b) }));
+export { chainStatus, idleReason, AUTO, AUTO_INFO, addStock, arriveAtBase, stock, takeStock, unload, updProduction };

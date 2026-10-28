@@ -588,7 +588,8 @@ function updBody(c, I) {
     // the pick swings in a beat (longer in hard ground): wind up, strike, and after the strike
     // the Wühler pushes on into the loosened earth; on average as fast as the material allows
     const ph0 = c.digPh;
-    c.digPh += 1 / (11 * c.digH);
+    // (G.digBoost: sharper picks from the Heimatbergwerk, free play alone only)
+    c.digPh += (G.digBoost || 1) / (11 * c.digH);
     if (c.digPh >= 1) c.digPh -= 1;
     if (ph0 < STRIKE && c.digPh >= STRIKE) digHit(c, slope);
     // gold and gems just ahead glitter in the face before the pick gets there
@@ -599,7 +600,7 @@ function updBody(c, I) {
       if (gm === GOLD || gm === GEM) parts.push({ x: gx, y: gy, vx: 0, vy: 0, l: 10, c: '#fffbe0', g: 0 });
     }
     const surge = c.digPh >= STRIKE && c.digPh < STRIKE + 0.25 ? 1.9 : 0.7;
-    const sp = ((hasTool('pick') ? 0.8 : 0.55) / c.digH) * surge;
+    const sp = ((hasTool('pick') ? 0.8 : 0.55) / c.digH) * surge * (G.digBoost || 1);
     moveBody(c, (c.face * sp) / len, (slope * sp) / len, 3);
     c.anim += 0.3;
     return;

@@ -1,5 +1,7 @@
 // Translations. The German text is the key; English entries replace it.
 // Placeholders: {name} is filled from the params object.
+import { EN2 } from './i18n2.js';
+
 const EN = {
   // lobby and profile
   'Als App installieren': 'Install as an app',
@@ -993,6 +995,8 @@ const EN = {
   'Nächste Medaille: {m} ab {n} Taler': 'Next medal: {m} from {n} coins',
   'Gold! Besser geht’s nicht.': 'Gold! It doesn’t get better.',
 };
+
+Object.assign(EN, EN2);
 
 let lang = 'de';
 try {

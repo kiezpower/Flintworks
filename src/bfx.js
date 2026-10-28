@@ -82,13 +82,21 @@ function updBuildFx() {
 
 // overlays drawn right after the building sprite
 function drawBuildFx(ctx, b, sx, sy) {
+  if (b.busy > 0) b.idleK = null; // (working again: the waiting starts over)
   if (b.done && !(b.busy > 0)) {
     // idle production building: bubble with what it is waiting for
     const why = idleReason(b);
+    // how long it has waited for the same thing: after 30 seconds the bubble calls louder
+    const key = why ? (why.full ? 'full:' : '') + why.item : '';
+    if (b.idleK !== key) {
+      b.idleK = key;
+      b.idleF = G.frame;
+    }
     if (why) {
-      const bx = Math.round(sx + b.w / 2 - 6),
-        by = Math.round(sy - 15 + Math.sin(G.frame * 0.08) * 1);
-      ctx.fillStyle = '#24160c';
+      const long = G.frame - b.idleF > 1800,
+        bx = Math.round(sx + b.w / 2 - 6),
+        by = Math.round(sy - 15 + Math.sin(G.frame * (long ? 0.2 : 0.08)) * (long ? 2 : 1));
+      ctx.fillStyle = long && !why.full && G.frame % 40 < 20 ? '#e0402f' : '#24160c';
       ctx.fillRect(bx - 1, by - 1, 14, 13);
       ctx.fillStyle = why.full ? '#e8f4d8' : '#f4ead2';
       ctx.fillRect(bx, by, 12, 11);

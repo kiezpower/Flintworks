@@ -3,7 +3,7 @@
 // host's latest full snapshot for players who join late or reconnect.
 //
 // Messages are JSON. Client → server:
-//   {t:'create', name, cap, hat, token}      open a room, you are host
+//   {t:'create', name, cap, hat, skin, token} open a room, you are host (skin: "outfit.style")
 //   {t:'join', code, name, cap, hat, token}  join a room (same token = same player again)
 //   {t:'quick', tag, name, cap, hat, token}  join an open room with space (one for the mode
 //                                            of the hour, tag, first), or open a new one
@@ -15,7 +15,7 @@
 //   {t:'leave'}                              leave the room
 //   {t:'ping', ts}
 // Server → client:
-//   {t:'room', code, pid, host, players, pub, tag} you are in (players: [{pid,name,cap,hat,ready,online}]);
+//   {t:'room', code, pid, host, players, pub, tag} you are in (players: [{pid,name,cap,hat,skin,ready,online}]);
 //                                            tag: the mode of a quick play room (it starts by itself)
 //   {t:'players', players, host, pub}        someone joined, left, got ready or became host
 //   {t:'rooms', rooms}                       open rooms: [{code, host, n, versus, ffa, playing, tag}]
@@ -39,7 +39,7 @@ function newCode() {
     if (!rooms.has(c)) return c;
   }
 }
-const pubP = p => ({ pid: p.pid, name: p.name, cap: p.cap, hat: p.hat, ready: p.ready, online: !!p.ws });
+const pubP = p => ({ pid: p.pid, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin, ready: p.ready, online: !!p.ws });
 function send(ws, m) {
   if (ws && ws.readyState === 1) ws.send(JSON.stringify(m));
 }
@@ -81,7 +81,7 @@ function join(ws, room, m) {
     room.players.push(p);
   }
   if (p.ws && p.ws !== ws) p.ws.close(4000, 'replaced');
-  Object.assign(p, { ws, name: clean(m.name, 16), cap: clean(m.cap, 9), hat: clean(m.hat, 12), gone: 0 });
+  Object.assign(p, { ws, name: clean(m.name, 16), cap: clean(m.cap, 9), hat: clean(m.hat, 12), skin: clean(m.skin, 20), gone: 0 });
   ws.room = room;
   ws.player = p;
   room.empty = 0;

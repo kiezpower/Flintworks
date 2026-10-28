@@ -2,6 +2,7 @@
 // sky, mountains, the castle on a hill, tunnels and ore in the ground. The ground is a real
 // little world: the lobby workers (lobbyworkers.js) dig through it and carry the ore home.
 // The canvas fills the whole lobby; it has double resolution like the game view.
+import { parseSkin } from './skins.js';
 import { BIOMES } from './biomes.js';
 import { drawPortrait } from './portrait.js';
 import { SPR, drawDetailed, drawHi, treeSprite } from './sprites.js';
@@ -217,7 +218,7 @@ function drawSky(g, b, t) {
 }
 
 function drawScene(g, opts) {
-  const { t, biome, cap, hat, jumpY, spin, sparks, friends = [] } = opts;
+  const { t, biome, cap, hat, outfit, jumpY, spin, sparks, friends = [] } = opts;
   const b = BIOMES[biome] || BIOMES.meadow;
   const key = `${land.LW}|${land.LH}`;
   if (key !== terrainKey) {
@@ -249,7 +250,7 @@ function drawScene(g, opts) {
   // portrait texels at one landscape pixel each: 16×20, double the in-game size
   g.fillStyle = 'rgba(0,0,0,0.25)';
   g.fillRect(hx - 6, hy - 1, 12, 1);
-  drawPortrait(g, hx - 8, hy - 20 + bob + Math.round(jumpY), f, cap, hat, t % 240 < 6);
+  drawPortrait(g, hx - 8, hy - 20 + bob + Math.round(jumpY), f, cap, hat, t % 240 < 6, outfit);
   // friends in the room stand left and right of the hero, facing it
   friends.slice(0, 2).forEach((p, k) => {
     const fx = hx + friendDx()[k],
@@ -265,6 +266,7 @@ function drawScene(g, opts) {
       p.cap,
       p.hat,
       (t + k * 90) % 240 < 6,
+      parseSkin(p.skin).outfit,
     );
     g.globalAlpha = 1;
   });

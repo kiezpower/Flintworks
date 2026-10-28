@@ -1,4 +1,5 @@
 import { arriveAtBase, stock, takeStock, unload, updProduction } from './store.js';
+import { parseSkin } from './skins.js';
 import { celebrate } from './effects.js';
 import { track } from './profile.js';
 import { fireArrow } from './combat.js';
@@ -269,6 +270,8 @@ function tryBuild(type, c = sel_()) {
     cd: 0,
     open: 0,
     team: G.curTeam || 0,
+    // the builder's style (skins.js); helpers build in their player's style
+    skin: parseSkin(c && c.skin).style,
   };
   if (type === 'lift') b.cs = { x: bx + 2, y: gy - 2, home: gy - 2 };
   builds.push(b);
