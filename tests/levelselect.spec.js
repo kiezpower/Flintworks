@@ -1,6 +1,6 @@
-// The level selection (levelselect.js): tabs, cards with pictures, the level to go on with,
-// locked levels with their reason, the detail view, keys, starting, the choice kept in the
-// lobby, and "next level" after a win: npm test
+// The level selection (levelselect.js): one list of sections with rows of cards, jump chips,
+// pictures, the level to go on with, locked levels with their reason, the detail view, keys,
+// starting, the choice kept in the lobby, and "next level" after a win: npm test
 import { expect, test } from '@playwright/test';
 
 async function lobby(page, profile = {}) {
@@ -22,12 +22,18 @@ test('the selection shows the chapters with pictures, the next level, locks and 
   const errors = await lobby(page, { campaign: { wipfrettung: 3 }, campaignTime: { wipfrettung: 312 } });
   await page.click('#lbGMode');
   expect(await shown(page)).toBe(true);
-  // four tabs, the game modes first (Goldrausch is chosen)
-  expect(await page.locator('.ls-tab').allTextContents()).toHaveLength(4);
-  expect(await page.locator('.ls-tab.on').getAttribute('data-t')).toBe('modes');
+  // one chip per group: recommended, game modes, two chapters, maps
+  expect(await page.locator('.ls-tab').allTextContents()).toEqual([
+    'Empfohlen',
+    'Spielmodi',
+    'Kapitel 1',
+    'Kapitel 2',
+    'Karten',
+  ]);
   await page.click('.ls-tab[data-t="k2"]');
+  expect(await page.locator('.ls-tab.on').getAttribute('data-t')).toBe('k2');
   const cards = await page.evaluate(() =>
-    [...document.querySelectorAll('.ls-card')].map(c => ({
+    [...document.querySelectorAll('.ls-sec[data-s="k2"] .ls-card')].map(c => ({
       id: c.dataset.id,
       locked: c.classList.contains('locked'),
       next: c.classList.contains('next'),
@@ -40,7 +46,7 @@ test('the selection shows the chapters with pictures, the next level, locks and 
   expect(cards.filter(c => !c.locked).map(c => c.id)).toEqual(['wipfrettung', 'altemine']);
   // the pictures load
   await page.waitForFunction(() =>
-    [...document.querySelectorAll('.ls-card img')].every(i => i.complete && i.naturalWidth > 0),
+    [...document.querySelectorAll('.ls-sec[data-s="k2"] .ls-card img')].every(i => i.complete && i.naturalWidth > 0),
   );
   // details of a played level: its story, goal, star times and best time
   await page.click('.ls-card[data-id="wipfrettung"]');
@@ -70,7 +76,11 @@ test('arrow keys move between cards, Enter opens and starts, the lobby keeps the
   const errors = await lobby(page, { campaign: { wipfrettung: 1 } });
   await page.click('#lbGMode');
   await page.click('.ls-tab[data-t="k2"]');
-  await page.focus('.ls-card[data-id="wipfrettung"]');
+  await page.focus('.ls-sec[data-s="k2"] .ls-card[data-id="wipfrettung"]');
+  // up: the row above (chapter 1), down again: back to the first card of chapter 2
+  await page.keyboard.press('ArrowUp');
+  expect(await page.evaluate(() => document.activeElement.closest('.ls-sec').dataset.s)).toBe('k1');
+  await page.keyboard.press('ArrowDown');
   await page.keyboard.press('ArrowRight');
   expect(await page.evaluate(() => document.activeElement.dataset.id)).toBe('altemine');
   await page.keyboard.press('Enter');
@@ -103,11 +113,36 @@ test('a map and a game mode start from the selection', async ({ page }) => {
   await page.waitForFunction(() => window.__ww.state === 'play');
   expect(await page.evaluate(() => [window.__ww.G.mode, window.__ww.world.W])).toEqual(['expedition', 2800]);
   await lobby(page);
+  // a game mode is a card per world type: Siedler in the winter
   await page.click('#lbGMode');
-  await page.click('.ls-card[data-id="build"]');
+  await page.click('.ls-card[data-id="build"][data-biome="winter"]');
+  expect(await page.textContent('.ls-info h3')).toBe('Siedler · Winter');
   await page.click('.ls-go');
   await page.waitForFunction(() => window.__ww.state === 'play');
-  expect(await page.evaluate(() => [window.__ww.G.mode, window.__ww.world.W])).toEqual(['build', 1400]);
+  expect(await page.evaluate(() => [window.__ww.G.mode, window.__ww.G.biome, window.__ww.world.W])).toEqual([
+    'build',
+    'winter',
+    1400,
+  ]);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')).mode)).toBe('winter');
+  expect(errors).toEqual([]);
+});
+
+test('recommended: the level to go on with and the Tagesschacht, which opens its panel', async ({ page }) => {
+  const errors = await lobby(page, { campaign: { c1: 1 } });
+  await page.click('#lbGMode');
+  const rec = await page.evaluate(() =>
+    [...document.querySelectorAll('.ls-sec[data-s="rec"] .ls-card')].map(c => c.dataset.id),
+  );
+  expect(rec).toEqual(['c2', 'daily']);
+  // the lobby's choice is marked and in view: Goldrausch in the desert
+  await lobby(page, { gmode: 'gold', mode: 'desert' });
+  await page.click('#lbGMode');
+  expect(await page.locator('.ls-card.cur').count()).toBe(1);
+  expect(await page.locator('.ls-card.cur').getAttribute('data-biome')).toBe('desert');
+  await page.click('.ls-card[data-id="daily"]');
+  expect(await shown(page)).toBe(false);
+  await expect(page.locator('#pTitle')).toContainText('Tagesschacht');
   expect(errors).toEqual([]);
 });
 

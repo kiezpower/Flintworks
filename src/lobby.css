@@ -550,6 +550,15 @@
 #panel {
   z-index: 20;
 }
+#panelBg {
+  position: absolute;
+  inset: 0;
+  z-index: 19;
+  background: rgba(13, 8, 4, 0.35);
+}
+#panelBg[hidden] {
+  display: none;
+}
 
 .inlobby #panel {
   background: #1f160f;

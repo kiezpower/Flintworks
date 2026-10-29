@@ -31,33 +31,53 @@ test('the lobby has three signposts, the level opens the daily quests', async ({
   expect(errors).toEqual([]);
 });
 
-test('world and difficulty are picked in one panel; the difficulty sets dangers and pace', async ({ page }) => {
+test('the difficulty is set in the options and sets dangers and pace', async ({ page }) => {
   const errors = await lobby(page);
-  await page.click('#lbSetup');
-  await expect(page.locator('#pTitle')).toHaveText('Neue Runde');
+  await page.click('#lbOpt');
+  const tile = page.locator('#pBody .opt', { hasText: 'Schwierigkeit' });
+  await expect(tile).toContainText('Schwierigkeit: Abenteuer');
   // (a panel ignores taps for a moment after it opens, against double taps)
   await page.waitForTimeout(500);
-  await page.locator('#pBody .opt', { hasText: 'Wüste' }).click();
-  await page.waitForTimeout(500);
-  await page.locator('#pBody .opt', { hasText: 'Hart' }).click();
-  await expect(page.locator('#pBody .opt', { hasText: 'Hart' })).toContainText('✓');
+  await tile.click();
+  await expect(tile).toContainText('Schwierigkeit: Hart');
   await page.waitForTimeout(500);
   await page.click('#pClose');
-  await expect(page.locator('#lbSetupTxt')).toHaveText('Wüste · Hart');
   await play(page);
-  expect(await page.evaluate(() => [window.__ww.G.biome, window.__ww.G.relaxed, window.__ww.G.speed])).toEqual([
-    'desert',
-    false,
-    1,
-  ]);
+  expect(await page.evaluate(() => [window.__ww.G.relaxed, window.__ww.G.speed])).toEqual([false, 1]);
+  // in the game menu the difficulty is not offered: the world is already made
+  await page.click('#menuBtn');
+  await expect(page.locator('#pBody .opt', { hasText: 'Schwierigkeit' })).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 
 test('a relaxed round has no dangers and a calm pace', async ({ page }) => {
   await lobby(page, { diff: 'relaxed' });
-  await expect(page.locator('#lbSetupTxt')).toContainText('Gemütlich');
   await play(page);
   expect(await page.evaluate(() => [window.__ww.G.relaxed, window.__ww.G.speed])).toEqual([true, 0.7]);
+});
+
+test('the lobby names mode and world of the chosen card, there is no second choice', async ({ page }) => {
+  await lobby(page, { gmode: 'treasure', mode: 'desert' });
+  await expect(page.locator('#lbGModeTxt')).toHaveText('Schatzsucher · Wüste');
+  await expect(page.locator('#lbGModePv canvas')).toHaveCount(1);
+  await expect(page.locator('.lb-play .lb-sel')).toHaveCount(1);
+});
+
+test('a tap next to a panel closes it, in the lobby and in the game, without walking there', async ({ page }) => {
+  const errors = await lobby(page);
+  await page.click('#lbOpt');
+  await page.waitForTimeout(500);
+  await page.mouse.click(890, 440);
+  await expect(page.locator('#panel')).toBeHidden();
+  await play(page);
+  await page.click('#menuBtn');
+  await page.waitForTimeout(500);
+  const before = await page.evaluate(() => window.__ww.crew[0].x);
+  await page.mouse.click(860, 420);
+  await expect(page.locator('#panel')).toBeHidden();
+  await page.waitForTimeout(600);
+  expect(Math.abs((await page.evaluate(() => window.__ww.crew[0].x)) - before)).toBeLessThan(2);
+  expect(errors).toEqual([]);
 });
 
 test('building areas belong to the Siedler mode, not to the options', async ({ page }) => {
