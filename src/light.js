@@ -48,6 +48,11 @@ function depthShade(lctx, cx, cy) {
   }
   return any;
 }
+// the surface row of every visible column (for wet ground); kept fresh without the mood lighting too
+function surfTops(cx) {
+  if (G.frame % 15 === 7 || colTop[Math.min(W - 1, cx + (G.VW >> 1))] < 0) refreshTops(cx);
+  return colTop;
+}
 // how far below the surface a world position is, 0 (above) to 1 (deep)
 function depthAt(x, y) {
   const t = colTop[Math.max(0, Math.min(W - 1, x | 0))];
@@ -72,17 +77,24 @@ function lightHole(lctx, x, y, r, a) {
   lctx.globalAlpha = 1;
 }
 
-// soft warm light that adds up on top of the dimmed picture
+// warm light that adds up on top of the dimmed picture: three hard rings, from a yellow core to a
+// faint orange rim (pixel-art light pools instead of a smooth blur; drawn without smoothing)
 const glowSpr = document.createElement('canvas');
 glowSpr.width = glowSpr.height = 64;
 {
   const g = glowSpr.getContext('2d'),
-    gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-  gr.addColorStop(0, 'rgba(255,200,120,1)');
-  gr.addColorStop(0.4, 'rgba(255,150,70,0.45)');
-  gr.addColorStop(1, 'rgba(255,120,40,0)');
-  g.fillStyle = gr;
-  g.fillRect(0, 0, 64, 64);
+    rings = [
+      [32, 'rgba(255,120,40,0.16)'],
+      [22, 'rgba(255,150,70,0.34)'],
+      [12, 'rgba(255,200,120,0.7)'],
+    ];
+  for (const [r, c] of rings) {
+    g.fillStyle = c;
+    for (let dy = -r; dy < r; dy++) {
+      const w = Math.floor(Math.sqrt(r * r - (dy + 0.5) * (dy + 0.5)));
+      g.fillRect(32 - w, 32 + dy, w * 2, 1);
+    }
+  }
 }
 function warmGlow(ctx, x, y, r, a) {
   if (x < -r || x > G.VW + r || y < -r || y > G.VH + r) return;
@@ -91,7 +103,6 @@ function warmGlow(ctx, x, y, r, a) {
 }
 function beginGlow(ctx) {
   ctx.globalCompositeOperation = 'lighter';
-  ctx.imageSmoothingEnabled = true;
 }
 function endGlow(ctx) {
   ctx.globalCompositeOperation = 'source-over';
@@ -148,4 +159,4 @@ function duskGrade(ctx, sunAlt) {
   ctx.globalCompositeOperation = 'source-over';
 }
 
-export { lightHole, duskGrade, skyGlow, beginGlow, depthAt, depthShade, drawVignette, endGlow, warmGlow };
+export { lightHole, duskGrade, surfTops, skyGlow, beginGlow, depthAt, depthShade, drawVignette, endGlow, warmGlow };

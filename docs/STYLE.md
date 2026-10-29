@@ -28,6 +28,21 @@ Keine weichgezeichneten Kanten: Bilder ohne Glättung zeichnen, Koordinaten rund
   Edelstein `#45c8e6`, Holz `#a0703f`.
 - **Schatten** sind dunklere Töne derselben Farbe (×0,6–0,8), kein Grau darüber.
 
+## Effekte und Wetter
+
+- **Warm gegen kalt:** Regen, Dunst, Schnee, Blitz-Rand und abziehender Rauch sind kühl (Blaugrau),
+  Funken, Glut, Fenster und Feuer warm. Die Palette steht in `FX_PAL` (`effects.js`).
+- **Keine weichen Verläufe in Effekten:** Licht in 2–3 harten Ringen oder Bändern, außen
+  gerastert (Schachbrett) statt Alpha-Verlauf; Kreise und Linien pixelweise (`pixelDisc`,
+  `pixelLine`).
+- **Altern in Stufen:** Funken werden weiß-gelb → orange → dunkelrot, Rauch wächst in halben
+  Pixeln und kühlt ab (`pal`/`l0`/`grow` an einem Partikel, gezeichnet in `drawPart`).
+- **Flackern in Stufen:** `flicker(seed)` springt zwischen drei Helligkeiten statt einer Sinuswelle.
+- **Regen in drei Ebenen** (fern hinter den Hügeln, mittel in der Welt, nah davor) plus Spritzer,
+  Ringe auf dem Wasser, Tropfen von der Traufe und nasser Boden (`rainfx.js`).
+- Feinste Einheit eines Effekts ist ein Texel (`px()`: 0,5 Landschaftspixel bei doppelter
+  Auflösung, sonst 1).
+
 ## Bewegung
 
 - Takt statt Dauerbewegung: Ausholen → schneller Schlag → Nachfedern (siehe Hacke, `pickAngle`).

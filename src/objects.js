@@ -2,7 +2,7 @@ import { cam } from './render.js';
 import { buzz } from './sound.js';
 import { addFloat } from './floats.js';
 import { track } from './profile.js';
-import { splash } from './effects.js';
+import { FX_PAL, rainSplash, ripple, sparks, splash } from './effects.js';
 import { guard } from './combat.js';
 import { hurt, startTumble } from './clonk.js';
 import { midMat, moveBody, overlap, spawnItem, unstuck } from './entities.js';
@@ -180,16 +180,21 @@ function updTrees() {
     if (t.burn > 0) {
       t.burn -= G.rainT > 0 ? 3 : 1;
       const h = t.spr.height;
-      for (let q = 0; q < 2; q++)
+      for (let q = 0; q < 2; q++) {
+        const l = 14 + rnd() * 10;
         parts.push({
           x: t.x + (rnd() - 0.5) * t.spr.width * 0.8,
           y: t.gy - h * 0.3 - rnd() * h * 0.6,
           vx: (rnd() - 0.5) * 0.3,
           vy: -0.4 - rnd() * 0.6,
-          l: 14 + rnd() * 10,
-          c: rnd() < 0.5 ? '#ffcf4a' : '#ff7a2f',
+          l,
+          l0: l,
+          pal: FX_PAL.spark,
           g: -0.012,
         });
+      }
+      // embers carried high up by the heat
+      if (rnd() < 0.12) sparks(t.x, t.gy - h * 0.8, 1, 1.6);
       if (rnd() < 0.15)
         parts.push({
           x: t.x + (rnd() - 0.5) * 4,
@@ -568,6 +573,8 @@ function updParts() {
     p.vy += p.g !== undefined ? p.g : 0.12;
     if (p.m !== undefined || p.rain) {
       if (p.vy > 3.5) p.vy = 3.5;
+      // flakes sway from side to side as they drift down
+      if (p.snow) p.vx = G.wind * 0.3 + Math.sin(G.frame * 0.04 + p.ph) * 0.22;
       const nx = p.x + p.vx,
         ny = p.y + p.vy,
         tx = Math.floor(nx),
@@ -584,10 +591,9 @@ function updParts() {
           // flakes just melt away
         } else if (p.rain) {
           if (ok && rnd() < 0.07) setMat(cx, cy, WATER);
-          else if (rnd() < 0.5) {
-            parts.push({ x: p.x, y: p.y - 1, vx: -0.35 - rnd() * 0.25, vy: -0.45, l: 7, c: '#cfe6fa' });
-            parts.push({ x: p.x, y: p.y - 1, vx: 0.35 + rnd() * 0.25, vy: -0.45, l: 7, c: '#e6f4ff' });
-          }
+          else if (mat[ty * W + tx] === WATER) {
+            if (rnd() < 0.6) ripple(p.x, ty);
+          } else if (rnd() < 0.6) rainSplash(p.x, ty);
         } else if (ok) setMat(cx, cy, p.m);
         parts.splice(k, 1);
         continue;

@@ -6,7 +6,7 @@ import { chestNear, openChest } from './treasure.js';
 import { addFloat } from './floats.js';
 import { track } from './profile.js';
 import { addStat } from './stats.js';
-import { dust, glint, splash } from './effects.js';
+import { FX_PAL, dust, glint, splash } from './effects.js';
 import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './entities.js';
 import { inputOf } from './players.js';
 import { vehicleContext } from './vehicles/index.js';
@@ -446,7 +446,8 @@ function updBody(c, I) {
         vx: (rnd() - 0.5) * 0.3,
         vy: -0.5 - rnd() * 0.5,
         l: 12,
-        c: rnd() < 0.5 ? '#ffcf4a' : '#ff7a2f',
+        l0: 12,
+        pal: FX_PAL.spark,
         g: -0.01,
       });
     if (mBody === WATER || mHead === WATER || (G.rainT > 0 && rnd() < 0.01)) {

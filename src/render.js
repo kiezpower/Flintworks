@@ -25,7 +25,18 @@ import {
   skyGlow,
   warmGlow,
 } from './light.js';
-import { drawFireflies, drawGemSparkles, drawLavaGlow, drawWaterGlints, oreSpots, scanLava } from './effects.js';
+import {
+  drawFireflies,
+  drawGemSparkles,
+  drawLavaGlow,
+  drawPart,
+  drawWaterGlints,
+  flicker,
+  oreSpots,
+  pixelDisc,
+  scanLava,
+} from './effects.js';
+import { drawBolt, drawRainFar, drawRainHaze, drawRainNear, drawRoofWeather, drawWet } from './rainfx.js';
 import { drawTutorial } from './tutorial.js';
 import { arrows, lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
@@ -339,20 +350,9 @@ function render() {
   }
   ctx.globalAlpha = 1;
   if (G.rainT > 0) {
-    // grey haze, thicker towards the horizon, and far-away streaks behind the hills
-    const hz = ctx.createLinearGradient(0, 0, 0, G.VH);
-    hz.addColorStop(0, 'rgba(70,80,96,.28)');
-    hz.addColorStop(1, 'rgba(96,106,116,.12)');
-    ctx.fillStyle = hz;
-    ctx.fillRect(0, 0, G.VW, G.VH);
-    if (G.biome !== 'winter') {
-      ctx.fillStyle = 'rgba(190,210,235,.3)';
-      for (let k = 0; k < 40; k++) {
-        const rx = ((k * 53 + G.frame * 0.7) % (G.VW + 20)) - 10,
-          ry = ((k * 91 + G.frame * 2.4) % (G.VH + 10)) - 5;
-        ctx.fillRect(Math.round(rx), Math.round(ry), 1, 3);
-      }
-    }
+    // cold haze in hard bands, and the far layer of rain behind the hills
+    drawRainHaze(ctx);
+    if (G.biome !== 'winter') drawRainFar(ctx);
   }
   drawBackdrop(ctx, cx, scy);
   for (const b of birds) {
@@ -367,6 +367,7 @@ function render() {
   }
   drawWorld(ctx, cx, cy, G.VW, G.VH);
   drawDecor(ctx, cx, cy);
+  drawWet(ctx, cx, cy);
   drawBeams(ctx, cx, cy);
   drawRails(ctx, cx, cy);
   drawMark(ctx, cx, cy);
@@ -387,12 +388,14 @@ function render() {
       sy = b.gy - b.h - cy,
       spr = buildSprite(b); // (in its builder's style, skins.js)
     if (sx < G.VW && sx + b.w > 0 && sy < G.VH + 40 && sy + b.h > -20) {
-      // a soft shadow where the building stands on the ground
-      ctx.fillStyle = 'rgba(20,12,6,0.28)';
+      // a shadow where the building stands on the ground: one solid darker row, a dithered one below
+      ctx.fillStyle = 'rgba(20,12,6,0.3)';
       ctx.fillRect(sx - 1, sy + b.h, b.w + 2, 1);
-      ctx.fillStyle = 'rgba(20,12,6,0.14)';
-      ctx.fillRect(sx - 2, sy + b.h + 1, b.w + 4, 1);
-      if (b.done && b.type !== 'flag' && b.type !== 'gate') drawDetailed(ctx, spr, sx, sy);
+      for (let x = -2; x < b.w + 2; x += 2) ctx.fillRect(sx + x, sy + b.h + 1, 1, 1);
+      if (b.done && b.type !== 'flag' && b.type !== 'gate') {
+        drawDetailed(ctx, spr, sx, sy);
+        drawRoofWeather(ctx, b, sx, sy);
+      }
       else if (!b.done) drawSite(ctx, b, spr, sx, sy);
       drawBuildFx(ctx, b, sx, sy);
       if (b.type === 'base') {
@@ -452,8 +455,14 @@ function render() {
       }
       if (b.done) drawMoving(ctx, b, sx, sy);
       if (b.done && b.type === 'furnace' && b.busy) {
-        ctx.fillStyle = (G.frame >> 2) & 1 ? '#ffcf4a' : '#ff7a2a';
+        // the fire flickers in steps: a dark red bed, orange flames and a yellow core
+        const f = flicker(b.x + 3);
+        ctx.fillStyle = '#b8361e';
         ctx.fillRect(sx + 6, sy + 15, 6, 7);
+        ctx.fillStyle = '#ff7a2a';
+        ctx.fillRect(sx + 6, sy + (f < 0.9 ? 17 : 16), 6, f < 0.9 ? 5 : 6);
+        ctx.fillStyle = f > 0.95 ? '#fff6c0' : '#ffcf4a';
+        ctx.fillRect(sx + 7.5, sy + 18, 3, 3.5);
       }
     }
     if (b.cs && b.done) {
@@ -620,24 +629,21 @@ function render() {
   for (const p of parts) {
     const x = Math.floor(p.x - cx),
       y = Math.floor(p.y - cy);
-    if (x < 0 || y < 0 || x >= G.VW || y >= G.VH) continue;
-    ctx.fillStyle = p.c;
-    ctx.fillRect(x, y, p.s || 1, p.rain ? 2 : p.s || 1);
+    if (x < -2 || y < 0 || x >= G.VW + 2 || y >= G.VH + 2) continue;
+    drawPart(ctx, p, x, y);
   }
+  // explosions: a pixel disc with a brighter core instead of a smooth circle
   for (const f of flashes) {
+    const r = f.r * (1.2 - f.l / 14);
     ctx.fillStyle = `rgba(255,${180 + f.l * 10},90,${f.l / 8})`;
-    ctx.beginPath();
-    ctx.arc(f.x - cx, f.y - cy, f.r * (1.2 - f.l / 14), 0, 7);
-    ctx.fill();
+    pixelDisc(ctx, f.x - cx, f.y - cy, r);
+    ctx.fillStyle = `rgba(255,246,192,${f.l / 10})`;
+    pixelDisc(ctx, f.x - cx, f.y - cy, r * 0.5);
   }
+  // near layer of rain, right in front
+  if (G.rainT > 0 && G.biome !== 'winter' && G.lightFx) drawRainNear(ctx, cx, cy);
   if (G.bolt) {
-    ctx.fillStyle = `rgba(255,255,255,${G.bolt.l / 40})`;
-    ctx.fillRect(0, 0, G.VW, G.VH);
-    ctx.strokeStyle = '#fffbe0';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    G.bolt.pts.forEach(([x, y], k) => (k ? ctx.lineTo(x - cx + 0.5, y - cy) : ctx.moveTo(x - cx + 0.5, y - cy)));
-    ctx.stroke();
+    drawBolt(ctx, cx, cy);
     if (--G.bolt.l <= 0) G.bolt = null;
   }
   if (G.lightFx) duskGrade(ctx, sunAlt());
@@ -645,7 +651,7 @@ function render() {
   lctx.globalCompositeOperation = 'source-over';
   lctx.clearRect(0, 0, G.VW, G.VH);
   if (dark > 0.02) {
-    lctx.fillStyle = `rgba(6,10,30,${dark})`;
+    lctx.fillStyle = G.rainT > 0 ? `rgba(8,14,42,${dark})` : `rgba(6,10,30,${dark})`;
     lctx.fillRect(0, 0, G.VW, G.VH);
   }
   const under = G.lightFx && depthShade(lctx, cx, cy);
@@ -695,13 +701,13 @@ function render() {
           c.x + 3 - cx,
           c.y + 4 - cy,
           isPlayer(c) ? 26 : 14,
-          d * 0.32 * (0.9 + Math.sin(G.frame * 0.2 + n0(c)) * 0.1),
+          d * 0.32 * flicker(n0(c)),
         );
     }
     for (let k = 0; k < lava.length; k += 6) warmGlow(ctx, lava[k], lava[k + 1], 12, 0.22);
     for (const b of builds)
       if (b.done && b.busy && (b.type === 'furnace' || b.type === 'shop'))
-        warmGlow(ctx, b.x + b.w / 2 - cx, b.gy - b.h / 2 - cy, 18, 0.3 + ((G.frame >> 3) & 1) * 0.06);
+        warmGlow(ctx, b.x + b.w / 2 - cx, b.gy - b.h / 2 - cy, 18, 0.34 * flicker(b.x));
     endGlow(ctx);
   }
   if (G.lightFx) drawVignette(ctx);

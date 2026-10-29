@@ -147,6 +147,135 @@ const dust = (x, y, n, col) => {
       g: 0.02,
     });
 };
+// ---- Pixel effects: a fixed palette, cold against warm, and no soft alpha ramps ----
+const FX_PAL = {
+  // cold: rain, haze, snow
+  rainHead: '#c4dcf4',
+  rainTail: '#7e9cc0',
+  rainNear: '#dcecff',
+  rainFar: '#8ea4c2',
+  splash: ['#e6f4ff', '#b4d2f0', '#7e9cc0'],
+  ripple: ['#e6f4ff', '#b4d2f0', '#8fb4da'],
+  // warm: sparks and embers age from white-hot to dark red
+  spark: ['#fff6c0', '#ffcf4a', '#ff7a2a', '#b8361e'],
+  // smoke: lit warm right above the fire, cooling to a blue grey as it drifts off
+  smoke: ['#d8cfc4', '#c2bdb6', '#a9a8a6', '#8e939c'],
+  smokeDark: ['#7a5a48', '#5e5450', '#4a4846', '#3c3e46'],
+};
+// the finest step on screen: one texel (half a landscape pixel) when drawn at double resolution
+const px = () => (G.res === 2 ? 0.5 : 1);
+const hash3 = n => (Math.imul(n | 0, 0x9e3779b1) >>> 28) % 3;
+// lamp and window light jumps between three brightness steps a few times per second (no smooth wave)
+const flicker = seed => [0.84, 0.93, 1][hash3(((G.frame / 7) | 0) * 31 + Math.round(seed) * 17)];
+
+// embers fly up from fires, drift with the wind and cool down in steps
+function sparks(x, y, n = 1, up = 1) {
+  for (let k = 0; k < n; k++) {
+    const l = 18 + rnd() * 22;
+    parts.push({
+      x: x + (rnd() - 0.5) * 3,
+      y,
+      vx: G.wind * 0.25 + (rnd() - 0.5) * 0.5,
+      vy: -(0.4 + rnd() * 0.7) * up,
+      l,
+      l0: l,
+      pal: FX_PAL.spark,
+      g: -0.006,
+      s: px(),
+    });
+  }
+}
+// a raindrop hitting the ground: dot, crown, two droplets (three frames)
+const rainSplash = (x, y) => parts.push({ x, y, vx: 0, vy: 0, g: 0, l: 9, l0: 9, fx: 'splash' });
+// a raindrop hitting open water: a ring that widens and fades
+const ripple = (x, y) => parts.push({ x, y, vx: 0, vy: 0, g: 0, l: 12, l0: 12, fx: 'ripple' });
+
+// draws one particle at its screen position
+function drawPart(ctx, p, x, y) {
+  const u = px();
+  if (p.fx) {
+    const st = Math.min(2, (((1 - p.l / p.l0) * 3) | 0)),
+      pal = FX_PAL[p.fx];
+    ctx.fillStyle = pal[st];
+    if (p.fx === 'ripple') {
+      const w = 1 + st * 2;
+      ctx.fillRect(x - st, y, w, u);
+      return;
+    }
+    if (st === 0) ctx.fillRect(x, y - u, u, u);
+    else if (st === 1) {
+      ctx.fillRect(x - 1, y - 1, u, u);
+      ctx.fillRect(x + 1, y - 1, u, u);
+      ctx.fillRect(x, y - u, u, u);
+    } else {
+      ctx.fillRect(x - 2, y - u, u, u);
+      ctx.fillRect(x + 2, y - u, u, u);
+    }
+    return;
+  }
+  if (p.rain && !p.snow) {
+    // a slanted streak along its motion: bright head, darker tail, every texel on the grid
+    const sl = p.vy > 0.3 ? p.vx / p.vy : 0,
+      n = p.vy > 1.6 ? 3 : 2,
+      fx = p.x - Math.floor(p.x);
+    for (let i = 0; i < n; i++) {
+      ctx.fillStyle = i ? FX_PAL.rainTail : FX_PAL.rainHead;
+      ctx.fillRect(x + Math.round((fx - sl * i) / u) * u, y - i, u, 1);
+    }
+    return;
+  }
+  if (p.snow) {
+    ctx.fillStyle = p.c;
+    if (p.big && u < 1) {
+      ctx.fillRect(x, y - u, u, u * 3);
+      ctx.fillRect(x - u, y, u * 3, u);
+    } else ctx.fillRect(x, y, 1, 1);
+    return;
+  }
+  let s = p.s || 1;
+  if (p.grow) s += Math.round((1 - p.l / p.l0) * p.grow * 2) / 2;
+  ctx.fillStyle = p.pal ? p.pal[Math.min(p.pal.length - 1, ((1 - p.l / p.l0) * p.pal.length) | 0)] : p.c;
+  if (p.grow) ctx.fillRect(x - Math.floor(s / 2), y - Math.floor(s / 2), s, s);
+  else ctx.fillRect(x, y, s, s);
+}
+
+// a pixel disc, row by row (no anti-aliased arc)
+function pixelDisc(ctx, x, y, r) {
+  x = Math.round(x);
+  y = Math.round(y);
+  r = Math.round(r);
+  for (let dy = -r; dy <= r; dy++) {
+    const w = Math.floor(Math.sqrt(r * r - dy * dy) + 0.3);
+    ctx.fillRect(x - w, y + dy, w * 2 + 1, 1);
+  }
+}
+
+// a crisp line from point to point (Bresenham), dot by dot
+function pixelLine(ctx, x0, y0, x1, y1, w = 1) {
+  x0 = Math.round(x0);
+  y0 = Math.round(y0);
+  x1 = Math.round(x1);
+  y1 = Math.round(y1);
+  const dx = Math.abs(x1 - x0),
+    dy = -Math.abs(y1 - y0),
+    sx = x0 < x1 ? 1 : -1,
+    sy = y0 < y1 ? 1 : -1;
+  let e = dx + dy;
+  for (;;) {
+    ctx.fillRect(x0, y0, w, 1);
+    if (x0 === x1 && y0 === y1) break;
+    const e2 = 2 * e;
+    if (e2 >= dy) {
+      e += dy;
+      x0 += sx;
+    }
+    if (e2 <= dx) {
+      e += dx;
+      y0 += sy;
+    }
+  }
+}
+
 const splash = (x, y, n) => {
   for (let k = 0; k < n; k++)
     parts.push({
@@ -160,6 +289,15 @@ const splash = (x, y, n) => {
 };
 
 export {
+  FX_PAL,
+  drawPart,
+  flicker,
+  pixelDisc,
+  pixelLine,
+  px,
+  rainSplash,
+  ripple,
+  sparks,
   oreSpots,
   celebrate,
   glint,
