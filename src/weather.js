@@ -5,6 +5,8 @@ import { topSolid } from './gen.js';
 import { explode, ignite } from './objects.js';
 import { guard } from './combat.js';
 import { cam } from './render.js';
+import { FX_PAL } from './effects.js';
+import { updRainFx } from './rainfx.js';
 import { sfx } from './sound.js';
 import { G, birds, clouds, crew, meteors, parts, trees } from './state.js';
 import { toast } from './ui.js';
@@ -48,7 +50,8 @@ function updWeather() {
       vx: (rnd() - 0.5) * 0.3,
       vy: -0.2,
       l: 18,
-      c: rnd() < 0.5 ? '#ffcf4a' : '#ff7a2f',
+      l0: 18,
+      pal: FX_PAL.spark,
       g: -0.005,
     });
     if (rnd() < 0.4) parts.push({ x: m.x, y: m.y, vx: 0, vy: 0, l: 40, c: '#5d5852', g: -0.002 });
@@ -65,6 +68,7 @@ function updWeather() {
       if (rnd() < 0.6) spawnItem('flint', m.x, m.y - 4, (rnd() - 0.5) * 2, -2, 10);
     }
   }
+  updRainFx();
   if (G.rainT > 0) {
     G.rainT--;
     if (parts.length < 1800) {
@@ -76,17 +80,21 @@ function updWeather() {
           parts.push(
             G.biome === 'winter'
               ? {
+                  // near flakes are bigger, brighter and faster than the far ones; all sway (objects.js)
+                  ...(rnd() < 0.25
+                    ? { vy: 0.8 + rnd() * 0.3, c: '#ffffff', big: true }
+                    : { vy: 0.45 + rnd() * 0.25, c: rnd() < 0.5 ? '#e8eef6' : '#d4deea' }),
                   x,
                   y,
-                  vx: (rnd() - 0.5) * 0.5,
-                  vy: 0.6 + rnd() * 0.4,
+                  vx: G.wind * 0.3,
                   g: 0,
-                  l: 900,
-                  c: '#ffffff',
+                  l: 1200,
+                  ph: rnd() * 7,
                   rain: true,
                   snow: true,
                 }
-              : { x, y, vx: -0.35, vy: 2.5 + rnd(), l: 400, c: '#a9cdee', rain: true },
+              : // the drops lean with the wind
+                { x, y, vx: G.wind * 0.45, vy: 2.5 + rnd(), l: 400, c: FX_PAL.rainHead, rain: true },
           );
       }
     }
@@ -110,7 +118,21 @@ function lightning() {
     pts.push([px0, y]);
   }
   pts.push([x, gy]);
-  G.bolt = { pts, l: 8 };
+  // one or two side branches that fork off and peter out
+  const br = [];
+  for (let n = ri(1, 2); n > 0 && pts.length > 6; n--) {
+    const k = ri(2, pts.length - 4),
+      dir = rnd() < 0.5 ? -1 : 1,
+      b = [pts[k]];
+    let [bx, by] = pts[k];
+    for (let s = ri(3, 5); s > 0; s--) {
+      bx += dir * ri(2, 5);
+      by += ri(3, 6);
+      b.push([bx, by]);
+    }
+    br.push(b);
+  }
+  G.bolt = { pts, br, l: 8 };
   G.shake = Math.max(G.shake, 4);
   sfx('thunder');
   for (const t of trees)
@@ -166,7 +188,7 @@ function skyCols() {
     bot = mixC(SKY.night[1], SKY.dusk[1], t);
   }
   if (G.rainT > 0) {
-    const g = [120, 128, 138];
+    const g = [92, 108, 134]; // a cold blue grey, so the warm lights stand out
     top = mixC(top, g, 0.45);
     bot = mixC(bot, g, 0.45);
   }

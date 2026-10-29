@@ -1,5 +1,6 @@
 // Living buildings: chimney smoke, sawdust, sparks, bubbling tanks and glowing windows at night.
 import { SPR, itemIcon } from './sprites.js';
+import { FX_PAL, flicker, px, sparks } from './effects.js';
 import { idleReason } from './store.js';
 import { G, builds, parts } from './state.js';
 import { rnd } from './world.js';
@@ -26,16 +27,62 @@ function windows(type) {
   return (winCache[type] = out);
 }
 
+// the lit windows as rectangles [x, y, w, h], merged from their pixels (for one halo per pane)
+const rectCache = {};
+function winRects(type) {
+  if (rectCache[type]) return rectCache[type];
+  const w = windows(type),
+    on = new Set(),
+    out = [];
+  for (let k = 0; k < w.length; k += 2) on.add(w[k] * 256 + w[k + 1]);
+  for (let k = 0; k < w.length; k += 2) {
+    const x = w[k],
+      y = w[k + 1];
+    if (on.has((x - 1) * 256 + y) || on.has(x * 256 + y - 1)) continue;
+    let rw = 1,
+      rh = 1;
+    while (on.has((x + rw) * 256 + y)) rw++;
+    while (on.has(x * 256 + y + rh)) rh++;
+    out.push(x, y, rw, rh);
+  }
+  return (rectCache[type] = out);
+}
+
+// the first opaque row of every column of a building sprite: its roof line (for rain and snow)
+const roofCache = {};
+function roofTops(type) {
+  if (roofCache[type]) return roofCache[type];
+  const spr = SPR[type],
+    out = [];
+  if (spr) {
+    const w = spr.width,
+      h = spr.height,
+      d = spr.getContext('2d').getImageData(0, 0, w, h).data;
+    for (let x = 0; x < w; x++) {
+      let y = 0;
+      while (y < h && d[(y * w + x) * 4 + 3] < 128) y++;
+      out.push(y);
+    }
+  }
+  return (roofCache[type] = out);
+}
+
+// a puff grows in steps as it rises and cools from a warm, fire-lit grey to a cold blue grey;
+// in the rain the wind presses it flat
 function smoke(x, y, dark, big) {
+  const wet = G.rainT > 0,
+    l = 70 + rnd() * 50;
   parts.push({
     x: x + rnd() * 2,
     y,
-    vx: G.wind * 0.22 + (rnd() - 0.5) * 0.1,
-    vy: -0.25 - rnd() * 0.15,
-    l: 70 + rnd() * 50,
-    c: dark ? (rnd() < 0.5 ? '#4e4a46' : '#625d58') : rnd() < 0.5 ? '#c9c4bd' : '#a9a49d',
+    vx: G.wind * (wet ? 0.4 : 0.22) + (rnd() - 0.5) * 0.1,
+    vy: (-0.25 - rnd() * 0.15) * (wet ? 0.6 : 1),
+    l,
+    l0: l,
+    pal: dark ? FX_PAL.smokeDark : FX_PAL.smoke,
     g: -0.002,
-    s: big ? 2 : 1,
+    s: 1,
+    grow: big ? 1 : 0.5,
   });
 }
 
@@ -65,16 +112,11 @@ function updBuildFx() {
         c: rnd() < 0.5 ? '#e8c896' : '#d9b98a',
         g: 0.05,
       });
-    if (b.type === 'furnace' && G.frame % 7 === 0)
-      parts.push({
-        x: b.x + 7 + rnd() * 4,
-        y: top + 15,
-        vx: (rnd() - 0.5) * 0.6,
-        vy: -0.8 - rnd() * 0.8,
-        l: 20,
-        c: rnd() < 0.5 ? '#ffcf4a' : '#ff7a2a',
-        g: 0.03,
-      });
+    if (b.type === 'furnace') {
+      // embers out of the fire door, and a few up the chimney
+      if (G.frame % 7 === 0) sparks(b.x + 9, top + 15, 1, 1.3);
+      if (G.frame % 23 === 0) sparks(b.x + ch[0] + 1, top + ch[1], 1, 0.8);
+    }
     if (b.type === 'shop' && G.frame % 11 === 0)
       parts.push({ x: b.x + 18, y: top + 9, vx: (rnd() - 0.5) * 1.2, vy: -0.9, l: 14, c: '#ffe066', g: 0.06 });
   }
@@ -141,16 +183,39 @@ function drawWindowGlow(ctx, cx, cy, dark) {
     const sx = b.x - cx,
       sy = b.gy - b.h - cy;
     if (sx > G.VW || sx + b.w < 0) continue;
-    const flick = 0.85 + Math.sin(G.frame * 0.07 + b.x) * 0.1;
+    const flick = flicker(b.x),
+      u = px();
+    // two hard bands of light: a solid halo right around each pane, a dithered ring further out
+    const r = winRects(b.type);
     ctx.globalCompositeOperation = 'lighter';
-    ctx.fillStyle = `rgba(255,170,70,${0.12 * a * flick})`;
-    for (let k = 0; k < w.length; k += 2) ctx.fillRect(sx + w[k] - 2, sy + w[k + 1] - 2, 5, 5);
+    ctx.fillStyle = `rgba(255,170,70,${0.18 * a * flick})`;
+    for (let k = 0; k < r.length; k += 4) ctx.fillRect(sx + r[k] - 1, sy + r[k + 1] - 1, r[k + 2] + 2, r[k + 3] + 2);
+    ctx.fillStyle = `rgba(255,140,50,${0.16 * a * flick})`;
+    for (let k = 0; k < r.length; k += 4) {
+      const x0 = sx + r[k] - 2,
+        y0 = sy + r[k + 1] - 2,
+        x1 = x0 + r[k + 2] + 3,
+        y1 = y0 + r[k + 3] + 3;
+      for (let x = x0; x <= x1; x += 2 * u) {
+        ctx.fillRect(x, y0, u, u);
+        ctx.fillRect(x + u, y1 + 1 - u, u, u);
+      }
+      for (let y = y0 + 2 * u; y < y1; y += 2 * u) {
+        ctx.fillRect(x0, y, u, u);
+        ctx.fillRect(x1 + 1 - u, y + u, u, u);
+      }
+    }
+    // a warm patch of light on the ground in front of the house
+    ctx.fillStyle = `rgba(255,150,60,${0.1 * a * flick})`;
+    ctx.fillRect(sx + 2, sy + b.h, b.w - 4, 1);
+    for (let x = 3; x < b.w - 3; x += 2 * u) ctx.fillRect(sx + x, sy + b.h + 1, u, u);
     ctx.globalCompositeOperation = 'source-over';
+    // the panes themselves stay fully warm over the cold night
     ctx.globalAlpha = a;
-    ctx.fillStyle = '#ffe39a';
+    ctx.fillStyle = flick < 0.9 ? '#ffd27a' : '#ffe39a';
     for (let k = 0; k < w.length; k += 2) ctx.fillRect(sx + w[k], sy + w[k + 1], 1, 1);
     ctx.globalAlpha = 1;
   }
 }
 
-export { drawBuildFx, drawWindowGlow, updBuildFx };
+export { drawBuildFx, drawWindowGlow, roofTops, updBuildFx };

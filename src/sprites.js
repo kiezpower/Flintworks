@@ -634,10 +634,11 @@ function bevel2x(spr) {
     id = g.getImageData(0, 0, w, h),
     src = new Uint32Array(id.data.buffer),
     d = src.slice();
-  const k = (c, f) => {
-    const r = Math.min(255, (c & 255) * f),
-      gg = Math.min(255, ((c >>> 8) & 255) * f),
-      b = Math.min(255, ((c >>> 16) & 255) * f);
+  // f scales the brightness; hue > 0 shifts towards warm (lit), < 0 towards cold (in shadow)
+  const k = (c, f, hue = 0) => {
+    const r = Math.min(255, (c & 255) * f * (1 + hue * 0.06)),
+      gg = Math.min(255, ((c >>> 8) & 255) * f * (1 + hue * 0.01)),
+      b = Math.min(255, ((c >>> 16) & 255) * f * (1 - hue * 0.07));
     return ((c & 0xff000000) | (b << 16) | (gg << 8) | r) >>> 0;
   };
   for (let y = 0; y < h; y++)
@@ -648,10 +649,18 @@ function bevel2x(spr) {
       const up = y > 0 ? src[i - w] : 0,
         dn = y < h - 1 ? src[i + w] : 0;
       // a pseudo-random grain from the position (the same every time)
-      let f = 0.96 + (((Math.imul(x * 73856093 ^ (y * 19349663), 0x9e3779b1) >>> 24) & 7) / 7) * 0.08;
-      if (up !== c && dn === c) f *= 1.16;
-      else if (dn !== c && up === c) f *= 0.8;
-      d[i] = k(c, f);
+      let f = 0.96 + (((Math.imul(x * 73856093 ^ (y * 19349663), 0x9e3779b1) >>> 24) & 7) / 7) * 0.08,
+        hue = 0;
+      // lit edges turn warmer, shaded ones cooler (hue shifting instead of plain brighter/darker);
+      // where another colour patch follows below (roof over wall, window sill), the shade is deeper
+      if (up !== c && dn === c) {
+        f *= 1.16;
+        hue = 1;
+      } else if (dn !== c && up === c) {
+        f *= dn >>> 24 > 200 ? 0.7 : 0.8;
+        hue = -1;
+      }
+      d[i] = k(c, f, hue);
     }
   id.data.set(new Uint8ClampedArray(d.buffer));
   g.putImageData(id, 0, 0);
