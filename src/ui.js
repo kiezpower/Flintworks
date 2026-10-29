@@ -320,7 +320,7 @@ $('pClose').addEventListener('click', () => {
 panelEl.addEventListener('pointerdown', e => e.stopPropagation());
 function opt(parent, { icon, title, sub, cost, short, disabled, onClick }) {
   const b = document.createElement('button');
-  b.className = 'opt' + (short ? ' short' : '');
+  b.className = 'opt' + (short ? ' short' : '') + (icon ? '' : ' noico');
   if (disabled) b.disabled = true;
   if (icon) {
     // shown through its double-resolution copy (lit from above, outlined) at a whole multiple

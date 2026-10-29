@@ -16,6 +16,7 @@ import { updAmbience } from './ambience.js';
 import { endTutorial, resumeTutorial, setTutHooks, startTutorial, tutHud, updTutorial } from './tutorial.js';
 import { applyStatic, tr } from './i18n.js';
 import { openPanel, opt, sec } from './ui.js';
+import { TEMPO, settingsSections } from './settings.js';
 import '@fontsource/pixelify-sans/500.css';
 import '@fontsource/pixelify-sans/700.css';
 import '@fontsource/silkscreen/400.css';
@@ -202,9 +203,6 @@ setTutHooks({ play, menu, discard });
 function menu() {
   showLobby(lobbyHooks);
 }
-// game tempo: share of the original speed
-const TEMPO = { calm: 0.7, normal: 0.85, fast: 1 };
-const TEMPO_NAME = { calm: 'Gemütlich', normal: 'Normal', fast: 'Schnell' };
 function startGame(withTutorial = false) {
   if (withTutorial === true) startTutorial();
   else if (withTutorial === 'resume' || withTutorial === 'loaded') resumeTutorial();
@@ -352,79 +350,20 @@ $('miniThumb').addEventListener('click', toggleMap);
 function openMenu() {
   if (G.state !== 'play') return;
   const p = openPanel('Menü');
+  // what to do in this round first, then the same settings as in the lobby
+  // (the map opens from the small map in the corner, or M)
   const l = sec(p, tr('Spiel') + ' · v' + __APP_VERSION__);
   const item = (title, sub, fn) => opt(l, { title: tr(title), sub: sub ? tr(sub) : '', short: true, onClick: fn });
-  item('Karte', 'Die ganze Welt', () => {
+  item('Lobby', 'Spiel speichern und zur Lobby', () => $('newBtn').click());
+  item('Zurück zur Basis', 'Wenn du feststeckst: dein Wühler geht nach Hause', () => {
     closePanel();
-    toggleMap();
+    send('home');
   });
   item('Zoom', G.zoomAdj > 0 ? 'Nah' : G.zoomAdj < 0 ? 'Weit' : 'Normal', () => {
     $('zoomBtn').click();
     openMenu();
   });
-  item(G.muted ? 'Ton aus' : 'Ton an', 'Ton', () => {
-    $('sndBtn').click();
-    openMenu();
-  });
-  item(
-    G.autoDig ? 'Automatisch graben an' : 'Automatisch graben aus',
-    'Gegen Erde laufen gräbt. Aus: Graben- und Sprung-Knopf wie früher',
-    () => {
-      P.autodig = !G.autoDig;
-      G.autoDig = P.autodig;
-      saveProfile();
-      openMenu();
-    },
-  );
-  item(tr('Spieltempo: {t}', { t: tr(TEMPO_NAME[P.tempo || 'normal']) }), 'Gemütlich, Normal oder Schnell', () => {
-    const ks = Object.keys(TEMPO);
-    P.tempo = ks[(ks.indexOf(P.tempo || 'normal') + 1) % ks.length];
-    G.speed = TEMPO[P.tempo];
-    saveProfile();
-    openMenu();
-  });
-  if (G.autoDig)
-    item(
-      G.jumpBtn ? 'Sprung-Knopf an' : 'Sprung-Knopf aus',
-      'Eigener Knopf zum Springen, auch beim automatischen Graben',
-      () => {
-        P.jumpbtn = !G.jumpBtn;
-        G.jumpBtn = P.jumpbtn;
-        saveProfile();
-        openMenu();
-      },
-    );
-  item(G.res === 2 ? 'Grafik: fein' : 'Grafik: schnell', 'Schnell läuft flüssiger auf älteren Handys', () => {
-    G.res = G.res === 2 ? 1 : 2;
-    P.gfx = G.res === 2 ? 'high' : 'low';
-    saveProfile();
-    resize();
-    openMenu();
-  });
-  item(G.lightFx ? 'Licht: an' : 'Licht: aus', 'Dämmerung unter Tage, Leuchten und Rahmen ums Bild', () => {
-    P.lightfx = !G.lightFx;
-    G.lightFx = P.lightfx;
-    saveProfile();
-    openMenu();
-  });
-  item(G.vibe ? 'Vibration: an' : 'Vibration: aus', 'Kurzes Rütteln beim Graben, bei Treffern und Sprengungen', () => {
-    P.vibe = !G.vibe;
-    G.vibe = P.vibe;
-    saveProfile();
-    openMenu();
-  });
-  item(G.climbOn ? 'Klettern an' : 'Klettern aus', 'An Wänden hochklettern und an Decken hängen', () => {
-    P.climbing = !G.climbOn;
-    G.climbOn = P.climbing;
-    if (!G.climbOn) for (const c of crew) c.climb = c.hangle = false;
-    saveProfile();
-    openMenu();
-  });
-  item('Zurück zur Basis', 'Wenn du feststeckst: dein Wühler geht nach Hause', () => {
-    closePanel();
-    send('home');
-  });
-  item('Lobby', 'Spiel speichern und zur Lobby', () => $('newBtn').click());
+  settingsSections(p, openMenu);
 }
 // "back to base" when stuck
 register('home', c => {
