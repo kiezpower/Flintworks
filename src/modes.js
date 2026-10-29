@@ -20,6 +20,7 @@ const GAME_MODES = {
   },
   build: {
     name: 'Siedler',
+    territory: true, // build only in your own area, flags widen it (buildings.js terrOK)
     desc: 'Errichte {goal} verschiedene Gebäude',
     get goal() {
       return scaled(6, 1, 12);

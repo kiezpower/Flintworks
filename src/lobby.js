@@ -22,10 +22,9 @@ import { audioInit, sfx } from './sound.js';
 import { padIcon } from './sprites.js';
 import { G } from './state.js';
 import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
-import { settingsSections } from './settings.js';
+import { DIFF, diffOf, settingsSections } from './settings.js';
 
 const el = $('lobby');
-$('lbVersion').textContent = 'v' + __APP_VERSION__;
 // ask the live web version which version is current; offer the update if this copy is older
 // (not on itch.io and other sites: they bring the new version themselves)
 let updateChecked = false;
@@ -114,16 +113,17 @@ function refresh() {
   setTxt('lbLvl', P.level);
   $('lbXp').style.width = Math.round((P.xp / xpNeed()) * 100) + '%';
   setTxt('lbXpTxt', `${P.xp}/${xpNeed()}`);
-  setTxt('lbTro', P.trophies);
   // Heimatbergwerk: crystals, and a dot while the home crew has something to collect
   setTxt('lbKri', campState().k);
+  setTxt('lbKriTxt', tr('Kristalle'));
   $('lbCamp').classList.toggle('alert', pending() > 0);
   // the Tagesschacht glows until today's shaft is played
   setTxt('lbDailyTxt', badge());
   $('lbDaily').classList.toggle('fresh', P.daily?.best?.[dayNo()] == null);
   const nm = P.name;
   setTxt('lbHat', P.hat === 'none' ? `${nm} · ${tr('Level')} ${P.level}` : `${nm} · ${tr(HATS[P.hat].name)}`);
-  $('lbQuest').classList.toggle(
+  // a daily quest is done and its XP waits at the level
+  $('lbLvlBtn').classList.toggle(
     'alert',
     P.quests.some(q => !q.done && q.have >= q.goal),
   );
@@ -138,7 +138,7 @@ function refresh() {
       .pop() || 0;
   const r = next && HATS[next];
   $('lbRoadBar').style.width = r ? Math.min(100, ((P.trophies - prev) / (r.t - prev)) * 100) + '%' : '100%';
-  setTxt('lbRoadTxt', r ? `${P.trophies}/${r.t} · ${tr(r.name)}` : tr('Alles freigeschaltet'));
+  setTxt('lbRoadTxt', r ? `🏆 ${P.trophies}/${r.t} · ${tr(r.name)}` : tr('Alles freigeschaltet'));
   refreshSlots();
   const run = hooks.hasRun();
   // in a room only the host starts; the others wait
@@ -151,7 +151,6 @@ function refresh() {
   );
   $('lbPlay').classList.toggle('wait', wait);
   $('lbNew').hidden = !run;
-  $('lbMode').disabled = run;
   const gid = chosen();
   const camp = !run && gid === 'campaign';
   const GM = GAME_MODES[gid] || GAME_MODES.gold;
@@ -181,9 +180,11 @@ function refresh() {
       ? tr('{n} Level · Sterne {s}/{m}', { n: ALL_IDS.length, s: totalStars(), m: ALL_IDS.length * 3 })
       : tr(gm.desc, { goal: gm.goal }),
   );
-  $('lbDiff').disabled = run;
-  setTxt('lbDiffTxt', tr((run ? G.relaxed : P.diff === 'relaxed') ? 'Entspannt' : 'Abenteuer'));
-  setTxt('lbModeTxt', tr(run ? BIOMES[G.biome].name : MODE_NAME[P.mode || 'random']));
+  // (a running world shows what it was made with)
+  $('lbSetup').disabled = run;
+  const world = tr(run ? BIOMES[G.biome].name : MODE_NAME[P.mode || 'random']),
+    diff = tr(DIFF[run && G.relaxed ? 'relaxed' : diffOf(P.diff)].name);
+  setTxt('lbSetupTxt', `${world} · ${diff}`);
 }
 
 function frame() {
@@ -282,7 +283,7 @@ function openQuests() {
 }
 function openOptions() {
   const p = openPanel('Optionen');
-  settingsSections(p, openOptions, { lobby: true });
+  settingsSections(p, openOptions);
   const l = sec(p, tr('Sonstiges') + ' · v' + __APP_VERSION__);
   opt(l, {
     title: getLang() === 'de' ? 'English' : 'Deutsch',
@@ -347,9 +348,8 @@ tap('lbWho', openWho);
 tap('lbNameTag', () => openName());
 tap('lbSlot1', openInvite);
 tap('lbSlot2', openInvite);
-tap('lbQuest', openQuests);
+tap('lbLvlBtn', openQuests);
 tap('lbCamp', () => openCamp({ burst }));
-tap('lbRoad', openWho);
 tap('lbOpt', openOptions);
 tap('lbDaily', () => openDaily(hooks));
 // what is chosen to play: the profile's choice; in a room the host's (no campaign there)
@@ -381,20 +381,27 @@ tap('lbGMode', () => {
   if (inRoom() && !NET.host) return toast('Der Host wählt den Modus');
   openSelection();
 });
-tap('lbDiff', () => {
-  P.diff = P.diff === 'relaxed' ? 'adventure' : 'relaxed';
-  saveProfile();
-  toast(
-    P.diff === 'relaxed' ? 'Entspannt: keine Monster, kein Gas, keine Blitze und Meteore' : 'Abenteuer: alle Gefahren',
-  );
-  refresh();
-});
-tap('lbMode', () => {
-  const m = P.mode || 'random';
-  P.mode = MODES[(MODES.indexOf(m) + 1) % MODES.length];
-  saveProfile();
-  refresh();
-});
+// the next round: which world, and one difficulty for dangers and pace (settings.js DIFF)
+function openSetup() {
+  const p = openPanel('Neue Runde');
+  const pick = (l, title, sub, on, fn) =>
+    opt(l, {
+      title: (on ? '✓ ' : '') + tr(title),
+      sub: sub ? tr(sub) : '',
+      short: true,
+      onClick: () => {
+        fn();
+        saveProfile();
+        refresh();
+        openSetup();
+      },
+    });
+  const w = sec(p, 'Welt');
+  for (const m of MODES) pick(w, MODE_NAME[m], '', (P.mode || 'random') === m, () => (P.mode = m));
+  const d = sec(p, 'Schwierigkeit');
+  for (const k in DIFF) pick(d, DIFF[k].name, DIFF[k].info, diffOf(P.diff) === k, () => (P.diff = k));
+}
+tap('lbSetup', openSetup);
 tap('lbPlay', () => {
   if (selectOpen()) return;
   const g = P.gmode,

@@ -81,11 +81,15 @@ function hud() {
     G.storeKey = key;
     storeRow.hidden = !sk.length;
     storeRow.style.setProperty('--cols', Math.min(3, sk.length));
-    storeRow.innerHTML = sk
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
-      .map(([t, n]) => `<span title="${resName(t)}"><img src="${iconUrl(t)}" alt="">${n}</span>`)
-      .join('');
+    // (a small castle in front says that this is what lies in the store at the base)
+    storeRow.title = tr('Lager');
+    storeRow.innerHTML =
+      `<img class="sico" src="${padIcon('castle')}" alt="${tr('Lager')}">` +
+      sk
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([t, n]) => `<span title="${resName(t)}"><img src="${iconUrl(t)}" alt="">${n}</span>`)
+        .join('');
   }
   const mt = missionText();
   if (mt !== G.misKey) {

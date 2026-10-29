@@ -127,15 +127,13 @@
         <div class="lb-top">
           <div class="lb-logo">
             <b id="lbTitle">Flintworks</b>
-            <span class="lb-version" id="lbVersion"></span>
           </div>
           <div class="lb-chips">
-            <div class="lb-lvl">
+            <!-- the level and its XP; the daily quests bring XP, so they open here -->
+            <button class="lb-lvl" id="lbLvlBtn" aria-label="Aufgaben" data-i18n-aria="Aufgaben">
               <b id="lbLvl">1</b>
-              <div class="lb-xp"><i id="lbXp"></i><span id="lbXpTxt"></span></div>
-            </div>
-            <span class="chip"><i class="ico" data-ico="trophy"></i><b id="lbTro">0</b></span>
-            <span class="chip"><i class="ico" data-ico="crystal"></i><b id="lbKri">0</b></span>
+              <span class="lb-xp"><i id="lbXp"></i><span id="lbXpTxt"></span></span>
+            </button>
             <button class="chip lb-opt" id="lbOpt" aria-label="Optionen" data-i18n-aria="Optionen">
               <i class="ico" data-ico="gear"></i>
             </button>
@@ -146,19 +144,18 @@
             <i class="ico" data-ico="dig"></i
             ><span class="lb-dbox"><b data-i18n="Tagesschacht">Tagesschacht</b><small id="lbDailyTxt"></small></span>
           </button>
+          <!-- the Wühler with the trophy road to the next hat -->
           <button class="lb-b" id="lbWho">
-            <i class="ico" data-ico="crew"></i><span data-i18n="Wühler">Wühler</span>
+            <i class="ico" data-ico="crew"></i
+            ><span class="lb-dbox"
+              ><b data-i18n="Wühler">Wühler</b
+              ><span class="lb-roadtrack"><i id="lbRoadBar"></i></span><small id="lbRoadTxt"></small
+            ></span>
           </button>
           <button class="lb-b" id="lbCamp">
-            <i class="ico" data-ico="crystal"></i><span data-i18n="Heimatbergwerk">Heimatbergwerk</span>
-          </button>
-          <button class="lb-b" id="lbQuest">
-            <i class="ico" data-ico="quest"></i><span data-i18n="Aufgaben">Aufgaben</span>
-          </button>
-          <button class="lb-b lb-road" id="lbRoad">
-            <i class="ico" data-ico="trophy"></i>
-            <span class="lb-roadbox"
-              ><span class="lb-roadtrack"><i id="lbRoadBar"></i></span><span id="lbRoadTxt"></span
+            <i class="ico" data-ico="crystal"></i
+            ><span class="lb-dbox"
+              ><b data-i18n="Heimatbergwerk">Heimatbergwerk</b><small><b id="lbKri">0</b> <span id="lbKriTxt"></span></small
             ></span>
           </button>
         </nav>
@@ -177,12 +174,10 @@
             <small data-i18n="Modus">Modus</small><b id="lbGModeTxt">Goldrausch</b><em id="lbGModeDesc"></em
             ><span id="lbGModePv" hidden></span>
           </button>
-          <div class="lb-row">
-            <button class="lb-sel" id="lbMode"><small data-i18n="Welt">Welt</small><b id="lbModeTxt">Zufall</b></button>
-            <button class="lb-sel" id="lbDiff">
-              <small data-i18n="Gefahr">Gefahr</small><b id="lbDiffTxt">Abenteuer</b>
-            </button>
-          </div>
+          <!-- world and difficulty share one line and one small panel -->
+          <button class="lb-sel lb-setup" id="lbSetup">
+            <small data-i18n="Welt · Schwierigkeit">Welt · Schwierigkeit</small><b id="lbSetupTxt">Zufall · Abenteuer</b>
+          </button>
           <button class="lb-go" id="lbPlay"><span id="lbPlayTxt">Spielen</span></button>
           <button class="lb-new" id="lbNew" data-i18n="Neue Welt">Neue Welt</button>
         </section>

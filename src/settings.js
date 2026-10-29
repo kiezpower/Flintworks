@@ -7,12 +7,17 @@ import { resize } from './render.js';
 import { G, crew } from './state.js';
 import { $, opt, sec } from './ui.js';
 
-const TEMPO = { calm: 0.7, normal: 0.85, fast: 1 };
-const TEMPO_NAME = { calm: 'Gemütlich', normal: 'Normal', fast: 'Schnell' };
+// one difficulty for dangers and pace together, chosen in the lobby: relaxed worlds have no
+// monsters, gas, lightning or meteors (gen.js); speed is the share of the original pace
+const DIFF = {
+  relaxed: { name: 'Gemütlich', speed: 0.7, info: 'Keine Monster, kein Gas, keine Blitze und Meteore, ruhiges Tempo' },
+  adventure: { name: 'Abenteuer', speed: 0.85, info: 'Alle Gefahren' },
+  hard: { name: 'Hart', speed: 1, info: 'Alle Gefahren, volles Tempo' },
+};
+const diffOf = d => (DIFF[d] ? d : 'adventure');
 
 // fills the panel p with the setting groups; reopen redraws the panel after a change
-// (lobby: also the rules that only apply to the next new game)
-function settingsSections(p, reopen, { lobby = false } = {}) {
+function settingsSections(p, reopen) {
   const item = (l, title, sub, fn) =>
     opt(l, {
       title: tr(title),
@@ -32,26 +37,21 @@ function settingsSections(p, reopen, { lobby = false } = {}) {
     G.vibe = P.vibe;
   });
 
+  // modern: walking into earth digs, with a jump button; classic as in the originals: a dig
+  // button, and climbing up walls and along ceilings
   const ctl = sec(p, 'Steuerung');
+  const classic = P.autodig === false;
   item(
     ctl,
-    P.autodig === false ? 'Automatisch graben aus' : 'Automatisch graben an',
-    'Gegen Erde laufen gräbt. Aus: Graben- und Sprung-Knopf wie früher',
+    classic ? 'Steuerung: Klassisch' : 'Steuerung: Modern',
+    classic
+      ? 'Graben-Knopf, an Wänden klettern und an Decken hängen – wie im Original'
+      : 'Gegen Erde laufen gräbt, eigener Sprung-Knopf',
     () => {
-      P.autodig = P.autodig === false;
-      G.autoDig = P.autodig;
+      P.autodig = classic;
+      applyControls();
     },
   );
-  if (P.autodig !== false)
-    item(ctl, P.jumpbtn === false ? 'Sprung-Knopf aus' : 'Sprung-Knopf an', 'Eigener Knopf zum Springen, auch beim automatischen Graben', () => {
-      P.jumpbtn = P.jumpbtn === false;
-      G.jumpBtn = P.jumpbtn;
-    });
-  item(ctl, tr('Spieltempo: {t}', { t: tr(TEMPO_NAME[P.tempo || 'normal']) }), 'Gemütlich, Normal oder Schnell', () => {
-    const ks = Object.keys(TEMPO);
-    P.tempo = ks[(ks.indexOf(P.tempo || 'normal') + 1) % ks.length];
-    if (G.state === 'play') G.speed = TEMPO[P.tempo];
-  });
 
   const gfx = sec(p, 'Grafik');
   // (a slow device may have switched to fast graphics on its own during the round, main.js)
@@ -67,18 +67,14 @@ function settingsSections(p, reopen, { lobby = false } = {}) {
     P.lightfx = P.lightfx === false;
     G.lightFx = P.lightfx;
   });
-
-  const rules = sec(p, 'Regeln');
-  item(rules, P.climbing ? 'Klettern an' : 'Klettern aus', 'An Wänden hochklettern und an Decken hängen', () => {
-    P.climbing = !P.climbing;
-    G.climbOn = P.climbing;
-    if (!G.climbOn) for (const c of crew) c.climb = c.hangle = false;
-  });
-  // (territories are laid out when a world starts, so only for the next new game)
-  if (lobby)
-    item(rules, P.territory ? 'Baugebiete an' : 'Baugebiete aus', 'Bauen nur im eigenen Gebiet, Flaggen erweitern es', () => {
-      P.territory = !P.territory;
-    });
 }
 
-export { TEMPO, settingsSections };
+// the controls from the profile into the running game (also at the start of every round)
+function applyControls() {
+  G.autoDig = P.autodig !== false;
+  G.jumpBtn = true;
+  G.climbOn = !G.autoDig;
+  if (!G.climbOn) for (const c of crew) c.climb = c.hangle = false;
+}
+
+export { DIFF, applyControls, diffOf, settingsSections };

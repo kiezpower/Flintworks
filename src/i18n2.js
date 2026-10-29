@@ -49,5 +49,21 @@ const EN2 = {
   Grafik: 'Graphics',
   Regeln: 'Rules',
   Sonstiges: 'More',
+  'Steuerung: Modern': 'Controls: modern',
+  'Steuerung: Klassisch': 'Controls: classic',
+  'Gegen Erde laufen gräbt, eigener Sprung-Knopf': 'Walking into earth digs, with a jump button',
+  'Graben-Knopf, an Wänden klettern und an Decken hängen – wie im Original':
+    'Dig button, climbing up walls and along ceilings – like the original',
+  // one difficulty for dangers and pace (settings.js)
+  Schwierigkeit: 'Difficulty',
+  Hart: 'Hard',
+  'Keine Monster, kein Gas, keine Blitze und Meteore, ruhiges Tempo':
+    'No monsters, no gas, no lightning or meteors, a calm pace',
+  'Alle Gefahren': 'All dangers',
+  'Alle Gefahren, volles Tempo': 'All dangers, full speed',
+  // lobby (lobby.js)
+  Kristalle: 'crystals',
+  'Welt · Schwierigkeit': 'World · Difficulty',
+  'Neue Runde': 'Next round',
 };
 export { EN2 };
