@@ -36,7 +36,9 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 
 Zwei Steuerungen (Optionen → Steuerung): **Modern** (Standard) gräbt, wenn man gegen Erde läuft, und hat einen eigenen Sprung-Knopf. **Klassisch** gräbt mit dem Graben-Knopf und lässt an Wänden klettern und an Decken hängen, wie im Original.
 
-**Schwierigkeit** (Lobby → „Welt · Schwierigkeit“): Gemütlich (keine Monster, kein Gas, keine Blitze und Meteore, ruhiges Tempo), Abenteuer (alle Gefahren) oder Hart (alle Gefahren, volles Tempo). Baugebiete (bauen nur im eigenen Gebiet, Flaggen erweitern es) gelten im Modus Siedler, für alle Spieler gleich.
+**Levelauswahl** (Lobby → Modus): ein Screen zum Durchscrollen, jede Reihe zum Wischen. Oben „Empfohlen“ (das nächste Kampagnen-Level und der Tagesschacht), dann Goldrausch, Siedler und Schatzsucher mit je einer Karte für Wiese, Wüste und Winter, die beiden Kapitel der Kampagne und die Karten für Koop und Versus. Die Chips oben springen zu den Abschnitten.
+
+**Schwierigkeit** (Optionen → Spiel, gilt fürs freie Spiel; Kampagne und Tagesschacht haben ihre eigene): Gemütlich (keine Monster, kein Gas, keine Blitze und Meteore, ruhiges Tempo), Abenteuer (alle Gefahren) oder Hart (alle Gefahren, volles Tempo). Baugebiete (bauen nur im eigenen Gebiet, Flaggen erweitern es) gelten im Modus Siedler, für alle Spieler gleich.
 
 Holztreppen und Holzbrücken tragen nur von oben: Man läuft von der Seite unter ihnen durch, springt von unten hindurch und steigt auf, wo sie die Füße erreichen. Lehmbrücken bleiben feste Wände.
 

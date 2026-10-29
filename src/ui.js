@@ -36,6 +36,7 @@ const moneyTxt = $('moneyTxt'),
   crewEl = $('crew'),
   actBtn = $('actBtn');
 const panelEl = $('panel'),
+  panelBg = $('panelBg'),
   pTitle = $('pTitle'),
   pBody = $('pBody');
 const mapView = $('mapView'),
@@ -304,7 +305,7 @@ function openPanel(title) {
   G.panelT = performance.now();
   pTitle.textContent = tr(title);
   pBody.innerHTML = '';
-  panelEl.hidden = false;
+  panelEl.hidden = panelBg.hidden = false;
   sfx('open');
   joy.x = joy.y = 0;
   held.dig = false;
@@ -315,13 +316,20 @@ function openPanel(title) {
 }
 function closePanel() {
   if (!panelEl.hidden) sfx('close');
-  panelEl.hidden = true;
+  panelEl.hidden = panelBg.hidden = true;
 }
 $('pClose').addEventListener('click', () => {
   if (performance.now() - G.panelT < 450) return;
   closePanel();
 });
 panelEl.addEventListener('pointerdown', e => e.stopPropagation());
+// a tap next to the panel closes it (and does not reach the game: no walking there)
+panelBg.addEventListener('pointerdown', e => {
+  e.stopPropagation();
+  e.preventDefault();
+  if (performance.now() - G.panelT < 450) return;
+  closePanel();
+});
 function opt(parent, { icon, title, sub, cost, short, disabled, onClick }) {
   const b = document.createElement('button');
   b.className = 'opt' + (short ? ' short' : '') + (icon ? '' : ' noico');

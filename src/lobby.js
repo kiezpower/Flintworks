@@ -1,6 +1,6 @@
 import { GAME_MODES, mode } from './modes.js';
 import { ALL_IDS, totalStars, unlocked } from './scenarios.js';
-import { openSelect, selectOpen } from './levelselect.js';
+import { landscape, openSelect, selectOpen } from './levelselect.js';
 import { previewOf } from './levels/preview.js';
 import { lessonsPanel } from './lessons.js';
 import { canInstall, offerInstall, openInstall } from './install.js';
@@ -22,7 +22,7 @@ import { audioInit, sfx } from './sound.js';
 import { padIcon } from './sprites.js';
 import { G } from './state.js';
 import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
-import { DIFF, diffOf, settingsSections } from './settings.js';
+import { settingsSections } from './settings.js';
 
 const el = $('lobby');
 // ask the live web version which version is current; offer the update if this copy is older
@@ -157,20 +157,25 @@ function refresh() {
   // a guest in a room sees the host's choice and cannot change it
   $('lbGMode').disabled = run || (inRoom() && (!NET.host || !!NET.auto));
   const gm = run ? mode() : GM;
+  // a game mode names its world too: one card in the selection is mode and world together
+  // (a running world shows what it was made with)
+  const biome = run ? G.biome : chosenBiome(),
+    free = !gm.map && !gm.campaign && !gm.daily;
   const gmName = gm.map
     ? `${tr('Karte')} · ${tr(gm.name)}`
     : gm.campaign
       ? `${tr('Kampagne')} ${gm.chapter === 2 ? 2 : 1} · ${gm.n} · ${tr(gm.name)}`
-      : tr(gm.name);
+      : `${tr(gm.name)} · ${tr(biome ? BIOMES[biome].name : MODE_NAME.random)}`;
   setTxt('lbGModeTxt', camp ? tr('Kampagne') : gmName);
-  // a small picture of the chosen level or map
+  // a small picture of the chosen level or map, or of the world of a game mode
   const pvId = run ? G.mode : gid,
+    pvKey = free ? `${pvId}@${biome}` : pvId,
     pvEl = $('lbGModePv');
-  if (pvEl.dataset.id !== pvId) {
-    pvEl.dataset.id = pvId;
+  if (pvEl.dataset.id !== pvKey) {
+    pvEl.dataset.id = pvKey;
     pvEl.innerHTML = '';
     const pm = GAME_MODES[pvId],
-      pic = pm && (pm.pkg || pm.campaign) && previewOf(pvId, pm.pkg);
+      pic = free ? biome && landscape(biome, true) : pm && (pm.pkg || pm.campaign) && previewOf(pvId, pm.pkg);
     if (pic) pvEl.appendChild(pic);
     pvEl.hidden = !pic;
   }
@@ -180,11 +185,6 @@ function refresh() {
       ? tr('{n} Level · Sterne {s}/{m}', { n: ALL_IDS.length, s: totalStars(), m: ALL_IDS.length * 3 })
       : tr(gm.desc, { goal: gm.goal }),
   );
-  // (a running world shows what it was made with)
-  $('lbSetup').disabled = run;
-  const world = tr(run ? BIOMES[G.biome].name : MODE_NAME[P.mode || 'random']),
-    diff = tr(DIFF[run && G.relaxed ? 'relaxed' : diffOf(P.diff)].name);
-  setTxt('lbSetupTxt', `${world} · ${diff}`);
 }
 
 function frame() {
@@ -283,7 +283,7 @@ function openQuests() {
 }
 function openOptions() {
   const p = openPanel('Optionen');
-  settingsSections(p, openOptions);
+  settingsSections(p, openOptions, { lobby: true });
   const l = sec(p, tr('Sonstiges') + ' · v' + __APP_VERSION__);
   opt(l, {
     title: getLang() === 'de' ? 'English' : 'Deutsch',
@@ -362,14 +362,15 @@ function chosen() {
   return g;
 }
 // the level selection: in a room the host only chooses (modes and maps), alone a choice starts
-function openSelection(tab) {
+function openSelection() {
   const room = inRoom();
   openSelect({
-    tab,
     current: chosen(),
     tabs: room ? ['modes', 'maps'] : null,
     pick: room,
     onClose: refresh,
+    // (the Tagesschacht card, alone only)
+    onDaily: room ? null : () => openDaily(hooks),
     onPick: id => {
       if (room) return setGMode(id);
       hooks.play(false, GAME_MODES[id].campaign ? id : null);
@@ -381,27 +382,6 @@ tap('lbGMode', () => {
   if (inRoom() && !NET.host) return toast('Der Host wählt den Modus');
   openSelection();
 });
-// the next round: which world, and one difficulty for dangers and pace (settings.js DIFF)
-function openSetup() {
-  const p = openPanel('Neue Runde');
-  const pick = (l, title, sub, on, fn) =>
-    opt(l, {
-      title: (on ? '✓ ' : '') + tr(title),
-      sub: sub ? tr(sub) : '',
-      short: true,
-      onClick: () => {
-        fn();
-        saveProfile();
-        refresh();
-        openSetup();
-      },
-    });
-  const w = sec(p, 'Welt');
-  for (const m of MODES) pick(w, MODE_NAME[m], '', (P.mode || 'random') === m, () => (P.mode = m));
-  const d = sec(p, 'Schwierigkeit');
-  for (const k in DIFF) pick(d, DIFF[k].name, DIFF[k].info, diffOf(P.diff) === k, () => (P.diff = k));
-}
-tap('lbSetup', openSetup);
 tap('lbPlay', () => {
   if (selectOpen()) return;
   const g = P.gmode,

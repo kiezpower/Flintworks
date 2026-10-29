@@ -17,7 +17,8 @@ const DIFF = {
 const diffOf = d => (DIFF[d] ? d : 'adventure');
 
 // fills the panel p with the setting groups; reopen redraws the panel after a change
-function settingsSections(p, reopen) {
+// (lobby: also the difficulty, which is set when a world is made)
+function settingsSections(p, reopen, { lobby = false } = {}) {
   const item = (l, title, sub, fn) =>
     opt(l, {
       title: tr(title),
@@ -28,6 +29,15 @@ function settingsSections(p, reopen) {
         reopen();
       },
     });
+
+  // the difficulty of free play (campaign levels and the Tagesschacht keep their own)
+  if (lobby) {
+    const k = diffOf(P.diff);
+    item(sec(p, 'Spiel'), tr('Schwierigkeit: {name}', { name: tr(DIFF[k].name) }), DIFF[k].info, () => {
+      const ks = Object.keys(DIFF);
+      P.diff = ks[(ks.indexOf(k) + 1) % ks.length];
+    });
+  }
 
   const snd = sec(p, 'Ton');
   item(snd, G.muted ? 'Ton aus' : 'Ton an', 'Ton', () => $('sndBtn').click());

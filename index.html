@@ -110,6 +110,8 @@
         Neue Version – tippen zum Laden
       </button>
 
+      <!-- behind an open panel: a tap next to it closes it -->
+      <div id="panelBg" hidden></div>
       <div id="panel" class="panel" hidden>
         <div class="ph">
           <h2 id="pTitle"></h2>
@@ -173,10 +175,6 @@
           <button class="lb-sel" id="lbGMode">
             <small data-i18n="Modus">Modus</small><b id="lbGModeTxt">Goldrausch</b><em id="lbGModeDesc"></em
             ><span id="lbGModePv" hidden></span>
-          </button>
-          <!-- world and difficulty share one line and one small panel -->
-          <button class="lb-sel lb-setup" id="lbSetup">
-            <small data-i18n="Welt · Schwierigkeit">Welt · Schwierigkeit</small><b id="lbSetupTxt">Zufall · Abenteuer</b>
           </button>
           <button class="lb-go" id="lbPlay"><span id="lbPlayTxt">Spielen</span></button>
           <button class="lb-new" id="lbNew" data-i18n="Neue Welt">Neue Welt</button>

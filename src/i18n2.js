@@ -63,7 +63,12 @@ const EN2 = {
   'Alle Gefahren, volles Tempo': 'All dangers, full speed',
   // lobby (lobby.js)
   Kristalle: 'crystals',
-  'Welt · Schwierigkeit': 'World · Difficulty',
-  'Neue Runde': 'Next round',
+  // level selection (levelselect.js) and the difficulty in the options (settings.js)
+  Empfohlen: 'Recommended',
+  Heute: 'Today',
+  'Koop und Versus': 'Co-op and versus',
+  Regel: 'Rule',
+  'Bauen nur im eigenen Gebiet, Flaggen erweitern es': 'Build only in your own area, flags widen it',
+  'Schwierigkeit: {name}': 'Difficulty: {name}',
 };
 export { EN2 };

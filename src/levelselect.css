@@ -1,4 +1,5 @@
-/* Level selection (levelselect.js): full screen over the lobby, wood and parchment like it */
+/* Level selection (levelselect.js): full screen over the lobby, wood and parchment like it; one
+   list of sections scrolled down, each a row of cards swiped sideways */
 #levelsel {
   position: absolute;
   inset: 0;
@@ -66,17 +67,61 @@
   outline: 2px solid #ffe066;
 }
 
-/* the cards */
-.ls-grid {
+/* the sections and their rows */
+.ls-list {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: y proximity;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(200px, 31%), 1fr));
-  gap: 8px;
+  gap: 10px;
   align-content: start;
-  padding: 2px;
+  padding: 2px 2px 12px;
 }
+.ls-sec {
+  scroll-snap-align: start;
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.ls-h {
+  margin: 0;
+  padding: 0 2px 3px;
+  font-size: 15px;
+  color: #ffe066;
+  text-shadow: 1px 2px 0 var(--line);
+  border-bottom: 2px solid rgba(255, 224, 102, 0.25);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ls-h small {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--parch);
+  text-shadow: none;
+  opacity: 0.85;
+}
+.ls-h .ls-stars {
+  font-size: 12px;
+}
+.ls-cards {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding: 3px 3px 6px;
+}
+.ls-cards::-webkit-scrollbar {
+  display: none;
+}
+
+/* the cards */
 .ls-card {
+  flex: 0 0 clamp(140px, 19vw, 220px);
+  scroll-snap-align: start;
   position: relative;
   display: grid;
   gap: 3px;
@@ -97,6 +142,9 @@
 }
 .ls-card:active {
   transform: translateY(2px);
+}
+.ls-daily {
+  background: linear-gradient(#fff3b8, #f2d67a);
 }
 .ls-card.locked .ls-pv {
   filter: brightness(0.45) saturate(0.5);
@@ -165,10 +213,19 @@
   image-rendering: pixelated;
   filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.6));
 }
+/* the icon of a game mode stands in the middle of its picture */
 .ls-icon {
-  align-self: center;
-  width: 30%;
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  width: 26%;
   height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.45));
+}
+.ls-pv > canvas.ls-scape {
+  object-fit: cover;
   image-rendering: pixelated;
 }
 
@@ -179,7 +236,7 @@
   min-height: 0;
   gap: 12px;
 }
-#levelsel.detail .ls-grid {
+#levelsel.detail .ls-list {
   display: none;
 }
 #levelsel.detail .ls-detail {
