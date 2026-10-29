@@ -9,6 +9,8 @@ import { LIVE, isNative, ownWeb } from './platform.js';
 import { BIOMES } from './biomes.js';
 import './lobby.css';
 import { getLang, setLang, tr } from './i18n.js';
+import { camp as campState, pending, vaultFull } from './camp.js';
+import { openCamp } from './lobbycamp.js';
 import { CAPS, HATS, P, QUESTS, claimQuest, saveProfile, unlockText, xpNeed } from './profile.js';
 import { openInvite, refreshSlots } from './lobbyinvite.js';
 import { badge, dailyFromLink, dayNo, openDaily } from './daily.js';
@@ -87,7 +89,7 @@ function placeOverlay() {
 }
 function drawStage() {
   if (sizeScene(cv)) placeOverlay();
-  drawScene(g, { t, biome: stageBiome(), cap: P.cap, hat: P.hat, jumpY, spin, sparks, friends: others() });
+  drawScene(g, { t, biome: stageBiome(), cap: P.cap, hat: P.hat, outfit: P.outfit, jumpY, spin, sparks, friends: others() });
 }
 function burst(n, cols) {
   const o = heroOrigin();
@@ -112,6 +114,9 @@ function refresh() {
   $('lbXp').style.width = Math.round((P.xp / xpNeed()) * 100) + '%';
   setTxt('lbXpTxt', `${P.xp}/${xpNeed()}`);
   setTxt('lbTro', P.trophies);
+  // Heimatbergwerk: crystals, and a dot while the home crew has something to collect
+  setTxt('lbKri', campState().k);
+  $('lbCamp').classList.toggle('alert', pending() > 0);
   // the Tagesschacht glows until today's shaft is played
   setTxt('lbDailyTxt', badge());
   $('lbDaily').classList.toggle('fresh', P.daily?.best?.[dayNo()] == null);
@@ -198,13 +203,13 @@ function frame() {
 }
 
 // ---- Panels ----
-function hatIcon(hat, cap = P.cap) {
+function hatIcon(hat, cap = P.cap, outfit = P.outfit) {
   const c = document.createElement('canvas');
   c.width = 40;
   c.height = 56;
   const x = c.getContext('2d');
   x.scale(2, 2);
-  drawPortrait(x, 2, 7, 1, cap, hat, false);
+  drawPortrait(x, 2, 7, 1, cap, hat, false, outfit);
   return c;
 }
 function openWho() {
@@ -431,6 +436,7 @@ tap('lbNameTag', () => openName());
 tap('lbSlot1', openInvite);
 tap('lbSlot2', openInvite);
 tap('lbQuest', openQuests);
+tap('lbCamp', () => openCamp({ burst }));
 tap('lbRoad', openWho);
 tap('lbOpt', openOptions);
 tap('lbDaily', () => openDaily(hooks));
@@ -525,7 +531,13 @@ function showLobby(h) {
   refresh();
   offerInstall();
   dailyFromLink(hooks);
+  // once per visit: the vault is full, the home crew waits
+  if (vaultFull() && !campTold) {
+    campTold = true;
+    toast('Der Tresor im Heimatbergwerk ist voll – kassieren!');
+  }
 }
+let campTold = false;
 function hideLobby() {
   el.hidden = true;
   $('game').classList.remove('inlobby');

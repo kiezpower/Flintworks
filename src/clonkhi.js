@@ -1,5 +1,6 @@
 // In-game Wühler at double resolution: the lobby portrait art (16×20 texels = 8×10 landscape
 // pixels) with animated legs, arms for climbing and hanging, tools and the held item.
+import { outfitPal, parseSkin } from './skins.js';
 import { ART, FIXED, hatRects } from './portrait.js';
 import { shade } from './render.js';
 import { ICOL } from './sprites.js';
@@ -84,7 +85,7 @@ function drawClonkHi(c, ox, oy, f, g) {
   if (!BODY) init();
   const hurt = c.hurt > 0 && c.hurt & 2;
   const cap = c.dead ? '#77777f' : c.cap;
-  const pal = { ...FIXED, C: cap, c: shade(cap, 0.72), h: shade(cap, 1.35) };
+  const pal = { ...FIXED, ...outfitPal(parseSkin(c.skin).outfit), C: cap, c: shade(cap, 0.72), h: shade(cap, 1.35) };
   if (c.dead) Object.assign(pal, GREY);
   // digging: lean back while raising the pick, forward and down into the strike
   const dph = c.digging || c.picking > 0 ? digPhase(c) : -1,

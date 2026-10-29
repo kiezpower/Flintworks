@@ -1,4 +1,4 @@
-import { stock, takeStock } from './store.js';
+import { chainStatus, stock, takeStock } from './store.js';
 import { toolSection } from './tools.js';
 import { knowsAll, needText, researchSection } from './research.js';
 const misEl = document.getElementById('misTxt');
@@ -15,7 +15,7 @@ import { sfx } from './sound.js';
 import { ITEM, SPR, detailed, itemIcon, padIcon, toolIcon } from './sprites.js';
 import { shownMoney } from './reward.js';
 import { tr } from './i18n.js';
-import { focusBadge, openCrew } from './crewui.js';
+import { FETCH, focusBadge, openCrew, sendHelperFor } from './crewui.js';
 import { register, send } from './commands.js';
 import { BUILDABLE, VK, cannotBuild } from './vehicles/index.js';
 import { vehicleIcon, vehicleOf } from './vehicles/core.js';
@@ -431,9 +431,38 @@ function openBuild() {
     }).dataset.tut = 'b_' + t;
   }
 }
+// the production chain: what runs, what waits for which material (a helper can be sent for it)
+function productionSection(p) {
+  const list = chainStatus();
+  if (!list.length) return;
+  const s = sec(p, tr('Produktion'));
+  for (const { b, busy, why } of list) {
+    const fetch = why && !why.full && FETCH[why.item];
+    opt(s, {
+      icon: SPR[b.type],
+      title: tr(BT[b.type].name),
+      sub: busy
+        ? tr('läuft')
+        : !why
+          ? tr('bereit')
+          : why.full
+            ? tr('Lager voll: {item}', { item: resName(why.item) })
+            : tr('wartet auf {item}', { item: resName(why.item) }),
+      cost: fetch ? tr('Helfer schicken') : busy ? '⚙' : why ? '⚠' : '',
+      short: true,
+      disabled: !fetch,
+      onClick: () => {
+        if (sendHelperFor(why.item)) toast('Ein Helfer holt {item}', { item: resName(why.item) });
+        else toast('Kein freier Helfer');
+        openBase();
+      },
+    });
+  }
+}
 function openBase() {
   const c = sel_();
   const p = openPanel('Heimatbasis');
+  productionSection(p);
   // the store: gold is sold and materials are stored automatically when walking in
   const ls = sec(p, tr('Lager · Gold und Edelsteine werden beim Betreten verkauft'));
   const kinds = Object.keys(ITEM).filter(t => stock(t) > 0);

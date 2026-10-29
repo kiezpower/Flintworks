@@ -71,7 +71,7 @@ function dice(B) {
 function takeOverBot(t, p) {
   const c = crew.find(o => isBot(o) && teamOf(o) === t);
   if (!c) return null;
-  Object.assign(c, { pid: p.pid, name: p.name, cap: p.cap, hat: p.hat, bot: false, brain: null, job: null, path: null });
+  Object.assign(c, { pid: p.pid, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin, bot: false, brain: null, job: null, path: null });
   return c;
 }
 

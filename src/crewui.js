@@ -113,4 +113,15 @@ function openCrew(n) {
     });
 }
 
-export { focusBadge, openCrew };
+// a raw material is missing in the store: one helper that is free (doing everything or resting)
+// gets the matching focus; returns false if there is nobody free or nothing helpers fetch
+const FETCH = { wood: 'wood', ore: 'ore', coal: 'ore', nug: 'ore', gem: 'ore' };
+function sendHelperFor(item) {
+  const f = FETCH[item];
+  if (!f) return false;
+  const c = helperList().find(o => ['all', 'stay'].includes(o.focus || 'all'));
+  if (!c) return false;
+  send('focus', { id: c.id, f });
+  return true;
+}
+export { FETCH, focusBadge, openCrew, sendHelperFor };

@@ -22,6 +22,7 @@ const KINDS = {
       nm: c.name,
       cap: c.cap,
       hat: c.hat,
+      sk: c.skin,
       x: r4(c.x),
       y: r4(c.y),
       f: c.face,
@@ -78,6 +79,7 @@ const KINDS = {
         name: d.nm,
         cap: d.cap,
         hat: d.hat,
+        skin: d.sk,
         face: d.f,
         vx: d.vx,
         vy: d.vy,
@@ -164,6 +166,7 @@ const KINDS = {
       pp: b.pipe,
       te: b.team || 0,
       hp: b.hp,
+      sk: b.skin,
     }),
     create: d => {
       const b = { id: d.id, type: d.ty, x: d.x, gy: d.gy, w: d.w, h: d.h, prog: 0, done: false, busy: 0, team: d.te };
@@ -172,7 +175,7 @@ const KINDS = {
     },
     apply: (b, d) => {
       Object.assign(b, { prog: d.pr, done: !!d.dn, busy: d.bs, out: d.out, lvl: d.lv, open: d.op, moving: d.mv });
-      Object.assign(b, { on: !!d.on, pipe: d.pp });
+      Object.assign(b, { on: !!d.on, pipe: d.pp, skin: d.sk });
       if (d.hp != null && d.hp < (b.hp ?? 1e9)) b.hitT = G.frame; // (the bar flashes on a hit)
       b.hp = d.hp;
       if (b.cs && d.cs != null) b.cs.y = d.cs;

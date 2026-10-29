@@ -42,6 +42,11 @@ const P = {
   mode: 'random',
   games: 0,
   wins: 0,
+  // Heimatbergwerk (camp.js) and skins (skins.js); old crystals (P.crystals) are not these
+  camp: null,
+  owned: [],
+  outfit: 'blue',
+  bstyle: 'wood',
 };
 try {
   Object.assign(P, JSON.parse(localStorage.getItem(KEY) || '{}'));

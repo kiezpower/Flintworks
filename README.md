@@ -8,6 +8,10 @@ Ein Aufbau- und Grabespiel mit Pixel-Physik im Stil der Klassiker, inspiriert vo
 
 **Bots und Helfer:** Helfer arbeiten nur fürs eigene Lager (graben, sammeln, heimbringen). Bots sind Gegner und spielen wie ein Mensch: Sie kaufen Feuersteine und TNT, laufen zur gegnerischen Burg, zielen und werfen, nehmen den Hügel, verteidigen die eigene Burg, heben Nachschub auf und graben im Wettgraben nach unten. Jeder Bot hat einen Stil (Stürmer, Hügel, Sammler) und trägt „(Bot)“ im Namen. Ein Raum für Freunde bleibt verborgen und wird per Code, Link oder QR-Code geteilt; der Host kann jeden Raum öffnen oder schließen.
 
+**Heimatbergwerk:** Kristalle sind die Währung, die zwischen den Runden bleibt. Deine Heim-Crew schürft sie auch, wenn das Spiel zu ist (bis der Tresor voll ist, anfangs nach 4 Stunden), jede Runde bringt welche dazu (1 je 40 verdiente Taler, 10 für einen Sieg, Medaillen im Tagesschacht). Kassiert wird in der Lobby unter „Heimatbergwerk“. Ausgeben kannst du sie für mehr Heim-Crew und einen größeren Tresor, für kleine Boni im freien Spiel allein (Startkasse, schärfere Hacken, Holzvorrat; nie im Mehrspieler, im Tagesschacht, in der Kampagne oder im Tutorial) und für Skins: Outfits für deinen Wühler und Baustile für deine Gebäude. Die sehen auch deine Mitspieler. Kristalle gibt es nur durchs Spielen, nicht für Geld.
+
+**Produktion im Blick:** Im Burg-Menü zeigt „Produktion“, welches Gebäude läuft und welches auf was wartet. Fehlt Holz, Erz oder Kohle, schickt „Helfer schicken“ einen freien Helfer los. Wartet ein Gebäude länger als 30 Sekunden, blinkt seine Blase.
+
 Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch und Englisch (Umschalter im Startbildschirm). Das erste Spiel ist ein geführtes Tutorial in einer eigenen kleinen Welt („Die erste Schicht“); danach erklären Tipps und kleine Aufträge den Rest, nachzulesen unter Optionen → Spielhilfe.
 
 ## Spielen
@@ -97,6 +101,9 @@ src/
   uiart.js            Pixel-Logo und 9-Slice-Rahmen, beim Start gezeichnet
   ambience.js         Regen, Wind, Vögel, Grillen
   save.js             Spielstand im Browser speichern
+  camp.js             Heimatbergwerk: Kristalle, Offline-Ertrag, Tresor, Ausbau, Solo-Boni
+  lobbycamp.js        Heimatbergwerk-Fenster in der Lobby (Kassieren, Ausbau, Skins)
+  skins.js            Outfits für Wühler und Baustile für Gebäude
   sprites.js          Pixel-Grafiken
   tutorial.js         Geführtes Tutorial: Ablauf, Zielpfeil, Knopf-Hervorhebung, Geisterhand, Abschlusskarte
   tutsteps.js         Die zehn Schritte des Tutorials
@@ -107,6 +114,7 @@ src/
   daily.js            Tagesschacht: Welt des Tages, Uhr, Medaillen, Serie, Ergebnis teilen
   stats.js            Mehrspieler: Rangliste und Auszeichnungen am Rundenende
   i18n.js             Übersetzungen (Deutsch ist der Schlüssel, Englisch die Übersetzung)
+  i18n2.js            Weitere Übersetzungen (damit keine Datei über 1000 Zeilen wächst)
   debug.js            Test-Zugang, nur im Entwicklungsmodus
   style.css           Gestaltung
 tests/                Browser-Tests (Playwright)

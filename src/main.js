@@ -9,6 +9,8 @@ import { updFloats } from './floats.js';
 import { updDecor } from './decor.js';
 import { chosenBiome, hideLobby, lobbyFrame, lobbyOpen, showLobby } from './lobby.js';
 import { P, finishGame, saveProfile } from './profile.js';
+import { skinTag } from './skins.js';
+import { addCrystals, applyStartBoosts, roundCrystals, setDigBoost } from './camp.js';
 import { biome } from './biomes.js';
 import { updAmbience } from './ambience.js';
 import { endTutorial, resumeTutorial, setTutHooks, startTutorial, tutHud, updTutorial } from './tutorial.js';
@@ -111,7 +113,8 @@ function play(withTutorial, level = null) {
     clearSave();
     G.inRun = false;
   }
-  let bonus = 0;
+  let bonus = 0,
+    boost = 0;
   if (!G.inRun) {
     if (hasSave() && loadGame()) {
       G.crewKey = G.invKey = '';
@@ -138,6 +141,8 @@ function play(withTutorial, level = null) {
       G.nextNp = 1;
       gen();
       G.nextSeed = G.nextSize = null;
+      // Heimatbergwerk upgrades (free play alone only, camp.js)
+      if (!withTutorial) boost = applyStartBoosts();
       if (bonus) {
         G.money += bonus;
         P.tutBonus = 0;
@@ -148,6 +153,7 @@ function play(withTutorial, level = null) {
     G.inRun = true;
     startGame(withTutorial);
     if (bonus) toast('Startgeld aus dem Tutorial: +{n} Taler', { n: bonus });
+    else if (boost) toast('Startkasse aus dem Heimatbergwerk: +{n} Taler', { n: boost });
     return;
   }
   G.startT += performance.now() - (G.pauseAt || performance.now());
@@ -206,7 +212,10 @@ function startGame(withTutorial = false) {
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   const mine = sel_();
-  if (mine) Object.assign(mine, { hat: P.hat, cap: P.cap, name: P.name || mine.name });
+  if (mine) Object.assign(mine, { hat: P.hat, cap: P.cap, skin: skinTag(P.outfit, P.bstyle), name: P.name || mine.name });
+  // your castle in your building style (alone; in a room the host sets it, net/session.js)
+  if (!G.net && G.base && !G.tut) G.base.skin = P.bstyle;
+  setDigBoost();
   G.autoDig = P.autodig !== false;
   G.climbOn = !!P.climbing;
   G.jumpBtn = P.jumpbtn !== false;
@@ -275,6 +284,8 @@ function endScreen(won, why, winner = null) {
   const stars = D ? D.stars : won ? starsFor(s) : 0;
   if (won) recordCampaign(stars, s);
   const tro = finishGame(won, G.earned || 0, stars);
+  // crystals for the Heimatbergwerk: in every mode (Tagesschacht: the medal counts, not the win)
+  const kri = addCrystals(roundCrystals(G.earned, D ? false : won, D ? D.stars : 0));
   const time = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   if (D) card.innerHTML = D.html;
   else if (G.teams || winner != null) {
@@ -293,6 +304,7 @@ function endScreen(won, why, winner = null) {
   // after a won campaign level: straight on to the next one
   const next = won && !G.net && nextLevel(G.mode);
   card.innerHTML += `<p class="trophy-gain">${tr('{n} Trophäen', { n: (tro >= 0 ? '+' : '') + tro })}</p>`;
+  if (kri) card.innerHTML += `<p class="crystal-gain">${tr('+{n} Kristalle', { n: kri })}</p>`;
   if (D) card.innerHTML += `<button class="go" id="shareBtn">${tr('Ergebnis teilen')}</button>`;
   if (next) card.innerHTML += `<button class="go" id="nextBtn">${tr('Nächstes Level: {name}', { name: tr(GAME_MODES[next].name) })}</button>`;
   // multiplayer: the host starts the next round for everybody with the same settings

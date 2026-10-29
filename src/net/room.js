@@ -2,6 +2,7 @@
 // with space (or opens one), and the list shows the open rooms. See who is in, get ready, start
 // together.
 // The relay hands out the codes and player ids; the game messages go through sendTo().
+import { skinTag } from '../skins.js';
 import { Share } from '@capacitor/share';
 import { tr } from '../i18n.js';
 import { LIVE, isNative, ownWeb } from '../platform.js';
@@ -52,7 +53,7 @@ function token() {
     return 'anon' + Math.random();
   }
 }
-const me = () => ({ name: P.name || 'Kurt', cap: P.cap, hat: P.hat, token: token() });
+const me = () => ({ name: P.name || 'Kurt', cap: P.cap, hat: P.hat, skin: skinTag(P.outfit, P.bstyle), token: token() });
 
 on('room', m => {
   NET.room = m.code;

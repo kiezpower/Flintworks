@@ -1,4 +1,5 @@
 import { drawGoal } from './tapgo.js';
+import { buildSprite } from './skins.js';
 import { drawClonkHi } from './clonkhi.js';
 import { drawArrow, drawGear } from './combat.js';
 import { drawEvents } from './events.js';
@@ -384,7 +385,7 @@ function render() {
   for (const b of builds) {
     const sx = b.x - cx,
       sy = b.gy - b.h - cy,
-      spr = SPR[b.type];
+      spr = buildSprite(b); // (in its builder's style, skins.js)
     if (sx < G.VW && sx + b.w > 0 && sy < G.VH + 40 && sy + b.h > -20) {
       // a soft shadow where the building stands on the ground
       ctx.fillStyle = 'rgba(20,12,6,0.28)';

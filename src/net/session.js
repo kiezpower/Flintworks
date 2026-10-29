@@ -3,6 +3,7 @@
 // and send their input (see host.js and client.js). Players may drop out and come back, join
 // late, and the host role moves to another player when the host is gone. A quick play room
 // fills empty castles with bots (bots.js); a late joiner takes over a bot's castle.
+import { parseSkin } from '../skins.js';
 import { addBot, takeOverBot } from '../bots.js';
 import { addClonk } from '../entities.js';
 import { clearInputs, clonkOf } from '../players.js';
@@ -19,7 +20,7 @@ let online = new Set(); // players that were online at the last room update
 
 // the start message the host sends to everybody (gmode: the game mode or map)
 function startMessage(gmode) {
-  const players = NET.players.filter(p => p.online).map(({ pid, name, cap, hat }) => ({ pid, name, cap, hat }));
+  const players = NET.players.filter(p => p.online).map(({ pid, name, cap, hat, skin }) => ({ pid, name, cap, hat, skin }));
   const n = players.length;
   // "Jeder gegen jeden": a castle for every player, from three on and in generated worlds (the
   // maps are built for two castles); with two it is plain Versus
@@ -54,7 +55,9 @@ function addPlayerClonk(p, self = false) {
   if (takeOverBot(team, p)) return;
   const base = teamBase(team);
   const c = addClonk(base.x + 8 + (p.pid % 4) * 6, base.gy - 10);
-  Object.assign(c, { pid: p.pid, name: p.name, cap: p.cap, hat: p.hat, inv: [], team });
+  Object.assign(c, { pid: p.pid, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin, inv: [], team });
+  // the castle takes the style of the first player of its team (the host sends it to the others)
+  if (base && !base.skin) base.skin = parseSkin(p.skin).style;
 }
 const teamBase = t => (G.teams && G.teams[t] && t !== G.curTeam ? G.teams[t].base : G.base);
 // a late joiner goes to the smallest team (in "Jeder gegen jeden" a castle nobody plays)
@@ -88,6 +91,10 @@ function beginNet(d) {
       const b = teamBase(G.myTeam);
       Object.assign(me, { team: G.myTeam, x: b.x + 10, y: b.gy - 10 });
     }
+    // the host's castle in the host's style (the other castles: addPlayerClonk)
+    const self = d.players.find(p => p.pid === G.myId);
+    const own = teamBase(G.myTeam);
+    if (self && own) own.skin = parseSkin(self.skin).style;
     for (const p of d.players) addPlayerClonk(p);
     (d.bots || []).forEach((t, k) => addBot(t, k + (d.seed % 6)));
     useMine();
@@ -135,7 +142,7 @@ function resumeNet(s) {
     const p = cur.find(q => q.name === c.name && !used.has(q.pid));
     if (p) {
       used.add(p.pid);
-      Object.assign(c, { pid: p.pid, cap: p.cap, hat: p.hat });
+      Object.assign(c, { pid: p.pid, cap: p.cap, hat: p.hat, skin: p.skin });
     } else delete c.pid; // that player is not here: the Wühler helps out
   }
   const teams = {};
