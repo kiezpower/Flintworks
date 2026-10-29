@@ -96,6 +96,7 @@ src/
   input.js            Tastatur, Touch-Stick, Knöpfe
   render.js           Zeichnen der Spielwelt
   ui.js               HUD, Menüs, Karte, Tipps
+  settings.js         Einstellungen in Gruppen, gleich in Lobby-Optionen und Spielmenü
   effects.js          Berge, Lava-Glühen, Wasserglitzern, Staub, Spritzer, Glühwürmchen
   light.js            Untergrund-Dämmerung, warmes Lampenlicht, Vignette
   uiart.js            Pixel-Logo und 9-Slice-Rahmen, beim Start gezeichnet

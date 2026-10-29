@@ -480,22 +480,25 @@ button:focus-visible {
   }
 }
 
+/* tips sit right under the task at the top, so what to do and how read as one and the thumbs
+   keep a clear view of the ground */
 #toast {
   position: absolute;
   left: 50%;
-  bottom: 22px;
+  top: 62px;
   transform: translateX(-50%);
   font-family: var(--font-display);
-  font-size: 15px;
-  padding: 6px 12px;
-  max-width: calc(100% - 200px);
+  font-size: 14px;
+  padding: 5px 10px;
+  width: max-content;
+  max-width: min(420px, calc(100% - 340px));
   text-align: center;
   pointer-events: none;
 }
-@media (hover: hover) and (pointer: fine) {
-  #toast {
-    max-width: calc(100% - 32px);
-  }
+/* with a panel open the top belongs to its title, and the thumbs are off the ground anyway */
+#game:has(> #panel:not([hidden])) #toast {
+  top: auto;
+  bottom: 22px;
 }
 
 @keyframes pop-in {
@@ -511,7 +514,7 @@ button:focus-visible {
 @keyframes toast-in {
   from {
     opacity: 0;
-    transform: translate(-50%, 8px);
+    transform: translate(-50%, -8px);
   }
   to {
     opacity: 1;
@@ -590,6 +593,10 @@ button:focus-visible {
 }
 .opt {
   grid-template-columns: 48px 1fr;
+}
+/* without an icon the title sits above its line of explanation */
+.opt.noico {
+  grid-template-columns: 1fr;
 }
 .opt b {
   font-weight: 700;

@@ -22,6 +22,7 @@ import { audioInit, sfx } from './sound.js';
 import { padIcon } from './sprites.js';
 import { G } from './state.js';
 import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
+import { settingsSections } from './settings.js';
 
 const el = $('lobby');
 $('lbVersion').textContent = 'v' + __APP_VERSION__;
@@ -281,7 +282,8 @@ function openQuests() {
 }
 function openOptions() {
   const p = openPanel('Optionen');
-  const l = sec(p, 'Spiel');
+  settingsSections(p, openOptions, { lobby: true });
+  const l = sec(p, tr('Sonstiges') + ' · v' + __APP_VERSION__);
   opt(l, {
     title: getLang() === 'de' ? 'English' : 'Deutsch',
     sub: tr('Sprache'),
@@ -290,96 +292,6 @@ function openOptions() {
       G.crewKey = G.invKey = '';
       closePanel();
       refresh();
-    },
-  });
-  opt(l, {
-    title: tr(G.muted ? 'Ton aus' : 'Ton an'),
-    sub: tr('Ton'),
-    onClick: () => {
-      G.muted = !G.muted;
-      $('sndBtn').classList.toggle('off', G.muted);
-      openOptions();
-    },
-  });
-  opt(l, {
-    title: tr(P.music === false ? 'Musik aus' : 'Musik an'),
-    sub: tr('Musik'),
-    onClick: () => {
-      P.music = P.music === false;
-      saveProfile();
-      openOptions();
-    },
-  });
-  opt(l, {
-    title: tr(P.autodig === false ? 'Automatisch graben aus' : 'Automatisch graben an'),
-    sub: tr('Gegen Erde laufen gräbt. Aus: Graben- und Sprung-Knopf wie früher'),
-    onClick: () => {
-      P.autodig = P.autodig === false;
-      G.autoDig = P.autodig;
-      saveProfile();
-      openOptions();
-    },
-  });
-  {
-    const names = { calm: 'Gemütlich', normal: 'Normal', fast: 'Schnell' };
-    opt(l, {
-      title: tr('Spieltempo: {t}', { t: tr(names[P.tempo || 'normal']) }),
-      sub: tr('Gemütlich, Normal oder Schnell'),
-      onClick: () => {
-        const ks = Object.keys(names);
-        P.tempo = ks[(ks.indexOf(P.tempo || 'normal') + 1) % ks.length];
-        saveProfile();
-        openOptions();
-      },
-    });
-  }
-  opt(l, {
-    title: tr(P.jumpbtn === false ? 'Sprung-Knopf aus' : 'Sprung-Knopf an'),
-    sub: tr('Eigener Knopf zum Springen, auch beim automatischen Graben'),
-    onClick: () => {
-      P.jumpbtn = P.jumpbtn === false;
-      G.jumpBtn = P.jumpbtn;
-      saveProfile();
-      openOptions();
-    },
-  });
-  opt(l, {
-    title: tr(P.lightfx === false ? 'Licht: aus' : 'Licht: an'),
-    sub: tr('Dämmerung unter Tage, Leuchten und Rahmen ums Bild'),
-    onClick: () => {
-      P.lightfx = P.lightfx === false;
-      G.lightFx = P.lightfx;
-      saveProfile();
-      openOptions();
-    },
-  });
-  opt(l, {
-    title: tr(P.vibe === false ? 'Vibration: aus' : 'Vibration: an'),
-    sub: tr('Kurzes Rütteln beim Graben, bei Treffern und Sprengungen'),
-    onClick: () => {
-      P.vibe = P.vibe === false;
-      G.vibe = P.vibe;
-      saveProfile();
-      openOptions();
-    },
-  });
-  opt(l, {
-    title: tr(P.climbing ? 'Klettern an' : 'Klettern aus'),
-    sub: tr('An Wänden hochklettern und an Decken hängen'),
-    onClick: () => {
-      P.climbing = !P.climbing;
-      G.climbOn = P.climbing;
-      saveProfile();
-      openOptions();
-    },
-  });
-  opt(l, {
-    title: tr(P.territory ? 'Baugebiete an' : 'Baugebiete aus'),
-    sub: tr('Bauen nur im eigenen Gebiet, Flaggen erweitern es'),
-    onClick: () => {
-      P.territory = !P.territory;
-      saveProfile();
-      openOptions();
     },
   });
   if (canInstall())

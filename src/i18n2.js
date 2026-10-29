@@ -44,5 +44,10 @@ const EN2 = {
   'Helfer schicken': 'Send a helper',
   'Ein Helfer holt {item}': 'A helper fetches {item}',
   'Kein freier Helfer': 'No free helper',
+  // settings groups (settings.js)
+  Steuerung: 'Controls',
+  Grafik: 'Graphics',
+  Regeln: 'Rules',
+  Sonstiges: 'More',
 };
 export { EN2 };
