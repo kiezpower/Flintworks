@@ -973,7 +973,7 @@ button:focus-visible {
 
 .store {
   display: grid;
-  grid-template-columns: repeat(var(--cols, 3), auto);
+  grid-template-columns: auto repeat(var(--cols, 3), auto);
   gap: 2px 8px;
   max-width: 175px;
   padding: 3px 7px;
@@ -991,6 +991,13 @@ button:focus-visible {
   width: 14px;
   height: 14px;
   image-rendering: pixelated;
+}
+.store .sico {
+  grid-row: 1 / span 2;
+  align-self: center;
+  width: 18px;
+  height: 18px;
+  opacity: 0.8;
 }
 
 /* automatic digging: one big action button, no dig or jump buttons */

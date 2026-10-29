@@ -16,7 +16,7 @@ import { updAmbience } from './ambience.js';
 import { endTutorial, resumeTutorial, setTutHooks, startTutorial, tutHud, updTutorial } from './tutorial.js';
 import { applyStatic, tr } from './i18n.js';
 import { openPanel, opt, sec } from './ui.js';
-import { TEMPO, settingsSections } from './settings.js';
+import { DIFF, applyControls, diffOf, settingsSections } from './settings.js';
 import '@fontsource/pixelify-sans/500.css';
 import '@fontsource/pixelify-sans/700.css';
 import '@fontsource/silkscreen/400.css';
@@ -214,19 +214,17 @@ function startGame(withTutorial = false) {
   // your castle in your building style (alone; in a room the host sets it, net/session.js)
   if (!G.net && G.base && !G.tut) G.base.skin = P.bstyle;
   setDigBoost();
-  G.autoDig = P.autodig !== false;
-  G.climbOn = !!P.climbing;
-  G.jumpBtn = P.jumpbtn !== false;
+  applyControls();
   G.lightFx = P.lightfx !== false;
   G.vibe = P.vibe !== false;
-  G.speed = TEMPO[P.tempo || 'normal'] || 0.85;
-  if (!G.climbOn) for (const c of crew) c.climb = c.hangle = false;
+  G.speed = DIFF[diffOf(P.diff)].speed;
   const res = P.gfx === 'low' || new URLSearchParams(location.search).get('res') === '1' ? 1 : 2;
   if (res !== G.res) {
     G.res = res;
     resize();
   }
-  G.territory = !!P.territory;
+  // building areas are a rule of the mode (Siedler and levels that ask for them), the same for everyone
+  G.territory = !!mode().territory;
   calcTerr();
   G.crewKey = '';
   G.state = 'play';
@@ -518,7 +516,7 @@ function loop(t) {
   G.acc += Math.min(100, t - G.last);
   G.last = t;
   let n = 0;
-  // game tempo: the whole simulation runs a bit slower or faster (setting "Spieltempo")
+  // game tempo: the whole simulation runs a bit slower or faster (the difficulty, settings.js DIFF)
   const dt = 16.667 / (G.speed || 1);
   while (G.acc >= dt && n < 4) {
     step();

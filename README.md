@@ -24,7 +24,7 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 
 | Aktion | Touch | Tastatur |
 |---|---|---|
-| Laufen, klettern, hangeln | Stick links | Pfeile / WASD |
+| Laufen (klassisch auch klettern, hangeln) | Stick links | Pfeile / WASD |
 | Springen | Stick nach oben schnippen oder „Sprung“ | Leertaste |
 | Graben (gerade, ↓/↑ schräg) | „Graben“ halten oder kurz tippen | Shift / X |
 | Werfen | „Wurf“ | E |
@@ -32,7 +32,11 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 | Aktion (Fällen, Basis, Werk, Brücke …) | Aktions-Knopf | F |
 | Bauen | „Bauen“ oben rechts | B |
 | Wühler wechseln | Porträt oben links oder Wühler antippen | Tab |
-| Karte | „Karte“ | M |
+| Karte | Kleine Karte oben rechts | M |
+
+Zwei Steuerungen (Optionen → Steuerung): **Modern** (Standard) gräbt, wenn man gegen Erde läuft, und hat einen eigenen Sprung-Knopf. **Klassisch** gräbt mit dem Graben-Knopf und lässt an Wänden klettern und an Decken hängen, wie im Original.
+
+**Schwierigkeit** (Lobby → „Welt · Schwierigkeit“): Gemütlich (keine Monster, kein Gas, keine Blitze und Meteore, ruhiges Tempo), Abenteuer (alle Gefahren) oder Hart (alle Gefahren, volles Tempo). Baugebiete (bauen nur im eigenen Gebiet, Flaggen erweitern es) gelten im Modus Siedler, für alle Spieler gleich.
 
 Holztreppen und Holzbrücken tragen nur von oben: Man läuft von der Seite unter ihnen durch, springt von unten hindurch und steigt auf, wo sie die Füße erreichen. Lehmbrücken bleiben feste Wände.
 

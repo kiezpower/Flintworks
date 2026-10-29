@@ -157,7 +157,7 @@ G.towerView = false;
 const arrows = [];
 const lvl = () => (G.base && G.base.lvl) || 1;
 const sellVal = items_ => Math.round(items_.reduce((s, t) => s + ITEM[t].val, 0) * BASELV[lvl()].sell);
-// building areas are optional (lobby options); off by default
+// building areas: a rule of the mode (modes.js territory), set at the start of a round
 const terrOn = () => !!G.territory;
 function terrOK(x, extra = 0) {
   if (!terrOn()) return true;
