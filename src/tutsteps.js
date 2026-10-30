@@ -181,7 +181,7 @@ const STEPS = [
     id: 'sell',
     text: 'Bring das Gold zur Burg – dort wird es verkauft',
     target: castle,
-    rescue: [{ after: 50, text: 'Steckst du fest? Menü → Zurück zur Basis' }],
+    rescue: [{ after: 50, text: 'Steckst du fest? Aktion hilft dir hoch – oder Menü → Zurück zur Basis' }],
     praise: 'Verkauft! In der Burg kannst du auch einkaufen',
     done: (c, s) => G.money > s.money0,
   },

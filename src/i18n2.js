@@ -70,5 +70,17 @@ const EN2 = {
   Regel: 'Rule',
   'Bauen nur im eigenen Gebiet, Flaggen erweitern es': 'Build only in your own area, flags widen it',
   'Schwierigkeit: {name}': 'Difficulty: {name}',
+  // getting out of pits (climb.js) and the grappling hook (tools.js)
+  Heim: 'Home',
+  Haken: 'Hook',
+  Enterhaken: 'Grappling hook',
+  'Aktion schießt den Haken an eine Kante über dir und zieht dich hoch':
+    'Action shoots the hook at a ledge above you and pulls you up',
+  'Enterhaken: Unter einer Kante, die zu hoch zum Springen ist, schießt Aktion den Haken':
+    'Grappling hook: below a ledge too high to jump, Action shoots the hook',
+  'Enterhaken: Unter einer Kante, die zu hoch zum Springen ist, schießt F den Haken':
+    'Grappling hook: below a ledge too high to jump, F shoots the hook',
+  'Steckst du fest? Aktion hilft dir hoch – oder Menü → Zurück zur Basis':
+    'Stuck? Action helps you up – or Menu → Back to base',
 };
 export { EN2 };

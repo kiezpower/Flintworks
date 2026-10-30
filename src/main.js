@@ -17,6 +17,7 @@ import { endTutorial, resumeTutorial, setTutHooks, startTutorial, tutHud, updTut
 import { applyStatic, tr } from './i18n.js';
 import { openPanel, opt, sec } from './ui.js';
 import { DIFF, applyControls, diffOf, settingsSections } from './settings.js';
+import { goHome } from './climb.js';
 import '@fontsource/pixelify-sans/500.css';
 import '@fontsource/pixelify-sans/700.css';
 import '@fontsource/silkscreen/400.css';
@@ -366,7 +367,7 @@ function openMenu() {
 // "back to base" when stuck
 register('home', c => {
   if (c.dead) return;
-  Object.assign(c, { x: G.base.x + 10, y: G.base.gy - 10, vx: 0, vy: 0, climb: false, hangle: false, tumble: false });
+  goHome(c);
   if (c === sel_()) {
     resetCam();
     toast('{name} ist zurück in der Basis', { name: c.name });

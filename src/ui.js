@@ -6,7 +6,7 @@ import { GAME_MODES, mode } from './modes.js';
 const goalWrap = document.getElementById('goalWrap'),
   goalTxt = document.getElementById('goalTxt'),
   goalBar = document.getElementById('goalBar');
-import { BASELV, BT, BUY, UPG, costTxt, hasRes, lvl, mkLorry, payRes, resName, terrOn, tryBuild } from './buildings.js';
+import { BASELV, BT, BUY, UPG, costTxt, hasRes, lvl, mkLorry, resName, terrOn, tryBuild } from './buildings.js';
 import { context } from './clonk.js';
 import { addClonk, sel_, spawnItem } from './entities.js';
 import { held, joy, keys } from './input.js';
@@ -17,13 +17,14 @@ import { shownMoney } from './reward.js';
 import { tr } from './i18n.js';
 import { FETCH, focusBadge, openCrew, sendHelperFor } from './crewui.js';
 import { register, send } from './commands.js';
+import { buildStairs } from './climb.js';
 import { BUILDABLE, VK, cannotBuild } from './vehicles/index.js';
 import { vehicleIcon, vehicleOf } from './vehicles/core.js';
 import { canShoot } from './combat.js';
 import { isPlayer } from './players.js';
 import { missionText } from './missions.js';
 import { G, INV_MAX, animals, builds, crew, lorries } from './state.js';
-import { PLANK, AIR, GOLD, H, MINI, W, bg, hex, mat, onResize } from './world.js';
+import { AIR, GOLD, H, MINI, W, bg, hex, mat, onResize } from './world.js';
 
 // ---- HUD, panels, minimap ----
 const $ = id => document.getElementById(id);
@@ -192,7 +193,16 @@ function openBag() {
   );
 }
 const THROWERS = { catapult: 1, airship: 1 }; // vehicles that use Wurf
-const ACT_ICONS = { Fällen: 'act', Basis: 'castle', Öffnen: 'chest', Bauen: 'hammer', Zuschlagen: 'sword' };
+const ACT_ICONS = {
+  Fällen: 'act',
+  Basis: 'castle',
+  Öffnen: 'chest',
+  Bauen: 'hammer',
+  Zuschlagen: 'sword',
+  Treppe: 'stairs',
+  Heim: 'castle',
+  Haken: 'hook',
+};
 const actIconCache = {};
 function actIcon(label) {
   if (actIconCache[label]) return actIconCache[label];
@@ -523,14 +533,7 @@ register('isel', (c, { i }) => {
   if (c.inv[i] !== undefined) c.isel = i;
   G.invKey = '';
 });
-register('stairs', c => {
-  const cost = hasRes(c, { plank: 1 }) ? { plank: 1 } : { wood: 1 };
-  if (!hasRes(c, cost)) return toast('Treppe braucht 1 Brett oder 1 Holz');
-  if (c.climb || c.hangle || c.tumble || c.bridge) return;
-  payRes(c, cost);
-  c.bridge = { n: 0, x0: c.x + 3 + c.face * 4, y0: c.y + 10, dy: -0.62, m: PLANK, len: 70, th: 2 };
-  sfx('hammer');
-});
+register('stairs', c => buildStairs(c));
 register('take', (c, { t }) => {
   if (c.inv.length >= INV_MAX || !takeStock(t)) return;
   c.inv.push(t);

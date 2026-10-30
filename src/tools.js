@@ -25,6 +25,14 @@ const TOOLS = {
     money: 40,
     need: { metal: 1, coal: 1 },
   },
+  // gets you out of pits and onto ledges (climb.js): cheap and early, no research
+  hook: {
+    name: 'Enterhaken',
+    icon: 'hook',
+    sub: 'Aktion schießt den Haken an eine Kante über dir und zieht dich hoch',
+    money: 30,
+    need: { wood: 2, rock: 1 },
+  },
   sword: {
     name: 'Schwert',
     icon: 'sword',
