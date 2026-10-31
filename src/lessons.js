@@ -94,6 +94,15 @@ const LESSONS = [
     tip: { touch: 'Lehm in der Hand: Aktion baut eine Brücke', keys: 'Lehm in der Hand: F baut eine Brücke' },
   },
   {
+    id: 'hook',
+    name: 'Enterhaken',
+    when: () => hasTool('hook'),
+    tip: {
+      touch: 'Enterhaken: Unter einer Kante, die zu hoch zum Springen ist, schießt Aktion den Haken',
+      keys: 'Enterhaken: Unter einer Kante, die zu hoch zum Springen ist, schießt F den Haken',
+    },
+  },
+  {
     id: 'depth',
     name: 'Tiefe',
     tip: 'Je tiefer, desto mehr Erz und Gold. Wie tief du bist, steht links oben',

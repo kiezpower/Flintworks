@@ -28,10 +28,14 @@ import * as room from './net/room.js';
 import * as modes from './modes.js';
 import * as versus from './versus.js';
 import * as bots from './bots.js';
+import * as climb from './climb.js';
+import { context } from './clonk.js';
 import { TUT, ground, rockOpen } from './tutlevel.js';
 import { STEPS } from './tutsteps.js';
 
 window.__ww = {
+  climb,
+  context,
   room,
   bots,
   modes,

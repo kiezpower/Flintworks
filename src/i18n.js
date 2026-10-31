@@ -819,7 +819,6 @@ const EN = {
   'Grab das Gold aus – Klumpen hebst du von selbst auf': 'Dig out the gold – you pick up nuggets by yourself',
   'Gold! Das ist bares Geld wert': 'Gold! That is worth hard cash',
   'Bring das Gold zur Burg – dort wird es verkauft': 'Bring the gold to the castle – it is sold there',
-  'Steckst du fest? Menü → Zurück zur Basis': 'Stuck? Menu → Back to base',
   'Verkauft! In der Burg kannst du auch einkaufen': 'Sold! You can also buy things at the castle',
   'Wähle die Hütte': 'Choose the hut',
   'Stell dich neben die Burg und tippe auf Bauen': 'Stand next to the castle and tap Build',

@@ -10,6 +10,7 @@ import { FX_PAL, dust, glint, splash } from './effects.js';
 import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './entities.js';
 import { inputOf } from './players.js';
 import { vehicleContext } from './vehicles/index.js';
+import { climbContext, rampHere, setDigTest, updHook } from './climb.js';
 import { sfx } from './sound.js';
 import { G, builds, crew, flashes, lorries, parts, trees } from './state.js';
 import { toast } from './ui.js';
@@ -41,6 +42,7 @@ import {
   rnd,
   setPlat,
   solid,
+  surf,
 } from './world.js';
 
 // ---- Clonk ----
@@ -89,6 +91,7 @@ const diggable = m =>
   m === GEM ||
   (m === ROCK && hasTool('pick'));
 const digAtPx = (x, y) => diggable(mat[Math.floor(y) * W + Math.floor(x)]);
+setDigTest(digAtPx);
 // how hard each material is to dig: the Wühler gets through sand quickest, ore and gems slowest,
 // and swings the pick more slowly in hard ground (earth = 1 keeps the old pace; rock needs the
 // steel pick, which is faster anyway)
@@ -195,12 +198,30 @@ function wantsDig(c, I) {
   // walking must not start a hole
   if (I.ay > 0.55 && I.ay > Math.abs(I.ax) * 0.5)
     return grounded && !c.hangle && digZone(c, dir, SLOPE_DOWN, 99) >= need;
+  // a ramp up out of a pit goes on until the feet are at the height of the ledge (also in the
+  // moments a stroke lifts the Wühler off the ground)
+  if (c.ramp && c.y + 10 <= c.ramp.top + 1) c.ramp = null; // arrived: walk on
+  const R = c.ramp;
+  if (R && (c.digging || recent) && Math.abs(I.ax) > 0.35 && R.dir === dir && c.y + 10 > R.top + 1)
+    // (the whole body: near the top the head is already out in the air)
+    if (digZone(c, dir, -SLOPE_UP, 9) >= 1) return 'ramp';
+  if (!c.digging && !recent) c.ramp = null;
   if (Math.abs(I.ax) > 0.35 && hold) {
     // dig when the way is blocked (a wall or a ledge too high to step onto) and you keep
     // pushing for a moment – a short bump against a step does not dig yet
     const blocked = !free(c.x + dir * 0.7, c.y, 6, 10) && !free(c.x + dir * 0.7, c.y - 3, 6, 10);
     c.pushT = blocked ? (c.pushT || 0) + 1 : 0;
-    if (c.digging || (blocked && (recent || c.pushT > (G.jumpBtn ? 18 : 8)))) return digZone(c, dir, 0, 9) >= 2 ? 'side' : false;
+    const push = blocked && (recent || c.pushT > (G.jumpBtn ? 18 : 8));
+    // in a pit or a cave (below the surface) an earth wall too high for a jump: dig a ramp up
+    // instead of a tunnel straight in (climb.js)
+    if (push && !c.digging && c.y > surf[Math.max(0, Math.min(W - 1, Math.floor(c.x + 3)))] + 12) {
+      const L = rampHere(c, dir);
+      if (L && digZone(c, dir, -SLOPE_UP, 4) >= 3) {
+        c.ramp = { dir, top: L.top };
+        return 'ramp';
+      }
+    }
+    if (c.digging || push) return digZone(c, dir, 0, 9) >= 2 ? 'side' : false;
   } else c.pushT = 0;
   return false;
 }
@@ -402,8 +423,10 @@ function updBody(c, I) {
       I.dig = true;
       // pushing up into earth digs upwards instead of jumping or grabbing the ceiling
       if (d === 'up') I.jumpP = I.jumpUp = false;
+      // a ramp out of a pit: the same slant as pushing up and sideways
+      if (d === 'ramp') I = { ...I, ay: -0.8, jumpP: false, jumpUp: false };
       // digging wins over climbing or hanging when you push into earth
-      if (d === 'up' || d === 'side') c.hangle = c.climb = false;
+      if (d === 'up' || d === 'side' || d === 'ramp') c.hangle = c.climb = false;
     }
   }
   if (c.dead) {
@@ -503,6 +526,8 @@ function updBody(c, I) {
     }
     return;
   }
+  // the grappling hook pulls the Wühler up onto a ledge (climb.js)
+  if (updHook(c, I)) return;
   // bridge building
   if (c.bridge) {
     const b = c.bridge;
@@ -824,6 +849,9 @@ function context(c) {
         c.chop = t;
       },
     };
+  // stuck below a ledge too high for a jump: hook, stairs or home (climb.js)
+  const up = climbContext(c);
+  if (up) return up;
   const it = c.inv[c.isel];
   if (it === 'loam') return { label: 'Brücke', fn: () => startBridge(c, LOAM) };
   if (it === 'plank') return { label: 'Brücke', fn: () => startBridge(c, PLANK) };

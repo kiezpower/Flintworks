@@ -29,7 +29,7 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 | Graben (gerade, ↓/↑ schräg) | „Graben“ halten oder kurz tippen | Shift / X |
 | Werfen | „Wurf“ | E |
 | Durch Holztreppe oder -brücke nach unten | Stick nach unten | ↓ / S |
-| Aktion (Fällen, Basis, Werk, Brücke …) | Aktions-Knopf | F |
+| Aktion (Fällen, Basis, Werk, Brücke, Haken, Treppe, Heim …) | Aktions-Knopf | F |
 | Bauen | „Bauen“ oben rechts | B |
 | Wühler wechseln | Porträt oben links oder Wühler antippen | Tab |
 | Karte | Kleine Karte oben rechts | M |
@@ -39,6 +39,8 @@ Zwei Steuerungen (Optionen → Steuerung): **Modern** (Standard) gräbt, wenn ma
 **Levelauswahl** (Lobby → Modus): ein Screen zum Durchscrollen, jede Reihe zum Wischen. Oben „Empfohlen“ (das nächste Kampagnen-Level und der Tagesschacht), dann Goldrausch, Siedler und Schatzsucher mit je einer Karte für Wiese, Wüste und Winter, die beiden Kapitel der Kampagne und die Karten für Koop und Versus. Die Chips oben springen zu den Abschnitten.
 
 **Schwierigkeit** (Optionen → Spiel, gilt fürs freie Spiel; Kampagne und Tagesschacht haben ihre eigene): Gemütlich (keine Monster, kein Gas, keine Blitze und Meteore, ruhiges Tempo), Abenteuer (alle Gefahren) oder Hart (alle Gefahren, volles Tempo). Baugebiete (bauen nur im eigenen Gebiet, Flaggen erweitern es) gelten im Modus Siedler, für alle Spieler gleich.
+
+**Festgesessen?** Ist eine Kante zu hoch zum Springen, gräbt sich der Wühler in einer Grube oder Höhle von selbst schräg nach oben, sobald man gegen die Erdwand läuft (moderne Steuerung). Geht das nicht (Fels), zeigt der Aktions-Knopf den Ausweg: „Haken“ mit dem Enterhaken (in der Basis zu kaufen, 30 Taler, 2 Holz, 1 Stein: schießt den Haken an die Kante und zieht dich hoch), sonst „Treppe“ (1 Brett oder 1 Holz aus Gepäck oder Lager, bis zur Kante) und ohne Holz „Heim“ (zurück zur Basis).
 
 Holztreppen und Holzbrücken tragen nur von oben: Man läuft von der Seite unter ihnen durch, springt von unten hindurch und steigt auf, wo sie die Füße erreichen. Lehmbrücken bleiben feste Wände.
 
@@ -95,6 +97,7 @@ src/
   gen.js              Weltgenerator
   entities.js         Wühler, Tiere, Gegenstände anlegen; Bewegung
   clonk.js            Wühler-Steuerung, Graben, Klettern, Aktionen
+  climb.js            Aus Gruben heraus: Kante erkennen, Rampe graben, Treppe, Heim, Enterhaken
   buildings.js        Gebäude, Produktion, Strom, Gebiet
   objects.js          Gegenstände, Bäume, Tiere, Explosionen, Partikel
   weather.js          Tag/Nacht, Regen, Gewitter, Meteore

@@ -447,6 +447,17 @@ PAD_ICONS.stairs = R => {
   for (let k = 0; k < 4; k++) R(1 + k * 2, 9 - k * 2, 4, 2, k % 2 ? '#c08a50' : '#d9a46a');
   R(1, 11, 10, 1, '#8b5e34');
 };
+// the grappling hook: a rope coming down to a three-pronged iron hook
+PAD_ICONS.hook = R => {
+  R(5, 0, 2, 5, '#c9a46a');
+  R(5, 5, 2, 5, '#9aa4ae');
+  R(1, 7, 2, 3, '#9aa4ae');
+  R(9, 7, 2, 3, '#9aa4ae');
+  R(2, 10, 8, 2, '#9aa4ae');
+  R(1, 6, 1, 1, '#d4dbe2');
+  R(10, 6, 1, 1, '#d4dbe2');
+  R(5, 5, 1, 5, '#d4dbe2');
+};
 PAD_ICONS.hammer = R => {
   R(5, 5, 2, 7, '#8b5e34');
   R(2, 2, 8, 3, '#9aa4ae');

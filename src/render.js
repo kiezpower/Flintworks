@@ -38,6 +38,7 @@ import {
 } from './effects.js';
 import { drawBolt, drawRainFar, drawRainHaze, drawRainNear, drawRoofWeather, drawWet } from './rainfx.js';
 import { drawTutorial } from './tutorial.js';
+import { drawHook } from './climb.js';
 import { arrows, lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
 import { isPlayer } from './players.js';
@@ -588,6 +589,7 @@ function render() {
       ctx.globalAlpha = 1;
       return;
     }
+    drawHook(ctx, c, x, y, cx, cy);
     if (c.tumble) {
       ctx.save();
       ctx.translate(x + 3, y + 5);
