@@ -12,7 +12,8 @@ import { drawCoop } from './coop.js';
 import { drawBuildFx, drawWindowGlow } from './bfx.js';
 import { drawBeams, drawBubbles, drawMark } from './mine.js';
 import { drawFloats } from './floats.js';
-import { drawDecor } from './decor.js';
+import { drawDecor, glowSpots } from './decor.js';
+import { drawProps, lanternSpots } from './props.js';
 import { biome } from './biomes.js';
 import {
   beginGlow,
@@ -202,6 +203,16 @@ function drawAnimal(a, sx, sy) {
   if (!spr) {
     spr = animalCache[key] = animalSprite(a, ph, hurtF, glow);
   }
+  // a monster about to strike: a blinking "!" over its head
+  if (a.warn > 0 && G.frame % 10 < 7) {
+    const wx = Math.round(sx + a.w / 2),
+      wy = Math.round(sy - 7);
+    ctx.fillStyle = '#24160c';
+    ctx.fillRect(wx - 1, wy - 1, 3, 7);
+    ctx.fillStyle = '#ffd23a';
+    ctx.fillRect(wx, wy, 1, 3);
+    ctx.fillRect(wx, wy + 4, 1, 1);
+  }
   if (f > 0) drawHi(ctx, spr, sx - 2, sy - 2);
   else {
     ctx.save();
@@ -281,6 +292,8 @@ function nameTag(text, x, y, col) {
   ctx.textBaseline = 'alphabetic';
   ctx.fillText(text, x + 0.5, y - 1.5);
 }
+const glows = [],
+  lanterns = [];
 function render() {
   flush();
   ctx.setTransform(G.res, 0, 0, G.res, 0, 0);
@@ -383,6 +396,8 @@ function render() {
       ctx.fillStyle = '#6f6a64';
       ctx.fillRect(b.x + 7 - cx, b.gy - cy, 2, b.pipe);
     }
+  // barrels, crates and lanterns around the buildings (props.js), behind them
+  drawProps(ctx, cx, cy);
   // buildings
   for (const b of builds) {
     const sx = b.x - cx,
@@ -637,6 +652,11 @@ function render() {
   // explosions: a pixel disc with a brighter core instead of a smooth circle
   for (const f of flashes) {
     const r = f.r * (1.2 - f.l / 14);
+    // a big one lights the ground around it for a moment: one faint outer ring (hard edge, STYLE.md)
+    if (f.r >= 6) {
+      ctx.fillStyle = `rgba(255,200,110,${f.l / 40})`;
+      pixelDisc(ctx, f.x - cx, f.y - cy, f.r * 2.4);
+    }
     ctx.fillStyle = `rgba(255,${180 + f.l * 10},90,${f.l / 8})`;
     pixelDisc(ctx, f.x - cx, f.y - cy, r);
     ctx.fillStyle = `rgba(255,246,192,${f.l / 10})`;
@@ -672,13 +692,18 @@ function render() {
         light(
           c.x + 3 - cx,
           c.y + 4 - cy,
-          (isPlayer(c) ? 44 : 22) * (c.hat === 'helm' ? 1.5 : 1) * (hasTool('lamp') ? 1.4 : 1),
+          (isPlayer(c) ? 44 : 30) * (c.hat === 'helm' ? 1.5 : 1) * (hasTool('lamp') ? 1.4 : 1),
           isPlayer(c) ? 0.95 : 0.7,
         );
     });
     for (const b of builds)
       if (b.done) light(b.x + b.w / 2 - cx, b.gy - b.h / 2 - cy, b.type === 'base' ? 40 : 24, 0.8);
     for (const f of flashes) light(f.x - cx, f.y - cy, 70, 1);
+    // lanterns by the buildings (props.js) light the night
+    if (dark > 0.02) {
+      lanternSpots(cx, cy, lanterns);
+      for (let k = 0; k < lanterns.length; k += 2) light(lanterns[k], lanterns[k + 1], 20, 0.85);
+    }
     for (const m of meteors) light(m.x - cx, m.y - cy, 30, 0.9);
     if (G.bolt) light(G.VW / 2, G.VH / 2, G.VW, Math.min(1, G.bolt.l / 6));
     for (const it of items) if (it.fuse > 0) light(it.x - cx, it.y - cy, 10, 0.6);
@@ -687,6 +712,11 @@ function render() {
     for (let k = 0; k < lava.length; k += 8) light(lava[k], lava[k + 1], 16, 0.7);
     if (under)
       for (let k = 0; k < oreSpots.length; k += 3) lightHole(lctx, oreSpots[k], oreSpots[k + 1], 6, oreSpots[k + 2]);
+    // glowing mushrooms and crystals in caves (decor.js)
+    if (under) {
+      glowSpots(cx, cy, glows);
+      for (let k = 0; k < glows.length; k += 2) lightHole(lctx, glows[k], glows[k + 1], 9, 0.55);
+    }
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(lc, 0, 0);
     ctx.imageSmoothingEnabled = false;
@@ -707,6 +737,10 @@ function render() {
         );
     }
     for (let k = 0; k < lava.length; k += 6) warmGlow(ctx, lava[k], lava[k + 1], 12, 0.22);
+    if (dark > 0.2) {
+      lanternSpots(cx, cy, lanterns);
+      for (let k = 0; k < lanterns.length; k += 2) warmGlow(ctx, lanterns[k], lanterns[k + 1], 10, 0.3 * dark);
+    }
     for (const b of builds)
       if (b.done && b.busy && (b.type === 'furnace' || b.type === 'shop'))
         warmGlow(ctx, b.x + b.w / 2 - cx, b.gy - b.h / 2 - cy, 18, 0.34 * flicker(b.x));

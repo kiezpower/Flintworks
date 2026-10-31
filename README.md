@@ -133,6 +133,8 @@ src/
   tutsteps.js         Die drei Schritte des Tutorials
   tutlevel.js         Die Tutorial-Welt mit festem Lehrpfad (Felsbuckel, Goldader)
   onboarding.css      Startschleier, HUD im Tutorial, große Texte
+  panels.css          Fenster als Spiel-UI: Kachelzustände, Grund-Chips, Sprung-Chips
+  props.js            Fässer, Kisten, Zäune und Laternen neben Gebäuden (nur Bild)
   analytics.js        Analyse-Ereignisse (nur lokal), siehe docs/ANALYTICS.md
   lessons.js          Tipps und Aufträge nach dem Tutorial, Spielhilfe in der Lobby
   versus.js           Versus: Burg-Lebenspunkte, Hügel, Rundenuhr, Nachschub, Sieger

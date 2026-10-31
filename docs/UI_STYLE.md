@@ -49,7 +49,10 @@ links der Stick, rechts die runden Knöpfe (Aktion 88 px).
 
 - Fenster mittig, Breite `min(640px, 100% − 32px)` am Desktop, ganze Breite am Handy, mit Reitern statt
   Listen über 8 Einträge.
-- Kacheln: Icon links, Name, eine Zeile Nutzen, Preis als Chips (Münze + Zahl, Ressourcen-Icon + Zahl).
+- Kacheln: Icon links, Name, höchstens zwei Zeilen Nutzen, Preis (11 px), darunter der Grund als Chip.
+  Umsetzung: `opt(parent, { …, state, why, pct })` in `ui.js`, Gestaltung in `panels.css`; fehlende
+  Mengen mit `lacking(c, need, money)` („Fehlt: 2× Holz + 10 Taler“). Lange Fenster bekommen
+  Sprung-Chips (`chips(p)`).
 - **Kachelzustände** (Pflicht für Laden, Bauen, Forschung):
 
 | Zustand | Aussehen |
@@ -67,13 +70,13 @@ links der Stick, rechts die runden Knöpfe (Aktion 88 px).
 | Zustand | Pflicht | Heute |
 |---|---|---|
 | ruhend | Rahmen und Fläche | ja |
-| Hover (Maus) | heller | teils (`.go`) |
+| Hover (Maus) | heller | ja (`.go`, `.opt` Goldrand, Chips) |
 | Fokus (Tastatur) | heller Ring, 2–3 px, Abstand 2–4 px | ja (`:focus-visible`) |
 | gedrückt | 2 px tiefer, Schatten kürzer, Klick-Ton | ja (`.go:active`, Klick in `main.js`) |
-| deaktiviert | halbe Deckkraft, Grund als Text darunter | teils (Grund fehlt oft) |
+| deaktiviert | halbe Deckkraft bzw. Zustand `st-poor`/`st-locked`, Grund als Chip | ja für Kacheln (`panels.css`, `opt({ state, why })`) |
 | ausgewählt | Goldrahmen | ja (`.cbtn.sel`, Levelkarten) |
-| beschäftigt | Puls oder Punkte, kein Doppelklick | teils (`#lbPlay.wait`) |
-| Fehler | kurzer Ruck, Ton, Text mit nächstem Schritt | fehlt |
+| beschäftigt | Puls oder Fortschrittsbalken, kein Doppelklick | ja (`st-busy` mit Balken, `#lbPlay.wait`, Karten-Knöpfe einmalig) |
+| Fehler | kurzer Ruck, Ton, Text mit nächstem Schritt | ja für Kacheln (`.nope`, Ton `thud`, Toast mit Grund) |
 | Abklingzeit | Füllbalken im Knopf | fehlt (es gibt keine Abklingzeiten) |
 
 **Größen:** Tippflächen ≥ 44 px (Hauptknöpfe ≥ 56 px, Startknopf 72 px), Desktop-Knöpfe ≥ 32 px hoch.

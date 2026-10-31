@@ -115,3 +115,53 @@ test('option tiles without an icon put the title above its explanation', async (
   const [t, s] = await Promise.all([tile.locator('b').boundingBox(), tile.locator('small').boundingBox()]);
   expect(s.y).toBeGreaterThanOrEqual(t.y + t.height - 1);
 });
+
+test('castle tiles show their state at a glance: too dear, locked, done, running, each with its reason', async ({
+  page,
+}) => {
+  const errors = await lobby(page);
+  await play(page);
+  await page.evaluate(() => {
+    const w = window.__ww;
+    w.money = 50;
+    w.G.tools = { ...w.G.tools, r_mech: true };
+    w.openBase();
+  });
+  const tile = name => page.locator('#pBody .opt', { hasText: name }).first();
+  await expect(tile('Mechanik')).toHaveClass(/st-done/);
+  await expect(tile('Metallurgie')).toHaveClass(/st-poor/);
+  await expect(tile('Metallurgie').locator('.why')).toHaveText('Fehlt: 10 Taler');
+  await expect(tile('Luftfahrt')).toHaveClass(/st-locked/);
+  await expect(tile('Luftfahrt').locator('.why')).toContainText('Erst erforschen: Metallurgie');
+  // jump chips to the sections
+  await expect(page.locator('#pBody .pchips button').first()).toBeVisible();
+  // a running research: the others say why they wait, the running one shows its progress
+  await page.evaluate(() => {
+    const w = window.__ww;
+    w.G.tools = { ...w.G.tools, _rq: { id: 'archery', left: 600 } };
+    w.money = 500;
+    w.openBase();
+  });
+  await expect(tile('Bogenbau')).toHaveClass(/st-busy/);
+  await expect(tile('Bogenbau').locator('.pbar')).toHaveCount(1);
+  await expect(tile('Metallurgie').locator('.why')).toHaveText('Es läuft schon eine Forschung');
+  // a tap on a locked tile: a shake and the reason
+  await page.waitForTimeout(500);
+  await tile('Luftfahrt').click();
+  await expect(tile('Luftfahrt')).toHaveClass(/nope/);
+  await expect(page.locator('#toast')).toContainText('Erst erforschen');
+  expect(errors).toEqual([]);
+});
+
+test('a won free round offers a new round as the main button, and Enter takes it', async ({ page }) => {
+  const errors = await lobby(page);
+  await play(page);
+  await page.evaluate(() => (window.__ww.money = 900));
+  await expect(page.locator('#card h1')).toHaveText('Geschafft');
+  await expect(page.locator('#soloBtn')).toBeFocused();
+  await expect(page.locator('#goBtn')).toHaveClass(/alt/);
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => window.__ww.state === 'play');
+  expect(await page.evaluate(() => [window.__ww.G.mode, window.__ww.money < 900])).toEqual(['gold', true]);
+  expect(errors).toEqual([]);
+});

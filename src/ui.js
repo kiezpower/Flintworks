@@ -6,7 +6,7 @@ import { GAME_MODES, mode } from './modes.js';
 const goalWrap = document.getElementById('goalWrap'),
   goalTxt = document.getElementById('goalTxt'),
   goalBar = document.getElementById('goalBar');
-import { BASELV, BT, BUY, UPG, costTxt, hasRes, lvl, mkLorry, resName, terrOn, tryBuild } from './buildings.js';
+import { BASELV, BT, BUY, UPG, costTxt, countRes, hasRes, lvl, mkLorry, resName, terrOn, tryBuild } from './buildings.js';
 import { context } from './clonk.js';
 import { addClonk, sel_, spawnItem } from './entities.js';
 import { held, joy, keys } from './input.js';
@@ -342,9 +342,23 @@ panelBg.addEventListener('pointerdown', e => {
   if (performance.now() - G.panelT < 450) return;
   closePanel();
 });
-function opt(parent, { icon, title, sub, cost, short, disabled, onClick }) {
+// what is missing for a cost, as a short line ("Fehlt: 2× Holz"), or '' when it is all there
+function lacking(c, need, money = 0) {
+  const out = [];
+  if (money > G.money) out.push(tr('{n} Taler', { n: money - G.money }));
+  for (const t in need || {}) {
+    const n = need[t] - countRes(c, t);
+    if (n > 0) out.push(`${n}× ${resName(t)}`);
+  }
+  return out.length ? tr('Fehlt: {list}', { list: out.join(' + ') }) : '';
+}
+// a tile in a panel. state: 'ok', 'poor' (too dear), 'locked' (not yet possible), 'done' (have it),
+// 'busy' (running, pct shows the progress); why: the reason as a small chip (docs/UI_STYLE.md).
+// A tap on a poor or locked tile still runs onClick (it says why), with a short shake and thud.
+function opt(parent, { icon, title, sub, cost, short, disabled, onClick, state, why, pct }) {
   const b = document.createElement('button');
-  b.className = 'opt' + (short ? ' short' : '') + (icon ? '' : ' noico');
+  state ||= short ? 'poor' : 'ok';
+  b.className = 'opt st-' + state + (short || state === 'poor' ? ' short' : '') + (icon ? '' : ' noico');
   if (disabled) b.disabled = true;
   if (icon) {
     // shown through its double-resolution copy (lit from above, outlined) at a whole multiple
@@ -367,14 +381,38 @@ function opt(parent, { icon, title, sub, cost, short, disabled, onClick }) {
   }
   b.insertAdjacentHTML(
     'beforeend',
-    `<b>${title}</b><small>${sub || ''}</small><span class="cost">${cost || ''}</span>`,
+    `<b>${title}</b><small>${sub || ''}</small><span class="cost">${cost || ''}</span>` +
+      (why ? `<span class="why">${why}</span>` : '') +
+      (state === 'busy' && pct != null ? `<span class="pbar"><i style="width:${pct}%"></i></span>` : ''),
   );
   b.addEventListener('click', e => {
     if (performance.now() - G.panelT < 450) return;
+    if (state === 'poor' || state === 'locked') {
+      sfx('thud');
+      b.classList.remove('nope');
+      void b.offsetWidth; // (restart the shake)
+      b.classList.add('nope');
+    }
     onClick(e);
   });
   parent.appendChild(b);
   return b;
+}
+// jump chips at the top of a long panel: one per section (the part of its title before " · ")
+function chips(p) {
+  const secs = [...p.querySelectorAll(':scope > .psec')];
+  if (secs.length < 3) return;
+  const row = document.createElement('div');
+  row.className = 'pchips';
+  for (const s of secs) {
+    const name = s.textContent.split(' · ')[0];
+    if (name.length > 20) continue; // (an explanation, not a heading)
+    const b = document.createElement('button');
+    b.textContent = name;
+    b.addEventListener('click', () => s.scrollIntoView({ block: 'start', behavior: G.reduceMotion ? 'auto' : 'smooth' }));
+    row.appendChild(b);
+  }
+  p.prepend(row);
 }
 function sec(parent, t) {
   const d = document.createElement('div');
@@ -404,6 +442,7 @@ function openBuild() {
     sub: tr('Holztreppe schräg nach oben in Blickrichtung – auch zu Gebäuden, unter denen gegraben wurde'),
     cost: tr('1 Brett oder 1 Holz'),
     short: !hasRes(c, stairCost),
+    why: hasRes(c, stairCost) ? '' : tr('Fehlt: 1 Brett oder 1 Holz'),
     onClick: () => {
       closePanel();
       send('stairs');
@@ -414,10 +453,9 @@ function openBuild() {
   opt(lv, {
     icon: itemIcon('plank'),
     title: tr(c.laying ? 'Schienen: fertig' : 'Schienen legen'),
-    sub: knowsAll(['rails'])
-      ? tr('Beim Laufen entstehen Schienen hinter dir – 1 Brett oder Holz pro 10 Stück')
-      : needText(['rails']),
-    short: true,
+    sub: tr('Beim Laufen entstehen Schienen hinter dir – 1 Brett oder Holz pro 10 Stück'),
+    state: knowsAll(['rails']) ? 'ok' : 'locked',
+    why: knowsAll(['rails']) ? '' : needText(['rails']),
     onClick: () => {
       closePanel();
       send('rails');
@@ -429,9 +467,18 @@ function openBuild() {
     opt(lv, {
       icon: vehicleIcon(k),
       title: tr(K.name),
-      sub: knowsAll(K.res) ? tr(K.info) : needText(K.res),
-      cost: K.lvl && why === 'Erst ab Burgstufe {n}' ? tr(why, { n: K.lvl }) : costTxt(K.cost),
-      short: !!why,
+      sub: tr(K.info),
+      cost: costTxt(K.cost),
+      state: !why ? 'ok' : why === '{name} braucht {cost}' ? 'poor' : 'locked',
+      why: !why
+        ? ''
+        : why === '{name} braucht {cost}'
+          ? lacking(c, K.cost)
+          : why === 'Erst ab Burgstufe {n}'
+            ? tr(why, { n: K.lvl })
+            : knowsAll(K.res)
+              ? tr(why)
+              : needText(K.res),
       onClick: () => {
         closePanel();
         send('vehicle', { kind: k });
@@ -448,12 +495,14 @@ function openBuild() {
       sub: tr(T.info),
       cost: costTxt(T.cost),
       short: !hasRes(c, T.cost),
+      why: lacking(c, T.cost),
       onClick: () => {
         closePanel();
         send('build', { type: t });
       },
     }).dataset.tut = 'b_' + t;
   }
+  chips(p);
 }
 // the production chain: what runs, what waits for which material (a helper can be sent for it)
 function productionSection(p) {
@@ -510,24 +559,29 @@ function openBase() {
       },
     });
   researchSection(p, { opt, sec, reopen: openBase });
-  toolSection(p, c, { opt, sec, toast, reopen: openBase });
+  toolSection(p, c, { opt, sec, toast, reopen: openBase, lacking });
   const l = sec(p, tr('Kaufen · Kasse: {m} Taler', { m: G.money }));
   for (const o of BUY) {
     const icon = ITEM[o.t] ? itemIcon(o.t) : o.t === 'lorry' ? SPR.lorryIcon : SPR.clonkIcon;
     const alive = crew.filter(x => !x.dead).length;
-    const dis = G.money < o.price || (o.t === 'clonk' && alive >= BASELV[lvl()].crew);
+    const full = o.t === 'clonk' && alive >= BASELV[lvl()].crew,
+      poor = G.money < o.price;
     opt(l, {
       icon,
       title: resName(o.t),
       sub: tr(o.t === 'clonk' ? 'Neues Crewmitglied' : o.t === 'lorry' ? 'Transportiert 25 Sachen' : ''),
       cost: tr('{p} Taler', { p: o.price }),
-      disabled: dis,
+      state: full ? 'locked' : poor ? 'poor' : 'ok',
+      why: full ? tr('Crew voll – erst die Burg ausbauen') : poor ? lacking(c, null, o.price) : '',
       onClick: () => {
+        if (full) return toast('Crew voll – erst die Burg ausbauen');
+        if (poor) return toast(lacking(c, null, o.price));
         send('buy', { t: o.t });
         openBase();
       },
     });
   }
+  chips(p);
 }
 
 // ---- Commands from the panels above (run for the player who sent them) ----
@@ -560,6 +614,7 @@ register('buy', (c, { t }) => {
 });
 
 export {
+  lacking,
   $,
   actBtn,
   airBar,

@@ -19,6 +19,9 @@ function init() {
     ['...oPpppppppo...', '....oPppppo.....', '....oBBxBBxo....', '....oooooooo....'],
   ];
 }
+// in the air: knees pulled up while rising, legs apart while falling
+const JUMP = ['...oPpppppppo...', '..oBBxPppppBBxo.', '..ooooo..ooooo..', '................'];
+const FALL = ['...oPpppppppo...', '..oPpo....oppo..', '.oBBxo....oBBxo.', '.ooooo....ooooo.'];
 const CLIMB = [
   ['...oPpppppppo...', '...oPpo..oppo...', '...oBBxo.opo....', '...ooooo.ooo....'],
   ['...oPpppppppo...', '...opo...oPpo...', '...ooo...oBBxo..', '.........ooooo..'],
@@ -114,9 +117,17 @@ function drawClonkHi(c, ox, oy, f, g) {
   // a pick raised over the shoulder is behind the head
   const pickBehind = dph >= 0 && pickAngle(c, dph) < -0.7;
   if (pickBehind) drawPick(c, ox, oy, f, g, dph, lean, null);
+  // a full pack: a sack on the back, behind the body
+  if (c.inv && c.inv.length >= 3 && !c.dead && !c.climb && !c.hangle) {
+    px(0, 8, 5, 7, FIXED.o);
+    px(1, 9, 3, 5, '#a07a48');
+    px(1, 9, 3, 1, '#c09a62');
+  }
   rows(BODY, 0);
+  const air = c.airT > 3 && !c.climb && !c.hangle;
   if (c.climb) rows(CLIMB[ph < 2 ? 0 : 1], 16);
   else if (c.hangle) rows(CLIMB[ph % 2], 16);
+  else if (air) rows(c.vy < 0 ? JUMP : FALL, 16);
   else rows(LEGS[walking ? ph : 0], 16);
   if (c.hat && c.hat !== 'none') {
     const rs = hatRects(c.hat);
@@ -145,12 +156,14 @@ function drawClonkHi(c, ox, oy, f, g) {
     px(17, up ? -1 : 9, 2, 4, c.chop ? '#c0c6cc' : '#9a948c');
   } else {
     // arm swings with the step and holds the selected item
-    const sw = walking ? [0, 2, 0, -2][ph] : 0;
-    px(12 + Math.max(0, sw), 13, 2, 2, skin);
+    // (in the air the arm goes up: half way while rising, high while falling)
+    const sw = walking && !air ? [0, 2, 0, -2][ph] : 0,
+      hy = air ? (c.vy < 0 ? 9 : 6) : 13;
+    px(12 + Math.max(0, sw), hy, 2, 2, skin);
     const t = c.inv[c.isel];
     if (t && !c.dead) {
-      px(12 + Math.max(0, sw), 13, 5, 5, FIXED.o);
-      px(13 + Math.max(0, sw), 14, 3, 3, ICOL[t]);
+      px(12 + Math.max(0, sw), hy, 5, 5, FIXED.o);
+      px(13 + Math.max(0, sw), hy + 1, 3, 3, ICOL[t]);
     }
   }
   if (c.burn > 0)

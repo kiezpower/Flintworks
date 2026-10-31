@@ -1,6 +1,6 @@
 # Optik-Rubrik und Bewertung
 
-> **Stand: v1.52.0, 31.10.2026.** Bewertet wird nur, was auf Bildern zu sehen war. Die Note misst die
+> **Stand: v1.53.0, 31.10.2026** (erste Bewertung v1.52.0 in Abschnitt 4, Neubewertung in Abschnitt 7). Bewertet wird nur, was auf Bildern zu sehen war. Die Note misst die
 > **Optik gegenüber den freigegebenen Vorbildern**. Sie sagt nichts über Budget, Teamgröße oder
 > Umfang. Stilregeln: [STYLE.md](STYLE.md), UI-Regeln: [UI_STYLE.md](UI_STYLE.md).
 
@@ -80,7 +80,7 @@ Gewicht in %. Stufen: 1 = kaputt oder unlesbar, 5 = brauchbar mit klaren Mängel
 | 11 | **Stimmigkeit** – Figuren, Welt, UI, Effekte sprechen dieselbe Sprache | 3 | Stilbruch / kleine Brüche / stimmig / wie aus einem Guss | gemischte Stile, Fremdschriften | Palette und Umriss nach STYLE.md |
 | 12 | **Technik** – Flimmern, Unschärfe, Artefakte | 3 | Fehler stören / sichtbar, selten / keine im Spiel / auch bei Bewegung und Effekten | Schlieren, Z-Fighting, Debug-Text im Bild | Bilder bei 1×/2×, Handy und Desktop |
 
-## 4. Bewertung
+## 4. Bewertung (v1.52.0, vor den Verbesserungen)
 
 Belege stammen aus Bildern aus dem echten Spiel. Sie lassen sich neu erzeugen mit
 `npm run test:visual`, `npm run store-shots`, dem Tutorial-Test und einer Zusatzaufnahme von
@@ -138,21 +138,59 @@ Terraria, Noita und SteamWorld Dig 2.
 
 ## 6. Verbesserungsplan
 
-**Schnelle Gewinne (Code, Tage):**
-1. Kachelzustände im Burg- und Bau-Fenster: leistbar (Preis gold), zu teuer (Preis rot, Icon
-   gedimmt), gesperrt (Schloss und grau), gekauft (Haken).
-2. Mindestschrift 12 px; Fenster am Desktop bis 640 px breit; Beschreibungen höchstens zwei Zeilen.
-3. Siegkarte im freien Spiel: Hauptknopf „Neue Runde“, „Zur Lobby“ als zweiter Knopf.
-4. Grauschleier hinter dem Startbildschirm aufhellen.
-5. Sprung- und Fallpose, Landestaub bei jeder Landung.
-6. Tipp und Auftragschip in einer Spur oben, nie übereinander.
+Stand v1.53.0: ✅ umgesetzt, ◐ teilweise, ✗ offen.
 
-**Große Überarbeitungen (Wochen):**
-1. Siedlungsdichte: Deko-Props, Gebäude auf mehreren Ebenen, Wege und Leitungen sichtbar.
-2. Untertage in Tiefenstufen mit eigenen Lichtquellen (Kristalle, Pilze, Lava), nach Noita.
-3. Burg- und Bau-Fenster mit Reitern und großen Kacheln; Vergleich vorher/nachher bei Werkzeugen.
-4. Bewegungsübergänge: Start, Stopp, Wende, Tragen, Ankündigung bei Monstern.
+**Schnelle Gewinne:**
+1. ✅ Kachelzustände (leistbar, zu teuer, gesperrt, erledigt, läuft) mit Grund-Chip („Fehlt: 20 Taler“,
+   „Erst erforschen: …“, „Es läuft schon eine Forschung“), Fortschrittsbalken, Schloss und Haken.
+   Ein Tipp auf etwas Unmögliches: kurzer Ruck, Ton, Toast mit demselben Grund.
+   (Warum Metallurgie im alten Bild mit 400 Talern rot war, ist nicht geklärt. Jetzt steht der Grund auf der Kachel.)
+2. ✅ Kostenzeile 11 px statt 9 px, Fenster am Desktop bis 640 px, Beschreibungen höchstens zwei
+   Zeilen, Kartenlegende 11 px.
+3. ✅ Sieg- und Niederlagekarte im freien Spiel: „Neue Runde“ bzw. „Nochmal“ als fokussierter
+   Hauptknopf, „Zur Lobby“ ruhiger.
+4. ✅ Kein Grauschleier mehr: Die Tutorial-Welt steht auf hellem Tag, der Startbildschirm-Verlauf ist leichter.
+5. ✅ Sprung- und Fallpose (Beine und Arm), Landestaub bei jeder Landung, Bremsstaub beim Wenden.
+6. ✅ Tipp und Auftrag in einer Spur; bei offenem Fenster tritt der Auftrag zurück.
 
-**Mit Fachleuten:**
-- Pixel-Artist für einen stimmigen Gebäudesatz (bis 2× Größe) und Animationsbögen für den Wühler.
+**Große Überarbeitungen:**
+1. ◐ Siedlung: Fässer, Kisten, Zaun und Laternenpfähle neben fertigen Gebäuden (`props.js`, nachts
+   mit Licht). Gebäude auf mehreren Ebenen, Wege und Leitungen: offen.
+2. ✅ Untertage: zweite Tiefenstufe (bis 70 % dunkel, nie schwarz), leuchtende Pilze und Kristalle
+   auf Höhlenböden mit eigenem Licht, Sand- und Lehmlinsen mit vollem Rand und heller Oberkante,
+   Explosionen werfen einen Lichtring aufs Gelände.
+3. ◐ Burg- und Bau-Fenster: Sprung-Chips zu den Abschnitten statt Reitern, breitere Kacheln.
+   Vergleich vorher/nachher bei Werkzeugen: entfällt (Werkzeuge haben keine Stufen, nur „gekauft“).
+4. ◐ Bewegung: Tragen (Sack ab 3 Dingen), Ankündigung bei Monstern („!“ vor dem Zuschlagen, nur
+   Bild; auf Mehrspieler-Gästen nicht sichtbar, weil Tiere nur beim Host laufen). Wende-Frame: offen.
+
+**Mit Fachleuten (offen):**
+- Pixel-Artist: Gebäudesatz in 2×, Animationsbögen (Wende, Start, Stopp), Lobby-Wühler im Spielraster.
 - UX-Test mit Erstspielern (Burg-Fenster, Leistbarkeit, Tutorial).
+
+## 7. Neubewertung (v1.53.0)
+
+Belege: neue Bilder aus dem echten Spiel. Burg arm und reich, Bau-Fenster, Klick auf gesperrte
+Kachel, tiefe Höhle mit Leuchten, Monster-Warnung, Siegkarte, Startbildschirm, Posen in
+Nahaufnahme und Store-Bilder (`npm run store-shots`, Tag und Nacht).
+
+| # | Kategorie | vorher | nachher | Beleg |
+|---|---|---|---|---|
+| 1 | Pixelraster | 8 | 8 | unverändert |
+| 2 | Figuren | 7 | 7 | Helferlicht größer; im Bild kaum Unterschied |
+| 3 | Material und Wert | 7 | 7 | Linsenrand; auf den neuen Bildern keine Linse nah genug, um es zu belegen |
+| 4 | Tiefe und Licht | 6 | **7** | tiefe Höhle: violetter, dunkler Grund, Gold und Kristalle leuchten, Höhlenpilz mit Lichtkreis |
+| 5 | Welt und Siedlung | 5 | **6** | Fass und Laterne an Burg und Mühle; noch eine Reihe, keine Ebenen |
+| 6 | Animation | 6 | **7** | Sprung- und Fallpose, Sack, Lande- und Bremsstaub (Nahaufnahmen) |
+| 7 | Effekte | 6 | 6 | Explosionsring nicht im Bild festgehalten |
+| 8 | Zustand und Wirtschaft | 5 | **8** | Schloss, Haken, Balken, „Fehlt: 20 Taler“, Ruck bei unmöglichem Klick |
+| 9 | HUD | 6 | **7** | Tipp unter dem Auftrag, Legende größer |
+| 10 | Menüs und Knöpfe | 6 | **7** | Sprung-Chips, breitere Fenster, „Neue Runde“ fokussiert |
+| 11 | Stimmigkeit | 7 | 7 | unverändert |
+| 12 | Technik | 7 | **8** | Startbildschirm hell, kein Grauschleier |
+
+**Gesamt (gewichtet, ohne Kat. 6):** Flintworks **7,0 / 10** (vorher 6,3), Maßstab 8,6 / 10.
+Mit Animation: 7,0. Größte Lücken jetzt: Welt und Siedlung (−3), Tiefe und Licht (−3), Effekte (−4).
+Schwächster kritischer Zustand ist nicht mehr das Burg-Fenster (jetzt 7), sondern die
+**Oberfläche zu Beginn** (5): leer, ohne Ziel, solange es keine Gebäude gibt.
+

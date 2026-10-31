@@ -1,0 +1,174 @@
+/* Panels as game UI (docs/UI_STYLE.md): tiles show their state at a glance – affordable, too dear,
+   locked, done, running – with the reason as a chip; wider panels on large screens; one lane for
+   tips and tasks at the top. */
+
+/* wider on large screens, so the tiles are not a wall of small text */
+#panel {
+  width: min(640px, calc(100% - 32px));
+}
+.opt .cost {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+.opt small {
+  /* the explanation stays short: two lines at most */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+/* the reason, as a chip under the price */
+.opt .why {
+  grid-column: 2;
+  justify-self: start;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  line-height: 1.3;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #ffd1b8;
+}
+.opt.st-locked .why {
+  color: #d8cfc0;
+}
+
+/* too dear: the icon fades, the price is ember */
+.opt.st-poor canvas,
+.opt.st-poor img {
+  opacity: 0.55;
+}
+.opt.st-poor .cost {
+  color: var(--ember);
+}
+/* not possible yet: grey with a small lock on the icon */
+.opt.st-locked {
+  background: linear-gradient(#2a241f, #1e1915);
+  color: #b8ad9c;
+}
+.opt.st-locked canvas,
+.opt.st-locked img {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+.opt.st-locked .cost {
+  color: #8f8678;
+}
+.opt.st-locked::before,
+.opt.st-done::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 14px;
+  height: 16px;
+  z-index: 1;
+  image-rendering: pixelated;
+  background: no-repeat center / 14px 16px;
+}
+.opt.st-locked::before {
+  /* a pixel padlock */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 8' shape-rendering='crispEdges'%3E%3Cpath fill='%2324160c' d='M1 0h5v1h1v3h-1v-3h-5v3h-1v-3h1z M0 3h7v5h-7z'/%3E%3Cpath fill='%23cfc6b8' d='M2 1h3v2h-1v-1h-1v1h-1z M1 4h5v3h-5z'/%3E%3Cpath fill='%2324160c' d='M3 5h1v1h-1z'/%3E%3C/svg%3E");
+}
+/* (the badges sit over the icon's corner) */
+.opt {
+  position: relative;
+}
+/* done: a green tick, the tile rests */
+.opt.st-done {
+  border-color: #2f5a24;
+}
+.opt.st-done::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 8' shape-rendering='crispEdges'%3E%3Cpath fill='%2324160c' d='M5 1h2v2h-1v1h-1v1h-1v1h-1v1h-1v-1h-1v-1h-1v-2h2v1h1v-1h1v-1h1z'/%3E%3Cpath fill='%237cbf52' d='M5 2h1v1h-1v1h-1v1h-1v1h-1v-1h-1v-1h1v1h1v-1h1v-1h1z'/%3E%3C/svg%3E");
+}
+.opt.st-done .cost {
+  color: var(--leaf);
+}
+.opt[disabled].st-done,
+.opt[disabled].st-busy {
+  opacity: 1;
+}
+/* running: a progress bar in the tile */
+.opt .pbar {
+  grid-column: 2;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.opt .pbar i {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}
+/* a tap on something that is not possible: a short shake (and a thud, ui.js) */
+@media (prefers-reduced-motion: no-preference) {
+  .opt.nope {
+    animation: opt-nope 0.24s steps(6);
+  }
+}
+@keyframes opt-nope {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+.opt.nope {
+  border-color: var(--ember);
+}
+
+/* jump chips at the top of long panels (castle, build) */
+.pchips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  position: sticky;
+  top: -10px;
+  z-index: 2;
+  margin: -2px 0 0;
+  padding: 4px 0;
+  background: linear-gradient(rgba(40, 26, 16, 0.98), rgba(40, 26, 16, 0.9));
+}
+.pchips button {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  min-height: 30px;
+  padding: 4px 9px;
+  color: var(--ink);
+  background: linear-gradient(#5a3a22, #3c2616);
+  border: 2px solid #24160c;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.pchips button:hover,
+.pchips button:focus-visible {
+  border-color: var(--gold);
+}
+.pchips button:active {
+  transform: translateY(1px);
+}
+
+/* the map legend readable */
+.legend {
+  font-size: 11px;
+}
+
+/* one lane at the top: with a panel open the task chip steps aside, and a tip goes under it */
+#game:has(> #panel:not([hidden])) #misTxt {
+  visibility: hidden;
+}
+#game:has(#misTxt:not([hidden])) #toast {
+  top: 78px;
+}
+#game:has(> #panel:not([hidden])) #toast {
+  top: auto;
+}

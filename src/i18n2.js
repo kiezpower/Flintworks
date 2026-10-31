@@ -118,5 +118,11 @@ const EN2 = {
   'Große Texte: an': 'Large text: on',
   'Große Texte: aus': 'Large text: off',
   'Größere Schrift für Tipps und Aufgaben': 'Bigger letters for tips and tasks',
+  // panels as game UI (ui.js, research.js, tools.js), end cards (main.js)
+  'Fehlt: {list}': 'Missing: {list}',
+  'Fehlt: 1 Brett oder 1 Holz': 'Missing: 1 plank or 1 wood',
+  'Crew voll – erst die Burg ausbauen': 'Crew full – upgrade the castle first',
+  'Neue Runde': 'New round',
+  Nochmal: 'Try again',
 };
 export { EN2 };

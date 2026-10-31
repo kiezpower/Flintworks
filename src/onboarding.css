@@ -12,7 +12,7 @@
   gap: clamp(12px, 5vh, 36px);
   padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
     max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-  background: linear-gradient(rgba(18, 12, 8, 0.15), rgba(18, 12, 8, 0.55));
+  background: linear-gradient(rgba(18, 12, 8, 0), rgba(18, 12, 8, 0.35));
   cursor: pointer;
   transition: opacity 0.25s steps(4);
 }

@@ -74,6 +74,8 @@ function setup() {
   for (let k = items.length - 1; k >= 0; k--) if (items[k].x < TUT.end + 20) items.splice(k, 1);
   for (let k = animals.length - 1; k >= 0; k--) if (animals[k].x < TUT.end + 60) animals.splice(k, 1);
   G.gas = [];
+  // bright day for the first look (the clock stands still in the tutorial, weather.js)
+  G.dayT = 0.3;
   // you start alone with empty pockets: only what is taught is in play
   crew.length = 1;
   crew[0].inv = [];
