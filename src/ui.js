@@ -17,7 +17,7 @@ import { shownMoney } from './reward.js';
 import { tr } from './i18n.js';
 import { FETCH, focusBadge, openCrew, sendHelperFor } from './crewui.js';
 import { register, send } from './commands.js';
-import { buildStairs, hookTarget } from './climb.js';
+import { buildStairs } from './climb.js';
 import { BUILDABLE, VK, cannotBuild } from './vehicles/index.js';
 import { vehicleIcon, vehicleOf } from './vehicles/core.js';
 import { canShoot } from './combat.js';
@@ -120,9 +120,8 @@ function hud() {
   // (also with the bow and arrows, and in a catapult or airship)
   const thr = c && !c.dead && (c.ride != null ? THROWERS[vehicleOf(c)?.kind] : c.inv[c.isel] || canShoot(c));
   btnsEl.classList.toggle('noitem', !thr);
-  // the grappling hook's button once the team has one; dimmed while no ledge is in reach
+  // the grappling hook's button once the team has one (always ready: it is thrown anyway)
   btnsEl.classList.toggle('hookon', hasTool('hook'));
-  btnsEl.classList.toggle('nohook', !(c && hookTarget(c)));
   const ck = crew.map(o => `${o === c}${o.dead}${Math.round(o.energy / 5)}${o.energy < 30}${o.focus}`).join();
   if (ck !== G.crewKey) {
     G.crewKey = ck;

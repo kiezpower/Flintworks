@@ -98,8 +98,8 @@ const LESSONS = [
     name: 'Enterhaken',
     when: () => hasTool('hook'),
     tip: {
-      touch: 'Enterhaken: Der Haken-Knopf schießt ihn an die nächste Kante über dir',
-      keys: 'Enterhaken: G schießt ihn an die nächste Kante über dir',
+      touch: 'Enterhaken: Halte den Stick in eine Richtung und tippe auf Haken – er zieht dich hin',
+      keys: 'Enterhaken: Halte eine Pfeiltaste und drücke G – der Haken zieht dich hin',
     },
   },
   {

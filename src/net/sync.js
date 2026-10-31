@@ -7,7 +7,6 @@ import { ITEM, treeSprite } from '../sprites.js';
 import { mode } from '../modes.js';
 import { CAPS, G, NAMES, animals, builds, crew, items, lorries, trees, vehicles } from '../state.js';
 import { VK } from '../vehicles/core.js';
-import { HOOK_FLY } from '../climb.js';
 import { syncTeams, useMine, useTeam } from '../teams.js';
 
 const r4 = v => Math.round(v * 4) / 4;
@@ -40,7 +39,7 @@ const KINDS = {
       e: Math.round(c.energy),
       ch: c.chop ? 1 : 0,
       br: c.bridge ? 1 : 0,
-      hk: c.hook ? [r2(c.hook.ax), r2(c.hook.ay), Math.min(c.hook.t, HOOK_FLY)] : 0,
+      hk: c.hook && c.hook.hx != null ? [r2(c.hook.hx), r2(c.hook.hy)] : 0,
       hm: c.hammer ? 1 : 0,
       fo: c.focus,
       bu: c.burn > 0 ? 1 : 0,
@@ -101,7 +100,7 @@ const KINDS = {
         ride: d.rd,
         laying: !!d.ly,
         // (the hook only to draw it: it moves the Wühler on the host)
-        hookV: d.hk ? { ax: d.hk[0], ay: d.hk[1], t: d.hk[2] } : null,
+        hookV: d.hk ? { hx: d.hk[0], hy: d.hk[1] } : null,
         swing: d.sw || c.swing || 0,
         burn: d.bu ? 30 : 0,
         netBusy: !!(d.ch || d.br || d.tm || d.dead || d.rd != null),

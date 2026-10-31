@@ -54,7 +54,7 @@ addEventListener('keydown', e => {
   if (e.code === 'ArrowUp' || e.code === 'KeyW') edge.jumpUp = true;
   if (e.code === 'KeyC' || e.code === 'KeyE' || e.code === 'KeyK') edge.throw = true;
   if (e.code === 'KeyF') edge.act = true;
-  if (e.code === 'KeyG') send('hook');
+  if (e.code === 'KeyG') send('hook', aim());
   if (e.code === 'KeyB') openBuild();
   if (e.code === 'KeyM') toggleMap();
   if (e.code === 'Tab') {
@@ -149,7 +149,7 @@ for (const b of document.querySelectorAll('.pad')) {
     t0 = performance.now();
     // the grappling hook: one shot per tap, run on the host like stairs and bridges (climb.js)
     if (name === 'hook') {
-      send('hook');
+      send('hook', aim());
       b.classList.add('on');
     } else if (name === 'dig') {
       if (G.digLatch) {
@@ -194,6 +194,8 @@ for (const b of document.querySelectorAll('.pad')) {
   b.addEventListener('lostpointercapture', up);
   b.addEventListener('contextmenu', e => e.preventDefault());
 }
+// where the grappling hook is thrown: the stick or the arrow keys held right now
+const aim = () => ({ ax: keys.r - keys.l || joy.x, ay: keys.d - keys.u || joy.y });
 function readInput() {
   const kx = keys.r - keys.l,
     ky = keys.d - keys.u;

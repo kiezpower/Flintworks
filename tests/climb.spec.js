@@ -114,29 +114,29 @@ test('in a rock pit without wood the action takes the Wühler home', async ({ pa
   expect(errors).toEqual([]);
 });
 
-// the hook's button: shown once bought (#btns.hookon), dimmed without a ledge in reach (nohook)
+// the hook's button: shown once bought (#btns.hookon), and then always ready
 const hookBtn = page =>
   page.evaluate(() => {
     const w = window.__ww,
       b = document.getElementById('btns');
     w.hud();
-    return { on: b.classList.contains('hookon'), dim: b.classList.contains('nohook') };
+    return b.classList.contains('hookon');
   });
-// fire the hook like its button does, then let it fly and pull
-const hook = page =>
-  page.evaluate(() => {
+// throw the hook like its button does (aim: the stick's direction, none: auto), let it fly and pull
+const hook = (page, aim = {}) =>
+  page.evaluate(aim => {
     const w = window.__ww,
       c = w.crew[0];
-    w.send('hook');
-    w.step(5);
+    w.send('hook', aim);
+    w.step(3);
     const flying = !!c.hook;
     w.step(80);
-    return { flying, done: !c.hook, feet: c.y + 10 };
-  });
+    return { flying, done: !c.hook, x: c.x, feet: c.y + 10 };
+  }, aim);
 
 test('the grappling hook is bought at the base, gets its own button and pulls onto the ledge', async ({ page }) => {
   const errors = await field(page);
-  expect((await hookBtn(page)).on).toBe(false);
+  expect(await hookBtn(page)).toBe(false);
   // bought in the base panel like every tool
   await page.evaluate(() => {
     const w = window.__ww;
@@ -146,9 +146,10 @@ test('the grappling hook is bought at the base, gets its own button and pulls on
   });
   expect(await page.evaluate(() => [!!window.__ww.G.tools.hook, window.__ww.money])).toEqual([true, 70]);
   const rim = await page.evaluate(PIT, ['ROCK', 480]);
-  expect(await hookBtn(page)).toEqual({ on: true, dim: false });
+  expect(await hookBtn(page)).toBe(true);
   // the action button keeps to stairs and home: the hook has its own
   expect(await label(page)).toBe('Heim');
+  // without a direction it goes for the ledge and pulls up over it
   const r = await hook(page);
   expect(r.flying).toBe(true);
   expect(r.done).toBe(true);
@@ -156,39 +157,57 @@ test('the grappling hook is bought at the base, gets its own button and pulls on
   expect(errors).toEqual([]);
 });
 
-test('the hook also takes a low ledge, and says so when there is none in reach', async ({ page }) => {
+test('the hook is thrown wherever you aim: it pulls you to what it hits, or comes back', async ({ page }) => {
   const errors = await field(page);
   await page.evaluate(() => (window.__ww.G.tools = { hook: true }));
-  // open ground with a rock step of 12 px a little to the right
-  const top = await page.evaluate(() => {
+  // rock ground with a step of 12 px from x 480, a shelf in the air over the step (540–570,
+  // 4 px thick, 34 px over the hand) and a wall from x 640; air up to 150 px above
+  const gy = await page.evaluate(() => {
     const w = window.__ww,
-      { mat, W, AIR, ROCK, paint, surf } = w.world,
-      c = w.crew[0],
-      // (the field stays inside the world even where the surface is high)
-      gy = Math.max(110, surf[400] - 20);
-    // (wider than the hook reaches, so the world's own ground beyond plays no part)
-    for (let x = 360; x < 720; x++)
-      for (let y = gy - 90; y < gy + 20; y++) {
-        mat[y * W + x] = y >= gy || (x >= 480 && y >= gy - 12) ? ROCK : AIR;
+      { mat, W, H, AIR, ROCK, paint, surf } = w.world,
+      gy = Math.min(H - 30, Math.max(170, surf[400] - 20));
+    for (let x = 360; x < 760; x++)
+      for (let y = gy - 150; y < gy + 20; y++) {
+        const rock =
+          y >= gy || (x >= 480 && y >= gy - 12) || (x >= 540 && x < 570 && y >= gy - 56 && y < gy - 52) || x >= 640;
+        mat[y * W + x] = rock ? ROCK : AIR;
         paint(y * W + x);
       }
-    Object.assign(c, { x: 450, y: gy - 10, vx: 0, vy: 0, face: 1, inv: [], hook: null });
-    w.step(5);
-    return gy - 12;
+    return gy;
   });
-  expect((await hookBtn(page)).dim).toBe(false);
-  const r = await hook(page);
+  const put = x =>
+    page.evaluate(
+      ([x, gy]) => {
+        const w = window.__ww,
+          c = w.crew[0];
+        Object.assign(c, { x, y: (x >= 480 ? gy - 12 : gy) - 10, vx: 0, vy: 0, face: 1, inv: [], hook: null });
+        w.step(5);
+      },
+      [x, gy],
+    );
+  // no direction, by the low step: the hook goes for its edge and pulls up onto it
+  await put(450);
+  let r = await hook(page);
   expect(r.done).toBe(true);
-  expect(r.feet).toBeLessThanOrEqual(top + 1);
-  // up there nothing higher is in reach: the button is dimmed and a tap says why
-  await page.evaluate(() => {
-    const c = window.__ww.crew[0];
-    c.x = 560;
-    window.__ww.step(5);
-  });
-  expect((await hookBtn(page)).dim).toBe(true);
-  await page.evaluate(() => window.__ww.send('hook'));
-  await expect(page.locator('#toast')).toHaveText('Keine Kante in Reichweite');
+  expect(r.feet).toBeLessThanOrEqual(gy - 12 + 1);
+  // straight up into the open: the rope comes back, nothing happens
+  await put(600);
+  r = await hook(page, { ax: 0, ay: -1 });
+  expect(r.flying).toBe(true);
+  expect(r.done).toBe(true);
+  expect(Math.abs(r.x - 600)).toBeLessThan(2);
+  expect(Math.abs(r.feet - (gy - 12))).toBeLessThan(2);
+  // up under the shelf: pulled up and standing on top of it
+  await put(552);
+  r = await hook(page, { ax: 0, ay: -1 });
+  expect(r.done).toBe(true);
+  expect(r.feet).toBeLessThanOrEqual(gy - 56 + 1);
+  // sideways at the wall: pulled across to it
+  await put(600);
+  r = await hook(page, { ax: 1, ay: 0 });
+  expect(r.flying).toBe(true);
+  expect(r.done).toBe(true);
+  expect(r.x).toBeGreaterThan(626);
   expect(errors).toEqual([]);
 });
 

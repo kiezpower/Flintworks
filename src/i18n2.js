@@ -74,14 +74,16 @@ const EN2 = {
   Heim: 'Home',
   Haken: 'Hook',
   Enterhaken: 'Grappling hook',
-  'Eigener Knopf (G): schießt den Haken an eine Kante über dir und zieht dich hoch':
-    'Its own button (G): shoots the hook at a ledge above you and pulls you up',
-  'Enterhaken: Der Haken-Knopf schießt ihn an die nächste Kante über dir':
-    'Grappling hook: the Hook button shoots it at the nearest ledge above you',
-  'Enterhaken: G schießt ihn an die nächste Kante über dir': 'Grappling hook: G shoots it at the nearest ledge above you',
-  'Keine Kante in Reichweite': 'No ledge in reach',
-  'nach dem Kauf des Enterhakens: an die nächste Kante über dir': 'once the grappling hook is bought: to the nearest ledge above',
-  'Enterhaken (nach dem Kauf)': 'grappling hook (once bought)',
+  'Eigener Knopf (G): wirf den Haken, wohin du zielst – er zieht dich hin':
+    'Its own button (G): throw the hook wherever you aim – it pulls you there',
+  'Enterhaken: Halte den Stick in eine Richtung und tippe auf Haken – er zieht dich hin':
+    'Grappling hook: hold the stick in a direction and tap Hook – it pulls you there',
+  'Enterhaken: Halte eine Pfeiltaste und drücke G – der Haken zieht dich hin':
+    'Grappling hook: hold an arrow key and press G – the hook pulls you there',
+  'nach dem Kauf des Enterhakens: wirft ihn in Stick-Richtung, sonst an die nächste Kante':
+    'once the grappling hook is bought: throws it the way the stick points, else at the nearest ledge',
+  'Enterhaken werfen, mit Pfeiltaste in diese Richtung (nach dem Kauf)':
+    'throw the grappling hook, with an arrow key in that direction (once bought)',
   'Steckst du fest? Aktion hilft dir hoch – oder Menü → Zurück zur Basis':
     'Stuck? Action helps you up – or Menu → Back to base',
 };
