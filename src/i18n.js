@@ -1,3 +1,4 @@
+import { pseudo } from './pseudo.js';
 // Translations. The German text is the key; English entries replace it.
 // Placeholders: {name} is filled from the params object.
 import { EN2 } from './i18n2.js';
@@ -724,7 +725,6 @@ const EN = {
   'Geh zu einem Baum und fälle ihn mit Aktion': 'Go to a tree and chop it with Action',
   'Sammle 2 Holz ein: einfach darüberlaufen': 'Collect 2 wood: just walk over it',
   'Tippe auf Bauen und wähle die Hütte': 'Tap Build and choose the hut',
-  'Bleib in der Baustelle, bis die Hütte steht': 'Stay on the site until the hut is finished',
   'Grab zur Goldader und sammle Gold': 'Dig to the gold vein and collect gold',
   'Lauf mit dem Gold in die Basis – es wird sofort verkauft':
     'Walk into the base with the gold – it is sold right away',
@@ -788,58 +788,12 @@ const EN = {
   'Belohnung: Grubenhelm und {n} Taler Startgeld für deine erste Runde':
     'Reward: miner’s helmet and {n} coins start money for your first round',
   'Startgeld aus dem Tutorial: +{n} Taler': 'Start money from the tutorial: +{n} coins',
-  'Das ist die ganze Welt. Tippe sie an zum Schließen': 'That is the whole world. Tap it to close',
-  'Das ist die ganze Welt. M schließt sie': 'That is the whole world. M closes it',
   Sprengen: 'Blast',
   Verkaufen: 'Sell',
-  'Lauf nach rechts zu den Bäumen': 'Walk right to the trees',
-  'Lauf nach rechts zu den Bäumen: Pfeil → oder D': 'Walk right to the trees: arrow → or D',
-  'Daumen links auf den Bildschirm legen und nach rechts schieben':
-    'Put your thumb on the left of the screen and slide it right',
-  'Halte Pfeil → oder D gedrückt': 'Hold arrow → or D',
-  'Stell dich an den Baum und tippe auf Aktion': 'Stand by the tree and tap Action',
-  'Stell dich an den Baum und drück F': 'Stand by the tree and press F',
-  'Ganz nah an den Stamm, dann Aktion': 'Right up to the trunk, then Action',
-  'Ganz nah an den Stamm, dann F': 'Right up to the trunk, then F',
-  'Gut gemacht! Holz brauchst du zum Bauen': 'Well done! You need wood for building',
-  'Lauf über das Holz und heb 2 Stück auf': 'Walk over the wood and pick up 2 pieces',
-  'Was du trägst, siehst du oben rechts': 'What you carry is shown at the top right',
-  'Ein Felsen! Lauf hin und wirf den Feuerstein: Wurf': 'A rock! Walk up to it and throw the flint: Throw',
-  'Ein Felsen! Lauf hin und wirf den Feuerstein: E': 'A rock! Walk up to it and throw the flint: E',
-  'Hier ist noch ein Feuerstein': 'Here is another flint',
-  'Lauf bis kurz vor den Felsen, dann werfen': 'Walk up close to the rock, then throw',
-  'Bumm! Feuersteine sprengen Fels': 'Boom! Flints blast rock',
-  'Grab dich zum Gold: Pfeil ↓, schräg mit ↓ und →': 'Dig down to the gold: arrow ↓, slanted with ↓ and →',
-  'Grab dich zum Gold: Shift halten, Pfeile lenken': 'Dig down to the gold: hold Shift, arrows steer',
-  'Grab dich zum Gold: Stick nach unten oder schräg drücken': 'Dig down to the gold: push the stick down or slanted',
-  'Grab dich zum Gold: Graben halten, der Stick lenkt': 'Dig down to the gold: hold Dig, the stick steers',
-  'Stell dich über das Gold und drück den Stick nach unten': 'Stand above the gold and push the stick down',
-  'Stell dich über das Gold und drück ↓': 'Stand above the gold and press ↓',
-  'So gräbst du dich durch die Erde': 'That is how you dig through the earth',
-  'Grab das Gold aus – Klumpen hebst du von selbst auf': 'Dig out the gold – you pick up nuggets by yourself',
-  'Gold! Das ist bares Geld wert': 'Gold! That is worth hard cash',
-  'Bring das Gold zur Burg – dort wird es verkauft': 'Bring the gold to the castle – it is sold there',
-  'Verkauft! In der Burg kannst du auch einkaufen': 'Sold! You can also buy things at the castle',
-  'Wähle die Hütte': 'Choose the hut',
-  'Stell dich neben die Burg und tippe auf Bauen': 'Stand next to the castle and tap Build',
-  'Stell dich neben die Burg und drück B': 'Stand next to the castle and press B',
-  'Neben der Burg ist ein ebener Bauplatz – dort Bauen → Hütte':
-    'Next to the castle is a flat plot – there Build → Hut',
-  'Fertig! In der Hütte erholt sich deine Crew': 'Done! Your crew recovers in the hut',
-  'Ein Helfer ist da!': 'A helper has arrived!',
-  'Wähle eine Aufgabe, zum Beispiel Holz': 'Choose a job, for example Wood',
-  'Tippe oben links auf deinen Helfer und gib ihm eine Aufgabe': 'Tap your helper at the top left and give them a job',
-  'Klick oben links auf deinen Helfer und gib ihm eine Aufgabe':
-    'Click your helper at the top left and give them a job',
-  'Helfer arbeiten von selbst – mit einer Aufgabe gezielter':
-    'Helpers work by themselves – with a job more purposefully',
-  'Tippe oben rechts auf die kleine Karte': 'Tap the small map at the top right',
-  'Drück M oder klick oben rechts auf die Karte': 'Press M or click the map at the top right',
   'Erste Schicht geschafft!': 'First shift done!',
   'Graben · Sprengen · Verkaufen · Bauen · Crew': 'Dig · Blast · Sell · Build · Crew',
   'Tutorial übersprungen': 'Tutorial skipped',
   'Du findest es jederzeit in den Optionen': 'You can find it in the options at any time',
-  'Erste echte Runde': 'First real round',
   'Die erste Schicht': 'The first shift',
   // multiplayer: Versus (castles, hill, clock), Koop team tasks, ranking, new maps
   'Eure Burg wird angegriffen!': 'Your castle is under attack!',
@@ -984,8 +938,12 @@ try {
   lang = (navigator.language || 'de').slice(0, 2);
 }
 if (lang !== 'de') lang = 'en';
+// (development only: ?lang=pseudo checks layouts with longer, accented texts – pseudo.js)
+const PSEUDO = import.meta.env?.DEV && new URLSearchParams(location.search).get('lang') === 'pseudo';
 
-const tr = (key, params = {}) => (lang === 'en' ? (EN[key] ?? key) : key).replace(/\{(\w+)\}/g, (_, k) => params[k]);
+// (a missing placeholder value shows as nothing, never as "undefined")
+const tr = (key, params = {}) =>
+  (PSEUDO ? pseudo(EN[key] ?? key) : lang === 'en' ? (EN[key] ?? key) : key).replace(/\{(\w+)\}/g, (_, k) => params[k] ?? '');
 
 // Translate the fixed labels in index.html (data-i18n, data-i18n-title, data-i18n-aria)
 function applyStatic() {

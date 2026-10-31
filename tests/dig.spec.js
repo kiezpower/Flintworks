@@ -12,7 +12,9 @@ async function field(page) {
   });
   await page.reload();
   await page.waitForFunction(() => window.__ww);
-  await page.click('#lbPlay');
+  await page.click('#veilGo'); // a fresh player starts in the tutorial world
+  // (only its quiet world: the tutorial's own help, which may carry the Wühler home, is off)
+  await page.evaluate(() => window.__ww.endTutorial());
   await page.evaluate(() => {
     const w = window.__ww;
     w.crew.splice(1);

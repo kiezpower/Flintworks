@@ -67,6 +67,7 @@ if (!P.name) {
   saveProfile();
 }
 delete P.crystals;
+delete P.tutStats; // (tutorial numbers are analytics events now, analytics.js)
 delete P.chestDay;
 delete P.road;
 function saveProfile() {

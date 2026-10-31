@@ -24,8 +24,10 @@ async function run(name, viewport, query = '') {
   await page.addInitScript(() => localStorage.setItem('flintworks-profile', JSON.stringify({ installAsked: 'done' })));
   await page.goto(`${base}?seed=7${query}`);
   await page.waitForTimeout(1200);
-  await page.screenshot({ path: `${OUT}${name}-lobby.png` });
-  await page.click('#lbPlay');
+  // a new player starts at the start screen over the tutorial world (no lobby)
+  await page.screenshot({ path: `${OUT}${name}-start.png` });
+  await page.click('#veilGo');
+  await page.evaluate(() => window.__ww.endTutorial()); // the world only, without the tutorial's help
   await page.waitForTimeout(2000);
   await page.screenshot({ path: `${OUT}${name}-surface.png` });
   // night

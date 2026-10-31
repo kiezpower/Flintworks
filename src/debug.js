@@ -30,8 +30,10 @@ import * as versus from './versus.js';
 import * as bots from './bots.js';
 import * as climb from './climb.js';
 import { context } from './clonk.js';
-import { TUT, ground, rockOpen } from './tutlevel.js';
+import { TUT, ground } from './tutlevel.js';
+import * as analytics from './analytics.js';
 import { STEPS } from './tutsteps.js';
+import { endTutorial } from './tutorial.js';
 
 window.__ww = {
   climb,
@@ -84,7 +86,9 @@ window.__ww = {
   get tut() {
     return G.tut;
   },
-  tutLevel: { TUT, ground, rockOpen, steps: () => STEPS.map(s => s.id) },
+  tutLevel: { TUT, ground, steps: () => STEPS.map(s => s.id) },
+  analytics,
+  endTutorial: () => endTutorial(),
   matAt,
   get state() {
     return G.state;
@@ -129,3 +133,22 @@ window.__ww = {
   sfx,
   parts: () => parts,
 };
+
+// ?ev: the analytics events of this session as they come, in a corner (development only)
+if (new URLSearchParams(location.search).has('ev')) {
+  const box = document.createElement('pre');
+  box.id = 'evLog';
+  box.style.cssText =
+    'position:fixed;left:4px;bottom:4px;z-index:99;max-height:40vh;overflow:auto;margin:0;padding:4px 6px;' +
+    'font:10px/1.3 monospace;color:#9f9;background:rgba(0,0,0,.75);pointer-events:none;white-space:pre';
+  document.body.appendChild(box);
+  const show = () => {
+    box.textContent = analytics
+      .sessionEvents()
+      .slice(-14)
+      .map(({ e, seq, t, sid, v, plat, lang, ...f }) => `${seq} ${(t / 1000).toFixed(1)}s ${e} ${JSON.stringify(f)}`)
+      .join('\n');
+  };
+  G.onEvent = show;
+  show();
+}

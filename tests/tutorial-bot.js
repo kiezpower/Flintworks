@@ -42,33 +42,23 @@
       return w.tut ? ids[w.tut.i] : 'end';
     },
   };
+  // jumps when it stands in front of the bump (or anything else) and gets nowhere
+  const hop = c => {
+    if (Math.abs(c.vx) < 0.05 && ++bot.stuck % 12 === 11) w.edge.jump = true;
+  };
   const POLICY = {
-    walk: () => bot.go(L.TUT.trees[0]),
-    chop(c, k) {
-      const t = w.trees.find(t => !t.fall && t.x < L.TUT.end);
-      if (t && bot.go(t.x - 5) && k % 20 === 0 && !c.chop) w.edge.act = true;
+    walk: c => {
+      bot.go(L.TUT.gold.x);
+      hop(c);
     },
-    wood(c) {
-      const it = near(
-        c,
-        w.items.filter(i => i.t === 'wood'),
-      );
-      if (it) bot.go(it.x + 2);
-    },
-    blast(c, k) {
-      if (!bot.go(L.TUT.rock.x0 - 22)) return;
-      if (c.face < 0) w.keys.r = 1;
-      else if (k % 150 === 0) w.edge.throw = true;
-    },
-    dig: () => bot.go(L.TUT.gold.x) && (w.keys.d = 1),
-    gold(c) {
+    dig(c) {
       const it = near(
         c,
         w.items.filter(i => i.t === 'nug'),
       );
-      if (!it) return bot.go(L.TUT.gold.x) && (w.keys.d = 1);
-      bot.go(it.x + 1);
-      if (it.y > c.y + 8) w.keys.d = 1;
+      if (it) return bot.go(it.x + 1);
+      if (bot.go(L.TUT.gold.x)) w.keys.d = 1;
+      if (!w.G.autoDig && Math.abs(c.x + 3 - L.TUT.gold.x) <= 2) w.keys.dig = 1;
     },
     sell(c, k) {
       bot.go(90);
@@ -77,18 +67,6 @@
         w.keys.u = 1;
       }
     },
-    hut(c, k) {
-      if (w.builds.some(b => b.type === 'hut') || !bot.go(L.TUT.plot) || k % 60 !== 59) return;
-      press(document.getElementById('buildBtn'));
-      press(document.querySelector('[data-tut=b_hut]'));
-    },
-    crew(c, k) {
-      if (k % 60 !== 30) return;
-      w.hud();
-      press(document.querySelector('#crew .cbtn:not(.sel)'));
-      press(document.querySelector('[data-tut=f_wood]'));
-    },
-    map: (c, k) => (k === 10 || k === 40) && key('KeyM'),
   };
   window.bot = bot;
 })();
