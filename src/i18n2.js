@@ -74,12 +74,14 @@ const EN2 = {
   Heim: 'Home',
   Haken: 'Hook',
   Enterhaken: 'Grappling hook',
-  'Aktion schießt den Haken an eine Kante über dir und zieht dich hoch':
-    'Action shoots the hook at a ledge above you and pulls you up',
-  'Enterhaken: Unter einer Kante, die zu hoch zum Springen ist, schießt Aktion den Haken':
-    'Grappling hook: below a ledge too high to jump, Action shoots the hook',
-  'Enterhaken: Unter einer Kante, die zu hoch zum Springen ist, schießt F den Haken':
-    'Grappling hook: below a ledge too high to jump, F shoots the hook',
+  'Eigener Knopf (G): schießt den Haken an eine Kante über dir und zieht dich hoch':
+    'Its own button (G): shoots the hook at a ledge above you and pulls you up',
+  'Enterhaken: Der Haken-Knopf schießt ihn an die nächste Kante über dir':
+    'Grappling hook: the Hook button shoots it at the nearest ledge above you',
+  'Enterhaken: G schießt ihn an die nächste Kante über dir': 'Grappling hook: G shoots it at the nearest ledge above you',
+  'Keine Kante in Reichweite': 'No ledge in reach',
+  'nach dem Kauf des Enterhakens: an die nächste Kante über dir': 'once the grappling hook is bought: to the nearest ledge above',
+  'Enterhaken (nach dem Kauf)': 'grappling hook (once bought)',
   'Steckst du fest? Aktion hilft dir hoch – oder Menü → Zurück zur Basis':
     'Stuck? Action helps you up – or Menu → Back to base',
 };

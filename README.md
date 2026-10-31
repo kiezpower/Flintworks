@@ -29,7 +29,8 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 | Graben (gerade, ↓/↑ schräg) | „Graben“ halten oder kurz tippen | Shift / X |
 | Werfen | „Wurf“ | E |
 | Durch Holztreppe oder -brücke nach unten | Stick nach unten | ↓ / S |
-| Aktion (Fällen, Basis, Werk, Brücke, Haken, Treppe, Heim …) | Aktions-Knopf | F |
+| Aktion (Fällen, Basis, Werk, Brücke, Treppe, Heim …) | Aktions-Knopf | F |
+| Enterhaken (nach dem Kauf) | „Haken“ | G |
 | Bauen | „Bauen“ oben rechts | B |
 | Wühler wechseln | Porträt oben links oder Wühler antippen | Tab |
 | Karte | Kleine Karte oben rechts | M |
@@ -40,7 +41,7 @@ Zwei Steuerungen (Optionen → Steuerung): **Modern** (Standard) gräbt, wenn ma
 
 **Schwierigkeit** (Optionen → Spiel, gilt fürs freie Spiel; Kampagne und Tagesschacht haben ihre eigene): Gemütlich (keine Monster, kein Gas, keine Blitze und Meteore, ruhiges Tempo), Abenteuer (alle Gefahren) oder Hart (alle Gefahren, volles Tempo). Baugebiete (bauen nur im eigenen Gebiet, Flaggen erweitern es) gelten im Modus Siedler, für alle Spieler gleich.
 
-**Festgesessen?** Ist eine Kante zu hoch zum Springen, gräbt sich der Wühler in einer Grube oder Höhle von selbst schräg nach oben, sobald man gegen die Erdwand läuft (moderne Steuerung). Geht das nicht (Fels), zeigt der Aktions-Knopf den Ausweg: „Haken“ mit dem Enterhaken (in der Basis zu kaufen, 30 Taler, 2 Holz, 1 Stein: schießt den Haken an die Kante und zieht dich hoch), sonst „Treppe“ (1 Brett oder 1 Holz aus Gepäck oder Lager, bis zur Kante) und ohne Holz „Heim“ (zurück zur Basis).
+**Festgesessen?** Ist eine Kante zu hoch zum Springen, gräbt sich der Wühler in einer Grube oder Höhle von selbst schräg nach oben, sobald man gegen die Erdwand läuft (moderne Steuerung). Geht das nicht (Fels), zeigt der Aktions-Knopf den Ausweg: „Treppe“ (1 Brett oder 1 Holz aus Gepäck oder Lager, bis zur Kante) und ohne Holz „Heim“ (zurück zur Basis). Der **Enterhaken** (in der Basis zu kaufen, 30 Taler, 2 Holz, 1 Stein) bekommt einen eigenen Knopf „Haken“ (Taste G): Er schießt den Haken an die nächste Kante über dir, auch an eine niedrige und auch im Sprung, und das Seil zieht dich hoch. Ohne Kante in Reichweite ist der Knopf blass.
 
 Holztreppen und Holzbrücken tragen nur von oben: Man läuft von der Seite unter ihnen durch, springt von unten hindurch und steigt auf, wo sie die Füße erreichen. Lehmbrücken bleiben feste Wände.
 
@@ -97,7 +98,7 @@ src/
   gen.js              Weltgenerator
   entities.js         Wühler, Tiere, Gegenstände anlegen; Bewegung
   clonk.js            Wühler-Steuerung, Graben, Klettern, Aktionen
-  climb.js            Aus Gruben heraus: Kante erkennen, Rampe graben, Treppe, Heim, Enterhaken
+  climb.js            Aus Gruben heraus: Kante erkennen, Rampe graben, Treppe, Heim; Enterhaken-Knopf
   buildings.js        Gebäude, Produktion, Strom, Gebiet
   objects.js          Gegenstände, Bäume, Tiere, Explosionen, Partikel
   weather.js          Tag/Nacht, Regen, Gewitter, Meteore

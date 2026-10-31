@@ -98,8 +98,8 @@ const LESSONS = [
     name: 'Enterhaken',
     when: () => hasTool('hook'),
     tip: {
-      touch: 'Enterhaken: Unter einer Kante, die zu hoch zum Springen ist, schießt Aktion den Haken',
-      keys: 'Enterhaken: Unter einer Kante, die zu hoch zum Springen ist, schießt F den Haken',
+      touch: 'Enterhaken: Der Haken-Knopf schießt ihn an die nächste Kante über dir',
+      keys: 'Enterhaken: G schießt ihn an die nächste Kante über dir',
     },
   },
   {

@@ -1023,6 +1023,24 @@ button:focus-visible {
 #btns.noitem .pad.throw {
   visibility: hidden;
 }
+/* the grappling hook (once bought): top left by the action button, under the dig button in the
+   classic controls; dimmed while no ledge is in reach */
+.pad.hook {
+  display: none;
+  grid-column: 2;
+  grid-row: 4;
+  color: #c9d8e4;
+}
+#btns.hookon .pad.hook {
+  display: grid;
+}
+#btns.auto .pad.hook {
+  grid-column: 1;
+  grid-row: 1;
+}
+#btns.nohook .pad.hook {
+  opacity: 0.45;
+}
 .slot.more {
   font-family: var(--font-ui);
   font-size: 11px;
