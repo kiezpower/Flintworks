@@ -1,0 +1,189 @@
+/* First launch and the tutorial (veil.js, tutorial.js): the start screen over the world, the HUD
+   that shows only what is useful yet, and text that can be made larger. */
+
+/* ---- start screen: the world stays visible, one big button, the language in the corner ---- */
+#veil {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: clamp(12px, 5vh, 36px);
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+    max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: linear-gradient(rgba(18, 12, 8, 0.15), rgba(18, 12, 8, 0.55));
+  cursor: pointer;
+  transition: opacity 0.25s steps(4);
+}
+#veil.out {
+  opacity: 0;
+  pointer-events: none;
+}
+#veilLogo canvas {
+  display: block;
+  image-rendering: pixelated;
+  width: min(420px, 80vw);
+  height: auto;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.45));
+}
+#veilGo {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  min-width: min(300px, 80vw);
+  min-height: 72px;
+  padding: 12px 28px;
+  font-family: var(--font-display);
+  font-size: calc(26px * var(--ui-scale, 1));
+}
+#veilGo b {
+  font-weight: 700;
+}
+#veilGo small {
+  font-family: var(--font-ui);
+  font-size: calc(11px * var(--ui-scale, 1));
+  opacity: 0.8;
+}
+#veilGo:hover {
+  filter: brightness(1.08);
+}
+#veilGo:focus-visible {
+  outline: 3px solid #fff3c0;
+  outline-offset: 4px;
+}
+#veilLang {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top, 0px));
+  right: max(10px, env(safe-area-inset-right, 0px));
+  min-width: 96px;
+  min-height: 44px;
+  background: var(--panel);
+}
+#veilLang:hover,
+#veilLang:focus-visible {
+  border-color: var(--gold);
+}
+#veilLang:active {
+  transform: translateY(2px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  #veilGo {
+    animation: veil-breathe 1.6s steps(6) infinite alternate;
+  }
+}
+@keyframes veil-breathe {
+  from {
+    box-shadow:
+      0 4px 0 #9a6f10,
+      0 0 0 0 rgba(242, 194, 48, 0);
+  }
+  to {
+    box-shadow:
+      0 4px 0 #9a6f10,
+      0 0 0 10px rgba(242, 194, 48, 0.25);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #veil {
+    transition: none;
+  }
+}
+
+/* behind the start screen: the world only */
+#game.onb-veil #hud,
+#game.onb-veil #pads,
+#game.onb-veil #quest {
+  display: none !important;
+}
+
+/* ---- the HUD in the tutorial: only what the current beat needs ---- */
+#game.onb #crew,
+#game.onb #buildBtn,
+#game.onb #emoBtn,
+#game.onb #miniThumb,
+#game.onb #storeRow,
+#game.onb #misTxt,
+#game.onb .pad.throw,
+#game.onb .pad.hook,
+#game.onb:not(.onb-act) .pad.act,
+#game.onb:not(.onb-inv) #inv,
+#game.onb:not(.onb-money) .purse {
+  display: none !important;
+}
+/* what turns up gets a short pop, so the eye finds it */
+@media (prefers-reduced-motion: no-preference) {
+  #game.onb-inv #inv,
+  #game.onb-money .purse,
+  #game.onb-act .pad.act {
+    animation: onb-show 0.3s steps(4) both;
+  }
+}
+@keyframes onb-show {
+  from {
+    transform: scale(1.35);
+    filter: brightness(1.6);
+  }
+  to {
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ---- the task line: at most two short lines, the skip button big enough for a thumb ---- */
+#quest {
+  font-size: calc(14px * var(--ui-scale, 1));
+}
+/* with the crew bar and the tools hidden there is room for the task */
+#game.onb #quest {
+  max-width: min(440px, calc(100% - 150px));
+}
+#questText:empty {
+  display: none;
+}
+#questText {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+#quest #questSkip {
+  min-height: 36px;
+  min-width: 44px;
+  padding: 6px 8px;
+  font-size: calc(9px * var(--ui-scale, 1));
+  flex: none;
+}
+#quest #questSkip:active {
+  transform: translateY(1px);
+}
+@media (max-width: 700px) {
+  #quest {
+    font-size: calc(12px * var(--ui-scale, 1));
+  }
+}
+/* the closing card: the main button is the big one */
+.card .btnrow .go:focus-visible,
+.card .btnrow .ghost:focus-visible {
+  outline: 3px solid #fff3c0;
+  outline-offset: 3px;
+}
+.card .btnrow .go,
+.card .btnrow .ghost {
+  min-height: 44px;
+}
+
+/* ---- larger texts (Optionen → Anzeige): tips, task line, cards ---- */
+:root.bigtext {
+  --ui-scale: 1.25;
+}
+:root.bigtext #toast {
+  font-size: calc(14px * var(--ui-scale));
+}
+:root.bigtext .card {
+  font-size: calc(15px * var(--ui-scale));
+}
+:root.bigtext .card .hint {
+  font-size: calc(12px * var(--ui-scale));
+}

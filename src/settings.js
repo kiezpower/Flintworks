@@ -63,6 +63,13 @@ function settingsSections(p, reopen, { lobby = false } = {}) {
     },
   );
 
+  // larger tips, task line and cards (onboarding.css)
+  const view = sec(p, 'Anzeige');
+  item(view, P.bigtext ? 'Große Texte: an' : 'Große Texte: aus', 'Größere Schrift für Tipps und Aufgaben', () => {
+    P.bigtext = !P.bigtext;
+    applyText();
+  });
+
   const gfx = sec(p, 'Grafik');
   // (a slow device may have switched to fast graphics on its own during the round, main.js)
   const low = G.state === 'play' ? G.res === 1 : P.gfx === 'low';
@@ -79,6 +86,12 @@ function settingsSections(p, reopen, { lobby = false } = {}) {
   });
 }
 
+// the text size from the profile (also right at the start)
+function applyText() {
+  document.documentElement.classList.toggle('bigtext', !!P.bigtext);
+}
+applyText();
+
 // the controls from the profile into the running game (also at the start of every round)
 function applyControls() {
   G.autoDig = P.autodig !== false;
@@ -87,4 +100,4 @@ function applyControls() {
   if (!G.climbOn) for (const c of crew) c.climb = c.hangle = false;
 }
 
-export { DIFF, applyControls, diffOf, settingsSections };
+export { DIFF, applyControls, applyText, diffOf, settingsSections };

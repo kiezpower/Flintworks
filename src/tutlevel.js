@@ -1,58 +1,43 @@
-// The tutorial world: a fixed meadow with a short teaching path to the right of the castle.
-// From left to right: castle, a flat plot for the first hut, two trees, a rock too high to jump
-// over (blast it with a flint: what is left of it can be jumped) and a small gold vein just under
-// the ground behind it.
+// The tutorial world: a fixed meadow with a short teaching path to the right of the castle. It
+// teaches only the core loop – walk, jump, dig to gold, carry it home and sell it – the rest
+// comes as tips in the first real round (lessons.js).
 //
-//   [castle]  plot   🌲  🌲     ▲rock▲   gold
-//   ─────────────────────────── █████ ──────────
-//                               █████  ░░░
-import { blob, plantTree } from './gen.js';
+//   [castle]  start   ▲bump   ✦      flat … the normal world
+//   ──────────────────█████───────────────
+//                            ░gold░
+//
+// The bump is rock (no pick yet: it cannot be dug) and 7 px high: higher than a step (3 px),
+// much lower than a jump (17 px), so the only way on is a jump. The gold lies just under the
+// ground, close enough to dig to in a few strokes; a sparkle above it shows where.
+import { blob } from './gen.js';
 import { GAME_MODES } from './modes.js';
-import { G, animals, crew, items, trees } from './state.js';
+import { G, animals, crew, items, parts, trees } from './state.js';
 import { AIR, EARTH, GOLD, H, ROCK, W, bg, mat, paint, shade, surf } from './world.js';
 
 // x positions of the path; heights are relative to the castle's ground
 const TUT = {
-  plot: 130, // stand here to build the hut
-  trees: [160, 176],
-  // a thrown flint hits 9–22 px above the ground; narrow enough that one blast cuts right through
-  rock: { x0: 212, x1: 220, up: 26, down: 6 },
-  gold: { x: 238, dy: 12 },
-  end: 330, // the flat part ends here and blends into the normal world
+  bump: { x0: 140, x1: 146, up: 7 },
+  gold: { x: 178, dy: 8 },
+  end: 280, // the flat part ends here and blends into the normal world
 };
 const ground = () => surf[90];
-// the way through the rock is open when a Wühler fits through (11 px) above a stump it can jump
-const rockOpen = () => {
-  const R = TUT.rock,
-    gy = ground();
-  const clear = y => {
-    for (let x = R.x0; x < R.x1; x++) if (mat[y * W + x] === ROCK) return false;
-    return true;
-  };
-  for (let b = 0, run = 0; b < 26; b++) {
-    run = clear(gy - b) ? run + 1 : 0;
-    if (run >= 11) return true;
-    if (b - run > 15) return false;
-  }
-  return false;
-};
-// after the blast: loose splinters on the path would block digging, a cap left floating over
-// the gap goes too, and the hole shows sky again instead of a cave wall
-function tidyRock() {
-  const R = TUT.rock,
-    gy = ground();
-  for (let x = R.x0 - 40; x < TUT.end; x++) {
-    const needle = x >= R.x0 && x < R.x1;
-    let stump = needle;
-    for (let y = gy; y >= gy - R.up - 12; y--) {
-      const i = y * W + x;
-      if (mat[i] !== ROCK) stump = false;
-      if ((mat[i] === ROCK && !stump) || (mat[i] === AIR && bg[i])) set(x, y, AIR);
-    }
-  }
-}
-const rockTop = () => ({ x: (TUT.rock.x0 + TUT.rock.x1) / 2, y: ground() - TUT.rock.up });
 const goldSpot = () => ({ x: TUT.gold.x, y: ground() + TUT.gold.dy });
+const bumpTop = () => ({ x: (TUT.bump.x0 + TUT.bump.x1) / 2, y: ground() - TUT.bump.up });
+// is there gold left in the vein (looked at a few pixels, cheap)
+function goldLeft() {
+  const g = goldSpot();
+  for (let y = g.y - 4; y <= g.y + 4; y++)
+    for (let x = g.x - 8; x <= g.x + 8; x++) if (mat[y * W + x] === GOLD) return true;
+  return false;
+}
+// a twinkle on the ground above the vein, now and then, while the gold is still in there
+function sparkle() {
+  if (G.frame % 40 || !goldLeft()) return;
+  const g = goldSpot(),
+    x = g.x + Math.round((Math.random() - 0.5) * 10);
+  parts.push({ x, y: ground() - 1, vx: 0, vy: -0.15, l: 30, c: '#fff3c0', g: 0 });
+  parts.push({ x: x + 1, y: ground() - 2, vx: 0, vy: -0.1, l: 18, c: '#f2c230', g: 0 });
+}
 
 function set(x, y, m) {
   const i = y * W + x;
@@ -72,27 +57,26 @@ function setup() {
     }
     surf[x] = s;
   }
-  // the rock: rounded on top, a little into the ground
-  const R = TUT.rock,
-    mid = (R.x0 + R.x1 - 1) / 2,
-    half = (R.x1 - R.x0) / 2;
-  for (let y = gy - R.up; y < gy + R.down; y++)
-    for (let x = R.x0; x < R.x1; x++) {
-      if (gy - y > R.up - 3 && Math.abs(x - mid) > half - (gy - y - R.up + 4)) continue;
+  // the bump: a low block of rock with rounded top corners, a little into the ground
+  const B = TUT.bump;
+  for (let y = gy - B.up + 1; y <= gy + 3; y++)
+    for (let x = B.x0; x < B.x1; x++) {
+      if (y === gy - B.up + 1 && (x === B.x0 || x === B.x1 - 1)) continue;
       set(x, y, ROCK);
     }
-  blob(TUT.gold.x, gy + TUT.gold.dy, 8, 4, GOLD);
+  for (let x = B.x0; x < B.x1; x++) surf[x] = gy - B.up;
+  // a dense vein just under the ground
+  blob(TUT.gold.x, gy + TUT.gold.dy, 7, 3, GOLD);
   for (let y = gy; y < gy + TUT.gold.dy + 10; y++)
     for (let x = TUT.gold.x - 14; x < TUT.gold.x + 14; x++) paint(y * W + x);
-  // only the two trees of the path, nothing lying around, no animals nearby
+  // nothing on the path: no trees, no items, no animals nearby
   for (let k = trees.length - 1; k >= 0; k--) if (trees[k].x < TUT.end + 10) trees.splice(k, 1);
-  for (const x of TUT.trees) plantTree(x, 4);
   for (let k = items.length - 1; k >= 0; k--) if (items[k].x < TUT.end + 20) items.splice(k, 1);
   for (let k = animals.length - 1; k >= 0; k--) if (animals[k].x < TUT.end + 60) animals.splice(k, 1);
   G.gas = [];
-  // you start alone; a helper turns up later in the tutorial
+  // you start alone with empty pockets: only what is taught is in play
   crew.length = 1;
-  crew[0].inv = ['flint', 'rock'];
+  crew[0].inv = [];
   crew[0].isel = 0;
 }
 
@@ -111,4 +95,4 @@ GAME_MODES.tut = {
   setup,
 };
 
-export { TUT, goldSpot, ground, rockOpen, rockTop, tidyRock };
+export { TUT, bumpTop, goldLeft, goldSpot, ground, sparkle };

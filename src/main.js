@@ -22,6 +22,9 @@ import '@fontsource/pixelify-sans/500.css';
 import '@fontsource/pixelify-sans/700.css';
 import '@fontsource/silkscreen/400.css';
 import './style.css';
+import './onboarding.css';
+import { ev } from './analytics.js';
+import { closeVeil, openVeil, veilOpen } from './veil.js';
 import { updBuilds, updLorry } from './buildings.js';
 import { NOIN, context, doThrow, updClonk } from './clonk.js';
 import { addClonk, insideB, sel_ } from './entities.js';
@@ -38,7 +41,7 @@ import { updResearch } from './research.js';
 import { updEvents } from './events.js';
 import { ALL_IDS, nextLevel, recordCampaign, updScenario } from './scenarios.js';
 import { cam, render, resize } from './render.js';
-import { clearSave, hasSave, loadGame, saveGame } from './save.js';
+import { clearSave, hasSave, loadGame, saveGame, savedTut } from './save.js';
 import { simulate } from './sim.js';
 import { audioInit, sfx } from './sound.js';
 import { initUiArt } from './uiart.js';
@@ -82,13 +85,14 @@ const DESK_KEYS = [
   ['F', 'Aktion: Fällen, Basis, Lore, Brücke'],
   ['G', 'Enterhaken werfen, mit Pfeiltaste in diese Richtung (nach dem Kauf)'],
   ['B · Tab · M', 'Bauen · Wühler wechseln · Karte'],
+  ['Esc', 'Menü'],
 ];
 const keyList = (cls, rows) =>
   `<dl class="keys ${cls}">${rows.map(([k, v]) => `<dt>${tr(k)}</dt><dd>${tr(v)}</dd>`).join('')}</dl>`;
 const keysHtml = () => `${keyList('touchonly', TOUCH_KEYS)}${keyList('keyonly', DESK_KEYS)}`;
 // A run is in progress when a world is loaded or a save is waiting
 const hasRun = () => G.inRun || hasSave();
-function play(withTutorial, level = null) {
+function play(withTutorial, level = null, veil = false) {
   // in a room: the host starts the round for everybody, the others wait for the host
   if (inRoom() && !G.inRun) {
     if (!NET.host) return toast('Warte auf den Host');
@@ -155,6 +159,15 @@ function play(withTutorial, level = null) {
     }
     resetCam();
     G.inRun = true;
+    // first launch: the world waits behind the start screen for the first key or tap
+    if (veil) {
+      const go = withTutorial;
+      G.tutEntry = 'first_launch';
+      hideLobby();
+      overlay.hidden = true;
+      openVeil(() => startGame(go), go === 'loaded');
+      return;
+    }
     startGame(withTutorial);
     if (bonus) toast('Startgeld aus dem Tutorial: +{n} Taler', { n: bonus });
     else if (boost) toast('Startkasse aus dem Heimatbergwerk: +{n} Taler', { n: boost });
@@ -202,14 +215,20 @@ function discard() {
   G.inRun = false;
 }
 const lobbyHooks = { play, discard, hasRun, keysHtml };
-setTutHooks({ play, menu, discard });
+setTutHooks({ play, menu, discard, save: saveGame });
 function menu() {
   showLobby(lobbyHooks);
 }
 function startGame(withTutorial = false) {
-  if (withTutorial === true) startTutorial();
+  if (withTutorial === true) startTutorial(G.tutEntry || 'replay');
   else if (withTutorial === 'resume' || withTutorial === 'loaded') resumeTutorial();
   else endTutorial();
+  G.tutEntry = null;
+  // a new real round (the first one after the tutorial is marked)
+  if (!withTutorial && !G.tut) {
+    ev('core_round_start', { mode: String(G.mode), after_onb: !!G.afterOnb });
+    G.afterOnb = false;
+  }
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   const mine = sel_();
@@ -354,12 +373,30 @@ function openMenu() {
   // what to do in this round first, then the same settings as in the lobby
   // (the map opens from the small map in the corner, or M)
   const l = sec(p, tr('Spiel') + ' · v' + __APP_VERSION__);
-  const item = (title, sub, fn) => opt(l, { title: tr(title), sub: sub ? tr(sub) : '', short: true, onClick: fn });
-  item('Lobby', 'Spiel speichern und zur Lobby', () => $('newBtn').click());
+  // in the tutorial the menu is counted (opened, and what was chosen) to see where players leave
+  const tut = !!G.tut;
+  if (tut) ev('onb_menu', { action: 'open' });
+  const item = (title, sub, fn, id) =>
+    opt(l, {
+      title: tr(title),
+      sub: sub ? tr(sub) : '',
+      short: true,
+      onClick: () => {
+        if (tut && id) ev('onb_menu', { action: id });
+        fn();
+      },
+    });
+  // the keyboard way to skip the tutorial (Esc opens this menu)
+  if (tut)
+    item('Tutorial überspringen', 'Direkt ins Spiel – die Tipps erklären den Rest', () => {
+      closePanel();
+      endTutorial('skip', 'menu');
+    }, 'skip');
+  item('Lobby', 'Spiel speichern und zur Lobby', () => $('newBtn').click(), 'lobby');
   item('Zurück zur Basis', 'Wenn du feststeckst: dein Wühler geht nach Hause', () => {
     closePanel();
     send('home');
-  });
+  }, 'home');
   item('Zoom', G.zoomAdj > 0 ? 'Nah' : G.zoomAdj < 0 ? 'Weit' : 'Normal', () => {
     $('zoomBtn').click();
     openMenu();
@@ -544,13 +581,28 @@ function loop(t) {
   if (G.tick % 10 === 0) drawMini(G.tick % 60 === 0);
   requestAnimationFrame(loop);
 }
+G.openMenu = openMenu;
 applyStatic();
 gen();
 resize();
 resetCam();
 hud();
 overlay.hidden = true;
-menu();
+// a brand-new player starts in the tutorial world, not in the lobby (veil.js); links to the
+// Tagesschacht, a room or a level draft, and players who already played, get the lobby
+const linked = ['daily', 'room', 'draft'].some(k => new URLSearchParams(location.search).has(k));
+// (a tutorial saved before v1.52.0 has another world and other steps: it starts afresh)
+const oldTut = savedTut();
+if (oldTut && !oldTut.run) clearSave();
+if (!P.tutorialDone && !(P.games > 0) && !linked && (!hasSave() || savedTut())) play(false, null, true);
+else menu();
+// an invitation that opens the app while the start screen waits: to the lobby and the room
+G.onInvited = () => {
+  if (!veilOpen()) return;
+  closeVeil();
+  discard();
+  menu();
+};
 requestAnimationFrame(loop);
 
 // Offline mode for the web version; the Android app ships its files itself

@@ -153,6 +153,14 @@ function hasSave() {
     return false;
   }
 }
+// the saved game's tutorial state, if it is a tutorial (without loading the world)
+function savedTut() {
+  try {
+    return JSON.parse(localStorage.getItem(SAVEKEY) || 'null')?.tut || null;
+  } catch {
+    return null;
+  }
+}
 function clearSave() {
   try {
     localStorage.removeItem(SAVEKEY);
@@ -273,4 +281,4 @@ addEventListener('visibilitychange', () => {
 });
 addEventListener('pagehide', saveGame);
 
-export { SAVEKEY, b64, clearSave, deserialize, hasSave, loadGame, saveGame, serialize, unb64 };
+export { SAVEKEY, b64, clearSave, deserialize, hasSave, loadGame, saveGame, savedTut, serialize, unb64 };

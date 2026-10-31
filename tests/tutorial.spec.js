@@ -1,10 +1,12 @@
 // The guided first game, played through in the dev build: npm test
+// A fresh player lands in the tutorial world behind the start screen (no lobby), plays three
+// beats (walk and jump, dig to gold, sell it) and goes straight on into a real round.
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
 const BOT = readFileSync(new URL('./tutorial-bot.js', import.meta.url), 'utf8');
 
-// a fresh player: empty storage, chosen language, then "Spielen" starts the tutorial
+// a fresh player: empty storage, chosen language, waiting at the start screen
 async function fresh(page, lang = 'de', profile = null) {
   await page.goto('/');
   await page.evaluate(
@@ -21,59 +23,99 @@ async function fresh(page, lang = 'de', profile = null) {
 }
 const tut = page => page.evaluate(() => window.__ww.tut && window.__ww.tut.i);
 const playStep = page => page.evaluate(() => window.bot.run(5400));
+// the events of this session without the context fields
+const events = page =>
+  page.evaluate(() => window.__ww.analytics.sessionEvents().map(({ sid, v, plat, lang, t, input, ...f }) => f));
 
 for (const lang of ['de', 'en'])
-  test(`the whole tutorial can be played with the keyboard (${lang})`, async ({ page }) => {
+  test(`a new player goes from the start screen through the tutorial into a real round (${lang})`, async ({ page }) => {
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
     await fresh(page, lang);
-    await page.click('#lbPlay');
+    // no lobby: the world behind the start screen
+    await expect(page.locator('#veil')).toBeVisible();
+    await expect(page.locator('#lobby')).toBeHidden();
+    await expect(page.locator('#veilGo b')).toHaveText(lang === 'de' ? 'Spielen' : 'Play');
+    expect(await page.evaluate(() => [window.__ww.G.mode, window.__ww.state])).toEqual(['tut', 'veil']);
+    // any key starts
+    await page.keyboard.press('KeyD');
+    await expect(page.locator('#veil')).toBeHidden();
     await expect(page.locator('#quest')).toBeVisible();
-    expect(await page.evaluate(() => window.__ww.G.mode)).toBe('tut');
+    await expect(page.locator('#questStep')).toHaveText('1/3');
     await page.evaluate(() => (window.__ww.G.inputKind = 'keys'));
     const order = await page.evaluate(() => window.__ww.tutLevel.steps());
+    expect(order).toEqual(['walk', 'dig', 'sell']);
+    const t0 = await page.evaluate(() => window.__ww.G.playTicks);
     for (const id of order) {
       const now = await page.evaluate(() => window.bot.run(0));
       expect(now).toBe(id);
       const next = await playStep(page);
       expect(next, `step "${id}" was not finished`).not.toBe(id);
     }
-    // confetti first, then the closing card
+    // well under two minutes of play for a player who knows what to do
+    expect((await page.evaluate(() => window.__ww.G.playTicks)) - t0).toBeLessThan(60 * 30);
     await expect(page.locator('#overlay')).toBeVisible({ timeout: 4000 });
     await expect(page.locator('#card h1')).toHaveText(lang === 'de' ? 'Erste Schicht geschafft!' : 'First shift done!');
+    // the main button has the focus: Enter goes on
+    await expect(page.locator('#goBtn')).toBeFocused();
     const prof = await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')));
     expect(prof.tutorialDone).toBe(true);
     expect(prof.hats).toContain('helm');
-    expect(prof.tutStats.done).toBe(1);
-    // the first real round gets the start money
-    await page.click('#goBtn');
+    await page.keyboard.press('Enter');
     await expect(page.locator('#toast')).toContainText(lang === 'de' ? 'Startgeld' : 'Start money');
     expect(await page.evaluate(() => [window.__ww.G.mode, window.__ww.money, window.__ww.tut])).toEqual([
       'gold',
       90,
       null,
     ]);
+    // the funnel in order, every event once
+    const ev = (await events(page)).map(e => e.e + (e.step ? ':' + e.step : ''));
+    expect(ev).toEqual([
+      'app_open',
+      'onb_first_input',
+      'onb_start',
+      'onb_step_start:walk',
+      'onb_first_action',
+      'onb_step_done:walk',
+      'onb_step_start:dig',
+      'onb_step_done:dig',
+      'onb_step_start:sell',
+      'onb_step_done:sell',
+      'onb_first_success',
+      'onb_complete',
+      'onb_card',
+      'core_round_start',
+    ]);
+    const all = await events(page);
+    expect(all.find(e => e.e === 'core_round_start')).toMatchObject({ mode: 'gold', after_onb: true });
+    expect(all.find(e => e.e === 'onb_card')).toMatchObject({ choice: 'play', result: 'done' });
+    expect(all.map(e => e.seq)).toEqual(all.map((e, k) => k + 1));
+    // the next visit opens the lobby
+    await page.reload();
+    await page.waitForFunction(() => window.__ww);
+    await expect(page.locator('#lobby')).toBeVisible();
+    await expect(page.locator('#veil')).toBeHidden();
     expect(errors).toEqual([]);
   });
 
 test('texts name the touch buttons on a touch screen and the keys on a keyboard', async ({ page }) => {
   await fresh(page);
-  await page.click('#lbPlay');
+  await page.click('#veilGo');
   await page.evaluate(() => {
     window.__ww.G.inputKind = 'touch';
     window.__ww.step(1);
   });
-  await expect(page.locator('#questText')).toHaveText('Lauf nach rechts zu den Bäumen');
+  await expect(page.locator('#questText')).toHaveText('Lauf nach rechts');
   await page.evaluate(() => {
     window.__ww.G.inputKind = 'keys';
     window.__ww.step(1);
   });
-  await expect(page.locator('#questText')).toHaveText('Lauf nach rechts zu den Bäumen: Pfeil → oder D');
+  await expect(page.locator('#questText')).toHaveText('Lauf nach rechts: → oder D');
 });
 
 test('the tutorial world is quiet: no missions, no night, nobody gets exhausted', async ({ page }) => {
   await fresh(page);
-  await page.click('#lbPlay');
+  await page.click('#veilGo');
   const r = await page.evaluate(() => {
     const w = window.__ww,
       c = w.crew[0];
@@ -88,7 +130,7 @@ test('the tutorial world is quiet: no missions, no night, nobody gets exhausted'
 
 test('skipping asks first, is remembered and offers a real round', async ({ page }) => {
   await fresh(page);
-  await page.click('#lbPlay');
+  await page.click('#veilGo');
   await page.click('#questSkip');
   await expect(page.locator('#questSkip')).toHaveText('Wirklich?');
   expect(await tut(page)).toBe(0);
@@ -97,20 +139,27 @@ test('skipping asks first, is remembered and offers a real round', async ({ page
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')).tutorialDone)).toBe(true);
   await page.click('#goBtn');
   expect(await page.evaluate(() => [window.__ww.G.mode, window.__ww.tut])).toEqual(['gold', null]);
+  const skip = (await events(page)).find(e => e.e === 'onb_skip');
+  expect(skip).toMatchObject({ step: 'walk', via: 'button' });
 });
 
-test('a tutorial left for the lobby goes on after a reload', async ({ page }) => {
+test('a tutorial left in the middle goes on after a reload, straight from the start screen', async ({ page }) => {
   await fresh(page);
-  await page.click('#lbPlay');
+  await page.click('#veilGo');
   await page.evaluate(() => (window.__ww.G.inputKind = 'keys'));
   await playStep(page);
-  await playStep(page);
-  await page.evaluate(() => document.getElementById('newBtn').click());
+  // (the step change saved the game)
   await page.reload();
   await page.waitForFunction(() => window.__ww);
-  await page.click('#lbPlay');
-  expect(await tut(page)).toBe(2);
+  await expect(page.locator('#veil')).toBeVisible();
+  await expect(page.locator('#veilGo b')).toHaveText('Weiterspielen');
+  await page.click('#veilGo');
+  expect(await tut(page)).toBe(1);
   await expect(page.locator('#quest')).toBeVisible();
+  await expect(page.locator('#questStep')).toHaveText('2/3');
+  const ev = await page.evaluate(() => window.__ww.analytics.events().map(e => e.e));
+  expect(ev).toContain('onb_exit');
+  expect(ev.at(-1)).toBe('onb_resume');
 });
 
 test('after the tutorial, tips come one at a time and are kept in the profile', async ({ page }) => {

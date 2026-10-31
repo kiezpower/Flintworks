@@ -93,7 +93,7 @@ test('the game menu shows the same grouped settings; classic controls climb, mod
   const errors = await lobby(page);
   await play(page);
   await page.click('#menuBtn');
-  await expect(page.locator('#panel .psec')).toHaveText([/Spiel · v/, 'Ton', 'Steuerung', 'Grafik']);
+  await expect(page.locator('#panel .psec')).toHaveText([/Spiel · v/, 'Ton', 'Steuerung', 'Anzeige', 'Grafik']);
   await expect(page.locator('#pBody .opt', { hasText: 'Karte' })).toHaveCount(0);
   expect(await page.evaluate(() => [window.__ww.G.autoDig, window.__ww.G.climbOn, window.__ww.G.jumpBtn])).toEqual([
     true,

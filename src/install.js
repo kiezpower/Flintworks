@@ -108,6 +108,8 @@ const appIcon = () => icon;
 // in the lobby: ask on the first visit, after "later" once more a few rounds on
 function offerInstall() {
   if (!canInstall() || G.net || !panelEl.hidden) return;
+  // not before the player has had the fun: after the tutorial and a first real round
+  if (!P.tutorialDone || !(P.games >= 1)) return;
   const a = P.installAsked;
   if (a === undefined || (typeof a === 'number' && (P.games || 0) >= a)) {
     // first visit: wait a moment so the lobby is seen first (and the browser offered its prompt)

@@ -37,8 +37,11 @@ const KEYMAP = {
 };
 addEventListener('keydown', e => {
   G.inputKind = 'keys';
+  if (G.state === 'veil') return; // the start screen takes the key (veil.js)
   if (e.code === 'Escape') {
-    closePanel();
+    // Esc closes an open panel, otherwise opens the game menu (also the way to skip the tutorial)
+    if (panelEl.hidden && G.state === 'play') G.openMenu?.();
+    else closePanel();
     return;
   }
   if (!panelEl.hidden) return;
