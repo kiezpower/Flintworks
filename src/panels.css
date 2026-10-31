@@ -126,7 +126,7 @@
   border-color: var(--ember);
 }
 
-/* jump chips at the top of long panels (castle, build) */
+/* tabs at the top of long panels (castle, build): one section at a time, or all */
 .pchips {
   display: flex;
   flex-wrap: wrap;
@@ -152,6 +152,11 @@
 .pchips button:hover,
 .pchips button:focus-visible {
   border-color: var(--gold);
+}
+.pchips button.sel {
+  color: var(--soil);
+  background: var(--gold);
+  border-color: #9a6f10;
 }
 .pchips button:active {
   transform: translateY(1px);

@@ -52,7 +52,8 @@ links der Stick, rechts die runden Knöpfe (Aktion 88 px).
 - Kacheln: Icon links, Name, höchstens zwei Zeilen Nutzen, Preis (11 px), darunter der Grund als Chip.
   Umsetzung: `opt(parent, { …, state, why, pct })` in `ui.js`, Gestaltung in `panels.css`; fehlende
   Mengen mit `lacking(c, need, money)` („Fehlt: 2× Holz + 10 Taler“). Lange Fenster bekommen
-  Sprung-Chips (`chips(p)`).
+  Reiter (`chips(p)`): einer zeigt nur seinen Abschnitt, ein zweiter Tipp wieder alle; die Wahl
+  bleibt beim Neuöffnen erhalten.
 - **Kachelzustände** (Pflicht für Laden, Bauen, Forschung):
 
 | Zustand | Aussehen |

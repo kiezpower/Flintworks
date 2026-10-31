@@ -124,10 +124,13 @@ function drawClonkHi(c, ox, oy, f, g) {
     px(1, 9, 3, 1, '#c09a62');
   }
   rows(BODY, 0);
-  const air = c.airT > 3 && !c.climb && !c.hangle;
+  const air = c.airT > 3 && !c.climb && !c.hangle,
+    turning = !air && c.turnF != null && G.frame - c.turnF < 5;
   if (c.climb) rows(CLIMB[ph < 2 ? 0 : 1], 16);
   else if (c.hangle) rows(CLIMB[ph % 2], 16);
   else if (air) rows(c.vy < 0 ? JUMP : FALL, 16);
+  // for a few frames after turning round the legs pass each other (an in-between)
+  else if (turning) rows(LEGS[3], 16);
   else rows(LEGS[walking ? ph : 0], 16);
   if (c.hat && c.hat !== 'none') {
     const rs = hatRects(c.hat);
@@ -157,7 +160,7 @@ function drawClonkHi(c, ox, oy, f, g) {
   } else {
     // arm swings with the step and holds the selected item
     // (in the air the arm goes up: half way while rising, high while falling)
-    const sw = walking && !air ? [0, 2, 0, -2][ph] : 0,
+    const sw = walking && !air && !turning ? [0, 2, 0, -2][ph] : 0,
       hy = air ? (c.vy < 0 ? 9 : 6) : 13;
     px(12 + Math.max(0, sw), hy, 2, 2, skin);
     const t = c.inv[c.isel];

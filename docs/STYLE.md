@@ -81,8 +81,10 @@ Keine weichgezeichneten Kanten: Bilder ohne Glättung zeichnen, Koordinaten rund
 - Posen (`clonkhi.js`): `LEGS` (4 Laufphasen), `JUMP` (steigen: Beine angezogen, Arm halb hoch),
   `FALL` (fallen: Beine gespreizt, Arm hoch), `CLIMB`. „In der Luft“ heißt `c.airT > 3` (eine Stufe
   hinab zählt nicht). Ab 3 Dingen im Gepäck trägt der Wühler einen Sack auf dem Rücken.
+- Wenden: 5 Bilder lang die Durchgangs-Beinphase (`LEGS[3]`) ohne Armschwung (`c.turnF`).
 - Staub (`dust`): jede Landung ab `fallV > 1.2`, Wenden aus vollem Lauf, Schritte.
-- Monster zeigen ein blinkendes „!“, bevor sie zuschlagen können (nur Bild; Takt und Schaden gleich).
+- Monster zeigen ein blinkendes „!“, bevor sie zuschlagen können (nur Bild; Takt und Schaden gleich;
+  im Netz als Feld `w` der Tiere übertragen).
 - Bewegungs-Inventar und Lücken: ART_RUBRIC.md, Abschnitt 2.
 
 ## Welt-Details
@@ -90,10 +92,14 @@ Keine weichgezeichneten Kanten: Bilder ohne Glättung zeichnen, Koordinaten rund
 - **Oberfläche:** Gras, Blumen, Büsche, Steinchen (`decor.js`).
 - **Höhlenböden** ab 30 Reihen Tiefe: leuchtende Pilze (türkis) und Kristalle (violett) mit eigenem
   Lichtkreis. Ihr Zufall kommt aus einem Hash der Stelle, nie aus `rnd()`: Welten, Level-Vorschauen
-  und Netzrunden bleiben dadurch gleich. Nach dem Laden eines Spielstands können sie auch in alten
-  Stollen stehen (gegrabene und natürliche Höhlen sind im Speicher gleich).
-- **Siedlung:** neben fertigen Gebäuden bis zu 2 Props (Fass, Kiste, Zaun, Laternenpfahl), gewählt
-  per Hash der Gebäude-Id, nur wo Platz ist, ohne Kollision (`props.js`). Laternen leuchten nachts.
+  und Netzrunden bleiben dadurch gleich. Sie werden im Spielstand mitgespeichert (`glow`). Ältere
+  Spielstände suchen die Höhlen neu.
+- **Siedlung** (`props.js`, nur Bild, keine Kollision):
+  - Neben fertigen Gebäuden bis zu 2 Props (Fass, Kiste, Zaun, Laternenpfahl). Welche, bestimmt ein
+    Hash der Gebäude-Id. Sie stehen nur, wo Platz ist. Laternen leuchten nachts.
+  - Die Burg hat einen festen Hof: Holzstapel, Fass, Handkarren, Wegweiser.
+  - Ausgetretene Wege zwischen Nachbargebäuden (Abstand 3–70 px, gleiche Höhe).
+  - Stromleitungen vom Windrad zur nächsten Pumpe, Chemiewerk oder Aufzug (bis 140 px).
 - **Licht:** zwei Tiefenstufen (`light.js`: 58 % nach 60 Reihen, 70 % nach weiteren 100); große
   Explosionen werfen einen schwachen, hart begrenzten Lichtring.
 

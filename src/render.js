@@ -13,7 +13,7 @@ import { drawBuildFx, drawWindowGlow } from './bfx.js';
 import { drawBeams, drawBubbles, drawMark } from './mine.js';
 import { drawFloats } from './floats.js';
 import { drawDecor, glowSpots } from './decor.js';
-import { drawProps, lanternSpots } from './props.js';
+import { drawProps, drawWires, lanternSpots } from './props.js';
 import { biome } from './biomes.js';
 import {
   beginGlow,
@@ -654,7 +654,7 @@ function render() {
     const r = f.r * (1.2 - f.l / 14);
     // a big one lights the ground around it for a moment: one faint outer ring (hard edge, STYLE.md)
     if (f.r >= 6) {
-      ctx.fillStyle = `rgba(255,200,110,${f.l / 40})`;
+      ctx.fillStyle = `rgba(255,200,110,${f.l / 22})`;
       pixelDisc(ctx, f.x - cx, f.y - cy, f.r * 2.4);
     }
     ctx.fillStyle = `rgba(255,${180 + f.l * 10},90,${f.l / 8})`;
@@ -662,6 +662,8 @@ function render() {
     ctx.fillStyle = `rgba(255,246,192,${f.l / 10})`;
     pixelDisc(ctx, f.x - cx, f.y - cy, r * 0.5);
   }
+  // power wires over the buildings (props.js)
+  drawWires(ctx, cx, cy);
   // near layer of rain, right in front
   if (G.rainT > 0 && G.biome !== 'winter' && G.lightFx) drawRainNear(ctx, cx, cy);
   if (G.bolt) {

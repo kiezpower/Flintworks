@@ -1,4 +1,4 @@
-import { scatterDecor } from './decor.js';
+import { glowList, scatterDecor } from './decor.js';
 import { setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
 import { mkCloud } from './gen.js';
@@ -128,6 +128,7 @@ function serialize() {
       lorries: lorries.map(strip),
       vehicles: vehicles.map(strip),
       rails: G.rails || [],
+      glow: glowList(),
       play: performance.now() - G.startT,
       playTicks: G.playTicks || 0,
       nextId: G.nextId || 0,
@@ -257,7 +258,8 @@ function deserialize(d) {
     // old saves without player ids: the first Wühler is yours
     if (!crew.some(c => c.pid != null) && crew[0]) crew[0].pid = G.myId;
     arrows.length = 0;
-    scatterDecor();
+    // (older saves have no glow list: the caves are looked for again)
+    scatterDecor(d.glow || null);
     calcTerr();
     G.startT = performance.now() - (d.play || 0);
     G.playTicks = d.playTicks || 0;

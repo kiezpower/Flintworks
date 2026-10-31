@@ -165,3 +165,23 @@ test('a won free round offers a new round as the main button, and Enter takes it
   expect(await page.evaluate(() => [window.__ww.G.mode, window.__ww.money < 900])).toEqual(['gold', true]);
   expect(errors).toEqual([]);
 });
+
+test('castle tabs show one section at a time, a second tap shows all again, the choice stays', async ({ page }) => {
+  const errors = await lobby(page);
+  await play(page);
+  await page.evaluate(() => window.__ww.openBase());
+  await page.waitForTimeout(500);
+  const research = page.locator('#pBody .psec', { hasText: 'Forschung' });
+  const tools = page.locator('#pBody .psec', { hasText: 'Werkzeug' });
+  await page.locator('.pchips button', { hasText: 'Forschung' }).click();
+  await expect(page.locator('.pchips button', { hasText: 'Forschung' })).toHaveClass(/sel/);
+  await expect(research).toBeVisible();
+  await expect(tools).toBeHidden();
+  // reopened (as after buying something): still the same tab
+  await page.evaluate(() => window.__ww.openBase());
+  await expect(tools).toBeHidden();
+  await page.waitForTimeout(500);
+  await page.locator('.pchips button', { hasText: 'Forschung' }).click();
+  await expect(tools).toBeVisible();
+  expect(errors).toEqual([]);
+});

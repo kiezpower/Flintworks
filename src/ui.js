@@ -398,21 +398,48 @@ function opt(parent, { icon, title, sub, cost, short, disabled, onClick, state, 
   parent.appendChild(b);
   return b;
 }
-// jump chips at the top of a long panel: one per section (the part of its title before " · ")
+// tabs at the top of a long panel: one per section (the part of its title before " · "). A tab
+// shows only its section, a second tap shows all again; the choice is kept while the game runs, so
+// the panel comes back the same after buying something (docs/UI_STYLE.md)
+const tabOf = {};
 function chips(p) {
   const secs = [...p.querySelectorAll(':scope > .psec')];
   if (secs.length < 3) return;
-  const row = document.createElement('div');
+  const key = pTitle.textContent,
+    row = document.createElement('div');
   row.className = 'pchips';
+  row.setAttribute('role', 'tablist');
+  const parts = s => {
+    const out = [s];
+    for (let n = s.nextElementSibling; n && !n.classList.contains('psec'); n = n.nextElementSibling) out.push(n);
+    return out;
+  };
+  const show = name => {
+    tabOf[key] = name;
+    for (const s of secs) {
+      const on = !name || s.textContent.split(' · ')[0] === name || s.textContent.split(' · ')[0].length > 20;
+      for (const e of parts(s)) e.hidden = !on;
+    }
+    for (const b of row.children) {
+      b.classList.toggle('sel', b.textContent === name);
+      b.setAttribute('aria-selected', b.textContent === name ? 'true' : 'false');
+    }
+  };
   for (const s of secs) {
     const name = s.textContent.split(' · ')[0];
-    if (name.length > 20) continue; // (an explanation, not a heading)
+    if (name.length > 20) continue; // (an explanation, not a heading: always shown)
     const b = document.createElement('button');
     b.textContent = name;
-    b.addEventListener('click', () => s.scrollIntoView({ block: 'start', behavior: G.reduceMotion ? 'auto' : 'smooth' }));
+    b.setAttribute('role', 'tab');
+    b.addEventListener('click', () => {
+      if (performance.now() - G.panelT < 450) return;
+      show(tabOf[key] === name ? null : name); // (the click sound comes for every button, main.js)
+    });
     row.appendChild(b);
   }
   p.prepend(row);
+  // (a kept tab whose section is gone shows all)
+  show([...row.children].some(b => b.textContent === tabOf[key]) ? tabOf[key] : null);
 }
 function sec(parent, t) {
   const d = document.createElement('div');

@@ -1,6 +1,6 @@
 # Optik-Rubrik und Bewertung
 
-> **Stand: v1.53.0, 31.10.2026** (erste Bewertung v1.52.0 in Abschnitt 4, Neubewertung in Abschnitt 7). Bewertet wird nur, was auf Bildern zu sehen war. Die Note misst die
+> **Stand: v1.54.0, 31.10.2026** (erste Bewertung v1.52.0 in Abschnitt 4, Neubewertungen in Abschnitt 7). Bewertet wird nur, was auf Bildern zu sehen war. Die Note misst die
 > **Optik gegenüber den freigegebenen Vorbildern**. Sie sagt nichts über Budget, Teamgröße oder
 > Umfang. Stilregeln: [STYLE.md](STYLE.md), UI-Regeln: [UI_STYLE.md](UI_STYLE.md).
 
@@ -138,7 +138,7 @@ Terraria, Noita und SteamWorld Dig 2.
 
 ## 6. Verbesserungsplan
 
-Stand v1.53.0: ✅ umgesetzt, ◐ teilweise, ✗ offen.
+Stand v1.54.0: ✅ umgesetzt, ◐ teilweise, ✗ offen.
 
 **Schnelle Gewinne:**
 1. ✅ Kachelzustände (leistbar, zu teuer, gesperrt, erledigt, läuft) mit Grund-Chip („Fehlt: 20 Taler“,
@@ -154,18 +154,34 @@ Stand v1.53.0: ✅ umgesetzt, ◐ teilweise, ✗ offen.
 6. ✅ Tipp und Auftrag in einer Spur; bei offenem Fenster tritt der Auftrag zurück.
 
 **Große Überarbeitungen:**
-1. ◐ Siedlung: Fässer, Kisten, Zaun und Laternenpfähle neben fertigen Gebäuden (`props.js`, nachts
-   mit Licht). Gebäude auf mehreren Ebenen, Wege und Leitungen: offen.
+1. ✅ Siedlung (`props.js`, nur Bild):
+   - Fässer, Kisten, Zaun und Laternenpfähle neben fertigen Gebäuden; die Laternen leuchten nachts.
+   - Die Burg hat ab Rundenbeginn einen Hof mit Holzstapel, Fass, Handkarren und Wegweiser.
+   - Ausgetretene Wege zwischen Nachbargebäuden.
+   - Stromleitungen vom Windrad zu Pumpe, Chemiewerk und Aufzug.
+
+   „Gebäude auf mehreren Ebenen“ ist keine Grafikfrage: Gebaut wird, wo der Wühler steht, auch in
+   Stollen. Mehrstöckige Siedlungen entstehen durch Spielen, nicht durch die Welt.
 2. ✅ Untertage: zweite Tiefenstufe (bis 70 % dunkel, nie schwarz), leuchtende Pilze und Kristalle
    auf Höhlenböden mit eigenem Licht, Sand- und Lehmlinsen mit vollem Rand und heller Oberkante,
    Explosionen werfen einen Lichtring aufs Gelände.
-3. ◐ Burg- und Bau-Fenster: Sprung-Chips zu den Abschnitten statt Reitern, breitere Kacheln.
-   Vergleich vorher/nachher bei Werkzeugen: entfällt (Werkzeuge haben keine Stufen, nur „gekauft“).
-4. ◐ Bewegung: Tragen (Sack ab 3 Dingen), Ankündigung bei Monstern („!“ vor dem Zuschlagen, nur
-   Bild; auf Mehrspieler-Gästen nicht sichtbar, weil Tiere nur beim Host laufen). Wende-Frame: offen.
+3. ✅ Burg- und Bau-Fenster mit Reitern: Ein Reiter zeigt nur seinen Abschnitt, ein zweiter Tipp
+   zeigt wieder alle. Die Wahl bleibt beim Neuöffnen erhalten, z. B. nach einem Kauf. Die Kacheln
+   sind breiter. Ein Vergleich vorher/nachher bei Werkzeugen entfällt, weil Werkzeuge keine Stufen
+   haben, nur „gekauft“.
+4. ✅ Bewegung:
+   - Tragen: ein Sack auf dem Rücken ab 3 Dingen.
+   - Wenden: einige Bilder lang ein Zwischenbild mit Beinen in der Mitte und hängendem Arm.
+   - Monster kündigen sich mit einem „!“ an, bevor sie zuschlagen; das „!“ wird jetzt auch an
+     Mitspieler übertragen.
+   - Höhlenleuchten werden mitgespeichert und tauchen nach dem Laden nicht in neuen Stollen auf.
 
-**Mit Fachleuten (offen):**
-- Pixel-Artist: Gebäudesatz in 2×, Animationsbögen (Wende, Start, Stopp), Lobby-Wühler im Spielraster.
+**Geprüft, nichts zu tun:** Der Lobby-Wühler nutzt schon dieselbe Pixelgrafik und dasselbe Raster
+wie die Lobby-Landschaft (1 Texel = 1 Landschaftspixel). Er ist nur näher herangezoomt.
+
+**Mit Fachleuten (offen, im Code nicht ersetzbar):**
+- Pixel-Artist: neuer Gebäudesatz in 2× Auflösung und handgezeichnete Animationsbögen (statt der
+  Zwischenbilder aus vorhandenen Zeilen).
 - UX-Test mit Erstspielern (Burg-Fenster, Leistbarkeit, Tutorial).
 
 ## 7. Neubewertung (v1.53.0)
@@ -193,4 +209,22 @@ Nahaufnahme und Store-Bilder (`npm run store-shots`, Tag und Nacht).
 Mit Animation: 7,0. Größte Lücken jetzt: Welt und Siedlung (−3), Tiefe und Licht (−3), Effekte (−4).
 Schwächster kritischer Zustand ist nicht mehr das Burg-Fenster (jetzt 7), sondern die
 **Oberfläche zu Beginn** (5): leer, ohne Ziel, solange es keine Gebäude gibt.
+
+### Nachtrag v1.54.0
+
+Belege:
+- Nahaufnahmen von Burghof, Siedlung mit Windrad, Säge und Pumpe (Tag und Nacht), Explosion und Sandlinse.
+- Burg-Fenster mit gewähltem Reiter „Forschung“.
+
+| # | Kategorie | v1.53.0 | v1.54.0 | Beleg |
+|---|---|---|---|---|
+| 3 | Material und Wert | 7 | **8** | Sandlinse in der Nahaufnahme mit klarem Rand; die hellere Oberkante ist kaum zu sehen |
+| 5 | Welt und Siedlung | 6 | **7** | Burghof ab Start, Leitung Windrad → Pumpe, Laternen leuchten nachts |
+| 10 | Menüs und Knöpfe | 7 | **8** | Reiter mit Auswahl, die Wahl bleibt erhalten |
+| 6 | Animation | 7 | 7 | Wende-Zwischenbild nicht im Bild festgehalten |
+| 7 | Effekte | 6 | 6 | Explosionsring am Tag kaum sichtbar, danach verstärkt, aber nicht neu aufgenommen |
+
+**Gesamt (gewichtet, ohne Kat. 6):** Flintworks **7,4 / 10**, Maßstab 8,6 / 10.
+Schwächster kritischer Zustand: **Oberfläche zu Beginn**, jetzt 6 (Burghof statt leerer Wiese, aber
+noch kein Ziel im Bild, solange nach dem Tutorial keine Gebäude stehen).
 

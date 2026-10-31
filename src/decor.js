@@ -14,7 +14,8 @@ function pickKind() {
   if (G.biome === 'winter') return r < 0.3 ? 'stalks' : r < 0.5 ? 'pebble' : null;
   return r < 0.6 ? 'grass' : r < 0.85 ? 'flower' : 'pebble';
 }
-function scatterDecor() {
+// saved: the cave glows of a saved game (so they do not turn up in tunnels dug since)
+function scatterDecor(saved = null) {
   decor.length = 0;
   for (let x = 3; x < W - 3; x += ri(2, 6)) {
     const y = topSolid(x),
@@ -22,6 +23,10 @@ function scatterDecor() {
     if (m !== EARTH && m !== SAND) continue;
     const kind = pickKind();
     if (kind) decor.push({ x, y, kind, c: FLOWERS[ri(0, 3)], h: ri(2, 3) });
+  }
+  if (saved) {
+    for (const [x, y, k, h] of saved) decor.push({ x, y, kind: k ? 'shroom' : 'crystal', h, glow: 1 });
+    return;
   }
   // cave floors more than 30 rows under the surface: now and then something that glows
   const FLOOR = { [EARTH]: 1, [LOAM]: 1, [ROCK]: 1 };
@@ -34,6 +39,8 @@ function scatterDecor() {
       y += 6;
     }
 }
+// the cave glows, for the save (x, y, 1 = mushroom, height)
+const glowList = () => decor.filter(d => d.glow).map(d => [d.x, d.y, d.kind === 'shroom' ? 1 : 0, d.h]);
 // the glowing details in view, as screen positions for the light layer
 function glowSpots(cx, cy, out) {
   out.length = 0;
@@ -96,4 +103,4 @@ function drawDecor(ctx, cx, cy) {
   }
 }
 
-export { drawDecor, glowSpots, scatterDecor, updDecor };
+export { drawDecor, glowList, glowSpots, scatterDecor, updDecor };

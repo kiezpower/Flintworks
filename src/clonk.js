@@ -649,6 +649,7 @@ function updBody(c, I) {
   if (Math.abs(I.ax) > 0.25) {
     // turning round from a run: the boots skid
     if (onG && Math.sign(I.ax) !== c.face && Math.abs(c.vx) > 0.7) dust(c.x + 3 - c.face * 2, c.y + 9, 2, '#b89a76');
+    if (Math.sign(I.ax) !== c.face) c.turnF = G.frame; // (a turn frame follows, clonkhi.js)
     c.face = Math.sign(I.ax);
   }
   c.vx += (tvx - c.vx) * (onG ? 0.4 : inLiq ? 0.15 : 0.1);
