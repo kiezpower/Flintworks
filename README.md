@@ -154,4 +154,5 @@ Regeln:
 - Keine Datei über 1000 Zeilen (`style.css` liegt noch darüber; neue Gestaltung in eigene CSS-Dateien).
 - Alles, was Spieler sehen, geht durch `tr()` und ist für Menschen geschrieben (keine IDs, Fehlermeldungen oder Platzhalter).
 - Analyse-Ereignisse nur über `src/analytics.js` und erst in `docs/ANALYTICS.md` eintragen.
+- Neue Grafik folgt [docs/STYLE.md](docs/STYLE.md), Menüs und HUD folgen [docs/UI_STYLE.md](docs/UI_STYLE.md). Prüfen und bewerten mit der Rubrik in [docs/ART_RUBRIC.md](docs/ART_RUBRIC.md).
 - Der erste Start gehört dem Tutorial: nichts davor (kein Dialog, keine Lobby, kein Installieren-Angebot); neue Systeme kommen als Lektion (`lessons.js`), nicht ins Tutorial.

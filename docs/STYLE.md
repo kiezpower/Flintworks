@@ -2,6 +2,11 @@
 
 Alles in Flintworks wird im Code gezeichnet. Diese Regeln halten neue Grafiken im selben Stil.
 
+**Ziel (freigegeben, Details in [ART_RUBRIC.md](ART_RUBRIC.md)):** Clonk-Siedlungs- und Grabewelt im
+Querschnitt, echte Pixelgrafik mit Terraria-Klarheit; Siedlung dicht wie bei Clonk, aber ruhiger;
+Untertage tiefer und dunkler mit warmem Licht und leuchtenden Materialien wie Noita, nie ganz
+schwarz; HUD und Menüs knapp wie SteamWorld Dig 2 ([UI_STYLE.md](UI_STYLE.md)).
+
 ## Raster
 
 | Was | Größe |
@@ -56,3 +61,39 @@ Keine weichgezeichneten Kanten: Bilder ohne Glättung zeichnen, Koordinaten rund
 2. Auswahl treffen, einbauen, Vorher/Nachher aus dem echten Spiel ansehen.
 3. Zeichenzeit prüfen: `paintAll()` läuft beim Rundenstart über die ganze Welt; was pro Texel
    gerechnet wird, muss billig sein (keine Hilfsfunktionen oder Arrays pro Texel anlegen).
+
+## Figuren und Maßstab
+
+- Wühler 8×10 Landschaftspixel, die Burg 36 px breit. Neue Gebäude orientieren sich an diesen Maßen: Ein Wühler muss durch die Tür passen.
+- Spielfiguren und Wertvolles heben sich immer ab: gesättigte Mütze, heller Umriss im Dunkeln,
+  Gold und Edelsteine leuchten. Gelände bleibt gedämpfter als alles, womit man spielt.
+- Neue Gebäude stehen auf dem Boden (Schatten), haben eine klare Silhouette und ein bewegtes Teil
+  oder Licht, wenn sie arbeiten.
+
+## Animation
+
+- Klips sind Pixelzeilen und Phasen (`clonkhi.js`); das System dazu sind Physik (`clonk.js`),
+  Partikel (`effects.js`), Ton (`sound.js`), Vibration und Kamera-Rütteln.
+- Jede Aktion: Vorbereitung → schneller Teil → Nachfedern. Kontakt (Schlag, Landung, Fuß) bekommt
+  Bild, Ton und ggf. Vibration im selben Frame.
+- Pflichtposen für neue Figuren: Stehen, 4 Laufphasen, Sprung/Fall, Landung, Aktion. Füße rutschen nicht:
+  die Laufphase folgt der Strecke (`c.anim`), nicht der Zeit.
+- Bewegungs-Inventar und Lücken: ART_RUBRIC.md, Abschnitt 2.
+
+## Leistung
+
+- „Grafik: schnell“ zeichnet in 1× statt 2×; das Spiel schaltet selbst um, wenn es zweimal in
+  Folge über 2 s im Schnitt langsamer als 25 ms pro Bild läuft (`perfGuard` in `main.js`).
+  „Licht“ kann aus. Partikel haben ein Budget, bei „schnell“ kleiner.
+- Was pro Texel oder pro Frame läuft, darf nichts anlegen (keine Arrays oder Objekte in Schleifen).
+- Kein Three.js, keine Bilddateien außer App-Icons: Qualitätsstufen bleiben die beiden oben.
+
+## Prüfablauf für neue Grafik
+
+1. Vergleichsbogen wie oben, dazu Bilder aus dem echten Spiel: `npm run test:visual`
+   (Startbildschirm, Oberfläche, Nacht, Höhle, Funken, Desktop und Handy) und `npm run store-shots`.
+2. Gegen die Rubrik in ART_RUBRIC.md prüfen; die wichtigsten Kategorien je Zustand stehen in der
+   Zustands-Matrix. Eine Änderung darf keine Kategorie schlechter machen.
+3. 1-Sekunden-Test: Bild kurz zeigen. Sind Figur, Gefahr, nächste Handlung erkennbar?
+4. Note in ART_RUBRIC.md nachtragen, wenn sich eine Kategorie sichtbar ändert.
+
