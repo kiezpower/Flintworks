@@ -30,7 +30,7 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 | Werfen | „Wurf“ | E |
 | Durch Holztreppe oder -brücke nach unten | Stick nach unten | ↓ / S |
 | Aktion (Fällen, Basis, Werk, Brücke, Treppe, Heim …) | Aktions-Knopf | F |
-| Enterhaken (nach dem Kauf) | „Haken“ | G |
+| Enterhaken werfen (nach dem Kauf) | Stick zielt, „Haken“ | Pfeiltaste zielt, G |
 | Bauen | „Bauen“ oben rechts | B |
 | Wühler wechseln | Porträt oben links oder Wühler antippen | Tab |
 | Karte | Kleine Karte oben rechts | M |
@@ -41,7 +41,7 @@ Zwei Steuerungen (Optionen → Steuerung): **Modern** (Standard) gräbt, wenn ma
 
 **Schwierigkeit** (Optionen → Spiel, gilt fürs freie Spiel; Kampagne und Tagesschacht haben ihre eigene): Gemütlich (keine Monster, kein Gas, keine Blitze und Meteore, ruhiges Tempo), Abenteuer (alle Gefahren) oder Hart (alle Gefahren, volles Tempo). Baugebiete (bauen nur im eigenen Gebiet, Flaggen erweitern es) gelten im Modus Siedler, für alle Spieler gleich.
 
-**Festgesessen?** Ist eine Kante zu hoch zum Springen, gräbt sich der Wühler in einer Grube oder Höhle von selbst schräg nach oben, sobald man gegen die Erdwand läuft (moderne Steuerung). Geht das nicht (Fels), zeigt der Aktions-Knopf den Ausweg: „Treppe“ (1 Brett oder 1 Holz aus Gepäck oder Lager, bis zur Kante) und ohne Holz „Heim“ (zurück zur Basis). Der **Enterhaken** (in der Basis zu kaufen, 30 Taler, 2 Holz, 1 Stein) bekommt einen eigenen Knopf „Haken“ (Taste G): Er schießt den Haken an die nächste Kante über dir, auch an eine niedrige und auch im Sprung, und das Seil zieht dich hoch. Ohne Kante in Reichweite ist der Knopf blass.
+**Festgesessen?** Ist eine Kante zu hoch zum Springen, gräbt sich der Wühler in einer Grube oder Höhle von selbst schräg nach oben, sobald man gegen die Erdwand läuft (moderne Steuerung). Geht das nicht (Fels), zeigt der Aktions-Knopf den Ausweg: „Treppe“ (1 Brett oder 1 Holz aus Gepäck oder Lager, bis zur Kante) und ohne Holz „Heim“ (zurück zur Basis). Der **Enterhaken** (in der Basis zu kaufen, 30 Taler, 2 Holz, 1 Stein) bekommt einen eigenen Knopf „Haken“ (Taste G). Er wird immer geworfen: in die Richtung, in die du den Stick oder eine Pfeiltaste hältst, ohne Richtung an die nächste Kante über dir, sonst schräg nach oben. Was er trifft, daran zieht dich das Seil hin (gibt es dort einen Platz zum Stehen, landest du darauf); trifft er nichts, rollt sich das Seil wieder ein.
 
 Holztreppen und Holzbrücken tragen nur von oben: Man läuft von der Seite unter ihnen durch, springt von unten hindurch und steigt auf, wo sie die Füße erreichen. Lehmbrücken bleiben feste Wände.
 
