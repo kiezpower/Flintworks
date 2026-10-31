@@ -29,7 +29,7 @@ const TOOLS = {
   hook: {
     name: 'Enterhaken',
     icon: 'hook',
-    sub: 'Aktion schießt den Haken an eine Kante über dir und zieht dich hoch',
+    sub: 'Eigener Knopf (G): schießt den Haken an eine Kante über dir und zieht dich hoch',
     money: 30,
     need: { wood: 2, rock: 1 },
   },

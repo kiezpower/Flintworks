@@ -72,6 +72,7 @@ const TOUCH_KEYS = [
   ['Tippen rechts', 'dein Wühler läuft dorthin'],
   ['Aktion', 'Fällen, Basis, Truhe, Brücke, Bauen'],
   ['Wurf', 'erscheint mit etwas in der Hand; Stick hoch = Bogen, runter = ablegen'],
+  ['Haken', 'nach dem Kauf des Enterhakens: an die nächste Kante über dir'],
 ];
 const DESK_KEYS = [
   ['Pfeile / WASD', 'laufen, klettern, hangeln, schwimmen'],
@@ -79,6 +80,7 @@ const DESK_KEYS = [
   ['Shift / X', 'graben: gerade, mit ↓/↑ schräg'],
   ['E', 'werfen (Q wechselt, 1–5 wählt)'],
   ['F', 'Aktion: Fällen, Basis, Lore, Brücke'],
+  ['G', 'Enterhaken (nach dem Kauf)'],
   ['B · Tab · M', 'Bauen · Wühler wechseln · Karte'],
 ];
 const keyList = (cls, rows) =>

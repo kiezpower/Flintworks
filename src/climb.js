@@ -1,9 +1,11 @@
 // Getting out of a pit or a cave without knowing the tricks: a ledge too high for a jump is
 // found by itself (climbOut). In the modern controls the Wühler then digs a ramp up through
 // earth on his own (clonk.js wantsDig); where that does not work the action button offers the
-// way out: the grappling hook if the team has one, else wooden stairs up to the ledge (1 plank
-// or 1 wood), else "home" (back to the base, like the menu).
+// way out: wooden stairs up to the ledge (1 plank or 1 wood), else "home" (back to the base,
+// like the menu). The grappling hook, once bought, has a button of its own (hook, key G): it
+// shoots at the nearest ledge above, also a low one and also from the air.
 import { hasRes, payRes } from './buildings.js';
+import { register } from './commands.js';
 import { sfx } from './sound.js';
 import { G } from './state.js';
 import { hasTool } from './tools.js';
@@ -12,6 +14,8 @@ import { H, PLANK, W, boxFree, free } from './world.js';
 
 // how high a jump lifts the feet onto a ledge (vy -2.55 against gravity 0.17, with a margin)
 const JUMP = 17;
+// the grappling hook takes ledges from this height on (lower ones are a step)
+const HOOK_MIN = 8;
 // how far to look for a ledge, sideways and up
 const REACH_X = 64,
   REACH_Y = 72;
@@ -26,9 +30,9 @@ const STAIR_MIN = 0.62,
 const solidAt = (x, y) => x < 0 || x >= W || y < 0 || (y < H && !boxFree(x, y, 1, 1));
 const feetOf = c => Math.floor(c.y + 10);
 
-// the lowest place to stand in column x that is higher than a jump reaches: its top row, or
-// null when the column has a step a jump reaches (no ledge there) or nothing within reach
-function columnTop(x, feet) {
+// the lowest place to stand in column x that is higher than minH: its top row, or null when the
+// column has a lower step (no ledge there), undefined when nothing is within reach
+function columnTop(x, feet, minH) {
   for (let y = feet - 3; y >= feet - REACH_Y; y--) {
     if (!solidAt(x, y)) continue;
     // a solid cell with room for the Wühler above it: a place to stand
@@ -36,22 +40,23 @@ function columnTop(x, feet) {
     let room = true;
     for (let k = 1; k <= 10 && room; k++) if (solidAt(x, y - k)) room = false;
     if (!room) continue;
-    return feet - y <= JUMP ? null : y;
+    return feet - y <= minH ? null : y;
   }
   return undefined; // nothing in this column (air or a wall without a top in reach)
 }
-// a ledge in one direction: { dir, col, top, dist, wall } or null
-function ledgeIn(c, dir) {
+// a ledge in one direction higher than minH (default: what a jump reaches):
+// { dir, col, top, dist, wall } or null
+function ledgeIn(c, dir, minH = JUMP) {
   const feet = feetOf(c),
     x0 = Math.floor(c.x + 3);
   for (let d = 4; d <= REACH_X; d++) {
     const x = x0 + dir * d;
     // the floor goes on at foot level: keep looking further along it
-    const t = columnTop(x, feet);
+    const t = columnTop(x, feet, minH);
     if (t === null) return null; // a step a jump reaches: not stuck this way
     if (t === undefined) {
       // a wall without a reachable top ends the search
-      if (solidAt(x, feet - 5) && solidAt(x, feet - JUMP - 2)) return null;
+      if (solidAt(x, feet - 5) && solidAt(x, feet - minH - 2)) return null;
       continue;
     }
     // the way up must be open over the Wühler (no ceiling between him and the ledge's height)
@@ -107,6 +112,28 @@ function goHome(c) {
 }
 
 // ---- the grappling hook ----
+// where the hook would go now: the nearest ledge above in reach (facing direction first), or
+// null; checked once per frame per Wühler (the button is dimmed without one, ui.js)
+function hookTarget(c) {
+  if (c.hookF === G.frame) return c.hookO;
+  c.hookF = G.frame;
+  c.hookO = null;
+  if (!hasTool('hook') || c.dead || c.ride != null || c.tumble || c.hook || c.bridge) return null;
+  for (const dir of [c.face, -c.face]) {
+    const L = ledgeIn(c, dir, HOOK_MIN);
+    if (L && Math.hypot(L.col - (c.x + 3), feetOf(c) - L.top) <= HOOK_RANGE) return (c.hookO = L);
+  }
+  return null;
+}
+// the hook button (sent as a command: on the host for the player who pressed it)
+function fireHook(c) {
+  if (!hasTool('hook') || c.hook) return;
+  const L = hookTarget(c);
+  if (!L) return toast('Keine Kante in Reichweite');
+  c.climb = c.hangle = false;
+  startHook(c, L);
+}
+register('hook', fireHook);
 // fly: the hook goes from the hand to the ledge; pull: the Wühler goes up under it, then over
 function startHook(c, L) {
   const ax = L.col + (L.dir > 0 ? 1 : 0),
@@ -175,8 +202,6 @@ function climbContext(c) {
   if (!L) return null;
   // modern controls dig a ramp through earth by themselves (clonk.js wantsDig)
   if (G.autoDig && L.wall && digWall(c, L)) return null;
-  if (hasTool('hook') && Math.hypot(L.col - (c.x + 3), feetOf(c) - L.top) <= HOOK_RANGE)
-    return { label: 'Haken', fn: () => startHook(c, L) };
   const plan = stairPlan(c);
   if (plan && hasRes(c, stairCost(c))) return { label: 'Treppe', fn: () => buildStairs(c, plan) };
   return {
@@ -202,4 +227,4 @@ function rampHere(c, dir) {
   return !!L && L.dir === dir && L.wall && digWall(c, L) ? L : null;
 }
 
-export { HOOK_FLY, buildStairs, climbContext, climbOut, drawHook, goHome, rampHere, setDigTest, updHook };
+export { HOOK_FLY, buildStairs, climbContext, climbOut, drawHook, fireHook, goHome, hookTarget, rampHere, setDigTest, updHook };

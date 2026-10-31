@@ -5,6 +5,7 @@ import { cam, cv } from './render.js';
 import { audioInit } from './sound.js';
 import { G, crew } from './state.js';
 import { closePanel, openBuild, panelEl, toast, toggleMap } from './ui.js';
+import { send } from './commands.js';
 
 // ---- Input ----
 const inp = { ax: 0, ay: 0, dig: false, jumpP: false, jumpUp: false, throwP: false, actP: false };
@@ -53,6 +54,7 @@ addEventListener('keydown', e => {
   if (e.code === 'ArrowUp' || e.code === 'KeyW') edge.jumpUp = true;
   if (e.code === 'KeyC' || e.code === 'KeyE' || e.code === 'KeyK') edge.throw = true;
   if (e.code === 'KeyF') edge.act = true;
+  if (e.code === 'KeyG') send('hook');
   if (e.code === 'KeyB') openBuild();
   if (e.code === 'KeyM') toggleMap();
   if (e.code === 'Tab') {
@@ -145,7 +147,11 @@ for (const b of document.querySelectorAll('.pad')) {
   let t0 = 0;
   b.addEventListener('pointerdown', e => {
     t0 = performance.now();
-    if (name === 'dig') {
+    // the grappling hook: one shot per tap, run on the host like stairs and bridges (climb.js)
+    if (name === 'hook') {
+      send('hook');
+      b.classList.add('on');
+    } else if (name === 'dig') {
       if (G.digLatch) {
         G.digLatch = false;
         held.dig = false;
