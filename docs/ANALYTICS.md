@@ -55,6 +55,7 @@
 | `onb_exit` | `step`, `sec` | Seite verlassen mitten im Tutorial (Abbruchstelle) | `tutorial.js` |
 | `onb_resume` | `step` | Gespeichertes Tutorial geht weiter | `tutorial.js` |
 | `core_round_start` | `mode`, `after_onb` | Eine neue echte Runde beginnt; `after_onb` = direkt nach dem Tutorial | `main.js` |
+| `round_cue` | `gold` | Der Hinweis zu Rundenbeginn wurde gezeigt; `gold` = es gab eine Goldader für den Pfeil | `startcue.js` |
 | `session_end` | `sec`, `state` | Seite wird verlassen (Sitzungslänge) | `analytics.js` |
 
 ## Onboarding-Funnel

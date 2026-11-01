@@ -55,5 +55,6 @@ function drawCue(ctx, cx, cy) {
   if (cue && cue.gold && G.state === 'play') drawArrow(ctx, cue.gold.x - cx, cue.gold.y - cy);
 }
 const cueOn = () => !!cue;
+const stopCue = () => (cue = null);
 
-export { cueOn, drawCue, startCue, updCue };
+export { cueOn, drawCue, startCue, stopCue, updCue };

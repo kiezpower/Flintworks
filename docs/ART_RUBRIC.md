@@ -1,6 +1,6 @@
 # Optik-Rubrik und Bewertung
 
-> **Stand: v1.54.0, 31.10.2026** (erste Bewertung v1.52.0 in Abschnitt 4, Neubewertungen in Abschnitt 7). Bewertet wird nur, was auf Bildern zu sehen war. Die Note misst die
+> **Stand: v1.55.0, 01.11.2026** (erste Bewertung v1.52.0 in Abschnitt 4, Neubewertungen in Abschnitt 7). Bewertet wird nur, was auf Bildern zu sehen war. Die Note misst die
 > **Optik gegenüber den freigegebenen Vorbildern**. Sie sagt nichts über Budget, Teamgröße oder
 > Umfang. Stilregeln: [STYLE.md](STYLE.md), UI-Regeln: [UI_STYLE.md](UI_STYLE.md).
 
@@ -227,4 +227,40 @@ Belege:
 **Gesamt (gewichtet, ohne Kat. 6):** Flintworks **7,4 / 10**, Maßstab 8,6 / 10.
 Schwächster kritischer Zustand: **Oberfläche zu Beginn**, jetzt 6 (Burghof statt leerer Wiese, aber
 noch kein Ziel im Bild, solange nach dem Tutorial keine Gebäude stehen).
+
+### Nachtrag v1.55.0
+
+Die drei zuletzt offenen Punkte sind umgesetzt, und zwar im Code statt durch einen Pixel-Artist:
+
+1. **Ziel zu Rundenbeginn** (`startcue.js`): ein Banner mit dem Rundenziel; der gelbe Pfeil zeigt bis
+   zum ersten Graben (höchstens 12 s) auf die nächste Goldader nahe der Oberfläche; der Wegweiser am
+   Burghof dreht sich dorthin.
+2. **Neue Posen** (`clonkhi.js`): Frontansicht beim Wenden, Vorlage beim Loslaufen, Rücklage mit
+   gestemmten Beinen beim Bremsen. Dazu kommen Sprung, Fall und Tragen.
+3. **Gebäude in doppelter Auflösung** (`bldart.js`, Variante 1 nach Wahl des Nutzers):
+   - Jeder Pixel der Vorlage wird als Stein, Holz, Dach oder Fenster erkannt und in 2×2 Texeln mit
+     Fugen, Maserung, Schindeln oder Glanz gezeichnet.
+   - Das gilt für alle 12 Gebäude und alle 4 Baustile, auch für die Icons im Bau-Menü und die Lobby-Burg.
+   - Die Maße bleiben exakt; ein Test prüft das.
+
+Belege:
+- Posenbogen (Stehen, Laufen, Start, Bremsen, Wenden, Sprung, Fall, Tragen).
+- Gebäudebogen (heute, Variante 1, Variante 2, Tag und Nacht) und alle Baustile.
+- Store-Bilder.
+
+| # | Kategorie | v1.54.0 | v1.55.0 | Beleg |
+|---|---|---|---|---|
+| 6 | Animation | 7 | **8** | Posenbogen: Frontansicht, Start- und Bremspose lesbar |
+| 3 | Material und Wert | 8 | 8 | Gebäude zeigen ihr Material (Burg mit Fugen); Gelände unverändert |
+| 5 | Welt und Siedlung | 7 | 7 | Gebäude detailreicher, Siedlung aber weiter eine Reihe |
+
+**Gesamt:** ohne Kategorie 6 bleibt es bei **7,4**, mit Animation **7,4** (vorher 7,3).
+Die Oberfläche zu Beginn steigt von 6 auf **7** (Banner, Pfeil, Wegweiser). Schwächster kritischer
+Zustand ist jetzt kein einzelner Bildschirm mehr. Die größten Lücken zum Maßstab bleiben Effekte (6)
+und Licht in der Tiefe (7).
+
+**Offen:**
+- UX-Test mit echten Spielern.
+- Ein älterer Fehler, gefunden beim Prüfen der Baustile: Stein- und Winterstil färben auch Ofenfeuer
+  und das Werkstattfenster grau (`restyle` in `skins.js`), weil diese Farben als Holz erkannt werden.
 

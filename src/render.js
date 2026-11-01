@@ -50,7 +50,8 @@ import { box, drawVehicles, wheel } from './vehicles/core.js';
 import { drawRails } from './vehicles/rails.js';
 import { topSolid } from './gen.js';
 import { game, joyHome } from './input.js';
-import { ICOL, SPR, drawDetailed, drawHi, drawItemBig } from './sprites.js';
+import { ICOL, SPR, drawHi, drawItemBig } from './sprites.js';
+import { drawCrafted } from './bldart.js';
 import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
 import { darkness, skyCols, sunAlt } from './weather.js';
 import { H, W, clamp, drawWorld, flush, onResize, rnd } from './world.js';
@@ -141,14 +142,14 @@ function drawSite(ctx, b, spr, sx, sy) {
   const vh = Math.ceil(b.h * b.prog),
     top = sy + b.h - vh;
   ctx.globalAlpha = 0.22;
-  drawDetailed(ctx, spr, sx, sy);
+  drawCrafted(ctx, spr, sx, sy);
   ctx.globalAlpha = 1;
   if (vh > 0) {
     ctx.save();
     ctx.beginPath();
     ctx.rect(sx - 1, top, b.w + 2, vh + 1);
     ctx.clip();
-    drawDetailed(ctx, spr, sx, sy);
+    drawCrafted(ctx, spr, sx, sy);
     ctx.restore();
   }
   // posts on both sides, a little above the walls, with planks every five pixels
@@ -410,7 +411,7 @@ function render() {
       ctx.fillRect(sx - 1, sy + b.h, b.w + 2, 1);
       for (let x = -2; x < b.w + 2; x += 2) ctx.fillRect(sx + x, sy + b.h + 1, 1, 1);
       if (b.done && b.type !== 'flag' && b.type !== 'gate') {
-        drawDetailed(ctx, spr, sx, sy);
+        drawCrafted(ctx, spr, sx, sy);
         drawRoofWeather(ctx, b, sx, sy);
       }
       else if (!b.done) drawSite(ctx, b, spr, sx, sy);

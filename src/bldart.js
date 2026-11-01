@@ -123,9 +123,15 @@ function crafted(spr, variant = 1) {
   memo.set(spr, o);
   return o;
 }
+// the same picture as a panel icon (ui.js opt(): a canvas marked hi is shown at half its size)
+function craftedIcon(spr) {
+  const o = crafted(spr, 1);
+  o.hi = true;
+  return o;
+}
 function drawCrafted(ctx, spr, x, y, variant = 1) {
   const o = crafted(spr, variant);
   ctx.drawImage(o, x - 0.5, y - 0.5, o.width / 2, o.height / 2);
 }
 
-export { crafted, drawCrafted, material };
+export { crafted, craftedIcon, drawCrafted, material };

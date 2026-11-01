@@ -185,3 +185,23 @@ test('castle tabs show one section at a time, a second tap shows all again, the 
   await expect(tools).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('the 2x building art keeps every building at exactly double its size (collision is unchanged)', async ({ page }) => {
+  const errors = await lobby(page);
+  const bad = await page.evaluate(async () => {
+    const { SPR } = await import('/src/sprites.js');
+    const { crafted, material } = await import('/src/bldart.js');
+    const out = [];
+    for (const t of ['base', 'hut', 'shop', 'lift', 'pump', 'saw', 'wind', 'furnace', 'chem', 'tower', 'gate', 'flag']) {
+      const o = crafted(SPR[t], 1);
+      // (2× plus a one-texel outline on every side)
+      if (o.width !== SPR[t].width * 2 + 2 || o.height !== SPR[t].height * 2 + 2) out.push(t);
+    }
+    // the materials are read from colours
+    if (material(0xa6, 0x9e, 0x92) !== 'stone' || material(0x8b, 0x5e, 0x34) !== 'wood') out.push('material');
+    if (material(0x9c, 0x44, 0x28) !== 'roof' || material(0xff, 0xd7, 0x7a) !== 'glass') out.push('material2');
+    return out;
+  });
+  expect(bad).toEqual([]);
+  expect(errors).toEqual([]);
+});

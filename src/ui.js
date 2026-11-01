@@ -19,6 +19,7 @@ import { FETCH, focusBadge, openCrew, sendHelperFor } from './crewui.js';
 import { register, send } from './commands.js';
 import { buildStairs } from './climb.js';
 import { BUILDABLE, VK, cannotBuild } from './vehicles/index.js';
+import { craftedIcon } from './bldart.js';
 import { vehicleIcon, vehicleOf } from './vehicles/core.js';
 import { canShoot } from './combat.js';
 import { isPlayer } from './players.js';
@@ -517,7 +518,7 @@ function openBuild() {
     const T = BT[t];
     if (T.hidden || (T.terrOnly && !terrOn())) continue;
     opt(lb, {
-      icon: SPR[t],
+      icon: craftedIcon(SPR[t]),
       title: tr(T.name),
       sub: tr(T.info),
       cost: costTxt(T.cost),
@@ -539,7 +540,7 @@ function productionSection(p) {
   for (const { b, busy, why } of list) {
     const fetch = why && !why.full && FETCH[why.item];
     opt(s, {
-      icon: SPR[b.type],
+      icon: craftedIcon(SPR[b.type]),
       title: tr(BT[b.type].name),
       sub: busy
         ? tr('läuft')

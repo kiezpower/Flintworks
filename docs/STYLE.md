@@ -81,7 +81,9 @@ Keine weichgezeichneten Kanten: Bilder ohne Glättung zeichnen, Koordinaten rund
 - Posen (`clonkhi.js`): `LEGS` (4 Laufphasen), `JUMP` (steigen: Beine angezogen, Arm halb hoch),
   `FALL` (fallen: Beine gespreizt, Arm hoch), `CLIMB`. „In der Luft“ heißt `c.airT > 3` (eine Stufe
   hinab zählt nicht). Ab 3 Dingen im Gepäck trägt der Wühler einen Sack auf dem Rücken.
-- Wenden: 5 Bilder lang die Durchgangs-Beinphase (`LEGS[3]`) ohne Armschwung (`c.turnF`).
+- Wenden: 5 Bilder lang die Frontansicht `FRONT` (eigene Pixelzeilen, Hut wird mitgezeichnet; `c.turnF`).
+- Loslaufen: 4 Bilder Vorlage (ein Texel vor und tiefer, Schrittbeine; `c.startF`); Bremsen aus
+  vollem Lauf: 5 Bilder Rücklage mit gestemmten Beinen `BRAKE` (`c.stopF`).
 - Staub (`dust`): jede Landung ab `fallV > 1.2`, Wenden aus vollem Lauf, Schritte.
 - Monster zeigen ein blinkendes „!“, bevor sie zuschlagen können (nur Bild; Takt und Schaden gleich;
   im Netz als Feld `w` der Tiere übertragen).
@@ -119,4 +121,25 @@ Keine weichgezeichneten Kanten: Bilder ohne Glättung zeichnen, Koordinaten rund
    Zustands-Matrix. Eine Änderung darf keine Kategorie schlechter machen.
 3. 1-Sekunden-Test: Bild kurz zeigen. Sind Figur, Gefahr, nächste Handlung erkennbar?
 4. Note in ART_RUBRIC.md nachtragen, wenn sich eine Kategorie sichtbar ändert.
+
+## Gebäude in doppelter Auflösung (`bldart.js`)
+
+- Die Gebäude werden weiter in 1× gezeichnet (`sprites.js`, Baustile über `restyle` in `skins.js`).
+  Auf dem Bildschirm erscheinen sie über `crafted()`: Jeder Pixel wird nach seiner Farbe als Stein,
+  Holz, Dach, Fenster, Eisen oder dunkle Öffnung erkannt (`material()`); seine 2×2 Texel bekommen das
+  passende Muster:
+  - Stein: Fugen rechts und unten im Versatz;
+  - Holz: dunkle Maserungs-Streifen und Astlöcher;
+  - Dach: Schindelkanten;
+  - Fenster: Glanz oben links.
+- Neue Gebäude brauchen dafür nichts Eigenes: Sie bekommen das Muster, wenn sie die Material-Farben
+  der Palette benutzen (Stein grau, Holz braun-orange, Dach rot oder schiefergrau, Fenster hellgelb).
+- Die Maße bleiben exakt doppelt (plus 1 Texel Umriss); Kollision und Bauplatz hängen nur an `b.w`/`b.h`.
+- Variante 2 (Moos und Ruß) ist im Code vorhanden (`crafted(spr, 2)`), aber nicht in Gebrauch.
+
+## Rundenbeginn (`startcue.js`)
+
+- Banner mit Modus und Ziel; gelber Pfeil (`arrow.js`, derselbe wie im Tutorial) zur nächsten
+  Goldader bis 60 Reihen unter der Oberfläche; weg nach dem ersten Graben oder nach 12 s; der
+  Wegweiser am Burghof zeigt in dieselbe Richtung (`G.signDir`). Nicht im Tutorial, nicht als Gast.
 

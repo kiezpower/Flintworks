@@ -135,6 +135,9 @@ src/
   onboarding.css      Startschleier, HUD im Tutorial, große Texte
   panels.css          Fenster als Spiel-UI: Kachelzustände, Grund-Chips, Reiter
   props.js            Burghof, Fässer, Kisten, Zäune, Laternen, Wege und Stromleitungen (nur Bild)
+  bldart.js           Gebäude in doppelter Auflösung mit Fugen, Maserung, Schindeln
+  startcue.js         Rundenbeginn: Ziel-Banner und Pfeil zur nächsten Goldader
+  arrow.js            Der gelbe Zielpfeil (Tutorial und Rundenbeginn)
   analytics.js        Analyse-Ereignisse (nur lokal), siehe docs/ANALYTICS.md
   lessons.js          Tipps und Aufträge nach dem Tutorial, Spielhilfe in der Lobby
   versus.js           Versus: Burg-Lebenspunkte, Hügel, Rundenuhr, Nachschub, Sieger
