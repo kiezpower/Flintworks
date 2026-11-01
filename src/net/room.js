@@ -40,7 +40,8 @@ function onGameMsg(kind, fn) {
   msgHandlers.set(kind, fn);
 }
 
-// a random token per device: the relay recognises us again after a dropout
+// a random token per device: the relay recognises us again after a dropout (and derives the
+// public friend code from it, friends.js); it is never shown to other players
 function token() {
   try {
     let t = localStorage.getItem('flintworks-token');
@@ -163,13 +164,13 @@ function browseRooms(on, stillOpen) {
   clearInterval(browseT);
   if (on) {
     const open = transport.status === 'open';
-    connect(askRooms);
+    connect(askRooms, 'browse');
     if (open) askRooms();
     browseT = setInterval(() => (stillOpen && !stillOpen() ? browseRooms(false) : askRooms()), 3000);
   } else {
     NET.rooms = null;
     // only looking, no room: hang up
-    if (!NET.room && NET.status !== 'connecting') disconnect();
+    disconnect('browse');
   }
 }
 function joinRoom(code) {
@@ -179,7 +180,7 @@ function joinRoom(code) {
 function leaveRoom(keepError) {
   browseRooms(false);
   if (NET.room) send({ t: 'leave' });
-  disconnect();
+  disconnect('room');
   quick = false;
   Object.assign(NET, { room: null, pid: null, host: false, pub: false, auto: null, cdEnd: 0, players: [], gmode: null, status: keepError ? 'error' : 'offline' });
   G.myId = 0;
@@ -253,7 +254,7 @@ function updateMe() {
 // few seconds) and come back into the room when the app is open again
 document.addEventListener('visibilitychange', () => {
   if (!NET.room) return;
-  if (document.hidden) disconnect();
+  if (document.hidden) disconnect('room');
   else {
     NET.status = 'connecting';
     changed();
@@ -267,6 +268,7 @@ if (fromUrl && /^[A-Z0-9]{6}$/i.test(fromUrl)) joinRoom(fromUrl);
 
 export {
   MAX_PLAYERS,
+  token,
   NET,
   browseRooms,
   copyText,

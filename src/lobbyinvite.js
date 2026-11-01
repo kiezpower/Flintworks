@@ -23,6 +23,8 @@ import {
   setVersus,
   shareInvite,
 } from './net/room.js';
+import { addPlayer, canAdd, openFriends } from './lobbyfriends.js';
+import { onlineCount } from './net/friends.js';
 import { netSaveInfo } from './net/netsave.js';
 import { fromTag, kindName, modeName, rotation } from './net/rotation.js';
 import { P } from './profile.js';
@@ -66,6 +68,7 @@ function openInvite() {
     drawRooms();
     browseRooms(true, () => open && !panelEl.hidden && !!$('lbRooms'));
     box.insertAdjacentHTML('beforeend', `<p class="lb-or">${tr('oder mit Freunden spielen')}</p>`);
+    box.appendChild(friendsBtn());
     const go = document.createElement('button');
     go.className = 'lb-way lb-friends';
     go.id = 'lbCreate';
@@ -98,18 +101,28 @@ function openInvite() {
     if (fresh()) toast((await copyText(NET.room)) ? 'Code kopiert' : 'Kopieren nicht möglich');
   });
   if (NET.players.length < MAX_PLAYERS) box.appendChild(shareRow());
+  if (NET.players.length < MAX_PLAYERS) box.appendChild(friendsBtn());
   box.appendChild(meRow());
   // who is in
   const l = sec(p, tr('Spieler {n}/{max}', { n: NET.players.length, max: MAX_PLAYERS }));
   l.classList.add('lb-players');
   for (const pl of NET.players) {
     const host = pl.pid === NET.hostPid;
+    // another player who is no friend yet: tap to add (they get a request)
+    const add = canAdd(pl);
+    const state = !pl.online ? tr('getrennt') : host ? tr('Host') : pl.ready ? tr('bereit') : tr('noch nicht bereit');
     opt(l, {
       title: `<span class="lb-dot" style="background:${pl.cap}"></span>${esc(pl.name)}${pl.pid === NET.pid ? ' ' + tr('(du)') : ''}`,
-      sub: !pl.online ? tr('getrennt') : host ? tr('Host') : pl.ready ? tr('bereit') : tr('noch nicht bereit'),
-      cost: host ? '★' : pl.ready ? '✓' : '',
+      sub: add ? `${state} · ${tr('Tippen: als Freund hinzufügen')}` : state,
+      cost: add ? '+' : host ? '★' : pl.ready ? '✓' : '',
       short: true,
-      onClick: () => pl.pid === NET.pid && !G.net && openName(openInvite),
+      onClick: () => {
+        if (pl.pid === NET.pid && !G.net) openName(openInvite);
+        else if (add) {
+          addPlayer(pl);
+          openInvite();
+        }
+      },
     });
   }
   // a quick play room: the mode of the hour, and it starts by itself (net/countdown.js)
@@ -216,6 +229,20 @@ function leaveOpt(p, title) {
     },
   });
 }
+// to the friends panel (join a friend's room, invite a friend into this one)
+function friendsBtn() {
+  const b = document.createElement('button');
+  b.className = 'lb-way lb-friends';
+  b.id = 'lbToFriends';
+  const n = onlineCount();
+  b.textContent = n ? tr('Freunde ({n} online)', { n }) : tr('Freunde');
+  b.addEventListener('click', () => {
+    if (!fresh()) return;
+    open = false;
+    openFriends(openInvite);
+  });
+  return b;
+}
 // "You play as …": tap to change the name others see
 function meRow() {
   const b = document.createElement('button');
@@ -297,5 +324,8 @@ onRoomChange(() => {
     else openInvite();
   } else open = false;
 });
+
+// joining a friend's room from the friends panel: on to the room panel
+G.onFriendJoin = () => openInvite();
 
 export { openInvite, refreshSlots };
