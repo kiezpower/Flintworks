@@ -17,8 +17,8 @@ const DIFF = {
 const diffOf = d => (DIFF[d] ? d : 'adventure');
 
 // fills the panel p with the setting groups; reopen redraws the panel after a change
-// (lobby: also the difficulty, which is set when a world is made)
-function settingsSections(p, reopen, { lobby = false } = {}) {
+// (lobby: also the difficulty, which is set when a world is made; game: a section to add to)
+function settingsSections(p, reopen, { lobby = false, game: gameSec = null } = {}) {
   const item = (l, title, sub, fn) =>
     opt(l, {
       title: tr(title),
@@ -30,14 +30,27 @@ function settingsSections(p, reopen, { lobby = false } = {}) {
       },
     });
 
+  // (the game menu passes its own first section, the lobby gets one here)
+  const game = gameSec || sec(p, 'Spiel');
   // the difficulty of free play (campaign levels and the Tagesschacht keep their own)
   if (lobby) {
     const k = diffOf(P.diff);
-    item(sec(p, 'Spiel'), tr('Schwierigkeit: {name}', { name: tr(DIFF[k].name) }), DIFF[k].info, () => {
+    item(game, tr('Schwierigkeit: {name}', { name: tr(DIFF[k].name) }), DIFF[k].info, () => {
       const ks = Object.keys(DIFF);
       P.diff = ks[(ks.indexOf(k) + 1) % ks.length];
     });
   }
+  // computer opponents in quick play (net/session.js, bots.js): off, the castles nobody plays
+  // stay empty and a Versus room waits for a real player; counts from the next round, and in a
+  // room the setting of the host decides
+  item(
+    game,
+    P.bots === false ? 'Bots: aus' : 'Bots: an',
+    P.bots === false
+      ? 'Schnelles Spiel wartet auf echte Mitspieler – keine Computergegner'
+      : 'Im schnellen Spiel besetzen Computergegner leere Burgen',
+    () => (P.bots = P.bots === false),
+  );
 
   const snd = sec(p, 'Ton');
   item(snd, G.muted ? 'Ton aus' : 'Ton an', 'Ton', () => $('sndBtn').click());

@@ -246,3 +246,35 @@ test('a bigger bag with five slots and its own button, and the castle shows itse
   await expect(page.locator('#toast')).toContainText('In der Burg');
   expect(errors).toEqual([]);
 });
+
+test('bots can be switched off in the settings: quick play then fills no castles with them', async ({ page }) => {
+  const errors = await lobby(page);
+  await page.click('#lbOpt');
+  const tile = page.locator('#pBody .opt', { hasText: 'Bots: an' });
+  await expect(tile).toHaveCount(1);
+  await page.waitForTimeout(500);
+  await tile.click();
+  await expect(page.locator('#pBody .opt', { hasText: 'Bots: aus' })).toHaveCount(1);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')).bots)).toBe(false);
+  // a quick play Versus room, alone: no bot castle (on: one bot for the blue castle)
+  const msg = await page.evaluate(() =>
+    Promise.all([import('/src/net/room.js'), import('/src/net/session.js'), import('/src/profile.js')]).then(
+      ([{ NET }, s, { P }]) => {
+        Object.assign(NET, { auto: { versus: true }, versus: true, ffa: false, pid: 1 });
+        NET.players = [{ pid: 1, name: 'A', online: true }];
+        const off = s.startMessage('gold');
+        P.bots = true;
+        const on = s.startMessage('gold');
+        Object.assign(NET, { auto: null, versus: false, players: [] });
+        return { off: [off.bots, off.versus], on: [on.bots, on.versus] };
+      },
+    ),
+  );
+  expect(msg).toEqual({ off: [[], false], on: [[1], true] });
+  // the game menu has it too, in its first section
+  await page.keyboard.press('Escape');
+  await play(page);
+  await page.click('#menuBtn');
+  await expect(page.locator('#pBody .opt', { hasText: /Bots: (an|aus)/ })).toHaveCount(1);
+  expect(errors).toEqual([]);
+});

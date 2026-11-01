@@ -191,5 +191,12 @@ const EN2 = {
     'Still empty. Pick up what you find – up to {max} things fit in.',
   'in der Hand': 'in hand',
   'Taste {n}': 'Key {n}',
+  'Bots: an': 'Bots: on',
+  'Startet von selbst, sobald ein Mitspieler da ist – Bots sind aus':
+    'Starts by itself as soon as another player is in – bots are off',
+  'Bots: aus': 'Bots: off',
+  'Im schnellen Spiel besetzen Computergegner leere Burgen': 'In quick play, computer opponents take empty castles',
+  'Schnelles Spiel wartet auf echte Mitspieler – keine Computergegner':
+    'Quick play waits for real players – no computer opponents',
 };
 export { EN2 };

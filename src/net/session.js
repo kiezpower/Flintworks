@@ -3,6 +3,7 @@
 // and send their input (see host.js and client.js). Players may drop out and come back, join
 // late, and the host role moves to another player when the host is gone. A quick play room
 // fills empty castles with bots (bots.js); a late joiner takes over a bot's castle.
+import { P } from '../profile.js';
 import { parseSkin } from '../skins.js';
 import { addBot, takeOverBot } from '../bots.js';
 import { addClonk } from '../entities.js';
@@ -27,7 +28,8 @@ function startMessage(gmode) {
   const free = NET.versus && NET.ffa && !GAME_MODES[gmode]?.pkg;
   // quick play: bots take the castles nobody plays (alone in Versus one, "Jeder gegen jeden" up
   // to three castles)
-  const fill = !!NET.auto && !!NET.versus;
+  // (not when the host switched bots off in the settings)
+  const fill = !!NET.auto && !!NET.versus && P.bots !== false;
   const castles = free ? Math.max(n, fill ? 3 : 0) : fill && n < 2 ? 2 : 0;
   const bots = [];
   for (let t = n; t < castles; t++) bots.push(free ? t : 1);

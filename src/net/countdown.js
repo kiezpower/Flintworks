@@ -4,6 +4,7 @@
 // longer wait anyway: in Versus bots take the other castles (bots.js). The host sends the time
 // left every second, the others show it.
 import { tr } from '../i18n.js';
+import { P } from '../profile.js';
 import { G } from '../state.js';
 import { NET, inRoom, onGameMsg, onRoomChange, sendTo, setReady } from './room.js';
 import { modeName } from './rotation.js';
@@ -22,7 +23,9 @@ const online = () => NET.players.filter(p => p.online);
 
 function hostTick() {
   const now = performance.now();
-  const go = NET.host && NET.auto && inRoom() && idle() && online().length >= 1;
+  // (bots switched off: a Versus round needs a second player, alone it waits)
+  const mates = P.bots === false && NET.auto?.versus ? 2 : 1;
+  const go = NET.host && NET.auto && inRoom() && idle() && online().length >= mates;
   if (!go) {
     if (end) {
       end = NET.cdEnd = 0;
@@ -81,7 +84,7 @@ function draw() {
   el.classList.toggle('on', left > 0);
   el.innerHTML = !left
     ? `${tr('Warte auf Mitspieler …')} · ${what}`
-    : solo && NET.auto.versus
+    : solo && NET.auto.versus && P.bots !== false
       ? `${tr('Noch allein: in {n} s geht es gegen Bots los', { n })} · ${what}`
       : solo
         ? `${tr('Noch allein: in {n} s geht es los', { n })} · ${what}`

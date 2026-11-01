@@ -419,7 +419,7 @@ function openMenu() {
     $('zoomBtn').click();
     openMenu();
   });
-  settingsSections(p, openMenu);
+  settingsSections(p, openMenu, { game: l });
 }
 // "back to base" when stuck
 register('home', c => {
