@@ -1,4 +1,4 @@
-import { canShoot, shoot, swordContext } from './combat.js';
+import { canShoot, hasBow, shoot, swordContext } from './combat.js';
 import { hasTool } from './tools.js';
 import { onDig } from './hazards.js';
 import { buzz } from './sound.js';
@@ -813,7 +813,15 @@ function onCase(e, cs) {
   return !e.climb && Math.abs(e.y + e.h - cs.y) < 1.5 && e.x + e.w > cs.x && e.x < cs.x + 12;
 }
 function doThrow(c, I) {
-  if (I.throwP && !c.inv.length && !c.climb && !c.tumble && canShoot(c)) return shoot(c, I);
+  if (I.throwP && !c.inv.length && !c.climb && !c.tumble && hasBow(c)) {
+    if (canShoot(c)) return shoot(c, I);
+    // a bow but no arrows: say where to get them (not more often than once a second)
+    if (!(G.frame - (c.quiverTip ?? -1e9) < 60)) {
+      c.quiverTip = G.frame;
+      toast('Köcher leer – Pfeile in der Burg unter „Ausrüstung“ herstellen');
+    }
+    return;
+  }
   if (!I.throwP || !c.inv.length || c.climb || c.tumble) return;
   if (c.ride != null) return; // vehicles use Throw themselves (catapult, airship)
   if (c.isel >= c.inv.length) c.isel = c.inv.length - 1;

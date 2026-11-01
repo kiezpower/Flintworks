@@ -3,6 +3,7 @@
 // itself, waits at both ends, takes the helpers' load at the far end and sells/stores it when
 // it reaches the castle.
 import { payRes, hasRes } from '../buildings.js';
+import { moveBody } from '../entities.js';
 import { sfx } from '../sound.js';
 import { G, crew, vehicles } from '../state.js';
 import { unload } from '../store.js';
@@ -35,8 +36,18 @@ function startLaying(c) {
 }
 function stopLaying(c) {
   c.laying = false;
-  if (c.layTrack && c.layTrack.p.length < 2) G.rails.splice(G.rails.indexOf(c.layTrack), 1);
+  if (c.layTrack && c.layTrack.p.length < 2) removeTrack(G.rails.indexOf(c.layTrack));
   c.layTrack = null;
+}
+// trains keep their track as an index into G.rails: shift them along when one goes away
+function removeTrack(ti) {
+  if (ti < 0) return;
+  G.rails.splice(ti, 1);
+  for (const v of vehicles)
+    if (v.kind === 'train') {
+      if (v.track === ti) v.track = -1;
+      else if (v.track > ti) v.track--;
+    }
 }
 // each tick for a Wühler that lays track
 function layTick(c) {
@@ -116,10 +127,21 @@ defineVehicle('train', {
     v.cargo = [];
   },
   upd(v) {
-    const tr = trackOf(v);
+    let tr = trackOf(v);
     if (!tr || tr.p.length < 2) {
-      v.vy = Math.min((v.vy || 0) + 0.17, 4);
-      return;
+      // no track (any more): it gets onto one that runs right under it, otherwise it falls
+      const n = nearestPoint(v.x + v.w / 2, v.y + v.h + 1, v.team);
+      if (n && n.d < 12 && G.rails[n.ti].p.length >= 2) {
+        v.track = n.ti;
+        v.pos = n.k;
+        v.vy = 0;
+        tr = trackOf(v);
+      } else {
+        v.vy = Math.min((v.vy || 0) + 0.17, 4);
+        const [, by] = moveBody(v, 0, v.vy, 0);
+        if (by) v.vy = 0;
+        return;
+      }
     }
     const last = tr.p.length - 1;
     if (v.wait > 0) {

@@ -147,6 +147,7 @@ defineVehicle('catapult', {
   seat: [-5, -8],
   make(v) {
     v.ang = 0.8;
+    v.cd = 0; // reload time after a shot (ticks)
   },
   upd(v, I, r) {
     if (I) {
@@ -156,9 +157,11 @@ defineVehicle('catapult', {
       }
       if (I.ay < -0.4) v.ang = Math.min(1.35, v.ang + 0.02);
       if (I.ay > 0.4) v.ang = Math.max(0.25, v.ang - 0.02);
-      if (I.throwP && v.cd <= 0) fire(v, r);
+      // (!(cd > 0): also catapults from saves made before cd existed)
+      if (I.throwP && !(v.cd > 0)) fire(v, r);
     }
     if (v.cd > 0) v.cd--;
+    else v.cd = 0;
     fall(v, I);
   },
   draw(ctx, v, x, y) {

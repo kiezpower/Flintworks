@@ -22,7 +22,7 @@ import { buildStairs } from './climb.js';
 import { BUILDABLE, VK, cannotBuild } from './vehicles/index.js';
 import { craftedIcon } from './bldart.js';
 import { vehicleIcon, vehicleOf } from './vehicles/core.js';
-import { canShoot } from './combat.js';
+import { hasBow } from './combat.js';
 import { isPlayer } from './players.js';
 import { missionText } from './missions.js';
 import { G, INV_MAX, INV_SHOWN, animals, builds, crew, lorries } from './state.js';
@@ -136,8 +136,8 @@ function hud() {
   // automatic digging hides the dig and jump buttons; throw only shows with something in hand
   btnsEl.classList.toggle('auto', !!G.autoDig);
   btnsEl.classList.toggle('jumpon', !!G.jumpBtn);
-  // (also with the bow and arrows, and in a catapult or airship)
-  const thr = c && !c.dead && (c.ride != null ? THROWERS[vehicleOf(c)?.kind] : c.inv[c.isel] || canShoot(c));
+  // (also with a bow – an empty quiver then says where arrows come from – and in a catapult or airship)
+  const thr = c && !c.dead && (c.ride != null ? THROWERS[vehicleOf(c)?.kind] : c.inv[c.isel] || hasBow(c));
   btnsEl.classList.toggle('noitem', !thr);
   // the grappling hook's button once the team has one (always ready: it is thrown anyway)
   btnsEl.classList.toggle('hookon', hasGear(c, 'hook'));

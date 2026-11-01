@@ -93,7 +93,8 @@ function swordContext(c) {
 
 // ---- bow ----
 const quiver = () => arrowsOf('arrow') + arrowsOf('farrow');
-const canShoot = c => !!c && hasTool('bow') && quiver() > 0 && c.ride == null;
+const hasBow = c => !!c && hasTool('bow') && c.ride == null;
+const canShoot = c => hasBow(c) && quiver() > 0;
 // Wurf with an empty hand; normal arrows first, then fire arrows
 function shoot(c, I) {
   const fire = arrowsOf('arrow') <= 0;
@@ -262,4 +263,4 @@ function drawArrow(ctx, a, x, y) {
   ctx.fillRect(Math.round(x + a.vx / d), Math.round(y + a.vy / d), 1, 1);
 }
 
-export { canShoot, drawArrow, drawGear, enemy, fireArrow, guard, playShot, shoot, strike, swordContext, updArrows, updCombat };
+export { canShoot, drawArrow, hasBow, drawGear, enemy, fireArrow, guard, playShot, shoot, strike, swordContext, updArrows, updCombat };
