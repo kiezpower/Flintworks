@@ -4,6 +4,9 @@
 import { P, saveProfile } from './profile.js';
 import { tr } from './i18n.js';
 import { resize } from './render.js';
+import { soloBoosts } from './camp.js';
+import { isPlayer } from './players.js';
+import { addStock } from './store.js';
 import { G, crew } from './state.js';
 import { $, opt, sec } from './ui.js';
 
@@ -50,6 +53,18 @@ function settingsSections(p, reopen, { lobby = false, game: gameSec = null } = {
       ? 'Schnelles Spiel wartet auf echte Mitspieler – keine Computergegner'
       : 'Im schnellen Spiel besetzen Computergegner leere Burgen',
     () => (P.bots = P.bots === false),
+  );
+  // the helper Wühler of free play alone (applyHelpers): off, you dig alone, from now on
+  item(
+    game,
+    P.helpers === false ? 'Helfer: aus' : 'Helfer: an',
+    P.helpers === false
+      ? 'Du gräbst allein: keine Helfer-Wühler, kein Anheuern (freies Spiel allein)'
+      : 'Helfer-Wühler arbeiten von selbst für dich (freies Spiel allein)',
+    () => {
+      P.helpers = P.helpers === false;
+      if (G.inRun) applyHelpers();
+    },
   );
 
   const snd = sec(p, 'Ton');
@@ -113,4 +128,19 @@ function applyControls() {
   if (!G.climbOn) for (const c of crew) c.climb = c.hangle = false;
 }
 
-export { DIFF, applyControls, applyText, diffOf, settingsSections };
+// helpers switched off (only in free play alone; Versus, multiplayer, levels, the Tagesschacht and
+// the tutorial keep their crew): the helper Wühler of your castle leave, what they carry goes into
+// the store, and none can be hired (ui.js). Run at every start and resume, and when switched.
+function applyHelpers() {
+  G.noHelpers = P.helpers === false && soloBoosts();
+  if (!G.noHelpers) return;
+  for (let k = crew.length - 1; k >= 0; k--) {
+    const c = crew[k];
+    if (isPlayer(c) || c.bot || c.trapped || c.lost || (c.team || 0) !== (G.myTeam || 0)) continue;
+    for (const t of c.inv || []) addStock(t);
+    crew.splice(k, 1);
+  }
+  G.crewKey = '';
+}
+
+export { DIFF, applyControls, applyHelpers, applyText, diffOf, settingsSections };

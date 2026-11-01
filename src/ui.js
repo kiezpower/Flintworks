@@ -632,6 +632,7 @@ function openBase() {
   toolSection(p, c, { opt, sec, toast, reopen: openBase, lacking });
   const l = sec(p, tr('Kaufen · Kasse: {m} Taler', { m: G.money }));
   for (const o of BUY) {
+    if (o.t === 'clonk' && G.noHelpers) continue; // (helpers switched off, settings.js)
     const icon = ITEM[o.t] ? itemIcon(o.t) : o.t === 'lorry' ? SPR.lorryIcon : SPR.clonkIcon;
     const alive = crew.filter(x => !x.dead).length;
     const full = o.t === 'clonk' && alive >= BASELV[lvl()].crew,
@@ -670,7 +671,7 @@ register('take', (c, { t }) => {
 register('buy', (c, { t }) => {
   const o = BUY.find(b => b.t === t);
   if (!o || G.money < o.price) return;
-  if (t === 'clonk' && crew.filter(x => !x.dead).length >= BASELV[lvl()].crew) return;
+  if (t === 'clonk' && (G.noHelpers || crew.filter(x => !x.dead).length >= BASELV[lvl()].crew)) return;
   G.money -= o.price;
   sfx('coin');
   if (t === 'clonk') {

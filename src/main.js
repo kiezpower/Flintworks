@@ -16,7 +16,7 @@ import { updAmbience } from './ambience.js';
 import { endTutorial, resumeTutorial, setTutHooks, startTutorial, tutHud, updTutorial } from './tutorial.js';
 import { applyStatic, tr } from './i18n.js';
 import { openPanel, opt, sec } from './ui.js';
-import { DIFF, applyControls, diffOf, settingsSections } from './settings.js';
+import { DIFF, applyControls, applyHelpers, diffOf, settingsSections } from './settings.js';
 import { goHome } from './climb.js';
 import '@fontsource/pixelify-sans/500.css';
 import '@fontsource/pixelify-sans/700.css';
@@ -243,6 +243,7 @@ function startGame(withTutorial = false) {
   // your castle in your building style (alone; in a room the host sets it, net/session.js)
   if (!G.net && G.base && !G.tut) G.base.skin = P.bstyle;
   setDigBoost();
+  applyHelpers();
   applyControls();
   G.lightFx = P.lightfx !== false;
   G.vibe = P.vibe !== false;

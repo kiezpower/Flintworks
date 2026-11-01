@@ -19,12 +19,16 @@ function value(m) {
   return m.prog();
 }
 function startMission(i) {
+  // (tasks about helpers are skipped while they are switched off, settings.js)
+  while (G.noHelpers && MISSIONS[i]?.crew) i++;
   const m = MISSIONS[i];
   G.mis = { i, base: m && m.count ? m.count() : 0 };
 }
 function updMissions() {
   if (G.frame % 30 || G.teams || mode().campaign || G.tut) return; // no tasks in Versus, campaign, tutorial
   if (!G.mis) startMission(0);
+  // helpers switched off during a helper task: on to the next one
+  if (G.noHelpers && cur()?.crew) startMission(G.mis.i + 1);
   const m = cur();
   if (!m) return;
   if (value(m) >= m.goal) {

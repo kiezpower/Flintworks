@@ -278,3 +278,25 @@ test('bots can be switched off in the settings: quick play then fills no castles
   await expect(page.locator('#pBody .opt', { hasText: /Bots: (an|aus)/ })).toHaveCount(1);
   expect(errors).toEqual([]);
 });
+
+test('helpers can be switched off: you dig alone, no helper tasks, no hiring', async ({ page }) => {
+  const errors = await lobby(page, { helpers: false });
+  await play(page);
+  await page.evaluate(() => window.__ww.step(40));
+  const r = await page.evaluate(() => {
+    const w = window.__ww;
+    return { crew: w.crew.length, mine: w.crew[0].pid === w.G.myId, off: w.G.noHelpers };
+  });
+  expect(r).toEqual({ crew: 1, mine: true, off: true });
+  await expect(page.locator('#misTxt')).not.toContainText('Helfer');
+  await page.evaluate(() => window.__ww.openBase());
+  await expect(page.locator('#panel')).not.toContainText('Neues Crewmitglied');
+  // switched on again in the game menu: hiring is back
+  await page.keyboard.press('Escape');
+  await page.click('#menuBtn');
+  await page.waitForTimeout(500);
+  await page.locator('#pBody .opt', { hasText: 'Helfer: aus' }).click();
+  await expect(page.locator('#pBody .opt', { hasText: 'Helfer: an' })).toHaveCount(1);
+  expect(await page.evaluate(() => window.__ww.G.noHelpers)).toBe(false);
+  expect(errors).toEqual([]);
+});

@@ -192,6 +192,11 @@ const EN2 = {
   'in der Hand': 'in hand',
   'Taste {n}': 'Key {n}',
   'Bots: an': 'Bots: on',
+  'Helfer: an': 'Helpers: on',
+  'Helfer: aus': 'Helpers: off',
+  'Helfer-Wühler arbeiten von selbst für dich (freies Spiel allein)': 'Helper Wühler work for you on their own (free play alone)',
+  'Du gräbst allein: keine Helfer-Wühler, kein Anheuern (freies Spiel allein)':
+    'You dig alone: no helper Wühler, no hiring (free play alone)',
   'Startet von selbst, sobald ein Mitspieler da ist – Bots sind aus':
     'Starts by itself as soon as another player is in – bots are off',
   'Bots: aus': 'Bots: off',
