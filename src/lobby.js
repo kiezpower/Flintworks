@@ -12,6 +12,7 @@ import { getLang, setLang, tr } from './i18n.js';
 import { camp as campState, pending, vaultFull } from './camp.js';
 import { openCamp } from './lobbycamp.js';
 import { CAPS, HATS, P, QUESTS, claimQuest, saveProfile, unlockText, xpNeed } from './profile.js';
+import { openFriends, refreshFriendsChip } from './lobbyfriends.js';
 import { openInvite, refreshSlots } from './lobbyinvite.js';
 import { badge, dailyFromLink, dayNo, openDaily } from './daily.js';
 import { openName } from './lobbyname.js';
@@ -140,6 +141,7 @@ function refresh() {
   $('lbRoadBar').style.width = r ? Math.min(100, ((P.trophies - prev) / (r.t - prev)) * 100) + '%' : '100%';
   setTxt('lbRoadTxt', r ? `🏆 ${P.trophies}/${r.t} · ${tr(r.name)}` : tr('Alles freigeschaltet'));
   refreshSlots();
+  refreshFriendsChip();
   const run = hooks.hasRun();
   // in a room only the host starts; the others wait
   const wait = inRoom() && !NET.host && !run;
@@ -351,6 +353,7 @@ tap('lbSlot2', openInvite);
 tap('lbLvlBtn', openQuests);
 tap('lbCamp', () => openCamp({ burst }));
 tap('lbOpt', openOptions);
+tap('lbFriends', () => openFriends(null));
 tap('lbDaily', () => openDaily(hooks));
 // what is chosen to play: the profile's choice; in a room the host's (no campaign there)
 function chosen() {

@@ -7,8 +7,10 @@ const URL_ = new URLSearchParams(location.search).get('mp') || DEFAULT_URL;
 const T = { ws: null, status: 'off', rtt: 0, want: false }; // status: off | connecting | open
 const handlers = new Map(); // message type → [fn]
 let backoff = 500,
-  pingT = 0,
-  onOpenFn = null;
+  pingT = 0;
+// who uses the line (key → onOpen): the room and the friends list share it; it hangs up when
+// nobody needs it any more
+const users = new Map();
 
 function on(type, fn) {
   if (!handlers.has(type)) handlers.set(type, []);
@@ -24,9 +26,9 @@ function send(m) {
   }
   return false;
 }
-// onOpen runs after every (re)connect, e.g. to (re)join the room
-function connect(onOpen) {
-  onOpenFn = onOpen;
+// onOpen runs after every (re)connect, e.g. to (re)join the room; key: who wants the line
+function connect(onOpen, key = 'room') {
+  users.set(key, onOpen);
   T.want = true;
   if (T.ws && T.ws.readyState <= 1) return;
   T.status = 'connecting';
@@ -44,7 +46,7 @@ function connect(onOpen) {
     emit('status', T);
     clearInterval(pingT);
     pingT = setInterval(() => send({ t: 'ping', ts: performance.now() }), 3000);
-    onOpenFn?.();
+    for (const fn of users.values()) fn?.();
   };
   ws.onmessage = e => {
     let m;
@@ -66,10 +68,17 @@ function connect(onOpen) {
   ws.onerror = () => ws.close();
 }
 function retry() {
-  setTimeout(() => T.want && connect(onOpenFn), backoff);
+  setTimeout(() => {
+    if (!T.want || !users.size) return;
+    const [k, fn] = users.entries().next().value;
+    connect(fn, k);
+  }, backoff);
   backoff = Math.min(4000, backoff * 2);
 }
-function disconnect() {
+// key: this user does not need the line any more (it stays open for the others)
+function disconnect(key = 'room') {
+  users.delete(key);
+  if (users.size) return;
   T.want = false;
   clearInterval(pingT);
   if (T.ws) T.ws.close();
@@ -77,4 +86,5 @@ function disconnect() {
   T.status = 'off';
 }
 
-export { T as transport, connect, disconnect, on, send };
+const wants = key => users.has(key);
+export { T as transport, connect, disconnect, on, send, wants };

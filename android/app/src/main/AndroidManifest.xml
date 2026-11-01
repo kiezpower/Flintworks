@@ -23,12 +23,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- invitations: flintworks://join/CODE opens the app in the room -->
+            <!-- invitations: flintworks://join/CODE opens the app in the room, flintworks://friend/CODE adds a friend -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="flintworks" android:host="join" />
+                <data android:scheme="flintworks" android:host="friend" />
             </intent-filter>
 
             <!-- the web invite link can open the app too (Android asks which app to use) -->

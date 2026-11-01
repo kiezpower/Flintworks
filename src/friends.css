@@ -1,0 +1,129 @@
+/* Friends: the chip in the lobby and the friends panel (lobbyfriends.js) */
+.lb-fchip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 6px 3px 5px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+}
+.lb-fchip b:empty {
+  display: none;
+}
+.fr-box {
+  display: grid;
+  gap: 6px;
+}
+.fr-invite {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  align-items: center;
+  padding: 8px;
+  border: 2px solid var(--gold);
+  border-radius: 6px;
+  background: rgba(242, 194, 48, 0.12);
+}
+.fr-invite > b {
+  grid-column: 1 / -1;
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--gold);
+}
+.fr-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 4px 6px;
+  border: 2px solid var(--edge);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.25);
+}
+.fr-txt {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+.fr-txt b,
+.fr-txt small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fr-txt small {
+  font-size: 11px;
+  opacity: 0.8;
+}
+.fr-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border: 1px solid #24160c;
+  border-radius: 2px;
+  background: #6b6258;
+}
+.fr-dot.on {
+  background: var(--leaf);
+  box-shadow: 0 0 4px var(--leaf);
+}
+.fr-dot.ask {
+  background: var(--gold);
+}
+.fr-dot.wait {
+  background: transparent;
+  border-color: #8b7a66;
+  border-style: dashed;
+}
+.fr-dot.rank {
+  display: none;
+}
+.fr-act {
+  flex: none;
+  min-width: 40px;
+  min-height: 36px;
+  padding: 4px 10px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  background: #3a2414;
+  border: 2px solid var(--edge);
+  border-radius: 6px;
+  box-shadow: 0 3px 0 #24160c;
+  cursor: pointer;
+}
+.fr-act:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #24160c;
+}
+.fr-act.yes {
+  color: #3a2414;
+  background: linear-gradient(#ffe36a, #f2c230 55%, #c9952a);
+  border-color: #24160c;
+}
+.fr-act.no {
+  color: #fff;
+  background: var(--ember);
+  border-color: #24160c;
+}
+.fr-act:disabled {
+  opacity: 0.6;
+}
+.fr-note {
+  margin-top: 10px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+.fr-end {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.fr-panel-back {
+  width: 100%;
+  margin-top: 8px;
+}

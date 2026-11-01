@@ -66,6 +66,7 @@ import { updWeather } from './weather.js';
 import { chestTick, updVersus, vsResult } from './versus.js';
 import { updCoop } from './coop.js';
 import { statsHtml } from './stats.js';
+import { addButtonsHtml, wireAddButtons } from './lobbyfriends.js';
 import { dayNo, endCard, shareAndTell } from './daily.js';
 import { H, H0, W, W0, clamp, dryFresh, surf } from './world.js';
 
@@ -322,7 +323,7 @@ function endScreen(won, why, winner = null) {
        <p class="hint">${tr('3 Sterne unter {a} Min., 2 Sterne unter {b} Min.', { a: M.stars[0], b: M.stars[1] })}</p>`
       : `<h1>${tr(why ? 'Level verloren' : 'Crew verloren')}</h1><p>${tr(why || 'Alle Wühler sind erschöpft und die Kasse reicht für keinen neuen.')}</p>`;
   // multiplayer: who did what, with awards
-  if (G.net) card.innerHTML += statsHtml(G.mp && G.mp.stats, G.teams ? TEAM_COLS : null);
+  if (G.net) card.innerHTML += statsHtml(G.mp && G.mp.stats, G.teams ? TEAM_COLS : null) + addButtonsHtml();
   // after a won campaign level: straight on to the next one
   const next = won && !G.net && nextLevel(G.mode);
   card.innerHTML += `<p class="trophy-gain">${tr('{n} Trophäen', { n: (tro >= 0 ? '+' : '') + tro })}</p>`;
@@ -341,6 +342,7 @@ function endScreen(won, why, winner = null) {
     overlay.hidden = true;
     menu();
   };
+  wireAddButtons(card);
   if (again && NET.host)
     $('againBtn').onclick = () => {
       overlay.hidden = true;

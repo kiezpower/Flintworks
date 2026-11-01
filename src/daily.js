@@ -164,6 +164,8 @@ function record(n, score) {
   for (const k of Object.keys(D.best)) if (k < n - 30) delete D.best[k];
   for (const k of Object.keys(D.tries)) if (k < n - 30) delete D.tries[k];
   saveProfile();
+  // friends see today's best (net/friends.js)
+  if (best) G.onDailyRecord?.();
   return best;
 }
 
@@ -322,6 +324,7 @@ function dailyFromLink(hooks) {
 export {
   LEN,
   MEDALS,
+  MEDAL_ICON,
   TWISTS,
   badge,
   dailyFromLink,

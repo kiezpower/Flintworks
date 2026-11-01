@@ -8,6 +8,8 @@ Ein Aufbau- und Grabespiel mit Pixel-Physik im Stil der Klassiker, inspiriert vo
 
 **Bots und Helfer:** Helfer arbeiten nur fürs eigene Lager (graben, sammeln, heimbringen). Bots sind Gegner und spielen wie ein Mensch: Sie kaufen Feuersteine und TNT, laufen zur gegnerischen Burg, zielen und werfen, nehmen den Hügel, verteidigen die eigene Burg, heben Nachschub auf und graben im Wettgraben nach unten. Jeder Bot hat einen Stil (Stürmer, Hügel, Sammler) und trägt „(Bot)“ im Namen. Ein Raum für Freunde bleibt verborgen und wird per Code, Link oder QR-Code geteilt; der Host kann jeden Raum öffnen oder schließen.
 
+**Freunde (ohne Login):** Jedes Gerät hat einen Freundescode (Lobby → Freunde-Knopf oben rechts), zum Teilen als Link oder QR-Code. Wer den Code eingibt, den Link öffnet oder einen Mitspieler im Raum oder am Rundenende mit „+“ antippt, schickt eine Anfrage; erst wenn beide sich hinzugefügt haben, sieht man sich. Dann zeigt die Liste, wer online ist und in welchem Raum (mit einem Tipp beitreten), aus dem eigenen Raum lädt man Freunde ein, und „Tagesschacht heute“ vergleicht die Ergebnisse. Code und Liste gehören zum Gerät; der Server hält nur im Speicher, wer gerade online ist (Freundescode aus dem geheimen Geräte-Token abgeleitet, siehe Kopf von `server/relay.js`).
+
 **Heimatbergwerk:** Kristalle sind die Währung, die zwischen den Runden bleibt. Deine Heim-Crew schürft sie auch, wenn das Spiel zu ist (bis der Tresor voll ist, anfangs nach 4 Stunden), jede Runde bringt welche dazu (1 je 40 verdiente Taler, 10 für einen Sieg, Medaillen im Tagesschacht). Kassiert wird in der Lobby unter „Heimatbergwerk“. Ausgeben kannst du sie für mehr Heim-Crew und einen größeren Tresor, für kleine Boni im freien Spiel allein (Startkasse, schärfere Hacken, Holzvorrat; nie im Mehrspieler, im Tagesschacht, in der Kampagne oder im Tutorial) und für Skins: Outfits für deinen Wühler und Baustile für deine Gebäude. Die sehen auch deine Mitspieler. Kristalle gibt es nur durchs Spielen, nicht für Geld.
 
 **Produktion im Blick:** Im Burg-Menü zeigt „Produktion“, welches Gebäude läuft und welches auf was wartet. Fehlt Holz, Erz oder Kohle, schickt „Helfer schicken“ einen freien Helfer los. Wartet ein Gebäude länger als 30 Sekunden, blinkt seine Blase.
@@ -58,7 +60,7 @@ npm run dev        # Entwicklungsserver mit Live-Reload, auch im WLAN fürs Hand
 npm run build      # fertige Web-Version in dist/
 npm run preview    # gebaute Version lokal testen
 npm run android    # Web-Version bauen und ins Android-Projekt kopieren
-npm test           # Browser-Tests: spielt das Tutorial durch (Neuling, Erfahrene, Touch, klassische Steuerung, Rettungen, Layouts), gräbt durch jedes Material, prüft Weltgrößen und Versus-Regeln (Playwright)
+npm test           # Browser-Tests: spielt das Tutorial durch (Neuling, Erfahrene, Touch, klassische Steuerung, Rettungen, Layouts), gräbt durch jedes Material, prüft Weltgrößen und Versus-Regeln, Räume und Freunde (Playwright)
 npm run test:visual # spielt eine Runde, speichert Screenshots in tests/out/ und prüft auf Fehler
 npm run previews   # Vorschaubilder der Level für die Levelauswahl neu erzeugen (nach Änderungen an Leveln)
 npm run store-shots # erzeugt Store-Bilder (Screenshots, Cover, Feature-Grafik) in docs/itch/ und docs/play/
@@ -126,6 +128,9 @@ src/
   save.js             Spielstand im Browser speichern
   camp.js             Heimatbergwerk: Kristalle, Offline-Ertrag, Tresor, Ausbau, Solo-Boni
   lobbycamp.js        Heimatbergwerk-Fenster in der Lobby (Kassieren, Ausbau, Skins)
+  lobbyfriends.js     Freunde-Fenster: eigener Code, Anfragen, online, beitreten, einladen, Tagesschacht
+  net/friends.js      Freundesliste ohne Login: Liste auf dem Gerät, Status vom Relay
+  friends.css         Gestaltung des Freunde-Fensters
   skins.js            Outfits für Wühler und Baustile für Gebäude
   sprites.js          Pixel-Grafiken
   veil.js             Erster Start: Startschleier über der Tutorial-Welt (Spielen, Sprache)

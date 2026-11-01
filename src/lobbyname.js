@@ -1,6 +1,7 @@
 // Lobby: the name others see in a shared game. Typed in, or rolled with the dice.
 import { tr } from './i18n.js';
 import { P, cleanName, randomName, saveProfile } from './profile.js';
+import { friendsSync } from './net/friends.js';
 import { updateMe } from './net/room.js';
 import { G } from './state.js';
 import { $, closePanel, openPanel } from './ui.js';
@@ -33,6 +34,7 @@ function openName(back) {
       P.name = n;
       saveProfile();
       updateMe();
+      friendsSync();
       G.onNameChange?.();
     }
     if (back) back();
