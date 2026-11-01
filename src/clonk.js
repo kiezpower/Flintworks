@@ -646,6 +646,9 @@ function updBody(c, I) {
   // frames in the air, for the jump and fall poses (clonkhi.js); a step down does not count
   c.airT = onG || inLiq ? 0 : (c.airT || 0) + 1;
   let tvx = Math.abs(I.ax) < 0.25 ? 0 : I.ax * (inLiq ? 0.6 : 1.05);
+  // starting off from standing, and stopping from a run, for the poses (clonkhi.js)
+  if (onG && Math.abs(I.ax) > 0.25 && Math.abs(c.vx) < 0.15 && G.frame - (c.startF ?? -99) > 12) c.startF = G.frame;
+  if (onG && Math.abs(I.ax) < 0.25 && Math.abs(c.vx) > 0.7 && G.frame - (c.stopF ?? -99) > 12) c.stopF = G.frame;
   if (Math.abs(I.ax) > 0.25) {
     // turning round from a run: the boots skid
     if (onG && Math.sign(I.ax) !== c.face && Math.abs(c.vx) > 0.7) dust(c.x + 3 - c.face * 2, c.y + 9, 2, '#b89a76');

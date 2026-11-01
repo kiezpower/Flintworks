@@ -26,6 +26,7 @@ import './onboarding.css';
 import './panels.css';
 import { ev } from './analytics.js';
 import { closeVeil, openVeil, veilOpen } from './veil.js';
+import { startCue, updCue } from './startcue.js';
 import { updBuilds, updLorry } from './buildings.js';
 import { NOIN, context, doThrow, updClonk } from './clonk.js';
 import { addClonk, insideB, sel_ } from './entities.js';
@@ -229,6 +230,8 @@ function startGame(withTutorial = false) {
   if (!withTutorial && !G.tut) {
     ev('core_round_start', { mode: String(G.mode), after_onb: !!G.afterOnb });
     G.afterOnb = false;
+    // the goal as a banner, an arrow to the nearest gold (startcue.js)
+    G.cueNext = true;
   }
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
@@ -517,6 +520,12 @@ function step() {
       }
     useMine();
     updTutorial();
+    // (the start cue begins on the first tick, when the camera and the HUD are in place)
+    if (G.cueNext) {
+      G.cueNext = false;
+      startCue();
+    }
+    updCue();
     if (G.frame % 15 === 0) updAmbience();
     if (G.frame % 30 === 0) updDecor();
     if (G.frame % 60 === 0) checkLessons();

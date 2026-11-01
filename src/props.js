@@ -144,10 +144,12 @@ function drawProp(ctx, kind, x, y) {
     r(1, -2, 3, 2, '#24160c');
     r(2, -2, 1, 1, '#8a847c');
   } else if (kind === 'sign') {
+    // the board points towards the nearest gold (G.signDir from startcue.js)
+    const d = G.signDir || 1;
     r(1, -7, 1, 7, '#5a3c22');
-    r(0, -8, 5, 3, '#24160c');
-    r(1, -7, 3, 1, '#c8a46a');
-    r(4, -7, 1, 1, '#c8a46a');
+    r(d > 0 ? 0 : -2, -8, 5, 3, '#24160c');
+    r(d > 0 ? 1 : -1, -7, 3, 1, '#c8a46a');
+    r(d > 0 ? 4 : -2, -7, 1, 1, '#c8a46a');
   } else if (kind === 'fence') {
     r(0, -4, 1, 4, '#6a4a2a');
     r(3, -4, 1, 4, '#6a4a2a');

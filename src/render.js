@@ -1,4 +1,5 @@
 import { drawGoal } from './tapgo.js';
+import { drawCue } from './startcue.js';
 import { buildSprite } from './skins.js';
 import { drawClonkHi } from './clonkhi.js';
 import { drawArrow, drawGear } from './combat.js';
@@ -750,6 +751,7 @@ function render() {
   }
   if (G.lightFx) drawVignette(ctx);
   drawGoal(ctx, cx, cy);
+  drawCue(ctx, cx, cy);
   drawBubbles(ctx, cx, cy);
   drawEmotes(ctx, cx, cy);
   drawFloats(ctx, cx, cy);
