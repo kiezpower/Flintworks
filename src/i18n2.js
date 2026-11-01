@@ -191,6 +191,8 @@ const EN2 = {
     'Still empty. Pick up what you find – up to {max} things fit in.',
   'in der Hand': 'in hand',
   'Taste {n}': 'Key {n}',
+  'Flintworks-App installiert?': 'Got the Flintworks app?',
+  'In der App öffnen': 'Open in the app',
   'Bots: an': 'Bots: on',
   'Helfer: an': 'Helpers: on',
   'Helfer: aus': 'Helpers: off',

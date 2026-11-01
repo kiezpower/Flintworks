@@ -1152,3 +1152,35 @@ button:focus-visible {
     animation: none !important;
   }
 }
+
+/* "open in the app" for invitation links on Android phones (applink.js) */
+#appBar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 32px);
+  padding: 6px 6px 6px 12px;
+  background: var(--panel);
+  border: 2px solid var(--gold);
+  border-radius: 6px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--ink);
+}
+#appBar a {
+  white-space: nowrap;
+  color: var(--gold);
+  font-weight: bold;
+}
+#appBar button {
+  background: none;
+  border: 0;
+  color: var(--ink);
+  font-size: 14px;
+  padding: 4px 6px;
+}

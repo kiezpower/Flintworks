@@ -1,3 +1,5 @@
+// (first: it reads an invitation in the address before anything else changes it)
+import './applink.js';
 import { ownWeb } from './platform.js';
 import { tapGotoInput } from './tapgo.js';
 import { calcTerr } from './render.js';

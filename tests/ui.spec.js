@@ -300,3 +300,21 @@ test('helpers can be switched off: you dig alone, no helper tasks, no hiring', a
   expect(await page.evaluate(() => window.__ww.G.noHelpers)).toBe(false);
   expect(errors).toEqual([]);
 });
+
+test('an invitation opened in a browser on Android offers to open it in the app', async ({ browser }) => {
+  const ctx = await browser.newContext({
+    userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36',
+  });
+  const page = await ctx.newPage();
+  await page.goto('/?friend=ABCD2345&n=Kim');
+  const a = page.locator('#appBar a');
+  await expect(a).toHaveText(/In der App öffnen|Open in the app/);
+  const href = await a.getAttribute('href');
+  expect(href).toMatch(/^intent:\/\/friend\/ABCD2345#Intent;scheme=flintworks;package=de\.kiezpower\.flintworks;/);
+  expect(decodeURIComponent(href)).toContain('web=1');
+  // back from there (no app): no bar again
+  await page.goto('/?friend=ABCD2345&web=1');
+  await page.waitForTimeout(500);
+  await expect(page.locator('#appBar')).toHaveCount(0);
+  await ctx.close();
+});
