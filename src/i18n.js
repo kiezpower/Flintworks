@@ -55,8 +55,10 @@ const EN = {
   Eisenhelm: 'Iron helmet',
   'Aktion schlägt zu – und alle Wühler wehren sich gegen Monster':
     'Action strikes – and all diggers fight back against monsters',
-  'Wurf mit leerer Hand schießt Pfeile aus dem Köcher und zielt von selbst auf Monster':
-    'Throw with an empty hand shoots arrows from the quiver and aims at monsters by itself',
+  'Mit 10 Pfeilen: Wurf mit leerer Hand schießt Pfeile aus dem Köcher und zielt von selbst auf Monster':
+    'With 10 arrows: Throw with an empty hand shoots arrows from the quiver and aims at monsters by itself',
+  'Köcher leer – Pfeile in der Burg unter „Ausrüstung“ herstellen':
+    'Quiver empty – make arrows in the castle under “Equipment”',
   'Halbiert, was Monster anrichten': 'Halves the damage monsters do',
   'Halbiert Schaden durch Steine, Geröll und Blitze': 'Halves damage from stones, rubble and lightning',
   '5 Pfeile': '5 arrows',

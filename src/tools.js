@@ -48,7 +48,7 @@ const TOOLS = {
   bow: {
     name: 'Langbogen',
     icon: 'bow',
-    sub: 'Wurf mit leerer Hand schießt Pfeile aus dem Köcher und zielt von selbst auf Monster',
+    sub: 'Mit 10 Pfeilen: Wurf mit leerer Hand schießt Pfeile aus dem Köcher und zielt von selbst auf Monster',
     money: 40,
     need: { wood: 3, plank: 1 },
     res: ['archery'],
@@ -151,6 +151,8 @@ register('tool', (c, { id }) => {
   G.money -= T.money;
   payRes(c, T.need);
   G.tools = { ...(G.tools || {}), [id]: true };
+  // the bow comes with a first quiver, so it can be used right away
+  if (id === 'bow') addArrows('arrow', 10);
   sfx('done');
   toastMsg('{name} gekauft', { name: tr(T.name) });
 });
