@@ -846,7 +846,7 @@ function context(c) {
   const sw = swordContext(c);
   if (sw) return sw;
   // (ui: a panel that opens on the device of the player who pressed the button)
-  if (insideB(c, G.base)) return { label: 'Basis', ui: 'base' };
+  if (insideB(c, G.base)) return { label: 'Burg', ui: 'base' };
   if (vc) return vc;
   const ch = chestNear(c);
   if (ch) return { label: 'Öffnen', fn: () => openChest(ch) };

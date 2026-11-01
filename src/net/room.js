@@ -54,7 +54,7 @@ function token() {
     return 'anon' + Math.random();
   }
 }
-const me = () => ({ name: P.name || 'Kurt', cap: P.cap, hat: P.hat, skin: skinTag(P.outfit, P.bstyle), token: token() });
+const me = () => ({ name: P.name || 'Kurt', cap: P.cap, hat: P.hat, skin: skinTag(P.outfit, P.bstyle, P.gear), token: token() });
 
 on('room', m => {
   NET.room = m.code;

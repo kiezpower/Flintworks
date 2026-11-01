@@ -129,7 +129,12 @@ function openInvite() {
   if (NET.auto)
     opt(sec(p, 'Modus der Stunde'), {
       title: modeName(NET.auto, tr),
-      sub: tr('Startet von selbst; allein nach 30 s, im Versus gegen Bots'),
+      // (bots switched off in the settings: the host waits for a real opponent)
+      sub: tr(
+        NET.host && P.bots === false
+          ? 'Startet von selbst, sobald ein Mitspieler da ist – Bots sind aus'
+          : 'Startet von selbst; allein nach 30 s, im Versus gegen Bots',
+      ),
       short: true,
     });
   // Koop, Versus or everybody for themselves: the host chooses, everybody sees it

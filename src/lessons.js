@@ -14,7 +14,7 @@ import { isPlayer } from './players.js';
 import { P, saveProfile } from './profile.js';
 import { G, builds, crew } from './state.js';
 import { stock } from './store.js';
-import { hasTool } from './tools.js';
+import { hasGear, hasTool } from './tools.js';
 import { say } from './tutorial.js';
 import { opt, sec, toast } from './ui.js';
 import { darkness } from './weather.js';
@@ -31,12 +31,14 @@ const built = t => (builds.some(b => b.type === t && b.done) ? 1 : 0);
 const LESSONS = [
   {
     id: 'crew',
+    crew: true, // (needs helpers: left out when they are switched off)
     name: 'Helfer',
     when: () => G.frame > 600,
     tip: 'Deine Helfer arbeiten von selbst: sie sammeln, fällen Bäume, graben Erz und bringen alles zur Basis',
   },
   {
     id: 'crewtap',
+    crew: true, // (needs helpers: left out when they are switched off)
     name: 'Aufgaben für Helfer',
     when: () => crew.length > 1 && G.frame > 900,
     tip: {
@@ -96,7 +98,7 @@ const LESSONS = [
   {
     id: 'hook',
     name: 'Enterhaken',
-    when: () => hasTool('hook'),
+    when: c => hasGear(c, 'hook'),
     tip: {
       touch: 'Enterhaken: Halte den Stick in eine Richtung und tippe auf Haken – er zieht dich hin',
       keys: 'Enterhaken: Halte eine Pfeiltaste und drücke G – der Haken zieht dich hin',
@@ -110,12 +112,14 @@ const LESSONS = [
   },
   {
     id: 'beams',
+    crew: true, // (needs helpers: left out when they are switched off)
     name: 'Stützbalken',
     tip: 'Helfer stützen ihre Stollen mit Balken – dafür brauchen sie Holz im Lager',
     task: { text: 'Lass {goal} Stützbalken aufstellen', goal: 3, pay: 40, count: () => (G.beams || []).length },
   },
   {
     id: 'mark',
+    crew: true, // (needs helpers: left out when they are switched off)
     name: 'Abbaugebiet',
     tip: {
       touch: 'Tippe oben links auf deinen Wühler → Hier abbauen: dort graben die Bergleute',
@@ -144,6 +148,7 @@ const LESSONS = [
   },
   {
     id: 'hire',
+    crew: true, // (needs helpers: left out when they are switched off)
     name: 'Anheuern',
     tip: 'Neue Helfer heuerst du in der Burg an: dort Aktion',
     task: { text: 'Heuere einen Helfer an', goal: 1, pay: 40, count: () => crew.length },
@@ -227,7 +232,9 @@ const LESSONS = [
     tip: 'Vorsicht: In der Tiefe gibt es Lava und Säure',
   },
 ];
-const MISSIONS = LESSONS.filter(l => l.task).map(l => ({ ...l.task, id: l.id }));
+const MISSIONS = LESSONS.filter(l => l.task).map(l => ({ ...l.task, id: l.id, crew: !!l.crew }));
+// a tip or task that is about helpers, while they are switched off (settings.js)
+const noCrew = l => !!(l && l.crew && G.noHelpers);
 
 // ---- showing tips ----
 const COOLDOWN = 45 * 60; // game ticks between two tips that are not urgent
@@ -247,9 +254,9 @@ function checkLessons() {
   const calm = !c.hurt && !c.burn && !c.tumble && !(G.quakeT > 0);
   // the current mission's lesson first: it says how to do it
   const m = G.mis && MISSIONS[G.mis.i] && LESSONS.find(l => l.id === MISSIONS[G.mis.i].id);
-  if (m && calm && !seen(m.id)) return show(m);
+  if (m && calm && !seen(m.id) && !noCrew(m)) return show(m);
   const ready = (G.playTicks || 0) - (G.tipT ?? -Infinity) > COOLDOWN;
-  for (const l of LESSONS) if (l.when && !seen(l.id) && (l.urgent || (ready && calm)) && l.when(c)) return show(l);
+  for (const l of LESSONS) if (l.when && !seen(l.id) && !noCrew(l) && (l.urgent || (ready && calm)) && l.when(c)) return show(l);
 }
 
 // "Spielhilfe" in the lobby: every tip found so far to read again

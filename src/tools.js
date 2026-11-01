@@ -6,6 +6,7 @@ import { tr } from './i18n.js';
 import { knowsAll, needText } from './research.js';
 import { sfx } from './sound.js';
 import { toolIcon } from './sprites.js';
+import { brought } from './skins.js';
 import { G } from './state.js';
 import { toast as toastMsg } from './ui.js';
 
@@ -24,6 +25,7 @@ const TOOLS = {
     sub: 'Helleres Licht, zeigt Grubengas in der Nähe',
     money: 40,
     need: { metal: 1, coal: 1 },
+    lobby: true,
   },
   // gets you out of pits and onto ledges (climb.js): cheap and early, no research
   hook: {
@@ -32,6 +34,7 @@ const TOOLS = {
     sub: 'Eigener Knopf (G): wirf den Haken, wohin du zielst – er zieht dich hin',
     money: 30,
     need: { wood: 2, rock: 1 },
+    lobby: true,
   },
   sword: {
     name: 'Schwert',
@@ -76,6 +79,8 @@ const ARROWS = {
   farrow: { name: '3 Brandpfeile', n: 3, need: { wood: 1, coal: 1 } },
 };
 const hasTool = id => !!(G.tools && G.tools[id]);
+// a tool of the team, or gear this Wühler brought from the lobby (Heimatbergwerk, camp.js)
+const hasGear = (c, id) => hasTool(id) || brought(c, id);
 // arrows in the quiver (kept with the tools: per team, saved and sent along)
 const arrowsOf = id => (G.tools && G.tools['q_' + id]) || 0;
 function addArrows(id, n) {
@@ -91,7 +96,8 @@ function teamHas(team, id) {
 // adds the tool and equipment sections to the base panel; opt/sec/toast come from ui.js
 function toolSection(p, c, { opt, sec, toast, reopen, lacking }) {
   for (const gear of [false, true]) {
-    const open = Object.keys(TOOLS).filter(id => !hasTool(id) && !!TOOLS[id].gear === gear);
+    // (gear brought from the lobby is not offered again)
+    const open = Object.keys(TOOLS).filter(id => !hasGear(c, id) && !!TOOLS[id].gear === gear);
     const l = sec(p, gear ? 'Ausrüstung' : 'Werkzeug');
     for (const id of open) {
       const T = TOOLS[id],
@@ -100,7 +106,8 @@ function toolSection(p, c, { opt, sec, toast, reopen, lacking }) {
       opt(l, {
         icon: toolIcon(T.icon),
         title: tr(T.name),
-        sub: tr(T.sub),
+        // (hook and lamp can also be bought for good in the lobby)
+        sub: tr(T.sub) + (T.lobby ? ' · ' + tr('Für immer: Heimatbergwerk in der Lobby') : ''),
         cost: tr('{m} Taler + {cost}', { m: T.money, cost: costTxt(T.need) }),
         state: !known ? 'locked' : ok ? 'ok' : 'poor',
         why: !known ? needText(T.res) : ok ? '' : lacking(c, T.need, T.money),
@@ -155,4 +162,4 @@ register('arrows', (c, { id }) => {
   sfx('hammer', c.x, c.y);
 });
 
-export { TOOLS, addArrows, arrowsOf, hasTool, teamHas, toolSection };
+export { TOOLS, addArrows, arrowsOf, hasGear, hasTool, teamHas, toolSection };

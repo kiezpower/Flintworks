@@ -74,6 +74,20 @@ function buyUpgrade(id) {
   saveProfile();
   return true;
 }
+// gear bought for good with crystals: in every game from the start, alone and in multiplayer (it
+// travels in the skin tag, skins.js), so it never has to be bought at the castle again
+const GEAR = {
+  hook: { name: 'Enterhaken', sub: 'Eigener Knopf (G) in jedem Spiel – auch im Mehrspieler', k: 60 },
+  lamp: { name: 'Grubenlampe', sub: 'Helleres Licht und Warnung vor Grubengas in jedem Spiel', k: 90 },
+};
+const hasGearForGood = id => (P.gear || []).includes(id);
+function buyGear(id) {
+  const g = GEAR[id];
+  if (!g || hasGearForGood(id) || !spend(g.k)) return false;
+  P.gear = [...(P.gear || []), id];
+  saveProfile();
+  return true;
+}
 // skins: 'o:green' (outfit) or 'b:stone' (building style)
 function skinOf(id) {
   const [kind, s] = id.split(':');
@@ -110,7 +124,10 @@ function setDigBoost() {
 const roundCrystals = (earned, won, medal = 0) => Math.floor((earned || 0) / 40) + (won ? 10 : 0) + [0, 5, 10, 20][medal];
 
 export {
+  GEAR,
   UPGRADES,
+  buyGear,
+  hasGearForGood,
   addCrystals,
   applyStartBoosts,
   setDigBoost,

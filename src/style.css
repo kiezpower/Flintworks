@@ -305,10 +305,12 @@ button:focus-visible {
   display: flex;
   gap: 4px;
   padding: 4px;
+  align-items: stretch;
 }
 .slot {
-  width: 28px;
-  height: 28px;
+  position: relative;
+  width: 36px;
+  height: 36px;
   border: 2px solid #24160c;
   box-shadow: inset 0 0 0 1px #5a3a22;
   background: linear-gradient(#3a2618, #241810);
@@ -318,6 +320,10 @@ button:focus-visible {
   padding: 0;
   cursor: pointer;
 }
+.slot.empty {
+  opacity: 0.55;
+  cursor: default;
+}
 .slot.sel {
   border-color: var(--gold);
   box-shadow:
@@ -325,9 +331,96 @@ button:focus-visible {
     0 0 8px rgba(242, 194, 48, 0.55);
 }
 .slot canvas {
+  width: 26px;
+  height: 26px;
+  image-rendering: pixelated;
+}
+/* the key that picks a slot (1–5), small in the corner */
+.slot .key {
+  position: absolute;
+  left: 2px;
+  top: 0;
+  font: 9px/1 var(--font-ui);
+  font-style: normal;
+  color: #d9c9a8;
+  text-shadow: 0 1px 0 #000;
+  pointer-events: none;
+}
+/* the bag: always there, wider, with how full it is; lights up when something new goes in */
+.slot.bag {
+  width: auto;
+  min-width: 48px;
+  padding: 0 4px;
+  grid-auto-flow: row;
+  gap: 1px;
+  border-color: #8b5e34;
+  background: linear-gradient(#5a3a22, #3a2618);
+}
+.slot.bag .bagico {
   width: 20px;
   height: 20px;
+  background: center / contain no-repeat;
   image-rendering: pixelated;
+}
+.slot.bag b {
+  font: 10px/1 var(--font-ui);
+  color: var(--gold);
+}
+.slot.bag.full {
+  border-color: var(--ember);
+}
+.slot.bag.full b {
+  color: var(--ember);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .slot.bag.grew {
+    animation: bag-grew 0.6s steps(6);
+  }
+}
+@keyframes bag-grew {
+  0% {
+    transform: scale(1.25);
+    filter: brightness(1.7);
+  }
+  100% {
+    transform: none;
+    filter: none;
+  }
+}
+.pad.act.shop {
+  border-color: var(--gold);
+  color: #ffe39a;
+  box-shadow: 0 0 10px rgba(242, 194, 48, 0.6);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pad.act.shop {
+    animation: shop-glow 1.2s ease-in-out infinite alternate;
+  }
+}
+@keyframes shop-glow {
+  from {
+    box-shadow: 0 0 4px rgba(242, 194, 48, 0.35);
+  }
+  to {
+    box-shadow: 0 0 14px rgba(242, 194, 48, 0.85);
+  }
+}
+#storeRow {
+  cursor: pointer;
+}
+/* small screens: the slots a bit smaller, so the bar still fits beside the crew */
+@media (max-width: 700px), (max-height: 420px) {
+  .slot {
+    width: 32px;
+    height: 32px;
+  }
+  .slot canvas {
+    width: 22px;
+    height: 22px;
+  }
+}
+.bagGrid {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 }
 .tools {
   display: flex;
@@ -1038,11 +1131,6 @@ button:focus-visible {
   grid-column: 1;
   grid-row: 1;
 }
-.slot.more {
-  font-family: var(--font-ui);
-  font-size: 11px;
-  color: var(--gold);
-}
 
 #updateLink,
 #updateBtn {
@@ -1063,4 +1151,36 @@ button:focus-visible {
   #tutHand {
     animation: none !important;
   }
+}
+
+/* "open in the app" for invitation links on Android phones (applink.js) */
+#appBar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 32px);
+  padding: 6px 6px 6px 12px;
+  background: var(--panel);
+  border: 2px solid var(--gold);
+  border-radius: 6px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--ink);
+}
+#appBar a {
+  white-space: nowrap;
+  color: var(--gold);
+  font-weight: bold;
+}
+#appBar button {
+  background: none;
+  border: 0;
+  color: var(--ink);
+  font-size: 14px;
+  padding: 4px 6px;
 }

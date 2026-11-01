@@ -32,8 +32,10 @@
                 <data android:scheme="flintworks" android:host="friend" />
             </intent-filter>
 
-            <!-- the web invite link can open the app too (Android asks which app to use) -->
-            <intent-filter>
+            <!-- the web invite link opens the app directly: verified against
+                 https://kiezpower.github.io/.well-known/assetlinks.json (docs/PLAYSTORE.md, App-Links);
+                 until that file is there Android asks or stays in the browser -->
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />

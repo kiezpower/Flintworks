@@ -1,5 +1,5 @@
 import { chainStatus, stock, takeStock } from './store.js';
-import { hasTool, toolSection } from './tools.js';
+import { hasGear, toolSection } from './tools.js';
 import { knowsAll, needText, researchSection } from './research.js';
 const misEl = document.getElementById('misTxt');
 import { GAME_MODES, mode } from './modes.js';
@@ -15,6 +15,7 @@ import { sfx } from './sound.js';
 import { ITEM, SPR, detailed, itemIcon, padIcon, toolIcon } from './sprites.js';
 import { shownMoney } from './reward.js';
 import { tr } from './i18n.js';
+import { P, saveProfile } from './profile.js';
 import { FETCH, focusBadge, openCrew, sendHelperFor } from './crewui.js';
 import { register, send } from './commands.js';
 import { buildStairs } from './climb.js';
@@ -24,7 +25,7 @@ import { vehicleIcon, vehicleOf } from './vehicles/core.js';
 import { canShoot } from './combat.js';
 import { isPlayer } from './players.js';
 import { missionText } from './missions.js';
-import { G, INV_MAX, animals, builds, crew, lorries } from './state.js';
+import { G, INV_MAX, INV_SHOWN, animals, builds, crew, lorries } from './state.js';
 import { AIR, GOLD, H, MINI, W, bg, hex, mat, onResize } from './world.js';
 
 // ---- HUD, panels, minimap ----
@@ -110,6 +111,23 @@ function hud() {
   if (statusBox.hidden !== st) statusBox.hidden = st;
   const cx = context(c);
   actBtn.textContent = tr(cx.label);
+  // in the castle: the action button glows (it opens the shop), and the first times you walk back
+  // in (not at the start, where everybody stands in the castle) a short hint
+  const inCastle = cx.ui === 'base';
+  actPad.classList.toggle('shop', inCastle);
+  if (!inCastle && !G.castleSeen && c && !c.dead) G.castleSeen = 'out';
+  else if (inCastle && G.castleSeen === 'out' && !G.tut && G.state === 'play') {
+    G.castleSeen = true;
+    if ((P.castleTips || 0) < 3) {
+      P.castleTips = (P.castleTips || 0) + 1;
+      saveProfile();
+      toast(
+        G.inputKind === 'touch'
+          ? 'In der Burg: Tippe auf „Burg“ zum Einkaufen'
+          : 'In der Burg: Drück F zum Einkaufen',
+      );
+    }
+  }
   // the action button shows what it will do
   if (cx.label !== G.actKey) {
     G.actKey = cx.label;
@@ -122,7 +140,7 @@ function hud() {
   const thr = c && !c.dead && (c.ride != null ? THROWERS[vehicleOf(c)?.kind] : c.inv[c.isel] || canShoot(c));
   btnsEl.classList.toggle('noitem', !thr);
   // the grappling hook's button once the team has one (always ready: it is thrown anyway)
-  btnsEl.classList.toggle('hookon', hasTool('hook'));
+  btnsEl.classList.toggle('hookon', hasGear(c, 'hook'));
   const ck = crew.map(o => `${o === c}${o.dead}${Math.round(o.energy / 5)}${o.energy < 30}${o.focus}`).join();
   if (ck !== G.crewKey) {
     G.crewKey = ck;
@@ -141,21 +159,27 @@ function hud() {
   }
   const k = c ? c.inv.join() + '|' + c.isel : '';
   if (k !== G.invKey) {
+    // a new thing in the bag: the bag button lights up for a moment, so the eye finds it
+    const grew = c && G.invN != null && c.inv.length > G.invN;
+    G.invN = c ? c.inv.length : 0;
     G.invKey = k;
     invEl.innerHTML = '';
-    // three slots are shown; the bag holds up to INV_MAX, the rest is behind the "+" slot
-    const shown = c && c.isel >= 3 ? [0, 1, c.isel] : [0, 1, 2];
+    // the first INV_SHOWN slots are shown (empty ones too, so you see the room left); the bag holds
+    // up to INV_MAX, all of it behind the bag button. Something chosen further back takes the last slot.
+    const shown = [...Array(INV_SHOWN).keys()];
+    if (c && c.isel >= INV_SHOWN) shown[INV_SHOWN - 1] = c.isel;
     for (const s of shown) {
       const b = document.createElement('button');
       const t = c && c.inv[s];
-      b.className = 'slot' + (t && s === c.isel ? ' sel' : '');
+      b.className = 'slot' + (t && s === c.isel ? ' sel' : '') + (t ? '' : ' empty');
       b.setAttribute('aria-label', t ? resName(t) : tr('Leer'));
-      b.title = t ? resName(t) : '';
+      b.title = t ? `${resName(t)} (${s + 1})` : '';
       if (t) {
         const cvs = document.createElement('canvas');
         cvs.width = cvs.height = 10;
         cvs.getContext('2d').drawImage(itemIcon(t), 0, 0);
         b.appendChild(cvs);
+        if (s < 9) b.insertAdjacentHTML('beforeend', `<i class="key">${s + 1}</i>`);
       }
       b.addEventListener('pointerdown', e => {
         e.stopPropagation();
@@ -163,17 +187,19 @@ function hud() {
       });
       invEl.appendChild(b);
     }
-    if (c && c.inv.length > 3) {
-      const more = document.createElement('button');
-      more.className = 'slot more';
-      more.textContent = '+' + (c.inv.length - 3);
-      more.setAttribute('aria-label', tr('Tasche'));
-      more.addEventListener('pointerdown', e => {
-        e.stopPropagation();
-        openBag();
-      });
-      invEl.appendChild(more);
-    }
+    // the bag: always there, with how full it is
+    const n = c ? c.inv.length : 0;
+    const bag = document.createElement('button');
+    bag.className = 'slot bag' + (n >= INV_MAX ? ' full' : '') + (grew ? ' grew' : '');
+    bag.id = 'bagBtn';
+    bag.setAttribute('aria-label', tr('Tasche') + ` ${n}/${INV_MAX}`);
+    bag.title = tr('Tasche') + ' (I)';
+    bag.innerHTML = `<span class="bagico" style="background-image:url(${padIcon('bag')})"></span><b>${n}/${INV_MAX}</b>`;
+    bag.addEventListener('pointerdown', e => {
+      e.stopPropagation();
+      openBag();
+    });
+    invEl.appendChild(bag);
   }
 }
 // the whole bag: pick what goes into the hand
@@ -182,12 +208,19 @@ function openBag() {
   if (!c || c.dead) return;
   const p = openPanel('Tasche');
   const l = sec(p, tr('{n} von {max} Plätzen', { n: c.inv.length, max: INV_MAX }));
+  l.classList.add('bagGrid');
+  if (!c.inv.length) {
+    const e = document.createElement('p');
+    e.className = 'hint';
+    e.textContent = tr('Noch leer. Sammle auf, was du findest – bis zu {max} Sachen passen hinein.', { max: INV_MAX });
+    l.appendChild(e);
+  }
   c.inv.forEach((t, k) =>
     opt(l, {
       icon: itemIcon(t),
       title: resName(t),
-      cost: k === c.isel ? '✓' : '',
-      short: true,
+      cost: k === c.isel ? '✓ ' + tr('in der Hand') : k < 9 ? tr('Taste {n}', { n: k + 1 }) : '',
+      state: 'ok',
       onClick: () => {
         send('isel', { i: k });
         closePanel();
@@ -198,7 +231,7 @@ function openBag() {
 const THROWERS = { catapult: 1, airship: 1 }; // vehicles that use Wurf
 const ACT_ICONS = {
   Fällen: 'act',
-  Basis: 'castle',
+  Burg: 'castle',
   Öffnen: 'chest',
   Bauen: 'hammer',
   Zuschlagen: 'sword',
@@ -217,9 +250,18 @@ function actIcon(label) {
   else url = padIcon('act');
   return (actIconCache[label] = url);
 }
-const actIco = document.querySelector('.pad.act .ico'),
+const actPad = document.querySelector('.pad.act'),
+  actIco = actPad.querySelector('.ico'),
   btnsEl = $('btns');
 const storeRow = $('storeRow');
+// a tap on the store row: the castle panel when you stand in the castle, otherwise where to go
+storeRow.addEventListener('pointerdown', e => {
+  e.stopPropagation();
+  const c = sel_();
+  if (!c || c.dead || G.state !== 'play') return;
+  if (context(c).ui === 'base') openBase();
+  else toast('Lauf in die Burg – dort kaufst du ein und nimmst Sachen aus dem Lager');
+});
 const iconUrls = {};
 const iconUrl = t => (iconUrls[t] ||= itemIcon(t).toDataURL());
 const thumb = $('miniThumb'),
@@ -562,7 +604,7 @@ function productionSection(p) {
 }
 function openBase() {
   const c = sel_();
-  const p = openPanel('Heimatbasis');
+  const p = openPanel('Burg · Laden & Lager');
   productionSection(p);
   // the store: gold is sold and materials are stored automatically when walking in
   const ls = sec(p, tr('Lager · Gold und Edelsteine werden beim Betreten verkauft'));
@@ -590,6 +632,7 @@ function openBase() {
   toolSection(p, c, { opt, sec, toast, reopen: openBase, lacking });
   const l = sec(p, tr('Kaufen · Kasse: {m} Taler', { m: G.money }));
   for (const o of BUY) {
+    if (o.t === 'clonk' && G.noHelpers) continue; // (helpers switched off, settings.js)
     const icon = ITEM[o.t] ? itemIcon(o.t) : o.t === 'lorry' ? SPR.lorryIcon : SPR.clonkIcon;
     const alive = crew.filter(x => !x.dead).length;
     const full = o.t === 'clonk' && alive >= BASELV[lvl()].crew,
@@ -628,7 +671,7 @@ register('take', (c, { t }) => {
 register('buy', (c, { t }) => {
   const o = BUY.find(b => b.t === t);
   if (!o || G.money < o.price) return;
-  if (t === 'clonk' && crew.filter(x => !x.dead).length >= BASELV[lvl()].crew) return;
+  if (t === 'clonk' && (G.noHelpers || crew.filter(x => !x.dead).length >= BASELV[lvl()].crew)) return;
   G.money -= o.price;
   sfx('coin');
   if (t === 'clonk') {
@@ -643,6 +686,7 @@ register('buy', (c, { t }) => {
 
 export {
   lacking,
+  openBag,
   $,
   actBtn,
   airBar,

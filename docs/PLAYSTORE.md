@@ -72,3 +72,37 @@ mit diesem Prompt erzeugen und das beste als `docs/play/keyart.png` ablegen:
 
 Die Nutzungsbedingungen des Generators für kommerzielle Nutzung prüfen; die Schrift kommt
 danach dazu (wie in `feature-*.png`), damit sie scharf und übersetzbar bleibt.
+
+## Einladungen per WhatsApp: wohin der Link zeigt
+
+Alle Einladungen und Freundeslinks zeigen auf die **Webversion auf GitHub Pages**, egal ob sie
+aus der App, aus itch.io oder aus dem Browser geteilt werden:
+
+- Raum: `https://kiezpower.github.io/Flintworks/?room=ABC123`
+- Freund: `https://kiezpower.github.io/Flintworks/?friend=CODE&n=Name`
+
+Das ist der einzige Link, der überall funktioniert: Jeder kann ihn im Browser öffnen und sofort
+mitspielen, ohne App und ohne itch-Konto. Ein itch.io-Link taugt dafür nicht, weil das Spiel dort
+in einem Rahmen läuft und den Raum-Code aus der Adresse nicht bekommt. Die Nachricht enthält
+außerdem den Raum-Code zum Abtippen (im Mehrspieler-Fenster unter „oder mit Code beitreten“).
+
+Wer die App hat, soll mit demselben Link in der App landen. Dafür gibt es zwei Wege:
+
+1. **„In der App öffnen“** (funktioniert schon jetzt): Öffnet jemand den Link im Browser eines
+   Android-Handys, zeigt die Webseite unten einen Balken „In der App öffnen“ (`src/applink.js`).
+   Ist die App installiert, öffnet sie sich im Raum; sonst bleibt man im Browser und spielt dort.
+2. **Verifizierte App-Links** (einmal einrichten): Dann öffnet ein Tipp auf den Link in WhatsApp
+   direkt die App, ganz ohne Umweg. Das Manifest ist vorbereitet (`android:autoVerify="true"`);
+   es fehlt noch die Bestätigungsdatei auf der Webseite:
+
+   | # | Schritt | Wo / Wie |
+   |---|---|---|
+   | 1 | Fingerabdruck holen | Play Console → App → Testen und veröffentlichen → **App-Integrität** → App-Signatur → „SHA-256-Zertifikatfingerabdruck“ des **App-Signaturschlüssels** kopieren (Play App Signing signiert die Store-Version damit). Für APKs aus der GitHub Action zusätzlich den Upload-Schlüssel: `keytool -list -v -keystore upload.jks -alias upload` |
+   | 2 | Datei ausfüllen | `docs/assetlinks.json` kopieren, die Platzhalter durch die Fingerabdrücke ersetzen (Großbuchstaben mit Doppelpunkten) |
+   | 3 | Datei veröffentlichen | Android sucht sie an der **Wurzel der Domain**: `https://kiezpower.github.io/.well-known/assetlinks.json` – nicht unter `/Flintworks/`. Dafür auf GitHub ein Repository **`kiezpower.github.io`** anlegen (Pages aktivieren, Branch `main`), darin `.well-known/assetlinks.json` und eine leere Datei `.nojekyll` (sonst lässt GitHub Pages Ordner mit Punkt weg) |
+   | 4 | Prüfen | `https://kiezpower.github.io/.well-known/assetlinks.json` im Browser öffnen; dann mit Googles Prüfer: `https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://kiezpower.github.io&relation=delegate_permission/common.handle_all_urls` |
+   | 5 | App neu installieren | Android prüft beim Installieren bzw. Aktualisieren; danach öffnet ein Link aus WhatsApp die App direkt (Test: `adb shell pm get-app-links de.kiezpower.flintworks` zeigt `verified`) |
+
+   Mit einer eigenen Domain (z. B. `flintworks.de`) gilt dasselbe: Datei unter
+   `https://flintworks.de/.well-known/assetlinks.json`, Domain im Manifest und als `LIVE` in
+   `src/platform.js` eintragen.

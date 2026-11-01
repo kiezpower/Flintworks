@@ -205,3 +205,116 @@ test('the 2x building art keeps every building at exactly double its size (colli
   expect(bad).toEqual([]);
   expect(errors).toEqual([]);
 });
+
+test('a bigger bag with five slots and its own button, and the castle shows itself as the shop', async ({ page }) => {
+  const errors = await lobby(page);
+  await play(page);
+  await page.evaluate(() => window.__ww.step(2));
+  // five slots (empty ones too) and the bag button with how full it is
+  await expect(page.locator('#inv .slot:not(.bag)')).toHaveCount(5);
+  const n = await page.evaluate(() => window.__ww.crew.find(c => c.pid === window.__ww.G.myId).inv.length);
+  await expect(page.locator('#bagBtn')).toHaveText(`${n}/16`);
+  await page.evaluate(() => {
+    const me = window.__ww.crew.find(c => c.pid === window.__ww.G.myId);
+    while (me.inv.length < 16) me.inv.push('rock');
+    window.__ww.step(1);
+  });
+  await expect(page.locator('#bagBtn')).toHaveClass(/full/);
+  await page.keyboard.press('KeyI');
+  await expect(page.locator('#pTitle')).toHaveText('Tasche');
+  await expect(page.locator('#panel .opt')).toHaveCount(16);
+  await page.keyboard.press('Escape');
+  // at the start you stand in the castle: the action button says so and glows, no hint yet
+  await expect(page.locator('#actBtn')).toHaveText('Burg');
+  await expect(page.locator('.pad.act')).toHaveClass(/shop/);
+  // out and back in: the hint how to shop
+  const x0 = await page.evaluate(() => {
+    const w = window.__ww,
+      me = w.crew.find(c => c.pid === w.G.myId),
+      x = me.x;
+    me.x = w.G.base.x + w.G.base.w + 60;
+    return x;
+  });
+  // (the HUD follows on the next drawn frame)
+  await expect(page.locator('.pad.act')).not.toHaveClass(/shop/);
+  await page.evaluate(x => {
+    const w = window.__ww,
+      me = w.crew.find(c => c.pid === w.G.myId);
+    me.x = x;
+    me.y = w.G.base.gy - 10;
+  }, x0);
+  await expect(page.locator('#toast')).toContainText('In der Burg');
+  expect(errors).toEqual([]);
+});
+
+test('bots can be switched off in the settings: quick play then fills no castles with them', async ({ page }) => {
+  const errors = await lobby(page);
+  await page.click('#lbOpt');
+  const tile = page.locator('#pBody .opt', { hasText: 'Bots: an' });
+  await expect(tile).toHaveCount(1);
+  await page.waitForTimeout(500);
+  await tile.click();
+  await expect(page.locator('#pBody .opt', { hasText: 'Bots: aus' })).toHaveCount(1);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')).bots)).toBe(false);
+  // a quick play Versus room, alone: no bot castle (on: one bot for the blue castle)
+  const msg = await page.evaluate(() =>
+    Promise.all([import('/src/net/room.js'), import('/src/net/session.js'), import('/src/profile.js')]).then(
+      ([{ NET }, s, { P }]) => {
+        Object.assign(NET, { auto: { versus: true }, versus: true, ffa: false, pid: 1 });
+        NET.players = [{ pid: 1, name: 'A', online: true }];
+        const off = s.startMessage('gold');
+        P.bots = true;
+        const on = s.startMessage('gold');
+        Object.assign(NET, { auto: null, versus: false, players: [] });
+        return { off: [off.bots, off.versus], on: [on.bots, on.versus] };
+      },
+    ),
+  );
+  expect(msg).toEqual({ off: [[], false], on: [[1], true] });
+  // the game menu has it too, in its first section
+  await page.keyboard.press('Escape');
+  await play(page);
+  await page.click('#menuBtn');
+  await expect(page.locator('#pBody .opt', { hasText: /Bots: (an|aus)/ })).toHaveCount(1);
+  expect(errors).toEqual([]);
+});
+
+test('helpers can be switched off: you dig alone, no helper tasks, no hiring', async ({ page }) => {
+  const errors = await lobby(page, { helpers: false });
+  await play(page);
+  await page.evaluate(() => window.__ww.step(40));
+  const r = await page.evaluate(() => {
+    const w = window.__ww;
+    return { crew: w.crew.length, mine: w.crew[0].pid === w.G.myId, off: w.G.noHelpers };
+  });
+  expect(r).toEqual({ crew: 1, mine: true, off: true });
+  await expect(page.locator('#misTxt')).not.toContainText('Helfer');
+  await page.evaluate(() => window.__ww.openBase());
+  await expect(page.locator('#panel')).not.toContainText('Neues Crewmitglied');
+  // switched on again in the game menu: hiring is back
+  await page.keyboard.press('Escape');
+  await page.click('#menuBtn');
+  await page.waitForTimeout(500);
+  await page.locator('#pBody .opt', { hasText: 'Helfer: aus' }).click();
+  await expect(page.locator('#pBody .opt', { hasText: 'Helfer: an' })).toHaveCount(1);
+  expect(await page.evaluate(() => window.__ww.G.noHelpers)).toBe(false);
+  expect(errors).toEqual([]);
+});
+
+test('an invitation opened in a browser on Android offers to open it in the app', async ({ browser }) => {
+  const ctx = await browser.newContext({
+    userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36',
+  });
+  const page = await ctx.newPage();
+  await page.goto('/?friend=ABCD2345&n=Kim');
+  const a = page.locator('#appBar a');
+  await expect(a).toHaveText(/In der App öffnen|Open in the app/);
+  const href = await a.getAttribute('href');
+  expect(href).toMatch(/^intent:\/\/friend\/ABCD2345#Intent;scheme=flintworks;package=de\.kiezpower\.flintworks;/);
+  expect(decodeURIComponent(href)).toContain('web=1');
+  // back from there (no app): no bar again
+  await page.goto('/?friend=ABCD2345&web=1');
+  await page.waitForTimeout(500);
+  await expect(page.locator('#appBar')).toHaveCount(0);
+  await ctx.close();
+});

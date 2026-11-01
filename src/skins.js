@@ -36,12 +36,24 @@ const BSTYLES = {
 };
 const outfitPal = id => (OUTFITS[id] || OUTFITS.blue).pal;
 
-// what travels with the player: "outfit.style" (one short field, see server/relay.js)
-const skinTag = (outfit, style) => `${OUTFITS[outfit] ? outfit : 'blue'}.${BSTYLES[style] ? style : 'wood'}`;
-function parseSkin(s) {
-  const [o, b] = String(s || '').split('.');
-  return { outfit: OUTFITS[o] ? o : 'blue', style: BSTYLES[b] ? b : 'wood' };
+// gear bought for good in the lobby (camp.js): one letter each in the skin tag
+const GEAR_CODE = { hook: 'h', lamp: 'l' };
+// what travels with the player: "outfit.style" or "outfit.style.gear" (one short field, at most
+// 20 characters, see server/relay.js)
+function skinTag(outfit, style, gear = []) {
+  const g = gear.map(id => GEAR_CODE[id] || '').join('');
+  return `${OUTFITS[outfit] ? outfit : 'blue'}.${BSTYLES[style] ? style : 'wood'}` + (g ? '.' + g : '');
 }
+function parseSkin(s) {
+  const [o, b, g] = String(s || '').split('.');
+  return { outfit: OUTFITS[o] ? o : 'blue', style: BSTYLES[b] ? b : 'wood', gear: g || '' };
+}
+// whether a Wühler brought this gear from the lobby (memoised: asked every frame)
+const gearMemo = {};
+const brought = (c, id) => {
+  if (!c || !c.skin || !GEAR_CODE[id]) return false;
+  return (gearMemo[c.skin] ??= parseSkin(c.skin).gear).includes(GEAR_CODE[id]);
+};
 
 // ---- building styles: the woody browns of a sprite take the style's colours ----
 function hsl(r, g, b) {
@@ -117,4 +129,4 @@ function buildSprite(b) {
   return restyle(spr, b.skin);
 }
 
-export { BSTYLES, OUTFITS, buildSprite, outfitPal, parseSkin, restyle, skinTag };
+export { GEAR_CODE, brought,  BSTYLES, OUTFITS, buildSprite, outfitPal, parseSkin, restyle, skinTag };

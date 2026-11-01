@@ -47,6 +47,8 @@ const P = {
   owned: [],
   outfit: 'blue',
   bstyle: 'wood',
+  // gear bought for good in the Heimatbergwerk (camp.js GEAR)
+  gear: [],
 };
 try {
   Object.assign(P, JSON.parse(localStorage.getItem(KEY) || '{}'));
