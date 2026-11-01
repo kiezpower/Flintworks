@@ -205,3 +205,44 @@ test('the 2x building art keeps every building at exactly double its size (colli
   expect(bad).toEqual([]);
   expect(errors).toEqual([]);
 });
+
+test('a bigger bag with five slots and its own button, and the castle shows itself as the shop', async ({ page }) => {
+  const errors = await lobby(page);
+  await play(page);
+  await page.evaluate(() => window.__ww.step(2));
+  // five slots (empty ones too) and the bag button with how full it is
+  await expect(page.locator('#inv .slot:not(.bag)')).toHaveCount(5);
+  const n = await page.evaluate(() => window.__ww.crew.find(c => c.pid === window.__ww.G.myId).inv.length);
+  await expect(page.locator('#bagBtn')).toHaveText(`${n}/16`);
+  await page.evaluate(() => {
+    const me = window.__ww.crew.find(c => c.pid === window.__ww.G.myId);
+    while (me.inv.length < 16) me.inv.push('rock');
+    window.__ww.step(1);
+  });
+  await expect(page.locator('#bagBtn')).toHaveClass(/full/);
+  await page.keyboard.press('KeyI');
+  await expect(page.locator('#pTitle')).toHaveText('Tasche');
+  await expect(page.locator('#panel .opt')).toHaveCount(16);
+  await page.keyboard.press('Escape');
+  // at the start you stand in the castle: the action button says so and glows, no hint yet
+  await expect(page.locator('#actBtn')).toHaveText('Burg');
+  await expect(page.locator('.pad.act')).toHaveClass(/shop/);
+  // out and back in: the hint how to shop
+  const x0 = await page.evaluate(() => {
+    const w = window.__ww,
+      me = w.crew.find(c => c.pid === w.G.myId),
+      x = me.x;
+    me.x = w.G.base.x + w.G.base.w + 60;
+    return x;
+  });
+  // (the HUD follows on the next drawn frame)
+  await expect(page.locator('.pad.act')).not.toHaveClass(/shop/);
+  await page.evaluate(x => {
+    const w = window.__ww,
+      me = w.crew.find(c => c.pid === w.G.myId);
+    me.x = x;
+    me.y = w.G.base.gy - 10;
+  }, x0);
+  await expect(page.locator('#toast')).toContainText('In der Burg');
+  expect(errors).toEqual([]);
+});

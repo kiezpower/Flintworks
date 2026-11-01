@@ -14,7 +14,7 @@ import { isPlayer } from './players.js';
 import { P, saveProfile } from './profile.js';
 import { G, builds, crew } from './state.js';
 import { stock } from './store.js';
-import { hasTool } from './tools.js';
+import { hasGear, hasTool } from './tools.js';
 import { say } from './tutorial.js';
 import { opt, sec, toast } from './ui.js';
 import { darkness } from './weather.js';
@@ -96,7 +96,7 @@ const LESSONS = [
   {
     id: 'hook',
     name: 'Enterhaken',
-    when: () => hasTool('hook'),
+    when: c => hasGear(c, 'hook'),
     tip: {
       touch: 'Enterhaken: Halte den Stick in eine Richtung und tippe auf Haken – er zieht dich hin',
       keys: 'Enterhaken: Halte eine Pfeiltaste und drücke G – der Haken zieht dich hin',

@@ -9,7 +9,7 @@ import { hasRes, payRes } from './buildings.js';
 import { register } from './commands.js';
 import { sfx } from './sound.js';
 import { G } from './state.js';
-import { hasTool } from './tools.js';
+import { hasGear } from './tools.js';
 import { toast } from './ui.js';
 import { H, PLANK, W, boxFree, free } from './world.js';
 
@@ -123,7 +123,7 @@ function hookTarget(c) {
   if (c.hookF === G.frame) return c.hookO;
   c.hookF = G.frame;
   c.hookO = null;
-  if (!hasTool('hook') || c.dead || c.ride != null || c.tumble || c.hook || c.bridge) return null;
+  if (!hasGear(c, 'hook') || c.dead || c.ride != null || c.tumble || c.hook || c.bridge) return null;
   for (const dir of [c.face, -c.face]) {
     const L = ledgeIn(c, dir, HOOK_MIN);
     if (L && Math.hypot(L.col - (c.x + 3), feetOf(c) - L.top) <= HOOK_RANGE) return (c.hookO = L);
@@ -134,7 +134,7 @@ const handOf = c => [c.x + 3 + c.face * 2, c.y + 4];
 // the hook button (sent as a command with the stick's direction: on the host for the player who
 // pressed it). Always thrown: aimed with the stick, else at a ledge, else up and forward
 function fireHook(c, { ax = 0, ay = 0 } = {}) {
-  if (!hasTool('hook') || c.hook || c.dead || c.ride != null || c.tumble || c.bridge) return;
+  if (!hasGear(c, 'hook') || c.hook || c.dead || c.ride != null || c.tumble || c.bridge) return;
   const aimed = Math.hypot(ax, ay) > 0.3;
   c.climb = c.hangle = false;
   if (!aimed) {

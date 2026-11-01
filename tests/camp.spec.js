@@ -98,7 +98,7 @@ test('skins: bought with crystals, worn in game, sent with the player and given 
       return { poor, a, b, k: c.camp().k, tag: s.skinTag(P.outfit, P.bstyle), back: s.parseSkin('x.y') };
     }),
   );
-  expect(r).toEqual({ poor: false, a: true, b: true, k: 10, tag: 'green.stone', back: { outfit: 'blue', style: 'wood' } });
+  expect(r).toEqual({ poor: false, a: true, b: true, k: 10, tag: 'green.stone', back: { outfit: 'blue', style: 'wood', gear: '' } });
   await play(page);
   const g = await page.evaluate(() =>
     Promise.all([import('/src/entities.js'), import('/src/state.js'), import('/src/skins.js')]).then(([e, { G }, s]) => {
@@ -139,5 +139,37 @@ test('the castle panel shows what each production building waits for and sends a
   await page.evaluate(() => window.__ww.step(2));
   const focus = await page.evaluate(() => window.__ww.crew.filter(c => c.focus === 'wood').length);
   expect(focus).toBe(1);
+  expect(errors).toEqual([]);
+});
+
+test('gear bought for good in the lobby: the grappling hook is there in every game, not sold again at the castle', async ({
+  page,
+}) => {
+  const errors = await lobby(page, { camp: { t: Date.now(), k: 70, lv: {} } });
+  await page.click('#lbCamp');
+  const row = page.locator('#panel .opt[data-gear="hook"]');
+  await expect(row).toContainText('Enterhaken');
+  await page.waitForTimeout(500);
+  await row.click();
+  await expect(page.locator('#panel .opt[data-gear="hook"] .cost')).toHaveText('✓');
+  const prof = await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')));
+  expect(prof.gear).toEqual(['hook']);
+  expect(prof.camp.k).toBe(10);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#panel')).toBeHidden();
+  await play(page);
+  const g = await page.evaluate(() =>
+    Promise.all([import('/src/entities.js'), import('/src/tools.js')]).then(([e, t]) => {
+      const me = e.sel_();
+      return { skin: me.skin, team: t.hasTool('hook'), mine: t.hasGear(me, 'hook'), lamp: t.hasGear(me, 'lamp') };
+    }),
+  );
+  expect(g).toEqual({ skin: 'blue.wood.h', team: false, mine: true, lamp: false });
+  await page.evaluate(() => window.__ww.step(2));
+  await expect(page.locator('#btns')).toHaveClass(/hookon/);
+  // the castle panel does not offer the hook any more, the lamp still (with the lobby hint)
+  await page.evaluate(() => window.__ww.openBase());
+  await expect(page.locator('#panel')).not.toContainText('Enterhaken');
+  await expect(page.locator('#panel .opt', { hasText: 'Grubenlampe' })).toContainText('Heimatbergwerk');
   expect(errors).toEqual([]);
 });

@@ -1,11 +1,12 @@
 import { drawGoal } from './tapgo.js';
 import { drawCue } from './startcue.js';
+import { drawCastleCue } from './castlecue.js';
 import { buildSprite } from './skins.js';
 import { drawClonkHi } from './clonkhi.js';
 import { drawArrow, drawGear } from './combat.js';
 import { drawEvents } from './events.js';
 import { drawBackdrop } from './backdrop.js';
-import { hasTool } from './tools.js';
+import { hasGear } from './tools.js';
 import { drawHazards } from './hazards.js';
 import { drawChests } from './treasure.js';
 import { drawCastleHp, drawHill } from './versus.js';
@@ -696,7 +697,7 @@ function render() {
         light(
           c.x + 3 - cx,
           c.y + 4 - cy,
-          (isPlayer(c) ? 44 : 30) * (c.hat === 'helm' ? 1.5 : 1) * (hasTool('lamp') ? 1.4 : 1),
+          (isPlayer(c) ? 44 : 30) * (c.hat === 'helm' ? 1.5 : 1) * (hasGear(c, 'lamp') ? 1.4 : 1),
           isPlayer(c) ? 0.95 : 0.7,
         );
     });
@@ -753,6 +754,7 @@ function render() {
   if (G.lightFx) drawVignette(ctx);
   drawGoal(ctx, cx, cy);
   drawCue(ctx, cx, cy);
+  drawCastleCue(ctx, cx, cy);
   drawBubbles(ctx, cx, cy);
   drawEmotes(ctx, cx, cy);
   drawFloats(ctx, cx, cy);

@@ -4,7 +4,7 @@ import { sel_ } from './entities.js';
 import { cam, cv } from './render.js';
 import { audioInit } from './sound.js';
 import { G, crew } from './state.js';
-import { closePanel, openBuild, panelEl, toast, toggleMap } from './ui.js';
+import { closePanel, openBag, openBuild, panelEl, toast, toggleMap } from './ui.js';
 import { send } from './commands.js';
 
 // ---- Input ----
@@ -60,15 +60,17 @@ addEventListener('keydown', e => {
   if (e.code === 'KeyG') send('hook', aim());
   if (e.code === 'KeyB') openBuild();
   if (e.code === 'KeyM') toggleMap();
+  if (e.code === 'KeyI') openBag();
   if (e.code === 'Tab') {
     e.preventDefault();
     cycleCrew();
   }
   const c = sel_();
-  if (e.code === 'KeyQ' && c && c.inv.length) c.isel = (c.isel + 1) % c.inv.length;
-  if (/^Digit[1-5]$/.test(e.code) && c) {
+  // (sent like a tap on a slot, so it also works as a guest in multiplayer)
+  if (e.code === 'KeyQ' && c && c.inv.length) send('isel', { i: (c.isel + 1) % c.inv.length });
+  if (/^Digit[1-9]$/.test(e.code) && c) {
     const n = +e.code.slice(5) - 1;
-    if (n < c.inv.length) c.isel = n;
+    if (n < c.inv.length) send('isel', { i: n });
   }
   // Enter: a focused button on a card presses itself; otherwise the main button of the screen
   const onCard = document.activeElement?.tagName === 'BUTTON' && document.activeElement.closest('#overlay');

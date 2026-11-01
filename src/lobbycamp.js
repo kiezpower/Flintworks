@@ -1,12 +1,12 @@
 // The Heimatbergwerk panel in the lobby: collect what the home crew mined, upgrades bought with
 // crystals and the skins (outfits and building styles). The rules live in camp.js and skins.js.
-import { UPGRADES, buySkin, buyUpgrade, camp, collect, level, owns, pending, price, rate, vaultHours } from './camp.js';
+import { GEAR, UPGRADES, buyGear, buySkin, hasGearForGood, buyUpgrade, camp, collect, level, owns, pending, price, rate, vaultHours } from './camp.js';
 import { tr } from './i18n.js';
 import { drawPortrait } from './portrait.js';
 import { P, saveProfile } from './profile.js';
 import { BSTYLES, OUTFITS, restyle } from './skins.js';
 import { sfx } from './sound.js';
-import { SPR, itemIcon } from './sprites.js';
+import { SPR, itemIcon, toolIcon } from './sprites.js';
 import { openPanel, opt, sec, toast } from './ui.js';
 
 // a little crystal, 7×9 texels
@@ -99,7 +99,28 @@ function openCamp(hooks = {}) {
       },
     });
   }
-  // 3. skins: outfits and building styles (seen by everybody, also in multiplayer)
+  // 3. gear for good: bought once, there in every game (no need to buy it at the castle)
+  const gl = sec(p, 'Ausrüstung · Einmal kaufen, in jedem Spiel dabei');
+  for (const id in GEAR) {
+    const g = GEAR[id],
+      own = hasGearForGood(id);
+    opt(gl, {
+      icon: toolIcon(id),
+      title: tr(g.name),
+      sub: tr(g.sub),
+      cost: own ? '✓' : kTxt(g.k),
+      state: own ? 'done' : C.k >= g.k ? 'ok' : 'poor',
+      why: own || C.k >= g.k ? '' : tr('Fehlt: {list}', { list: kTxt(g.k - C.k) }),
+      onClick: () => {
+        if (own) return;
+        if (!buyGear(id)) return toast('Zu wenig Kristalle');
+        sfx('done');
+        toast('{name} ist ab jetzt in jedem Spiel dabei', { name: tr(g.name) });
+        reopen();
+      },
+    }).dataset.gear = id;
+  }
+  // 4. skins: outfits and building styles (seen by everybody, also in multiplayer)
   const choose = (kind, id, set) => {
     const key = `${kind}:${id}`;
     if (!owns(key)) {

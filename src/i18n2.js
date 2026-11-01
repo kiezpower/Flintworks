@@ -164,5 +164,32 @@ const EN2 = {
   'Einladung an {name} geschickt': 'Invitation sent to {name}',
   'Tippen: als Freund hinzufügen': 'Tap: add as a friend',
   'Werde mein Freund in Flintworks! Mein Freundescode: {code}': 'Be my friend in Flintworks! My friend code: {code}',
+  // castle as the shop, the bigger bag, gear for good from the lobby
+  Burg: 'Castle',
+  'Burg · Laden & Lager': 'Castle · Shop & store',
+  'Burg · Laden': 'Castle · Shop',
+  'Tippe „Burg“: Laden': 'Tap “Castle”: shop',
+  'F: Laden öffnen': 'F: open shop',
+  'In der Burg: Tippe auf „Burg“ zum Einkaufen': 'In the castle: tap “Castle” to shop',
+  'In der Burg: Drück F zum Einkaufen': 'In the castle: press F to shop',
+  'Lauf in die Burg – dort kaufst du ein und nimmst Sachen aus dem Lager':
+    'Walk into the castle – there you shop and take things from the store',
+  'Fällen, Burg (Laden), Truhe, Brücke, Bauen': 'Chop, castle (shop), chest, bridge, build',
+  'Aktion: Fällen, Burg (Laden), Lore, Brücke': 'Action: chop, castle (shop), lorry, bridge',
+  'Tasche öffnen': 'Open the bag',
+  'werfen (Q wechselt, 1–9 wählt)': 'throw (Q switches, 1–9 picks)',
+  'mit dem Enterhaken (Burg oder für immer im Heimatbergwerk): wirft ihn in Stick-Richtung, sonst an die nächste Kante':
+    'with the grappling hook (castle, or for good in the home mine): throws it where the stick points, otherwise to the nearest ledge',
+  'Enterhaken werfen, mit Pfeiltaste in diese Richtung (Burg oder für immer im Heimatbergwerk)':
+    'Throw the grappling hook, with an arrow key in that direction (castle, or for good in the home mine)',
+  'Für immer: Heimatbergwerk in der Lobby': 'For good: home mine in the lobby',
+  'Ausrüstung · Einmal kaufen, in jedem Spiel dabei': 'Gear · Buy once, there in every game',
+  'Eigener Knopf (G) in jedem Spiel – auch im Mehrspieler': 'Its own button (G) in every game – multiplayer too',
+  'Helleres Licht und Warnung vor Grubengas in jedem Spiel': 'Brighter light and firedamp warnings in every game',
+  '{name} ist ab jetzt in jedem Spiel dabei': '{name} now comes along to every game',
+  'Noch leer. Sammle auf, was du findest – bis zu {max} Sachen passen hinein.':
+    'Still empty. Pick up what you find – up to {max} things fit in.',
+  'in der Hand': 'in hand',
+  'Taste {n}': 'Key {n}',
 };
 export { EN2 };

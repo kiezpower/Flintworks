@@ -76,17 +76,18 @@ const overlay = $('overlay'),
 const TOUCH_KEYS = [
   ['Stick links', 'laufen, klettern, nach oben schnippen = springen; gegen Erde laufen oder runter drücken = graben'],
   ['Tippen rechts', 'dein Wühler läuft dorthin'],
-  ['Aktion', 'Fällen, Basis, Truhe, Brücke, Bauen'],
+  ['Aktion', 'Fällen, Burg (Laden), Truhe, Brücke, Bauen'],
   ['Wurf', 'erscheint mit etwas in der Hand; Stick hoch = Bogen, runter = ablegen'],
-  ['Haken', 'nach dem Kauf des Enterhakens: wirft ihn in Stick-Richtung, sonst an die nächste Kante'],
+  ['Haken', 'mit dem Enterhaken (Burg oder für immer im Heimatbergwerk): wirft ihn in Stick-Richtung, sonst an die nächste Kante'],
 ];
 const DESK_KEYS = [
   ['Pfeile / WASD', 'laufen, klettern, hangeln, schwimmen'],
   ['Leertaste', 'springen'],
   ['Shift / X', 'graben: gerade, mit ↓/↑ schräg'],
-  ['E', 'werfen (Q wechselt, 1–5 wählt)'],
-  ['F', 'Aktion: Fällen, Basis, Lore, Brücke'],
-  ['G', 'Enterhaken werfen, mit Pfeiltaste in diese Richtung (nach dem Kauf)'],
+  ['E', 'werfen (Q wechselt, 1–9 wählt)'],
+  ['F', 'Aktion: Fällen, Burg (Laden), Lore, Brücke'],
+  ['I', 'Tasche öffnen'],
+  ['G', 'Enterhaken werfen, mit Pfeiltaste in diese Richtung (Burg oder für immer im Heimatbergwerk)'],
   ['B · Tab · M', 'Bauen · Wühler wechseln · Karte'],
   ['Esc', 'Menü'],
 ];
@@ -233,11 +234,12 @@ function startGame(withTutorial = false) {
     G.afterOnb = false;
     // the goal as a banner, an arrow to the nearest gold (startcue.js)
     G.cueNext = true;
+    G.castleSeen = false;
   }
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   const mine = sel_();
-  if (mine) Object.assign(mine, { hat: P.hat, cap: P.cap, skin: skinTag(P.outfit, P.bstyle), name: P.name || mine.name });
+  if (mine) Object.assign(mine, { hat: P.hat, cap: P.cap, skin: skinTag(P.outfit, P.bstyle, P.gear), name: P.name || mine.name });
   // your castle in your building style (alone; in a room the host sets it, net/session.js)
   if (!G.net && G.base && !G.tut) G.base.skin = P.bstyle;
   setDigBoost();
