@@ -19,6 +19,35 @@ function init() {
     ['...oPpppppppo...', '....oPppppo.....', '....oBBxBBxo....', '....oooooooo....'],
   ];
 }
+// turning round: the Wühler faces the camera for a moment (cap brim, both eyes, belt buckle in the
+// middle, legs side by side); the same palette keys as the portrait art (portrait.js)
+const FRONT = [
+  '.....oooooo.....',
+  '....ohhCCCCo....',
+  '...ohCCCCCCCo...',
+  '..oCCCCCCCCCCo..',
+  '.occcccccccccco.',
+  '..orssssssssro..',
+  '..orswesswesro..',
+  '..orskssssskro..',
+  '..odsssnnsssdo..',
+  '...odssmmssdo...',
+  '....oddssddo....',
+  '...otLLLLLLto...',
+  '..ottTTTTTTtto..',
+  '..ottTTTTTTtto..',
+  '..otbbbggbbbto..',
+  '..otTTTTTTTTto..',
+  '...oPpppppppo...',
+  '...oPpo..oPpo...',
+  '..oBBxo..oBBxo..',
+  '..ooooo..ooooo..',
+];
+// braking from a run: leaning back, the front foot planted far ahead
+const BRAKE = ['...oPpppppppo...', '..oPpo...oppo...', '.oBBxo.....oBBxo', '.ooooo.....ooooo'];
+// in the air: knees pulled up while rising, legs apart while falling
+const JUMP = ['...oPpppppppo...', '..oBBxPppppBBxo.', '..ooooo..ooooo..', '................'];
+const FALL = ['...oPpppppppo...', '..oPpo....oppo..', '.oBBxo....oBBxo.', '.ooooo....ooooo.'];
 const CLIMB = [
   ['...oPpppppppo...', '...oPpo..oppo...', '...oBBxo.opo....', '...ooooo.ooo....'],
   ['...oPpppppppo...', '...opo...oPpo...', '...ooo...oBBxo..', '.........ooooo..'],
@@ -90,8 +119,13 @@ function drawClonkHi(c, ox, oy, f, g) {
   // digging: lean back while raising the pick, forward and down into the strike
   const dph = c.digging || c.picking > 0 ? digPhase(c) : -1,
     lean = dph < 0 ? 0 : dph >= 0.3 && dph < 0.45 ? -1 : dph >= 0.58 && dph < 0.72 ? 1 : 0;
-  const X = ox * 2 - 2 + lean * f,
-    Y = oy * 2 + (lean > 0 ? 1 : 0);
+  // starting off leans forward and a little down, braking leans back (frames since, clonk.js)
+  const onFoot = !c.climb && !c.hangle && !(c.airT > 3) && dph < 0,
+    starting = onFoot && c.startF != null && G.frame - c.startF < 4,
+    braking = onFoot && c.stopF != null && G.frame - c.stopF < 5,
+    facing = onFoot && c.turnF != null && G.frame - c.turnF < 5;
+  const X = ox * 2 - 2 + (lean + (starting ? 1 : braking ? -1 : 0)) * f,
+    Y = oy * 2 + (lean > 0 || starting ? 1 : 0);
   const blink = !c.dead && (G.frame + c.x * 7) % 240 < 6;
   // one texel = half a landscape pixel
   const px = (x, y, w, h, col) => {
@@ -114,15 +148,33 @@ function drawClonkHi(c, ox, oy, f, g) {
   // a pick raised over the shoulder is behind the head
   const pickBehind = dph >= 0 && pickAngle(c, dph) < -0.7;
   if (pickBehind) drawPick(c, ox, oy, f, g, dph, lean, null);
-  rows(BODY, 0);
-  if (c.climb) rows(CLIMB[ph < 2 ? 0 : 1], 16);
-  else if (c.hangle) rows(CLIMB[ph % 2], 16);
-  else rows(LEGS[walking ? ph : 0], 16);
-  if (c.hat && c.hat !== 'none') {
+  // a full pack: a sack on the back, behind the body
+  if (c.inv && c.inv.length >= 3 && !c.dead && !c.climb && !c.hangle && !facing) {
+    px(0, 8, 5, 7, FIXED.o);
+    px(1, 9, 3, 5, '#a07a48');
+    px(1, 9, 3, 1, '#c09a62');
+  }
+  // facing the camera: the whole figure from the front (and the hat), no arm or tool on the side
+  const hat = () => {
+    if (!c.hat || c.hat === 'none') return;
     const rs = hatRects(c.hat);
     for (const [x, y, w, h] of rs) px(x - 1, y - 1, w + 2, h + 2, FIXED.o);
     for (const [x, y, w, h, col] of rs) px(x, y, w, h, col);
+  };
+  if (facing) {
+    rows(FRONT, 0);
+    hat();
+    return;
   }
+  rows(BODY, 0);
+  const air = c.airT > 3 && !c.climb && !c.hangle;
+  if (c.climb) rows(CLIMB[ph < 2 ? 0 : 1], 16);
+  else if (c.hangle) rows(CLIMB[ph % 2], 16);
+  else if (air) rows(c.vy < 0 ? JUMP : FALL, 16);
+  else if (braking) rows(BRAKE, 16);
+  else if (starting) rows(LEGS[1], 16);
+  else rows(LEGS[walking ? ph : 0], 16);
+  hat();
   const skin = pal.s,
     sleeve = pal.t;
   if (c.hangle) {
@@ -145,12 +197,14 @@ function drawClonkHi(c, ox, oy, f, g) {
     px(17, up ? -1 : 9, 2, 4, c.chop ? '#c0c6cc' : '#9a948c');
   } else {
     // arm swings with the step and holds the selected item
-    const sw = walking ? [0, 2, 0, -2][ph] : 0;
-    px(12 + Math.max(0, sw), 13, 2, 2, skin);
+    // (in the air the arm goes up: half way while rising, high while falling)
+    const sw = walking && !air ? [0, 2, 0, -2][ph] : 0,
+      hy = air ? (c.vy < 0 ? 9 : 6) : 13;
+    px(12 + Math.max(0, sw), hy, 2, 2, skin);
     const t = c.inv[c.isel];
     if (t && !c.dead) {
-      px(12 + Math.max(0, sw), 13, 5, 5, FIXED.o);
-      px(13 + Math.max(0, sw), 14, 3, 3, ICOL[t]);
+      px(12 + Math.max(0, sw), hy, 5, 5, FIXED.o);
+      px(13 + Math.max(0, sw), hy + 1, 3, 3, ICOL[t]);
     }
   }
   if (c.burn > 0)

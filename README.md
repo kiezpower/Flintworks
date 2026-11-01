@@ -133,6 +133,11 @@ src/
   tutsteps.js         Die drei Schritte des Tutorials
   tutlevel.js         Die Tutorial-Welt mit festem Lehrpfad (Felsbuckel, Goldader)
   onboarding.css      Startschleier, HUD im Tutorial, große Texte
+  panels.css          Fenster als Spiel-UI: Kachelzustände, Grund-Chips, Reiter
+  props.js            Burghof, Fässer, Kisten, Zäune, Laternen, Wege und Stromleitungen (nur Bild)
+  bldart.js           Gebäude in doppelter Auflösung mit Fugen, Maserung, Schindeln
+  startcue.js         Rundenbeginn: Ziel-Banner und Pfeil zur nächsten Goldader
+  arrow.js            Der gelbe Zielpfeil (Tutorial und Rundenbeginn)
   analytics.js        Analyse-Ereignisse (nur lokal), siehe docs/ANALYTICS.md
   lessons.js          Tipps und Aufträge nach dem Tutorial, Spielhilfe in der Lobby
   versus.js           Versus: Burg-Lebenspunkte, Hügel, Rundenuhr, Nachschub, Sieger
@@ -154,4 +159,5 @@ Regeln:
 - Keine Datei über 1000 Zeilen (`style.css` liegt noch darüber; neue Gestaltung in eigene CSS-Dateien).
 - Alles, was Spieler sehen, geht durch `tr()` und ist für Menschen geschrieben (keine IDs, Fehlermeldungen oder Platzhalter).
 - Analyse-Ereignisse nur über `src/analytics.js` und erst in `docs/ANALYTICS.md` eintragen.
+- Neue Grafik folgt [docs/STYLE.md](docs/STYLE.md), Menüs und HUD folgen [docs/UI_STYLE.md](docs/UI_STYLE.md). Prüfen und bewerten mit der Rubrik in [docs/ART_RUBRIC.md](docs/ART_RUBRIC.md).
 - Der erste Start gehört dem Tutorial: nichts davor (kein Dialog, keine Lobby, kein Installieren-Angebot); neue Systeme kommen als Lektion (`lessons.js`), nicht ins Tutorial.

@@ -85,6 +85,7 @@ for (const lang of ['de', 'en'])
       'onb_complete',
       'onb_card',
       'core_round_start',
+      'round_cue',
     ]);
     const all = await events(page);
     expect(all.find(e => e.e === 'core_round_start')).toMatchObject({ mode: 'gold', after_onb: true });

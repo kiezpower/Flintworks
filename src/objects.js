@@ -386,6 +386,9 @@ function updAnimal(a) {
         tgt = c;
       }
     }
+    // close enough to strike and ready: a warning shows over it first (render.js, only a picture:
+    // the strike itself still comes on contact, as before)
+    a.warn = tgt && bd < 20 && a.atk <= 0 ? (a.warn || 0) + 1 : 0;
     if (tgt) {
       a.tvx = Math.sign(tgt.x + 3 - (a.x + 6)) * 0.5;
       if (G.frame % 180 === 0) sfx('growl', a.x, a.y);

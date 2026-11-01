@@ -38,6 +38,8 @@ async function start(lang, viewport) {
 async function quiet(page) {
   await page.evaluate(async () => {
     const { clearFloats } = await import('/src/floats.js');
+    (await import('/src/startcue.js')).stopCue(); // (no arrow in a staged picture)
+    document.querySelector('.banner')?.remove();
     window.__ww.items.length = 0;
     clearFloats();
     document.getElementById('toast').hidden = true;

@@ -433,3 +433,24 @@ test('a tutorial saved by an older version starts afresh in the new world', asyn
   await page.click('#veilGo');
   expect(await page.evaluate(() => [window.__ww.G.mode, window.__ww.tut.i])).toEqual(['tut', 0]);
 });
+
+test('a real round opens with its goal and an arrow to the nearest gold, gone once you dig', async ({ page }) => {
+  await fresh(page, { profile: { tutorialDone: true, installAsked: 'done', games: 2 } });
+  await page.click('#lbPlay');
+  await expect(page.locator('.banner')).toContainText('Goldrausch');
+  const r = await page.evaluate(async () => {
+    const { cueOn } = await import('/src/startcue.js');
+    const w = window.__ww,
+      c = w.crew[0];
+    const on = cueOn();
+    w.G.inputKind = 'keys';
+    w.keys.d = 1; // dig down where you stand
+    w.step(40);
+    w.keys.d = 0;
+    return { on, after: cueOn(), dug: true };
+  });
+  expect(r.on).toBe(true);
+  expect(r.after).toBe(false);
+  const ev = await page.evaluate(() => window.__ww.analytics.sessionEvents().filter(e => e.e === 'round_cue'));
+  expect(ev).toHaveLength(1);
+});

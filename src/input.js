@@ -70,7 +70,9 @@ addEventListener('keydown', e => {
     const n = +e.code.slice(5) - 1;
     if (n < c.inv.length) c.isel = n;
   }
-  if (e.code === 'Enter' && G.state !== 'play')
+  // Enter: a focused button on a card presses itself; otherwise the main button of the screen
+  const onCard = document.activeElement?.tagName === 'BUTTON' && document.activeElement.closest('#overlay');
+  if (e.code === 'Enter' && G.state !== 'play' && !onCard)
     document.getElementById(G.state === 'menu' ? 'lbPlay' : 'goBtn')?.click();
 });
 addEventListener('keyup', e => {

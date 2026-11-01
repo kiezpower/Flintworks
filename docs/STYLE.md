@@ -2,6 +2,11 @@
 
 Alles in Flintworks wird im Code gezeichnet. Diese Regeln halten neue Grafiken im selben Stil.
 
+**Ziel (freigegeben, Details in [ART_RUBRIC.md](ART_RUBRIC.md)):** Clonk-Siedlungs- und Grabewelt im
+Querschnitt, echte Pixelgrafik mit Terraria-Klarheit; Siedlung dicht wie bei Clonk, aber ruhiger;
+Untertage tiefer und dunkler mit warmem Licht und leuchtenden Materialien wie Noita, nie ganz
+schwarz; HUD und Menüs knapp wie SteamWorld Dig 2 ([UI_STYLE.md](UI_STYLE.md)).
+
 ## Raster
 
 | Was | Größe |
@@ -56,3 +61,85 @@ Keine weichgezeichneten Kanten: Bilder ohne Glättung zeichnen, Koordinaten rund
 2. Auswahl treffen, einbauen, Vorher/Nachher aus dem echten Spiel ansehen.
 3. Zeichenzeit prüfen: `paintAll()` läuft beim Rundenstart über die ganze Welt; was pro Texel
    gerechnet wird, muss billig sein (keine Hilfsfunktionen oder Arrays pro Texel anlegen).
+
+## Figuren und Maßstab
+
+- Wühler 8×10 Landschaftspixel, die Burg 36 px breit. Neue Gebäude orientieren sich an diesen Maßen: Ein Wühler muss durch die Tür passen.
+- Spielfiguren und Wertvolles heben sich immer ab: gesättigte Mütze, heller Umriss im Dunkeln,
+  Gold und Edelsteine leuchten. Gelände bleibt gedämpfter als alles, womit man spielt.
+- Neue Gebäude stehen auf dem Boden (Schatten), haben eine klare Silhouette und ein bewegtes Teil
+  oder Licht, wenn sie arbeiten.
+
+## Animation
+
+- Klips sind Pixelzeilen und Phasen (`clonkhi.js`); das System dazu sind Physik (`clonk.js`),
+  Partikel (`effects.js`), Ton (`sound.js`), Vibration und Kamera-Rütteln.
+- Jede Aktion: Vorbereitung → schneller Teil → Nachfedern. Kontakt (Schlag, Landung, Fuß) bekommt
+  Bild, Ton und ggf. Vibration im selben Frame.
+- Pflichtposen für neue Figuren: Stehen, 4 Laufphasen, Sprung/Fall, Landung, Aktion. Füße rutschen nicht:
+  die Laufphase folgt der Strecke (`c.anim`), nicht der Zeit.
+- Posen (`clonkhi.js`): `LEGS` (4 Laufphasen), `JUMP` (steigen: Beine angezogen, Arm halb hoch),
+  `FALL` (fallen: Beine gespreizt, Arm hoch), `CLIMB`. „In der Luft“ heißt `c.airT > 3` (eine Stufe
+  hinab zählt nicht). Ab 3 Dingen im Gepäck trägt der Wühler einen Sack auf dem Rücken.
+- Wenden: 5 Bilder lang die Frontansicht `FRONT` (eigene Pixelzeilen, Hut wird mitgezeichnet; `c.turnF`).
+- Loslaufen: 4 Bilder Vorlage (ein Texel vor und tiefer, Schrittbeine; `c.startF`); Bremsen aus
+  vollem Lauf: 5 Bilder Rücklage mit gestemmten Beinen `BRAKE` (`c.stopF`).
+- Staub (`dust`): jede Landung ab `fallV > 1.2`, Wenden aus vollem Lauf, Schritte.
+- Monster zeigen ein blinkendes „!“, bevor sie zuschlagen können (nur Bild; Takt und Schaden gleich;
+  im Netz als Feld `w` der Tiere übertragen).
+- Bewegungs-Inventar und Lücken: ART_RUBRIC.md, Abschnitt 2.
+
+## Welt-Details
+
+- **Oberfläche:** Gras, Blumen, Büsche, Steinchen (`decor.js`).
+- **Höhlenböden** ab 30 Reihen Tiefe: leuchtende Pilze (türkis) und Kristalle (violett) mit eigenem
+  Lichtkreis. Ihr Zufall kommt aus einem Hash der Stelle, nie aus `rnd()`: Welten, Level-Vorschauen
+  und Netzrunden bleiben dadurch gleich. Sie werden im Spielstand mitgespeichert (`glow`). Ältere
+  Spielstände suchen die Höhlen neu.
+- **Siedlung** (`props.js`, nur Bild, keine Kollision):
+  - Neben fertigen Gebäuden bis zu 2 Props (Fass, Kiste, Zaun, Laternenpfahl). Welche, bestimmt ein
+    Hash der Gebäude-Id. Sie stehen nur, wo Platz ist. Laternen leuchten nachts.
+  - Die Burg hat einen festen Hof: Holzstapel, Fass, Handkarren, Wegweiser.
+  - Ausgetretene Wege zwischen Nachbargebäuden (Abstand 3–70 px, gleiche Höhe).
+  - Stromleitungen vom Windrad zur nächsten Pumpe, Chemiewerk oder Aufzug (bis 140 px).
+- **Licht:** zwei Tiefenstufen (`light.js`: 58 % nach 60 Reihen, 70 % nach weiteren 100); große
+  Explosionen werfen einen schwachen, hart begrenzten Lichtring.
+
+## Leistung
+
+- „Grafik: schnell“ zeichnet in 1× statt 2×; das Spiel schaltet selbst um, wenn es zweimal in
+  Folge über 2 s im Schnitt langsamer als 25 ms pro Bild läuft (`perfGuard` in `main.js`).
+  „Licht“ kann aus. Partikel haben ein Budget, bei „schnell“ kleiner.
+- Was pro Texel oder pro Frame läuft, darf nichts anlegen (keine Arrays oder Objekte in Schleifen).
+- Kein Three.js, keine Bilddateien außer App-Icons: Qualitätsstufen bleiben die beiden oben.
+
+## Prüfablauf für neue Grafik
+
+1. Vergleichsbogen wie oben, dazu Bilder aus dem echten Spiel: `npm run test:visual`
+   (Startbildschirm, Oberfläche, Nacht, Höhle, Funken, Desktop und Handy) und `npm run store-shots`.
+2. Gegen die Rubrik in ART_RUBRIC.md prüfen; die wichtigsten Kategorien je Zustand stehen in der
+   Zustands-Matrix. Eine Änderung darf keine Kategorie schlechter machen.
+3. 1-Sekunden-Test: Bild kurz zeigen. Sind Figur, Gefahr, nächste Handlung erkennbar?
+4. Note in ART_RUBRIC.md nachtragen, wenn sich eine Kategorie sichtbar ändert.
+
+## Gebäude in doppelter Auflösung (`bldart.js`)
+
+- Die Gebäude werden weiter in 1× gezeichnet (`sprites.js`, Baustile über `restyle` in `skins.js`).
+  Auf dem Bildschirm erscheinen sie über `crafted()`: Jeder Pixel wird nach seiner Farbe als Stein,
+  Holz, Dach, Fenster, Eisen oder dunkle Öffnung erkannt (`material()`); seine 2×2 Texel bekommen das
+  passende Muster:
+  - Stein: Fugen rechts und unten im Versatz;
+  - Holz: dunkle Maserungs-Streifen und Astlöcher;
+  - Dach: Schindelkanten;
+  - Fenster: Glanz oben links.
+- Neue Gebäude brauchen dafür nichts Eigenes: Sie bekommen das Muster, wenn sie die Material-Farben
+  der Palette benutzen (Stein grau, Holz braun-orange, Dach rot oder schiefergrau, Fenster hellgelb).
+- Die Maße bleiben exakt doppelt (plus 1 Texel Umriss); Kollision und Bauplatz hängen nur an `b.w`/`b.h`.
+- Variante 2 (Moos und Ruß) ist im Code vorhanden (`crafted(spr, 2)`), aber nicht in Gebrauch.
+
+## Rundenbeginn (`startcue.js`)
+
+- Banner mit Modus und Ziel; gelber Pfeil (`arrow.js`, derselbe wie im Tutorial) zur nächsten
+  Goldader bis 60 Reihen unter der Oberfläche; weg nach dem ersten Graben oder nach 12 s; der
+  Wegweiser am Burghof zeigt in dieselbe Richtung (`G.signDir`). Nicht im Tutorial, nicht als Gast.
+

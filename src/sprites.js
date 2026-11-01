@@ -685,6 +685,7 @@ function drawDetailed(ctx, spr, x, y) {
 
 export {
   PAD_ICONS,
+  bevel2x,
   detailed,
   drawDetailed,
   drawHi,

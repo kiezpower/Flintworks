@@ -33,6 +33,7 @@ const EVENTS = {
   onb_exit: { f: { step: 's', sec: 'n' } },
   onb_resume: { f: { step: 's' } },
   core_round_start: { f: { mode: 's', after_onb: 'b' } },
+  round_cue: { f: { gold: 'b' } },
   session_end: { f: { sec: 'n', state: 's' }, once: true },
 };
 const TYPES = { n: 'number', s: 'string', b: 'boolean' };

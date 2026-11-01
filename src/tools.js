@@ -89,7 +89,7 @@ function teamHas(team, id) {
 }
 
 // adds the tool and equipment sections to the base panel; opt/sec/toast come from ui.js
-function toolSection(p, c, { opt, sec, toast, reopen }) {
+function toolSection(p, c, { opt, sec, toast, reopen, lacking }) {
   for (const gear of [false, true]) {
     const open = Object.keys(TOOLS).filter(id => !hasTool(id) && !!TOOLS[id].gear === gear);
     const l = sec(p, gear ? 'Ausrüstung' : 'Werkzeug');
@@ -100,9 +100,10 @@ function toolSection(p, c, { opt, sec, toast, reopen }) {
       opt(l, {
         icon: toolIcon(T.icon),
         title: tr(T.name),
-        sub: known ? tr(T.sub) : needText(T.res),
+        sub: tr(T.sub),
         cost: tr('{m} Taler + {cost}', { m: T.money, cost: costTxt(T.need) }),
-        short: !ok,
+        state: !known ? 'locked' : ok ? 'ok' : 'poor',
+        why: !known ? needText(T.res) : ok ? '' : lacking(c, T.need, T.money),
         onClick: () => {
           if (!known) return toast(needText(T.res));
           if (!ok)
@@ -121,6 +122,7 @@ function toolSection(p, c, { opt, sec, toast, reopen }) {
           sub: tr('Im Köcher: {n}', { n: arrowsOf(id) }),
           cost: costTxt(A.need),
           short: !hasRes(c, A.need),
+          why: lacking(c, A.need),
           onClick: () => {
             if (!hasRes(c, A.need)) return toast('{name} braucht {cost}', { name: tr(A.name), cost: costTxt(A.need) });
             send('arrows', { id });

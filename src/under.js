@@ -145,7 +145,9 @@ function underTexel(c, m, i, x, y, sx, sy, d, mat, SOLID, top) {
     // a dark rim where a vein or lens meets other ground
     const nx = mat[sx ? i + 1 : i - 1],
       ny = mat[sy ? i + W : i - W];
-    const rim = (nx !== m && SOLID[nx]) || (ny !== m && SOLID[ny]) ? (LENS[m] ? RIM_LENS : S.rim) : 1;
+    // (a lens of sand or loam is lit from above: its top edge lighter, the other edges dark)
+    const lit = LENS[m] && !sy && ny !== m && SOLID[ny];
+    const rim = lit ? 1.16 : (nx !== m && SOLID[nx]) || (ny !== m && SOLID[ny]) ? S.rim : 1;
     if (m === GOLD || m === GEM) return ch3(c, 1.3 * rim, 1.25 * rim, 1.2 * rim);
     const o = dIdx(d);
     return ch3(c, DK[o] * rim, DK[o + 1] * rim, DK[o + 2] * rim);
@@ -195,7 +197,6 @@ function cellLook(i, x, y, m, d, mat) {
   cb *= DK[o + 2];
   cf = findAt(x, y, m);
 }
-const RIM_LENS = 1 - (1 - S.rim) * 0.5;
 // soil patches, worked out once for the whole world (they depend on the place only)
 let PATCH = null;
 function makePatches() {

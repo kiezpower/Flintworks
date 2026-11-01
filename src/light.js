@@ -5,7 +5,11 @@ import { H, LIQ, SOLID, W, mat, onResize } from './world.js';
 
 const AMB_MAX = 0.58, // darkest the deep underground gets (lamps and lava cut holes into it)
   AMB_LEN = 60, // rows over which the dimming fades in below the surface
-  AMB_GAP = 5; // first rows under the surface stay bright
+  AMB_GAP = 5, // first rows under the surface stay bright
+  // a second, deeper step: over the next rows it darkens on to 70 % (never black: lamps, lava,
+  // gold and glowing finds still cut through, docs/STYLE.md)
+  AMB_LEN2 = 100,
+  AMB_DEEP = 1 - (1 - 0.7) / (1 - AMB_MAX); // the extra layer that makes 0.58 into 0.70
 const TINT = '14,8,22';
 
 // first solid or liquid cell of a column; refreshed a few times per second for the visible columns
@@ -33,7 +37,20 @@ ramp.height = AMB_LEN;
   g.fillRect(0, 0, 1, AMB_LEN);
 }
 
+const ramp2 = document.createElement('canvas');
+ramp2.width = 1;
+ramp2.height = AMB_LEN2;
+{
+  const g = ramp2.getContext('2d'),
+    gr = g.createLinearGradient(0, 0, 0, AMB_LEN2);
+  gr.addColorStop(0, `rgba(${TINT},0)`);
+  gr.addColorStop(1, `rgba(${TINT},${AMB_DEEP})`);
+  g.fillStyle = gr;
+  g.fillRect(0, 0, 1, AMB_LEN2);
+}
+
 // Paints the depth dimming into the light layer; false when the view is all above ground.
+const deep = [];
 function depthShade(lctx, cx, cy) {
   if (G.frame % 15 === 0 || colTop[Math.min(W - 1, cx + (G.VW >> 1))] < 0) refreshTops(cx);
   lctx.fillStyle = `rgba(${TINT},${AMB_MAX})`;
@@ -45,7 +62,19 @@ function depthShade(lctx, cx, cy) {
     if (top > -AMB_LEN) lctx.drawImage(ramp, sx, top);
     const rest = Math.max(0, top + AMB_LEN);
     if (rest < G.VH) lctx.fillRect(sx, rest, 1, G.VH - rest);
+    deep.push(sx, top + AMB_LEN);
   }
+  // the deeper step on top
+  lctx.fillStyle = `rgba(${TINT},${AMB_DEEP})`;
+  for (let k = 0; k < deep.length; k += 2) {
+    const sx = deep[k],
+      top = deep[k + 1];
+    if (top >= G.VH) continue;
+    if (top > -AMB_LEN2) lctx.drawImage(ramp2, sx, top);
+    const rest = Math.max(0, top + AMB_LEN2);
+    if (rest < G.VH) lctx.fillRect(sx, rest, 1, G.VH - rest);
+  }
+  deep.length = 0;
   return any;
 }
 // the surface row of every visible column (for wet ground); kept fresh without the mood lighting too

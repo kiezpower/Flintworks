@@ -23,8 +23,10 @@ import '@fontsource/pixelify-sans/700.css';
 import '@fontsource/silkscreen/400.css';
 import './style.css';
 import './onboarding.css';
+import './panels.css';
 import { ev } from './analytics.js';
 import { closeVeil, openVeil, veilOpen } from './veil.js';
+import { startCue, updCue } from './startcue.js';
 import { updBuilds, updLorry } from './buildings.js';
 import { NOIN, context, doThrow, updClonk } from './clonk.js';
 import { addClonk, insideB, sel_ } from './entities.js';
@@ -228,6 +230,8 @@ function startGame(withTutorial = false) {
   if (!withTutorial && !G.tut) {
     ev('core_round_start', { mode: String(G.mode), after_onb: !!G.afterOnb });
     G.afterOnb = false;
+    // the goal as a banner, an arrow to the nearest gold (startcue.js)
+    G.cueNext = true;
   }
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
@@ -329,13 +333,21 @@ function endScreen(won, why, winner = null) {
   const again = G.net && inRoom();
   if (again && NET.host) card.innerHTML += `<button class="go" id="againBtn">${tr('Revanche!')}</button>`;
   else if (again) card.innerHTML += `<p class="hint">${tr('Der Host kann gleich eine Revanche starten')}</p>`;
-  card.innerHTML += `<button class="go${next || D || (again && NET.host) ? ' alt' : ''}" id="goBtn">${tr('Zur Lobby')}</button>`;
+  // free play alone: straight into a new round is the main way on, the lobby the quiet one
+  const solo = !G.net && !M.campaign && !M.daily;
+  if (solo) card.innerHTML += `<button class="go" id="soloBtn">${tr(won ? 'Neue Runde' : 'Nochmal')}</button>`;
+  card.innerHTML += `<button class="go${next || D || solo || (again && NET.host) ? ' alt' : ''}" id="goBtn">${tr('Zur Lobby')}</button>`;
   $('goBtn').onclick = () => {
     overlay.hidden = true;
     menu();
   };
   if (again && NET.host)
     $('againBtn').onclick = () => {
+      overlay.hidden = true;
+      play(false);
+    };
+  if (solo)
+    $('soloBtn').onclick = () => {
       overlay.hidden = true;
       play(false);
     };
@@ -346,6 +358,8 @@ function endScreen(won, why, winner = null) {
       play(false, next);
     };
   overlay.hidden = false;
+  // the first button has the focus: Enter goes on
+  card.querySelector('button')?.focus({ preventScroll: true });
 }
 $('newBtn').addEventListener('click', () => {
   saveGame();
@@ -506,6 +520,12 @@ function step() {
       }
     useMine();
     updTutorial();
+    // (the start cue begins on the first tick, when the camera and the HUD are in place)
+    if (G.cueNext) {
+      G.cueNext = false;
+      startCue();
+    }
+    updCue();
     if (G.frame % 15 === 0) updAmbience();
     if (G.frame % 30 === 0) updDecor();
     if (G.frame % 60 === 0) checkLessons();

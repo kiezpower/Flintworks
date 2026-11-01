@@ -65,16 +65,28 @@ function researchSection(p, { opt, sec, reopen }) {
       now = q && q.id === id,
       open = knowsAll(R.req);
     const pct = now ? Math.floor(100 - (q.left / (R.time * 60)) * 100) : 0;
+    // the state shows at a glance, the chip says why (docs/UI_STYLE.md)
+    const state = done ? 'done' : now ? 'busy' : !open || q ? 'locked' : G.money < R.money ? 'poor' : 'ok';
+    const why = !open
+      ? needText(R.req)
+      : q && !now && !done
+        ? tr('Es läuft schon eine Forschung')
+        : state === 'poor'
+          ? tr('Fehlt: {list}', { list: tr('{n} Taler', { n: R.money - G.money }) })
+          : '';
     opt(l, {
       icon: toolIcon(R.icon),
       title: tr(R.name),
-      sub: done ? tr(R.sub) : open ? tr(R.sub) : needText(R.req),
-      cost: done ? '✓' : now ? pct + ' %' : tr('{m} Taler · {s} s', { m: R.money, s: R.time }),
-      short: !done && (!open || !!q || G.money < R.money),
+      sub: tr(R.sub),
+      cost: done ? tr('Erforscht') : now ? pct + ' %' : tr('{m} Taler · {s} s', { m: R.money, s: R.time }),
+      state,
+      why,
+      pct,
       disabled: done || now,
       onClick: () => {
-        if (q) return toast('Es läuft schon eine Forschung');
+        // (the same reason as on the tile)
         if (!open) return toast(needText(R.req));
+        if (q) return toast('Es läuft schon eine Forschung');
         send('research', { id });
         reopen();
       },

@@ -13,6 +13,7 @@ import { sfx } from './sound.js';
 import { SPR, itemIcon, padIcon } from './sprites.js';
 import { G, parts } from './state.js';
 import { STEPS } from './tutsteps.js';
+import { drawArrow } from './arrow.js';
 import { closePanel, mapView, toast, toastEl } from './ui.js';
 
 const box = document.getElementById('quest');
@@ -318,30 +319,7 @@ function showHand(c, el) {
 function drawTutorial(ctx, cx, cy) {
   const c = G.tut && G.state === 'play' && sel_();
   const t = c && stepOf().target?.(c, G.tut.s);
-  if (!t) return;
-  const sx = t.x - cx,
-    sy = t.y - cy - 6 + (G.reduceMotion ? 0 : Math.sin(G.frame * 0.15) * 2);
-  const m = 8,
-    inside = sx > m && sx < G.VW - m && sy > m && sy < G.VH - m;
-  const x = Math.min(G.VW - m, Math.max(m, sx)),
-    y = Math.min(G.VH - m, Math.max(m, sy));
-  const ang = inside ? Math.PI / 2 : Math.atan2(sy - y, sx - x);
-  ctx.save();
-  ctx.translate(Math.round(x), Math.round(y));
-  ctx.rotate(ang);
-  ctx.fillStyle = '#1a120c';
-  ctx.beginPath();
-  ctx.moveTo(5, 0);
-  ctx.lineTo(-4, -5);
-  ctx.lineTo(-4, 5);
-  ctx.fill();
-  ctx.fillStyle = '#f2c230';
-  ctx.beginPath();
-  ctx.moveTo(3.5, 0);
-  ctx.lineTo(-3, -3.5);
-  ctx.lineTo(-3, 3.5);
-  ctx.fill();
-  ctx.restore();
+  if (t) drawArrow(ctx, t.x - cx, t.y - cy);
 }
 // leaving the page in the middle of the tutorial: where players drop off
 addEventListener('pagehide', () => {

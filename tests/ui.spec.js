@@ -115,3 +115,93 @@ test('option tiles without an icon put the title above its explanation', async (
   const [t, s] = await Promise.all([tile.locator('b').boundingBox(), tile.locator('small').boundingBox()]);
   expect(s.y).toBeGreaterThanOrEqual(t.y + t.height - 1);
 });
+
+test('castle tiles show their state at a glance: too dear, locked, done, running, each with its reason', async ({
+  page,
+}) => {
+  const errors = await lobby(page);
+  await play(page);
+  await page.evaluate(() => {
+    const w = window.__ww;
+    w.money = 50;
+    w.G.tools = { ...w.G.tools, r_mech: true };
+    w.openBase();
+  });
+  const tile = name => page.locator('#pBody .opt', { hasText: name }).first();
+  await expect(tile('Mechanik')).toHaveClass(/st-done/);
+  await expect(tile('Metallurgie')).toHaveClass(/st-poor/);
+  await expect(tile('Metallurgie').locator('.why')).toHaveText('Fehlt: 10 Taler');
+  await expect(tile('Luftfahrt')).toHaveClass(/st-locked/);
+  await expect(tile('Luftfahrt').locator('.why')).toContainText('Erst erforschen: Metallurgie');
+  // jump chips to the sections
+  await expect(page.locator('#pBody .pchips button').first()).toBeVisible();
+  // a running research: the others say why they wait, the running one shows its progress
+  await page.evaluate(() => {
+    const w = window.__ww;
+    w.G.tools = { ...w.G.tools, _rq: { id: 'archery', left: 600 } };
+    w.money = 500;
+    w.openBase();
+  });
+  await expect(tile('Bogenbau')).toHaveClass(/st-busy/);
+  await expect(tile('Bogenbau').locator('.pbar')).toHaveCount(1);
+  await expect(tile('Metallurgie').locator('.why')).toHaveText('Es läuft schon eine Forschung');
+  // a tap on a locked tile: a shake and the reason
+  await page.waitForTimeout(500);
+  await tile('Luftfahrt').click();
+  await expect(tile('Luftfahrt')).toHaveClass(/nope/);
+  await expect(page.locator('#toast')).toContainText('Erst erforschen');
+  expect(errors).toEqual([]);
+});
+
+test('a won free round offers a new round as the main button, and Enter takes it', async ({ page }) => {
+  const errors = await lobby(page);
+  await play(page);
+  await page.evaluate(() => (window.__ww.money = 900));
+  await expect(page.locator('#card h1')).toHaveText('Geschafft');
+  await expect(page.locator('#soloBtn')).toBeFocused();
+  await expect(page.locator('#goBtn')).toHaveClass(/alt/);
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => window.__ww.state === 'play');
+  expect(await page.evaluate(() => [window.__ww.G.mode, window.__ww.money < 900])).toEqual(['gold', true]);
+  expect(errors).toEqual([]);
+});
+
+test('castle tabs show one section at a time, a second tap shows all again, the choice stays', async ({ page }) => {
+  const errors = await lobby(page);
+  await play(page);
+  await page.evaluate(() => window.__ww.openBase());
+  await page.waitForTimeout(500);
+  const research = page.locator('#pBody .psec', { hasText: 'Forschung' });
+  const tools = page.locator('#pBody .psec', { hasText: 'Werkzeug' });
+  await page.locator('.pchips button', { hasText: 'Forschung' }).click();
+  await expect(page.locator('.pchips button', { hasText: 'Forschung' })).toHaveClass(/sel/);
+  await expect(research).toBeVisible();
+  await expect(tools).toBeHidden();
+  // reopened (as after buying something): still the same tab
+  await page.evaluate(() => window.__ww.openBase());
+  await expect(tools).toBeHidden();
+  await page.waitForTimeout(500);
+  await page.locator('.pchips button', { hasText: 'Forschung' }).click();
+  await expect(tools).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('the 2x building art keeps every building at exactly double its size (collision is unchanged)', async ({ page }) => {
+  const errors = await lobby(page);
+  const bad = await page.evaluate(async () => {
+    const { SPR } = await import('/src/sprites.js');
+    const { crafted, material } = await import('/src/bldart.js');
+    const out = [];
+    for (const t of ['base', 'hut', 'shop', 'lift', 'pump', 'saw', 'wind', 'furnace', 'chem', 'tower', 'gate', 'flag']) {
+      const o = crafted(SPR[t], 1);
+      // (2× plus a one-texel outline on every side)
+      if (o.width !== SPR[t].width * 2 + 2 || o.height !== SPR[t].height * 2 + 2) out.push(t);
+    }
+    // the materials are read from colours
+    if (material(0xa6, 0x9e, 0x92) !== 'stone' || material(0x8b, 0x5e, 0x34) !== 'wood') out.push('material');
+    if (material(0x9c, 0x44, 0x28) !== 'roof' || material(0xff, 0xd7, 0x7a) !== 'glass') out.push('material2');
+    return out;
+  });
+  expect(bad).toEqual([]);
+  expect(errors).toEqual([]);
+});

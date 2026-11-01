@@ -1,6 +1,9 @@
-// Small surface details: grass tufts, flowers, dry bushes, pebbles. Purely visual.
+// Small details: grass tufts, flowers, dry bushes, pebbles on the surface, and glowing mushrooms
+// and crystals on cave floors deep down (they cut small holes into the dark, render.js).
+// Purely visual. The caves' own random numbers come from the place (hash), not from rnd(), so the
+// world, level previews and network rounds stay exactly as they were.
 import { G } from './state.js';
-import { AIR, EARTH, SAND, W, mat, ri, rnd } from './world.js';
+import { AIR, EARTH, H, LOAM, ROCK, SAND, W, mat, ri, rnd, surf } from './world.js';
 import { topSolid } from './gen.js';
 
 const decor = [];
@@ -11,7 +14,8 @@ function pickKind() {
   if (G.biome === 'winter') return r < 0.3 ? 'stalks' : r < 0.5 ? 'pebble' : null;
   return r < 0.6 ? 'grass' : r < 0.85 ? 'flower' : 'pebble';
 }
-function scatterDecor() {
+// saved: the cave glows of a saved game (so they do not turn up in tunnels dug since)
+function scatterDecor(saved = null) {
   decor.length = 0;
   for (let x = 3; x < W - 3; x += ri(2, 6)) {
     const y = topSolid(x),
@@ -20,6 +24,30 @@ function scatterDecor() {
     const kind = pickKind();
     if (kind) decor.push({ x, y, kind, c: FLOWERS[ri(0, 3)], h: ri(2, 3) });
   }
+  if (saved) {
+    for (const [x, y, k, h] of saved) decor.push({ x, y, kind: k ? 'shroom' : 'crystal', h, glow: 1 });
+    return;
+  }
+  // cave floors more than 30 rows under the surface: now and then something that glows
+  const FLOOR = { [EARTH]: 1, [LOAM]: 1, [ROCK]: 1 };
+  for (let x = 4; x < W - 4; x += 3)
+    for (let y = surf[x] + 30; y < H - 12; y++) {
+      const i = y * W + x;
+      if (!FLOOR[mat[i]] || mat[i - W] !== AIR || mat[i - 2 * W] !== AIR) continue;
+      const h = (Math.imul(x, 73856093) ^ Math.imul(y, 19349663)) >>> 0;
+      if (h % 100 < 7) decor.push({ x, y, kind: h & 128 ? 'shroom' : 'crystal', h: 2 + (h & 1), glow: 1 });
+      y += 6;
+    }
+}
+// the cave glows, for the save (x, y, 1 = mushroom, height)
+const glowList = () => decor.filter(d => d.glow).map(d => [d.x, d.y, d.kind === 'shroom' ? 1 : 0, d.h]);
+// the glowing details in view, as screen positions for the light layer
+function glowSpots(cx, cy, out) {
+  out.length = 0;
+  for (const d of decor)
+    if (d.glow && d.x >= cx - 4 && d.x <= cx + G.VW + 4 && d.y >= cy - 4 && d.y <= cy + G.VH + 4)
+      out.push(d.x - cx, d.y - cy - 2);
+  return out;
 }
 // drop details whose ground was dug away or covered
 function updDecor() {
@@ -50,6 +78,20 @@ function drawDecor(ctx, cx, cy) {
       ctx.fillRect(x, y - 2, 1, 2);
       ctx.fillRect(x - 1, y - 3, 1, 1);
       ctx.fillRect(x + 1, y - 3, 1, 1);
+    } else if (d.kind === 'shroom') {
+      // a pale stem, a glowing cap with a brighter top
+      ctx.fillStyle = '#d8cfc0';
+      ctx.fillRect(x, y - d.h, 1, d.h);
+      ctx.fillStyle = '#3fb3a8';
+      ctx.fillRect(x - 1, y - d.h - 1, 3, 1);
+      ctx.fillStyle = '#9ff2e6';
+      ctx.fillRect(x, y - d.h - 2, 1, 1);
+    } else if (d.kind === 'crystal') {
+      ctx.fillStyle = '#7a4fc4';
+      ctx.fillRect(x, y - d.h - 1, 1, d.h + 1);
+      ctx.fillRect(x + 1, y - 2, 1, 2);
+      ctx.fillStyle = '#d6b8ff';
+      ctx.fillRect(x, y - d.h - 1, 1, 1);
     } else if (d.kind === 'stalks') {
       ctx.fillStyle = '#9a8a6a';
       ctx.fillRect(x, y - d.h, 1, d.h);
@@ -61,4 +103,4 @@ function drawDecor(ctx, cx, cy) {
   }
 }
 
-export { drawDecor, scatterDecor, updDecor };
+export { drawDecor, glowList, glowSpots, scatterDecor, updDecor };

@@ -643,8 +643,18 @@ function updBody(c, I) {
   }
 
   const onG = !free(c.x, c.y + 1, 6, 10);
+  // frames in the air, for the jump and fall poses (clonkhi.js); a step down does not count
+  c.airT = onG || inLiq ? 0 : (c.airT || 0) + 1;
   let tvx = Math.abs(I.ax) < 0.25 ? 0 : I.ax * (inLiq ? 0.6 : 1.05);
-  if (Math.abs(I.ax) > 0.25) c.face = Math.sign(I.ax);
+  // starting off from standing, and stopping from a run, for the poses (clonkhi.js)
+  if (onG && Math.abs(I.ax) > 0.25 && Math.abs(c.vx) < 0.15 && G.frame - (c.startF ?? -99) > 12) c.startF = G.frame;
+  if (onG && Math.abs(I.ax) < 0.25 && Math.abs(c.vx) > 0.7 && G.frame - (c.stopF ?? -99) > 12) c.stopF = G.frame;
+  if (Math.abs(I.ax) > 0.25) {
+    // turning round from a run: the boots skid
+    if (onG && Math.sign(I.ax) !== c.face && Math.abs(c.vx) > 0.7) dust(c.x + 3 - c.face * 2, c.y + 9, 2, '#b89a76');
+    if (Math.sign(I.ax) !== c.face) c.turnF = G.frame; // (a turn frame follows, clonkhi.js)
+    c.face = Math.sign(I.ax);
+  }
   c.vx += (tvx - c.vx) * (onG ? 0.4 : inLiq ? 0.15 : 0.1);
   if (inLiq) {
     c.vy += 0.04;
@@ -685,7 +695,8 @@ function updBody(c, I) {
     c.sqT = G.frame;
     if (fallV <= 3.9) sfx('land', c.x, c.y);
   }
-  if (by && fallV > 2.4) dust(c.x, c.y + 9, Math.round(fallV * 2), '#b89a76');
+  // every landing puffs a little dust, a hard one a lot
+  if (by && fallV > 1.2) dust(c.x, c.y + 9, Math.max(2, Math.round(fallV * 2)), '#b89a76');
   if (by) {
     if (fallV > 3.9) {
       const d = (fallV - 3.9) * 22;

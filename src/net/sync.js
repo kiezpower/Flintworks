@@ -130,6 +130,7 @@ const KINDS = {
       vx: r2(a.vx),
       hp: a.hp,
       hu: a.hurt > 0 ? 1 : 0,
+      ...(a.warn > 0 ? { w: 1 } : {}), // a monster about to strike (the "!" over it, render.js)
     }),
     create: d => ({ ...mkAnimal(d.k, d.x, d.y), id: d.id }),
     apply: (a, d) => {
@@ -137,6 +138,7 @@ const KINDS = {
       a.vx = d.vx;
       a.hp = d.hp;
       a.hurt = d.hu ? 4 : 0;
+      a.warn = d.w ? 1 : 0;
     },
   },
   lorries: {
