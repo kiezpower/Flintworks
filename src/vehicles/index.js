@@ -9,7 +9,7 @@ import { toast } from '../ui.js';
 import { free } from '../world.js';
 import './air.js';
 import { VK, enter, leave, mkVehicle, nearVehicle, vehicleOf } from './core.js';
-import './ground.js';
+import { waterNear } from './ground.js';
 import { layTick, startLaying, stopLaying } from './rails.js';
 
 // the vehicles that can be built, in menu order
@@ -30,6 +30,7 @@ function cannotBuild(c, kind) {
   if (K.lvl && ((G.base && G.base.lvl) || 1) < K.lvl) return 'Erst ab Burgstufe {n}';
   if (!hasRes(c, K.cost)) return '{name} braucht {cost}';
   if (K.needsRails && !nearRail(c)) return 'Die Grubenbahn muss auf Schienen stehen';
+  if (K.needsWater && !waterNear(c)) return 'Das Floß muss am Wasser gebaut werden';
   return null;
 }
 function nearRail(c) {
@@ -51,6 +52,13 @@ register('vehicle', (c, { kind }) => {
   // it appears where the Wühler stands, resting on the ground
   let x = c.x + 3 - K.w / 2,
     y = c.y + 10 - K.h;
+  // (a raft is put onto the water next to you)
+  const wt = K.needsWater && waterNear(c);
+  if (wt) {
+    // all of it over the water if the water is wide enough
+    x = Math.max(wt.l, Math.min(wt.r + 1 - K.w, wt.x - K.w / 2));
+    y = wt.top - K.h + 1;
+  }
   for (let u = 0; u < 20 && !free(x, y, K.w, K.h); u++) y--;
   const v = mkVehicle(kind, x, y, c.team || 0);
   v.face = c.face;
