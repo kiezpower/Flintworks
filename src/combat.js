@@ -10,7 +10,7 @@ import { addFloat } from './floats.js';
 import { tr } from './i18n.js';
 import { damageCastle } from './versus.js';
 import { sfx } from './sound.js';
-import { G, animals, builds, crew, flashes, parts, trees } from './state.js';
+import { G, animals, builds, crew, flashes, parts, trees, vehicles } from './state.js';
 import { addArrows, arrowsOf, hasTool, teamHas } from './tools.js';
 import { ignite } from './objects.js';
 import { isPlayer } from './players.js';
@@ -204,6 +204,36 @@ function updArrows() {
       sfx('clack', a.x, a.y);
       break;
     }
+    // a bow's arrow that hits a wipf only startles it (it jumps off, the shooter gets a little
+    // reward) and drops to the ground; wipfs lost in a level are left alone
+    if (!hit && a.pick)
+      for (const m of animals) {
+        if (m.kind !== 'wipf' || m.lost || m.scared > 0) continue;
+        if (!(a.x > m.x - 1 && a.x < m.x + m.w + 1 && a.y > m.y - 1 && a.y < m.y + m.h + 1)) continue;
+        hit = true;
+        if (!G.netClient) scareWipf(m, a);
+        dropArrow(a);
+        break;
+      }
+    // the archery target: points by the ring it hits, the arrow stays in the straw
+    if (!hit)
+      for (const v of vehicles) {
+        if (v.kind !== 'target') continue;
+        const tx = v.x + v.w / 2,
+          ty = v.y + 5,
+          d = Math.hypot(a.x - tx, a.y - ty);
+        if (d > 5.3) continue;
+        hit = true;
+        stuckArrows.push({ x: a.x, y: a.y, vx: a.vx, vy: a.vy, l: a.pick ? STUCK_LIFE : 240, stuck: true, pick: !!a.pick });
+        sfx('clack', a.x, a.y, 0.7);
+        if (!G.netClient && a.pick) {
+          const pts = d < 1.3 ? 10 : d < 2.3 ? 8 : d < 3.3 ? 6 : d < 4.3 ? 4 : 2;
+          v.score = (v.score || 0) + pts;
+          addFloat(tx, ty - 9, pts === 10 ? tr('Volltreffer!') + ' 10' : '+' + pts, pts === 10 ? '#ffd23a' : '#f2e2c0');
+          if (pts === 10) sfx('coin', tx, ty);
+        }
+        break;
+      }
     // Versus: arrows hit the other team's Wühler and castle (towers shoot for their team)
     if (!hit && G.teams && a.tm != null) {
       const by = { pid: a.by, team: a.tm };
@@ -234,6 +264,25 @@ function updArrows() {
   }
   for (let k = stuckArrows.length - 1; k >= 0; k--) if (--stuckArrows[k].l <= 0) stuckArrows.splice(k, 1);
   if (!G.netClient) pickArrows();
+}
+// a startled wipf: jumps away from the arrow, shows a "!" for a moment (objects.js), and the
+// shooter's team gets two Taler; then it has ten seconds' peace
+function scareWipf(m, a) {
+  const dir = Math.sign(a.vx) || 1;
+  Object.assign(m, { scared: 600, scaredDir: dir, vy: -2.4, vx: dir * 1.4, tvx: dir * 1.1 });
+  useTeam(a.tm ?? 0);
+  G.money += 2;
+  G.earned = (G.earned || 0) + 2;
+  useMine();
+  addFloat(m.x + 2, m.y - 5, tr('Treffer!') + ' +2', '#f2c230');
+  sfx('coin', m.x, m.y);
+}
+// an arrow that bounced off something falls flat onto the ground below, to be picked up again
+function dropArrow(a) {
+  let y = a.y;
+  while (y < a.y + 80 && !solid(Math.floor(a.x), Math.floor(y))) y++;
+  stuckArrows.push({ x: a.x, y: y + 0.5, vx: Math.sign(a.vx) || 1, vy: 0.3, l: STUCK_LIFE, stuck: true, pick: true });
+  if (stuckArrows.length > 60) stuckArrows.shift();
 }
 // a Wühler that walks over a stuck arrow takes it back into the quiver (if its team has a bow)
 const STUCK_LIFE = 3600;

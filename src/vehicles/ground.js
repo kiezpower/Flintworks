@@ -317,6 +317,64 @@ register('catapult', (c, { dx = 0, dy = 0 } = {}) => {
   if (!(v.cd > 0)) fire(v, c);
 });
 
+// ---- archery target: a straw boss with rings on a wooden easel. Arrows that hit it score by
+// the ring (combat.js) and stay in the straw until someone walks past and takes them back ----
+defineVehicle('target', {
+  name: 'Zielscheibe',
+  info: 'Zum Üben mit dem Langbogen: Punkte je nach Ring, die Pfeile bleiben stecken',
+  placed: 'Zielscheibe steht – schieß drauf!',
+  cost: { wood: 2, plank: 1 },
+  res: ['archery'],
+  w: 10,
+  h: 14,
+  rideable: false,
+  upd(v) {
+    // stays put; falls if the ground is dug away
+    if (!v.icon) moveBody(v, 0, 1, 0);
+  },
+  draw(ctx, v, x, y) {
+    const cx = x + v.w / 2,
+      cy = y + 5;
+    ctx.save();
+    ctx.lineCap = 'round';
+    const leg = (x0, y0, x1, y1) => {
+      ctx.strokeStyle = '#24160c';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y1);
+      ctx.stroke();
+      ctx.strokeStyle = '#9a6a3a';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    };
+    leg(cx, cy, cx + 0.5, y + v.h); // the back leg
+    leg(cx - 2, cy + 2, cx - 4, y + v.h);
+    leg(cx + 2, cy + 2, cx + 4, y + v.h);
+    // straw rim, then the rings: white, black, blue, red, gold
+    const ring = (r, col) => {
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, 7);
+      ctx.fill();
+    };
+    ring(6.1, '#24160c');
+    ring(5.6, '#d4b064');
+    ring(5, '#f4efe2');
+    ring(4, '#2a2a30');
+    ring(3, '#3a7bd5');
+    ring(2, '#d8433a');
+    ring(1, '#f2c230');
+    // a few straw strands on the rim
+    ctx.fillStyle = '#b08a44';
+    for (let k = 0; k < 8; k++) {
+      const an = k * 0.785 + 0.3;
+      ctx.fillRect(cx + Math.cos(an) * 5.3 - 0.25, cy + Math.sin(an) * 5.3 - 0.25, 0.5, 0.5);
+    }
+    ctx.restore();
+  },
+});
+
 // ---- riding wipf: fast and jumps high ----
 defineVehicle('mount', {
   name: 'Reitwipf',

@@ -34,7 +34,7 @@ const EN = {
   Luftfahrt: 'Aviation',
   'Katapult, Seilbahn, Bohrwagen': 'Catapult, cable car, drill wagon',
   'Stahlhacke, Schwert, Bohrwagen': 'Steel pick, sword, drill wagon',
-  'Langbogen, Pfeile und Brandpfeile': 'Longbow, arrows and fire arrows',
+  'Langbogen, Pfeile, Brandpfeile und Zielscheibe': 'Longbow, arrows, fire arrows and archery target',
   'Schienen und Grubenbahn': 'Rails and mine train',
   'Schild und Eisenhelm': 'Shield and iron helmet',
   'Erst erforschen: {list}': 'Research first: {list}',
@@ -59,6 +59,12 @@ const EN = {
     'With 10 arrows. Tap it in the hotbar, then “Shoot”: a tap shoots the way you walk, dragging the button aims',
   Schießen: 'Shoot',
   Pfeil: 'arrow',
+  'Treffer!': 'Hit!',
+  'Volltreffer!': 'Bullseye!',
+  Zielscheibe: 'Archery target',
+  'Zum Üben mit dem Langbogen: Punkte je nach Ring, die Pfeile bleiben stecken':
+    'For practice with the longbow: points by the ring, the arrows stay in it',
+  'Zielscheibe steht – schieß drauf!': 'Target is up – shoot at it!',
   Schlagen: 'Strike',
   'Langbogen gekauft – „Schießen“ tippen schießt in Laufrichtung, Knopf ziehen zielt':
     'Longbow bought – tap “Shoot” to shoot the way you walk, drag the button to aim',

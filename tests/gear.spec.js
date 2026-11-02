@@ -259,6 +259,70 @@ test('arrows stuck in a wall or the ground are picked up again by walking over t
   expect(errors).toEqual([]);
 });
 
+test('an arrow startles a wipf (a reward, no harm) and scores on the archery target', async ({ page }) => {
+  const errors = await setup(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      c = w.crew[0];
+    w.send('tool', { id: 'bow' });
+    const out = {};
+    // a wipf standing still in front, aimed at
+    const m = w.mkAnimal('wipf', 440, 196);
+    m.t = 9999;
+    w.animals.push(m);
+    const money0 = w.G.money,
+      hp0 = m.hp;
+    w.send('shoot', { dx: 35, dy: 3 });
+    w.step(25);
+    out.scared = m.scared > 0;
+    out.unhurt = m.hp === hp0;
+    out.paid = w.G.money === money0 + 2;
+    out.dropped = w.combat.stuckArrows.some(s => s.pick);
+    // a lost wipf (a rescue level) is never hit: the arrow flies on
+    w.animals.length = 0;
+    const lost = w.mkAnimal('wipf', 440, 196);
+    Object.assign(lost, { t: 9999, lost: true });
+    w.animals.push(lost);
+    w.step(30);
+    w.send('shoot', { dx: 35, dy: 3 });
+    w.step(25);
+    out.lostLeftAlone = !(lost.scared > 0);
+    w.animals.length = 0;
+    // the archery target: built, hit in the middle, points, the arrow stays in it
+    w.send('vehicle', { kind: 'target' });
+    const v = w.vehicles.find(o => o.kind === 'target');
+    out.built = !!v;
+    Object.assign(v, { x: 440, y: 186 });
+    w.step(5);
+    w.combat.stuckArrows.length = 0;
+    w.send('shoot', {});
+    w.step(20);
+    out.score = v.score;
+    const inIt = w.combat.stuckArrows.find(s => s.pick && Math.abs(s.x - 445) < 6);
+    out.inTarget = !!inIt;
+    // walk through the target: the arrow comes back into the quiver
+    const q = w.G.tools.q_arrow;
+    w.keys.r = 1;
+    w.step(60);
+    w.keys.r = 0;
+    out.pickedUp = w.G.tools.q_arrow === q + 1;
+    return out;
+  });
+  expect(r.score).toBeGreaterThanOrEqual(2);
+  delete r.score;
+  expect(r).toEqual({
+    scared: true,
+    unhurt: true,
+    paid: true,
+    dropped: true,
+    lostLeftAlone: true,
+    built: true,
+    inTarget: true,
+    pickedUp: true,
+  });
+  expect(errors).toEqual([]);
+});
+
 test('sword strikes a monster; shield and helmet halve damage', async ({ page }) => {
   const errors = await setup(page);
   const r = await page.evaluate(() => {
