@@ -120,6 +120,72 @@ test('bow comes with arrows, shoots them at a monster, and says when the quiver 
   expect(errors).toEqual([]);
 });
 
+test('weapons sit in the hotbar: tap the bow, "Schießen" shoots even with things in the bag, the stick aims', async ({
+  page,
+}) => {
+  const errors = await setup(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      c = w.crew[0];
+    const btn = () => document.querySelector('.pad.throw span').textContent;
+    const slot = id => document.querySelector(`#inv .slot.weapon[data-w="${id}"]`);
+    c.inv = ['wood', 'rock'];
+    w.send('tool', { id: 'bow' });
+    w.hud();
+    const out = {
+      slot: !!slot('bow'),
+      chosen: c.wield === 'bow' && slot('bow').classList.contains('sel'),
+      ammo: slot('bow').querySelector('.ammo').textContent,
+      label: btn(),
+    };
+    // shoots although wood is in the bag; the wood stays
+    w.edge.throw = true;
+    w.step(1);
+    out.shotWithBag = w.arrows().length === 1 && c.inv.length === 2;
+    // aimed straight up with the stick
+    w.step(30);
+    w.keys.u = 1;
+    w.edge.throw = true;
+    w.step(1);
+    w.keys.u = 0;
+    const a = w.arrows()[w.arrows().length - 1];
+    out.aimedUp = !!a && a.vy < -3 && Math.abs(a.vx) < 1;
+    // a thing from the bag: the button throws again
+    w.send('isel', { i: 0 });
+    w.hud();
+    out.backToThrow = btn() === 'Wurf' && c.wield === null;
+    // the sword: its own slot, "Schlagen" hits a monster in front
+    w.send('tool', { id: 'sword' });
+    w.hud();
+    out.swordSlot = !!slot('sword') && btn() === 'Schlagen';
+    const m = w.mkAnimal('monster', c.x + 7, 191);
+    m.atk = 999; // (it does not hit back during the test)
+    w.animals.push(m);
+    const hp0 = m.hp;
+    w.edge.throw = true;
+    w.step(1);
+    out.struck = m.hp < hp0 && c.inv.length === 2;
+    // tapping the bow slot chooses it
+    slot('bow').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    w.hud();
+    out.tapped = c.wield === 'bow' && btn() === 'Schießen';
+    return out;
+  });
+  expect(r).toEqual({
+    slot: true,
+    chosen: true,
+    ammo: '10',
+    label: 'Schießen',
+    shotWithBag: true,
+    aimedUp: true,
+    backToThrow: true,
+    swordSlot: true,
+    struck: true,
+    tapped: true,
+  });
+  expect(errors).toEqual([]);
+});
+
 test('sword strikes a monster; shield and helmet halve damage', async ({ page }) => {
   const errors = await setup(page);
   const r = await page.evaluate(() => {

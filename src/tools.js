@@ -39,7 +39,7 @@ const TOOLS = {
   sword: {
     name: 'Schwert',
     icon: 'sword',
-    sub: 'Aktion schlägt zu – und alle Wühler wehren sich gegen Monster',
+    sub: 'In der Leiste antippen, dann „Schlagen“ – und alle Wühler wehren sich gegen Monster',
     money: 50,
     need: { metal: 2, wood: 1 },
     res: ['metal'],
@@ -48,7 +48,7 @@ const TOOLS = {
   bow: {
     name: 'Langbogen',
     icon: 'bow',
-    sub: 'Mit 10 Pfeilen: Wurf mit leerer Hand schießt Pfeile aus dem Köcher und zielt von selbst auf Monster',
+    sub: 'Mit 10 Pfeilen. In der Leiste antippen, dann „Schießen“ – der Stick zielt, sonst trifft er von selbst Monster',
     money: 40,
     need: { wood: 3, plank: 1 },
     res: ['archery'],
@@ -154,6 +154,15 @@ register('tool', (c, { id }) => {
   // the bow comes with a first quiver, so it can be used right away
   if (id === 'bow') addArrows('arrow', 10);
   sfx('done');
+  // a weapon is chosen in the hotbar at once, and the button says what to do with it
+  if (id === 'bow' || id === 'sword') {
+    c.wield = id;
+    return toastMsg(
+      id === 'bow'
+        ? 'Langbogen gekauft – „Schießen“ drücken, der Stick zielt'
+        : 'Schwert gekauft – „Schlagen“ drücken, um zuzuschlagen',
+    );
+  }
   toastMsg('{name} gekauft', { name: tr(T.name) });
 });
 register('arrows', (c, { id }) => {

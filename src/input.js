@@ -4,7 +4,7 @@ import { sel_ } from './entities.js';
 import { cam, cv } from './render.js';
 import { audioInit } from './sound.js';
 import { G, crew } from './state.js';
-import { closePanel, openBag, openBuild, panelEl, toast, toggleMap } from './ui.js';
+import { closePanel, openBag, openBuild, panelEl, toast, toggleMap, weaponsOf } from './ui.js';
 import { send } from './commands.js';
 
 // ---- Input ----
@@ -67,10 +67,14 @@ addEventListener('keydown', e => {
   }
   const c = sel_();
   // (sent like a tap on a slot, so it also works as a guest in multiplayer)
-  if (e.code === 'KeyQ' && c && c.inv.length) send('isel', { i: (c.isel + 1) % c.inv.length });
-  if (/^Digit[1-9]$/.test(e.code) && c) {
-    const n = +e.code.slice(5) - 1;
-    if (n < c.inv.length) send('isel', { i: n });
+  // the hotbar: the weapons first, then the things in the bag (Q goes round all of them)
+  if (c && (e.code === 'KeyQ' || /^Digit[1-9]$/.test(e.code))) {
+    const wps = weaponsOf(),
+      cur = c.wield ? wps.indexOf(c.wield) : wps.length + c.isel,
+      all = wps.length + c.inv.length;
+    const n = e.code === 'KeyQ' ? (all ? (cur + 1) % all : -1) : +e.code.slice(5) - 1;
+    if (n >= 0 && n < wps.length) send('wield', { id: wps[n] });
+    else if (n >= wps.length && n < all) send('isel', { i: n - wps.length });
   }
   // Enter: a focused button on a card presses itself; otherwise the main button of the screen
   const onCard = document.activeElement?.tagName === 'BUTTON' && document.activeElement.closest('#overlay');

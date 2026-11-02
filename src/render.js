@@ -3,7 +3,7 @@ import { drawCue } from './startcue.js';
 import { drawCastleCue } from './castlecue.js';
 import { buildSprite } from './skins.js';
 import { drawClonkHi } from './clonkhi.js';
-import { drawArrow, drawGear } from './combat.js';
+import { aimPath, drawArrow, drawGear } from './combat.js';
 import { drawEvents } from './events.js';
 import { drawBackdrop } from './backdrop.js';
 import { hasGear } from './tools.js';
@@ -50,7 +50,7 @@ import { TEAM_COLS } from './teams.js';
 import { box, drawVehicles, wheel } from './vehicles/core.js';
 import { drawRails } from './vehicles/rails.js';
 import { topSolid } from './gen.js';
-import { game, joyHome } from './input.js';
+import { game, inp, joyHome } from './input.js';
 import { ICOL, SPR, drawHi, drawItemBig } from './sprites.js';
 import { drawCrafted } from './bldart.js';
 import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
@@ -630,6 +630,17 @@ function render() {
       } else drawClonkHi(c, x, y, c.face, ctx);
     }
     drawGear(ctx, c, x, y);
+    // aiming the bow with the stick: a dotted line shows where the arrow will fly
+    if (c === mine && c.wield === 'bow' && c.ride == null && Math.hypot(inp.ax, inp.ay) > 0.3) {
+      for (const [px, py] of aimPath(c, inp)) {
+        const qx = Math.round(px - cx),
+          qy = Math.round(py - cy);
+        ctx.fillStyle = 'rgba(26,18,12,0.7)';
+        ctx.fillRect(qx - 1, qy - 1, 3, 3);
+        ctx.fillStyle = '#fff2a8';
+        ctx.fillRect(qx, qy, 1, 1);
+      }
+    }
     // other players carry their name over the head
     if (G.net && isPlayer(c) && c !== mine) nameTag(c.name, x + 3, y - (c.bub ? 15 : 4), c.cap);
     if (c === mine && (G.frame >> 4) % 3) {

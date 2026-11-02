@@ -105,11 +105,19 @@ function shoot(c, I) {
   // with the stick in the middle the arrow flies at the next monster in front (like a tower)
   // (in Versus also at the next Wühler of the other team)
   const foes = [...animals.filter(a => FOES[a.kind]), ...crew.filter(o => enemy(c, o))];
+  // aimed with the stick (all around, like in Terraria) when the bow is the chosen weapon
+  const aimed = c.wield === 'bow' && Math.hypot(I.ax, I.ay) > 0.3;
   const tgt =
+    !aimed &&
     Math.abs(I.ay) < 0.4 &&
     foes.find(a => (a.x + a.w / 2 - ox) * c.face > 0 && Math.hypot(a.x + a.w / 2 - ox, a.y + a.h / 2 - oy) < 170);
   let vx, vy;
-  if (tgt) {
+  if (aimed) {
+    const m = Math.hypot(I.ax, I.ay);
+    vx = (I.ax / m) * sp;
+    vy = (I.ay / m) * sp;
+    if (Math.abs(I.ax) > 0.2) c.face = Math.sign(I.ax);
+  } else if (tgt) {
     const dx = tgt.x + tgt.w / 2 - ox,
       dy = tgt.y + tgt.h / 2 - oy,
       t = Math.hypot(dx, dy) / sp;
@@ -122,6 +130,24 @@ function shoot(c, I) {
   }
   fireArrow({ x: ox, y: oy, vx, vy, l: 150, dmg: fire ? 40 : 28, fire, tm: teamOf(c), by: c.pid });
   sfx('bow', c.x, c.y);
+}
+// where an aimed arrow would fly: points of its path (for the dotted line while aiming)
+function aimPath(c, I) {
+  const sp = 4.4,
+    m = Math.hypot(I.ax, I.ay) || 1;
+  let x = c.x + 3 + c.face * 4,
+    y = c.y + 4,
+    vx = (I.ax / m) * sp,
+    vy = (I.ay / m) * sp;
+  const pts = [];
+  for (let t = 0; t < 60; t++) {
+    vy += 0.06;
+    x += vx;
+    y += vy;
+    if (solid(Math.floor(x), Math.floor(y))) break;
+    if (t % 4 === 3) pts.push([x, y]);
+  }
+  return pts;
 }
 // every arrow (also from towers) goes through here, so clients get to see it
 function fireArrow(a) {
@@ -228,6 +254,16 @@ function drawGear(ctx, c, x, y) {
     ctx.fillStyle = '#d4dbe2';
     ctx.fillRect(x + 1.5, y - 0.5, 2, 0.5);
   }
+  if (c.wield === 'bow' && teamHas(c.team, 'bow') && !c.climb && !c.hangle) {
+    // the longbow held up in front
+    const bx = f > 0 ? x + 6 : x - 1.5;
+    ctx.fillStyle = '#24160c';
+    ctx.fillRect(bx - 0.5, y + 0.5, 2, 9);
+    ctx.fillStyle = '#b07a45';
+    ctx.fillRect(bx, y + 1, 1, 8);
+    ctx.fillStyle = '#e8e0d0';
+    ctx.fillRect(f > 0 ? bx - 0.5 : bx + 1, y + 1.5, 0.5, 7);
+  }
   if (!teamHas(c.team, 'sword')) return;
   if (c.swing > 0) {
     // a blade sweeping from above the head down in front
@@ -263,4 +299,4 @@ function drawArrow(ctx, a, x, y) {
   ctx.fillRect(Math.round(x + a.vx / d), Math.round(y + a.vy / d), 1, 1);
 }
 
-export { canShoot, drawArrow, hasBow, drawGear, enemy, fireArrow, guard, playShot, shoot, strike, swordContext, updArrows, updCombat };
+export { aimPath, canShoot, drawArrow, hasBow, swing, drawGear, enemy, fireArrow, guard, playShot, shoot, strike, swordContext, updArrows, updCombat };
