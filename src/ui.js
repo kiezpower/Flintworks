@@ -1,5 +1,5 @@
 import { chainStatus, stock, takeStock } from './store.js';
-import { hasGear, toolSection } from './tools.js';
+import { arrowsOf, hasGear, hasTool, toolSection } from './tools.js';
 import { knowsAll, needText, researchSection } from './research.js';
 const misEl = document.getElementById('misTxt');
 import { GAME_MODES, mode } from './modes.js';
@@ -137,8 +137,16 @@ function hud() {
   btnsEl.classList.toggle('auto', !!G.autoDig);
   btnsEl.classList.toggle('jumpon', !!G.jumpBtn);
   // (also with a bow – an empty quiver then says where arrows come from – and in a catapult or airship)
-  const thr = c && !c.dead && (c.ride != null ? THROWERS[vehicleOf(c)?.kind] : c.inv[c.isel] || hasBow(c));
+  const thr = c && !c.dead && (c.ride != null ? THROWERS[vehicleOf(c)?.kind] : c.inv[c.isel] || hasBow(c) || c.wield);
   btnsEl.classList.toggle('noitem', !thr);
+  // the button says what it does: shoot with the bow, strike with the sword, else throw
+  const use = c && c.ride == null && c.wield && hasTool(c.wield) ? c.wield : 'throw';
+  if (use !== G.useKey) {
+    G.useKey = use;
+    throwLbl.dataset.i18n = USE_LABEL[use]; // (stays right when the language changes)
+    throwLbl.textContent = tr(USE_LABEL[use]);
+    throwIco.style.backgroundImage = `url(${padUrl(use)})`;
+  }
   // the grappling hook's button once the team has one (always ready: it is thrown anyway)
   btnsEl.classList.toggle('hookon', hasGear(c, 'hook'));
   const ck = crew.map(o => `${o === c}${o.dead}${Math.round(o.energy / 5)}${o.energy < 30}${o.focus}`).join();
@@ -157,7 +165,9 @@ function hud() {
       crewEl.appendChild(b);
     });
   }
-  const k = c ? c.inv.join() + '|' + c.isel : '';
+  const k = c
+    ? c.inv.join() + '|' + c.isel + '|' + (c.wield || '') + '|' + weaponsOf().join() + '|' + arrowsOf('arrow') + '|' + arrowsOf('farrow')
+    : '';
   if (k !== G.invKey) {
     // a new thing in the bag: the bag button lights up for a moment, so the eye finds it
     const grew = c && G.invN != null && c.inv.length > G.invN;
@@ -166,20 +176,46 @@ function hud() {
     invEl.innerHTML = '';
     // the first INV_SHOWN slots are shown (empty ones too, so you see the room left); the bag holds
     // up to INV_MAX, all of it behind the bag button. Something chosen further back takes the last slot.
+    // the weapons first, each in its own slot (like Terraria's hotbar): a tap chooses it, and the
+    // throw button then shoots or strikes with it
+    const wps = c ? weaponsOf() : [];
+    wps.forEach((id, n) => {
+      const b = document.createElement('button');
+      b.className = 'slot weapon' + (c.wield === id ? ' sel' : '');
+      b.dataset.w = id;
+      b.setAttribute('aria-label', tr(WEAPON_NAME[id]));
+      b.title = `${tr(WEAPON_NAME[id])} (${n + 1})`;
+      const ic = document.createElement('span');
+      ic.className = 'wico';
+      ic.style.backgroundImage = `url(${padUrl(id)})`;
+      b.appendChild(ic);
+      if (n < 9) b.insertAdjacentHTML('beforeend', `<i class="key">${n + 1}</i>`);
+      if (id === 'bow') {
+        const a = arrowsOf('arrow'),
+          f = arrowsOf('farrow');
+        b.insertAdjacentHTML('beforeend', `<b class="ammo${a + f ? '' : ' none'}${!a && f ? ' fire' : ''}">${a + f}</b>`);
+      }
+      b.addEventListener('pointerdown', e => {
+        e.stopPropagation();
+        send('wield', { id: c.wield === id ? null : id });
+      });
+      invEl.appendChild(b);
+    });
+    const off = wps.length;
     const shown = [...Array(INV_SHOWN).keys()];
     if (c && c.isel >= INV_SHOWN) shown[INV_SHOWN - 1] = c.isel;
     for (const s of shown) {
       const b = document.createElement('button');
       const t = c && c.inv[s];
-      b.className = 'slot' + (t && s === c.isel ? ' sel' : '') + (t ? '' : ' empty');
+      b.className = 'slot' + (t && s === c.isel && !c.wield ? ' sel' : '') + (t ? '' : ' empty') + (off && s === shown[0] ? ' gap' : '');
       b.setAttribute('aria-label', t ? resName(t) : tr('Leer'));
-      b.title = t ? `${resName(t)} (${s + 1})` : '';
+      b.title = t ? `${resName(t)} (${s + off + 1})` : '';
       if (t) {
         const cvs = document.createElement('canvas');
         cvs.width = cvs.height = 10;
         cvs.getContext('2d').drawImage(itemIcon(t), 0, 0);
         b.appendChild(cvs);
-        if (s < 9) b.insertAdjacentHTML('beforeend', `<i class="key">${s + 1}</i>`);
+        if (s + off < 9) b.insertAdjacentHTML('beforeend', `<i class="key">${s + off + 1}</i>`);
       }
       b.addEventListener('pointerdown', e => {
         e.stopPropagation();
@@ -229,6 +265,16 @@ function openBag() {
   );
 }
 const THROWERS = { catapult: 1, airship: 1 }; // vehicles that use Wurf
+// weapons that get a slot in the hotbar once the team has them
+const WEAPONS = ['bow', 'sword'];
+const WEAPON_NAME = { bow: 'Langbogen', sword: 'Schwert' };
+const USE_LABEL = { bow: 'Schießen', sword: 'Schlagen', throw: 'Wurf' };
+const weaponsOf = () => WEAPONS.filter(hasTool);
+const iconCache2 = {};
+const padUrl = k => (iconCache2[k] ??= padIcon(k));
+const throwPad = document.querySelector('.pad.throw'),
+  throwLbl = throwPad.querySelector('span'),
+  throwIco = throwPad.querySelector('.ico');
 const ACT_ICONS = {
   Fällen: 'act',
   Burg: 'castle',
@@ -658,6 +704,12 @@ function openBase() {
 // ---- Commands from the panels above (run for the player who sent them) ----
 register('isel', (c, { i }) => {
   if (c.inv[i] !== undefined) c.isel = i;
+  c.wield = null; // a thing from the bag goes into the hand instead of the weapon
+  G.invKey = '';
+});
+// choosing a weapon in the hotbar (null: back to the things in the bag)
+register('wield', (c, { id }) => {
+  c.wield = id && WEAPONS.includes(id) && hasTool(id) ? id : null;
   G.invKey = '';
 });
 register('stairs', c => buildStairs(c));
@@ -696,6 +748,7 @@ export {
   drawMini,
   hud,
   invEl,
+  weaponsOf,
   mapView,
   mctx,
   mimg,

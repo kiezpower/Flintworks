@@ -53,10 +53,14 @@ const EN = {
   Langbogen: 'Longbow',
   Schild: 'Shield',
   Eisenhelm: 'Iron helmet',
-  'Aktion schlägt zu – und alle Wühler wehren sich gegen Monster':
-    'Action strikes – and all diggers fight back against monsters',
-  'Mit 10 Pfeilen: Wurf mit leerer Hand schießt Pfeile aus dem Köcher und zielt von selbst auf Monster':
-    'With 10 arrows: Throw with an empty hand shoots arrows from the quiver and aims at monsters by itself',
+  'In der Leiste antippen, dann „Schlagen“ – und alle Wühler wehren sich gegen Monster':
+    'Tap it in the hotbar, then “Strike” – and all diggers fight back against monsters',
+  'Mit 10 Pfeilen. In der Leiste antippen, dann „Schießen“ – der Stick zielt, sonst trifft er von selbst Monster':
+    'With 10 arrows. Tap it in the hotbar, then “Shoot” – the stick aims, otherwise it finds monsters by itself',
+  Schießen: 'Shoot',
+  Schlagen: 'Strike',
+  'Langbogen gekauft – „Schießen“ drücken, der Stick zielt': 'Longbow bought – press “Shoot”, the stick aims',
+  'Schwert gekauft – „Schlagen“ drücken, um zuzuschlagen': 'Sword bought – press “Strike” to hit',
   'Köcher leer – Pfeile in der Burg unter „Ausrüstung“ herstellen':
     'Quiver empty – make arrows in the castle under “Equipment”',
   'Halbiert, was Monster anrichten': 'Halves the damage monsters do',

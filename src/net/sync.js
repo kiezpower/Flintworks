@@ -48,6 +48,7 @@ const KINDS = {
       rd: c.ride ?? null,
       ly: c.laying ? 1 : 0,
       sw: c.swing > 0 ? c.swing : 0,
+      wd: c.wield || 0,
       bot: c.bot ? 1 : 0,
     }),
     create: d => ({
@@ -102,6 +103,7 @@ const KINDS = {
         // (the hook only to draw it: it moves the Wühler on the host)
         hookV: d.hk ? { hx: d.hk[0], hy: d.hk[1] } : null,
         swing: d.sw || c.swing || 0,
+        wield: d.wd || null,
         burn: d.bu ? 30 : 0,
         netBusy: !!(d.ch || d.br || d.tm || d.dead || d.rd != null),
       });
