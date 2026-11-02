@@ -322,7 +322,7 @@ function spawnFromDig(cx, cy, acc = G) {
     spawnItem('ore', cx - 1, cy - 2, rnd() - 0.5, -1, 20);
     sfx('pick', cx, cy);
   }
-  if (acc.coalDug >= 45) {
+  if (acc.coalDug >= (G.coalStep || 45)) {
     acc.coalDug = 0;
     spawnItem('coal', cx - 1, cy - 2, rnd() - 0.5, -1, 20);
     sfx('pick', cx, cy);

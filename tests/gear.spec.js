@@ -450,6 +450,45 @@ test('the raft only moves on water: built at the shore, stops at the bank, stuck
   expect(errors).toEqual([]);
 });
 
+test('digging coal gives a lump every 30 pixels (45 in the campaign)', async ({ page }) => {
+  const errors = await setup(page);
+  const r = await page.evaluate(async () => {
+    const w = window.__ww,
+      { digCell, spawnFromDig } = await import('/src/clonk.js'),
+      { mat, W, COAL, paint } = w.world;
+    // dig coal cell by cell (as a Wühler or the drill does) and count the lumps
+    const lumps = n => {
+      w.items.length = 0;
+      w.G.coalDug = 0;
+      for (let k = 0; k < n; k++) {
+        const x = 420 + (k % 20),
+          y = 205 + Math.floor(k / 20);
+        mat[y * W + x] = COAL;
+        paint(y * W + x);
+        digCell(x, y, false, w.G);
+        spawnFromDig(x, y, w.G);
+      }
+      return w.items.filter(i => i.t === 'coal').length;
+    };
+    w.G.coalStep = 30;
+    const free = { in60: lumps(60) };
+    w.G.coalStep = 45;
+    const campaign = { in60: lumps(60) };
+    // what the generator sets: free play 30, a campaign level 45
+    const stepOf = mode => {
+      Object.assign(w.G, { nextSeed: 5, nextBiome: 'meadow', nextMode: mode, nextDiff: 'adventure', nextVersus: false });
+      w.gen();
+      w.G.nextSeed = null;
+      return w.G.coalStep;
+    };
+    free.step = stepOf('gold');
+    campaign.step = stepOf('c1');
+    return { free, campaign };
+  });
+  expect(r).toEqual({ free: { step: 30, in60: 2 }, campaign: { step: 45, in60: 1 } });
+  expect(errors).toEqual([]);
+});
+
 test('drill wagon bores through rock, raft floats, riding wipf runs and jumps', async ({ page }) => {
   const errors = await setup(page);
   const r = await page.evaluate(() => {

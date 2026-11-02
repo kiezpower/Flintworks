@@ -161,6 +161,9 @@ function gen() {
   G.rails = [];
   G.meteorNext = 15000 + rnd() * 8000;
   G.goldDust = G.earthDug = G.loamDug = G.oreDug = G.coalDug = 0;
+  // how many dug coal pixels give one lump (spawnFromDig, clonk.js): more coal outside the
+  // campaign, whose levels are tuned to the old amount
+  G.coalStep = GAME_MODES[G.mode]?.campaign ? 45 : 30;
   clearFresh();
   G.hintsSeen = new Set();
   for (let i = 0; i < W * H; i++) shade[i] = (rnd() * 4) | 0;
@@ -224,13 +227,34 @@ function gen() {
   // resources spread evenly along the world (random within each stretch), so every world
   // has about as much close to the base – no lucky or empty starts
   const spread = (k, n, x0) => Math.floor(x0 + (k + 0.15 + rnd() * 0.7) * ((W - 15 - x0) / n));
-  for (let k = 0, n = perArea(16); k < n; k++) {
-    const x = spread(k, n, 150);
-    blob(x, deep(x, 18), ri(5, 12), ri(3, 6), COAL);
-  }
-  for (let k = 0, n = perArea(14); k < n; k++) {
-    const x = spread(k, n, 170);
-    blob(x, deep(x, 40), ri(4, 9), ri(3, 6), ORE);
+  // (coal and ore feed the furnace, and metal is needed for a lot: tools, gear, vehicles,
+  // castle levels. So there is plenty of both, ore not too deep, and a small vein of each
+  // right by the castle: coal to the left of it, ore to the right. Campaign levels keep the
+  // old, scarcer layout: their worlds and star times are tuned to it, tests/levels.spec.js)
+  if (GAME_MODES[G.mode]?.campaign) {
+    for (let k = 0, n = perArea(16); k < n; k++) {
+      const x = spread(k, n, 150);
+      blob(x, deep(x, 18), ri(5, 12), ri(3, 6), COAL);
+    }
+    for (let k = 0, n = perArea(14); k < n; k++) {
+      const x = spread(k, n, 170);
+      blob(x, deep(x, 40), ri(4, 9), ri(3, 6), ORE);
+    }
+  } else {
+    for (let k = 0, n = perArea(28); k < n; k++) {
+      const x = spread(k, n, 150);
+      blob(x, deep(x, 18), ri(6, 13), ri(3, 7), COAL);
+    }
+    for (let k = 0, n = perArea(18); k < n; k++) {
+      const x = spread(k, n, 170);
+      // every other vein in a band not far under the surface, the rest anywhere down below
+      const y = k % 2 ? deep(x, 22) : surf[x] + 22 + rnd() * Math.min(48, Math.max(4, H - 52 - surf[x]));
+      blob(x, y, ri(5, 10), ri(3, 6), ORE);
+    }
+    const cx = ri(28, 52),
+      ox = ri(125, 165);
+    blob(cx, surf[cx] + ri(14, 20), ri(7, 9), ri(4, 5), COAL);
+    blob(ox, surf[ox] + ri(18, 26), ri(5, 7), ri(3, 4), ORE);
   }
   for (let k = 0, n = perArea(26); k < n; k++) {
     const x = spread(k, n, 160);

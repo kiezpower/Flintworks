@@ -41,11 +41,12 @@ const GEN = ([mode, seed, biome, versus, size]) => {
 
 test('worlds of 1400 × 400 come out exactly as before', async ({ page }) => {
   const errors = await open(page);
-  // checksums taken from v1.29.0, before worlds could change their size (the Versus world from
-  // v1.39.0, which carves the chest cave under the hill in the middle)
+  // checksums taken from v1.29.0, before worlds could change their size; the free-play worlds
+  // (gold) again from v1.68.0, when they got more coal and ore closer to the surface (the
+  // campaign worlds c3, c4 stay as they were)
   const want = [
-    [['gold', 7, 'meadow', false], 3541873457],
-    [['gold', 99, 'desert', true], 4144550017],
+    [['gold', 7, 'meadow', false], 1290287662],
+    [['gold', 99, 'desert', true], 3798347540],
     [['c3', 3303, 'winter', false], 3226257325],
     [['c4', 4404, 'meadow', false], 4017410677],
   ];
@@ -54,6 +55,54 @@ test('worlds of 1400 × 400 come out exactly as before', async ({ page }) => {
   for (const [args, h] of want) {
     const r = await page.evaluate(GEN, [...args, null]);
     expect([r.W, r.H, r.h], args.join(' ')).toEqual([1400, 400, h]);
+  }
+  expect(errors).toEqual([]);
+});
+
+// enough coal and ore for the furnace: plenty of both within reach under the surface, and a
+// small vein of each right by the castle (coal to the left, ore to the right)
+test('coal and ore lie within reach, and next to the castle', async ({ page }) => {
+  const errors = await open(page);
+  for (const [seed, biome] of [
+    [7, 'meadow'],
+    [99, 'desert'],
+    [3303, 'winter'],
+    [12, 'meadow'],
+  ]) {
+    const r = await page.evaluate(
+      ([seed, biome]) => {
+        const w = window.__ww,
+          G = w.G;
+        Object.assign(G, { nextSeed: seed, nextBiome: biome, nextMode: 'gold', nextDiff: 'adventure', nextVersus: false });
+        G.frame = 1;
+        w.world.stamp.fill(0);
+        w.gen();
+        G.nextSeed = null;
+        const { mat, surf, W, H, ORE, COAL } = w.world;
+        let ore = 0,
+          coal = 0,
+          oreNear = 0,
+          coalNear = 0;
+        for (let x = 0; x < W; x++)
+          for (let y = surf[x]; y < Math.min(H, surf[x] + 60); y++) {
+            const m = mat[y * W + x];
+            if (m === ORE) {
+              ore++;
+              if (x >= 120 && x <= 175) oreNear++;
+            } else if (m === COAL) {
+              coal++;
+              if (x >= 15 && x <= 65) coalNear++;
+            }
+          }
+        return { ore, coal, oreNear, coalNear };
+      },
+      [seed, biome],
+    );
+    // (before v1.68.0 some worlds had no ore at all in the top 60 px, and none by the castle)
+    expect(r.ore, `${seed} ${biome}`).toBeGreaterThan(400);
+    expect(r.coal, `${seed} ${biome}`).toBeGreaterThan(650);
+    expect(r.oreNear, `${seed} ${biome}`).toBeGreaterThan(20);
+    expect(r.coalNear, `${seed} ${biome}`).toBeGreaterThan(60);
   }
   expect(errors).toEqual([]);
 });
