@@ -13,7 +13,7 @@ import './ground.js';
 import { layTick, startLaying, stopLaying } from './rails.js';
 
 // the vehicles that can be built, in menu order
-const BUILDABLE = ['drill', 'train', 'raft', 'catapult', 'mount', 'mast', 'airship'];
+const BUILDABLE = ['drill', 'train', 'raft', 'catapult', 'target', 'mount', 'mast', 'airship'];
 
 // what the action button does around vehicles (null: nothing to do with vehicles here)
 function vehicleContext(c) {
@@ -56,6 +56,7 @@ register('vehicle', (c, { kind }) => {
   v.face = c.face;
   sfx('done', c.x, c.y);
   if (K.rideable) toast('{name} steht bereit – Aktion zum Einsteigen', { name: tr(K.name) });
+  else if (K.placed) toast(K.placed);
 });
 register('rails', c => {
   if (c.laying) return stopLaying(c);

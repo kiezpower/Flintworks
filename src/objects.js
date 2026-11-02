@@ -374,6 +374,12 @@ function updAnimal(a) {
     for (const o of animals)
       if (o.kind === 'monster' && Math.abs(o.x - a.x) < 40 && Math.abs(o.y - a.y) < 20)
         a.tvx = Math.sign(a.x - o.x) * 0.9;
+    // startled by an arrow (combat.js): runs off for a few seconds, a "!" over it at first
+    if (a.scared > 0) {
+      a.scared--;
+      if (a.scared > 420) a.tvx = a.scaredDir * 1.1;
+    }
+    a.warn = a.scared > 520 ? 1 : 0;
     a.vx += ((a.tvx || 0) - a.vx) * 0.2;
   } else {
     let tgt = null,

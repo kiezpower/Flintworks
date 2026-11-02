@@ -14,7 +14,7 @@ import { toast } from './ui.js';
 const RESEARCH = {
   mech: { name: 'Mechanik', sub: 'Katapult, Seilbahn, Bohrwagen', money: 40, time: 30, icon: 'gear' },
   metal: { name: 'Metallurgie', sub: 'Stahlhacke, Schwert, Bohrwagen', money: 60, time: 40, icon: 'dig' },
-  archery: { name: 'Bogenbau', sub: 'Langbogen, Pfeile und Brandpfeile', money: 40, time: 25, icon: 'bow' },
+  archery: { name: 'Bogenbau', sub: 'Langbogen, Pfeile, Brandpfeile und Zielscheibe', money: 40, time: 25, icon: 'bow' },
   rails: { name: 'Schienenbau', sub: 'Schienen und Grubenbahn', money: 50, time: 30, req: ['mech'], icon: 'rails' },
   armor: { name: 'Rüstungsschmiede', sub: 'Schild und Eisenhelm', money: 70, time: 40, req: ['metal'], icon: 'shield' },
   flight: { name: 'Luftfahrt', sub: 'Luftschiff', money: 120, time: 60, req: ['mech', 'metal'], icon: 'balloon' },

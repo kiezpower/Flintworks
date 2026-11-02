@@ -140,12 +140,20 @@ function hud() {
   const thr = c && !c.dead && (c.ride != null ? THROWERS[vehicleOf(c)?.kind] : c.inv[c.isel] || hasBow(c) || c.wield);
   btnsEl.classList.toggle('noitem', !thr);
   // the button says what it does: shoot with the bow, strike with the sword, else throw
-  const use = c && c.ride == null && c.wield && hasTool(c.wield) ? c.wield : 'throw';
+  const use = !c
+    ? 'throw'
+    : c.ride != null
+      ? vehicleOf(c)?.kind === 'catapult'
+        ? 'catapult'
+        : 'throw'
+      : c.wield && hasTool(c.wield)
+        ? c.wield
+        : 'throw';
   if (use !== G.useKey) {
     G.useKey = use;
     throwLbl.dataset.i18n = USE_LABEL[use]; // (stays right when the language changes)
     throwLbl.textContent = tr(USE_LABEL[use]);
-    throwIco.style.backgroundImage = `url(${padUrl(use)})`;
+    throwIco.style.backgroundImage = `url(${padUrl(use === 'catapult' ? 'throw' : use)})`;
   }
   // the grappling hook's button once the team has one (always ready: it is thrown anyway)
   btnsEl.classList.toggle('hookon', hasGear(c, 'hook'));
@@ -268,7 +276,7 @@ const THROWERS = { catapult: 1, airship: 1 }; // vehicles that use Wurf
 // weapons that get a slot in the hotbar once the team has them
 const WEAPONS = ['bow', 'sword'];
 const WEAPON_NAME = { bow: 'Langbogen', sword: 'Schwert' };
-const USE_LABEL = { bow: 'Schießen', sword: 'Schlagen', throw: 'Wurf' };
+const USE_LABEL = { bow: 'Schießen', sword: 'Schlagen', throw: 'Wurf', catapult: 'Schleudern' };
 const weaponsOf = () => WEAPONS.filter(hasTool);
 const iconCache2 = {};
 const padUrl = k => (iconCache2[k] ??= padIcon(k));

@@ -80,9 +80,31 @@ test('catapult throws a stone from the store, then reloads', async ({ page }) =>
     w.edge.throw = true;
     w.step(1);
     out.flint = w.items.some(i => i.t === 'flint' && i.armed) && c.inv.length === 0;
+    // aimed like the bow (what the "Schleudern" button sends when let go): up and to the right
+    // at 45°, then back to the left and flat (the angle stops at its lowest)
+    w.step(60);
+    let n1 = w.items.length;
+    w.send('catapult', { dx: Math.SQRT1_2, dy: -Math.SQRT1_2 });
+    let it = w.items[n1];
+    out.aimed45 = !!it && Math.abs(v.ang - Math.PI / 4) < 0.01 && it.vx > 3 && it.vy < -3;
+    w.step(60);
+    n1 = w.items.length;
+    w.send('catapult', { dx: -1, dy: 0 });
+    it = w.items[n1];
+    out.aimedLeft = !!it && v.face === -1 && v.ang === 0.25 && it.vx < -4;
     return out;
   });
-  expect(r).toEqual({ built: true, riding: true, shot: true, rockUsed: true, reloading: true, again: true, flint: true });
+  expect(r).toEqual({
+    built: true,
+    riding: true,
+    shot: true,
+    rockUsed: true,
+    reloading: true,
+    again: true,
+    flint: true,
+    aimed45: true,
+    aimedLeft: true,
+  });
   expect(errors).toEqual([]);
 });
 
@@ -194,6 +216,109 @@ test('weapons sit in the hotbar: tap the bow, "Schießen" shoots even with thing
     swordSlot: true,
     struck: true,
     tapped: true,
+  });
+  expect(errors).toEqual([]);
+});
+
+test('arrows stuck in a wall or the ground are picked up again by walking over them', async ({ page }) => {
+  const errors = await setup(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      c = w.crew[0],
+      { mat, W, ROCK, paint } = w.world;
+    // rock walls to the right and to the left
+    for (const x0 of [440, 340])
+      for (let x = x0; x < x0 + 20; x++)
+        for (let y = 150; y < 200; y++) {
+          mat[y * W + x] = ROCK;
+          paint(y * W + x);
+        }
+    w.send('tool', { id: 'bow' });
+    const out = {};
+    // a flat shot into each wall
+    w.send('shoot', {});
+    w.step(1);
+    w.send('shoot', { dx: -1, dy: 0 });
+    w.step(120);
+    const stuck = w.combat.stuckArrows;
+    out.afterShots = w.G.tools.q_arrow;
+    out.stuck = stuck.filter(s => s.pick).length;
+    // walk to the wall and back over the ground
+    w.keys.r = 1;
+    w.step(60);
+    w.keys.r = 0;
+    out.oneBack = w.G.tools.q_arrow;
+    w.keys.l = 1;
+    w.step(200);
+    w.keys.l = 0;
+    out.allBack = w.G.tools.q_arrow;
+    out.left = stuck.filter(s => s.pick).length;
+    return out;
+  });
+  expect(r).toEqual({ afterShots: 8, stuck: 2, oneBack: 9, allBack: 10, left: 0 });
+  expect(errors).toEqual([]);
+});
+
+test('an arrow startles a wipf (a reward, no harm) and scores on the archery target', async ({ page }) => {
+  const errors = await setup(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      c = w.crew[0];
+    w.send('tool', { id: 'bow' });
+    const out = {};
+    // a wipf standing still in front, aimed at
+    const m = w.mkAnimal('wipf', 440, 196);
+    m.t = 9999;
+    w.animals.push(m);
+    const money0 = w.G.money,
+      hp0 = m.hp;
+    w.send('shoot', { dx: 35, dy: 3 });
+    w.step(25);
+    out.scared = m.scared > 0;
+    out.unhurt = m.hp === hp0;
+    out.paid = w.G.money === money0 + 2;
+    out.dropped = w.combat.stuckArrows.some(s => s.pick);
+    // a lost wipf (a rescue level) is never hit: the arrow flies on
+    w.animals.length = 0;
+    const lost = w.mkAnimal('wipf', 440, 196);
+    Object.assign(lost, { t: 9999, lost: true });
+    w.animals.push(lost);
+    w.step(30);
+    w.send('shoot', { dx: 35, dy: 3 });
+    w.step(25);
+    out.lostLeftAlone = !(lost.scared > 0);
+    w.animals.length = 0;
+    // the archery target: built, hit in the middle, points, the arrow stays in it
+    w.send('vehicle', { kind: 'target' });
+    const v = w.vehicles.find(o => o.kind === 'target');
+    out.built = !!v;
+    Object.assign(v, { x: 440, y: 186 });
+    w.step(5);
+    w.combat.stuckArrows.length = 0;
+    w.send('shoot', {});
+    w.step(20);
+    out.score = v.score;
+    const inIt = w.combat.stuckArrows.find(s => s.pick && Math.abs(s.x - 445) < 6);
+    out.inTarget = !!inIt;
+    // walk through the target: the arrow comes back into the quiver
+    const q = w.G.tools.q_arrow;
+    w.keys.r = 1;
+    w.step(60);
+    w.keys.r = 0;
+    out.pickedUp = w.G.tools.q_arrow === q + 1;
+    return out;
+  });
+  expect(r.score).toBeGreaterThanOrEqual(2);
+  delete r.score;
+  expect(r).toEqual({
+    scared: true,
+    unhurt: true,
+    paid: true,
+    dropped: true,
+    lostLeftAlone: true,
+    built: true,
+    inTarget: true,
+    pickedUp: true,
   });
   expect(errors).toEqual([]);
 });
@@ -470,6 +595,40 @@ test.describe('aiming buttons on a touch screen', () => {
     expect(b).toEqual({ kind: 'bow', drag: true });
     expect(up && up.vx > 2 && up.vy < -2).toBe(true);
     expect(tap && tap.vx > 3 && Math.abs(tap.vy) < 1).toBe(true);
+    expect(errors).toEqual([]);
+  });
+
+  test('in a catapult the same button aims and hurls: drag, see the path, let go', async ({ page }) => {
+    const errors = await setup(page);
+    await page.evaluate(() => {
+      const w = window.__ww,
+        c = w.crew[0];
+      w.send('vehicle', { kind: 'catapult' });
+      w.step(5);
+      w.context(c).fn(); // Einsteigen
+      w.step(2);
+      w.hud();
+    });
+    const label = await page.locator('.pad.throw span').textContent();
+    const b = await page.locator('.pad.throw').boundingBox();
+    const x = b.x + b.width / 2,
+      y = b.y + b.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x - 30, y - 30, { steps: 5 });
+    const kind = await page.evaluate(() => window.__ww.G.aimKind);
+    await page.waitForTimeout(100);
+    const n0 = await page.evaluate(() => window.__ww.items.length);
+    await page.mouse.up();
+    const r = await page.evaluate(n0 => {
+      const w = window.__ww,
+        v = w.vehicles.find(o => o.kind === 'catapult'),
+        it = w.items[n0];
+      return { face: v.face, ang: Math.round(v.ang * 100) / 100, flies: !!it && it.vx < -2 && it.vy < -2 };
+    }, n0);
+    expect(label).toBe('Schleudern');
+    expect(kind).toBe('catapult');
+    expect(r).toEqual({ face: -1, ang: 0.79, flies: true });
     expect(errors).toEqual([]);
   });
 });

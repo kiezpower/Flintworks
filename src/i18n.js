@@ -34,7 +34,7 @@ const EN = {
   Luftfahrt: 'Aviation',
   'Katapult, Seilbahn, Bohrwagen': 'Catapult, cable car, drill wagon',
   'Stahlhacke, Schwert, Bohrwagen': 'Steel pick, sword, drill wagon',
-  'Langbogen, Pfeile und Brandpfeile': 'Longbow, arrows and fire arrows',
+  'Langbogen, Pfeile, Brandpfeile und Zielscheibe': 'Longbow, arrows, fire arrows and archery target',
   'Schienen und Grubenbahn': 'Rails and mine train',
   'Schild und Eisenhelm': 'Shield and iron helmet',
   'Erst erforschen: {list}': 'Research first: {list}',
@@ -58,6 +58,13 @@ const EN = {
   'Mit 10 Pfeilen. In der Leiste antippen, dann „Schießen“: tippen schießt in Laufrichtung, den Knopf ziehen zielt':
     'With 10 arrows. Tap it in the hotbar, then “Shoot”: a tap shoots the way you walk, dragging the button aims',
   Schießen: 'Shoot',
+  Pfeil: 'arrow',
+  'Treffer!': 'Hit!',
+  'Volltreffer!': 'Bullseye!',
+  Zielscheibe: 'Archery target',
+  'Zum Üben mit dem Langbogen: Punkte je nach Ring, die Pfeile bleiben stecken':
+    'For practice with the longbow: points by the ring, the arrows stay in it',
+  'Zielscheibe steht – schieß drauf!': 'Target is up – shoot at it!',
   Schlagen: 'Strike',
   'Langbogen gekauft – „Schießen“ tippen schießt in Laufrichtung, Knopf ziehen zielt':
     'Longbow bought – tap “Shoot” to shoot the way you walk, drag the button to aim',
@@ -253,8 +260,9 @@ const EN = {
     'Flies freely with the stick, Throw drops things – from castle level 2, needs coal',
   'Fährt auf deinen Schienen hin und her und bringt die Ladung der Helfer zur Burg':
     'Runs back and forth on your rails and takes the helpers’ load to the castle',
-  'Schleudert Steine, Feuersteine und Sprengladungen weit – Stick hoch/runter zielt, Wurf schießt':
-    'Hurls rocks, flints and explosives far – stick up/down aims, Throw fires',
+  'Schleudert Steine, Feuersteine und Sprengladungen weit – „Schleudern“ tippen wirft, Knopf ziehen zielt':
+    'Hurls stones, flints and explosives far – tap “Hurl” to throw, drag the button to aim',
+  Schleudern: 'Hurl',
   'Schnelles Reittier für die Oberfläche, springt hoch': 'Fast mount for the surface, jumps high',
   'Schwimmt auf Wasser – über Teiche und Höhlenseen': 'Floats on water – across ponds and cave lakes',
   'Zwei Masten (bis 400 Pixel auseinander) bilden eine Seilbahn – die Gondel fährt von allein':

@@ -31,10 +31,11 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 | Graben (gerade, ↓/↑ schräg) | „Graben“ halten oder kurz tippen | Shift / X |
 | Werfen | „Wurf“ | E |
 | Waffe wählen (Langbogen, Schwert: eigene Felder vorn in der Leiste) | Feld oben antippen | 1–9 oder Q |
-| Schießen / Schlagen (mit gewählter Waffe) | „Schießen“ tippen: in Laufrichtung · Knopf ziehen: zielen (gepunktete Flugbahn), loslassen schießt · „Schlagen“ | E (in Blickrichtung) |
+| Schießen / Schlagen (mit gewählter Waffe) | „Schießen“ tippen: in Laufrichtung · Knopf ziehen: zielen (gepunktete Flugbahn), loslassen schießt · „Schlagen“. Pfeile, die in Wand oder Boden stecken (sie blinken), sammelt man durch Drüberlaufen wieder ein. Ein getroffener Wipf erschrickt nur (+2 Taler); zum Üben gibt es eine Zielscheibe (Bauen, nach „Bogenbau“) | E (in Blickrichtung) |
 | Durch Holztreppe oder -brücke nach unten | Stick nach unten | ↓ / S |
 | Aktion (Fällen, Basis, Werk, Brücke, Treppe, Heim …) | Aktions-Knopf | F |
 | Enterhaken werfen (nach dem Kauf) | „Haken“ tippen: zur nächsten Kante · Knopf ziehen: zielen (gestrichelte Seil-Linie), loslassen wirft | Pfeiltaste zielt, G |
+| Katapult (eingestiegen) | Stick fährt · „Schleudern“ tippen: wirft im eingestellten Winkel · Knopf ziehen: Richtung und Winkel (gepunktete Flugbahn), loslassen wirft | Pfeile fahren, ↑/↓ Winkel, E wirft |
 | Bauen | „Bauen“ oben rechts | B |
 | Wühler wechseln | Porträt oben links oder Wühler antippen | Tab |
 | Karte | Kleine Karte oben rechts | M |
