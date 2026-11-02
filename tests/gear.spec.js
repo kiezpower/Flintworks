@@ -220,6 +220,45 @@ test('weapons sit in the hotbar: tap the bow, "Schießen" shoots even with thing
   expect(errors).toEqual([]);
 });
 
+test('arrows stuck in a wall or the ground are picked up again by walking over them', async ({ page }) => {
+  const errors = await setup(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      c = w.crew[0],
+      { mat, W, ROCK, paint } = w.world;
+    // rock walls to the right and to the left
+    for (const x0 of [440, 340])
+      for (let x = x0; x < x0 + 20; x++)
+        for (let y = 150; y < 200; y++) {
+          mat[y * W + x] = ROCK;
+          paint(y * W + x);
+        }
+    w.send('tool', { id: 'bow' });
+    const out = {};
+    // a flat shot into each wall
+    w.send('shoot', {});
+    w.step(1);
+    w.send('shoot', { dx: -1, dy: 0 });
+    w.step(120);
+    const stuck = w.combat.stuckArrows;
+    out.afterShots = w.G.tools.q_arrow;
+    out.stuck = stuck.filter(s => s.pick).length;
+    // walk to the wall and back over the ground
+    w.keys.r = 1;
+    w.step(60);
+    w.keys.r = 0;
+    out.oneBack = w.G.tools.q_arrow;
+    w.keys.l = 1;
+    w.step(200);
+    w.keys.l = 0;
+    out.allBack = w.G.tools.q_arrow;
+    out.left = stuck.filter(s => s.pick).length;
+    return out;
+  });
+  expect(r).toEqual({ afterShots: 8, stuck: 2, oneBack: 9, allBack: 10, left: 0 });
+  expect(errors).toEqual([]);
+});
+
 test('sword strikes a monster; shield and helmet halve damage', async ({ page }) => {
   const errors = await setup(page);
   const r = await page.evaluate(() => {

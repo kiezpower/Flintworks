@@ -5,7 +5,9 @@ import { announce } from './announce.js';
 import { arrows } from './buildings.js';
 import { hurt } from './clonk.js';
 import { addStat } from './stats.js';
-import { teamOf } from './teams.js';
+import { teamOf, useMine, useTeam } from './teams.js';
+import { addFloat } from './floats.js';
+import { tr } from './i18n.js';
 import { damageCastle } from './versus.js';
 import { sfx } from './sound.js';
 import { G, animals, builds, crew, flashes, parts, trees } from './state.js';
@@ -129,7 +131,7 @@ function shoot(c, I) {
     vx = Math.cos(ang) * sp * c.face;
     vy = -Math.sin(ang) * sp;
   }
-  fireArrow({ x: ox, y: oy, vx, vy, l: 150, dmg: fire ? 40 : 28, fire, tm: teamOf(c), by: c.pid });
+  fireArrow({ x: ox, y: oy, vx, vy, l: 150, dmg: fire ? 40 : 28, fire, tm: teamOf(c), by: c.pid, pick: true });
   c.shotT = G.frame; // (the string snaps forward, drawBow)
   sfx('bow', c.x, c.y);
 }
@@ -155,7 +157,7 @@ function aimPath(c, I) {
 // every arrow (also from towers) goes through here, so clients get to see it
 function fireArrow(a) {
   arrows.push(a);
-  if (G.netHost) G.netEvent(['p', a.fire ? 'f' : 'a', Math.round(a.x), Math.round(a.y), a.vx, a.vy, a.tm ?? null]);
+  if (G.netHost) G.netEvent(['p', a.fire ? 'f' : 'a', Math.round(a.x), Math.round(a.y), a.vx, a.vy, a.tm ?? null, a.pick ? 1 : 0]);
 }
 // a client shows the arrows of the host (only for the looks), and the sparks of hits
 function playShot(e) {
@@ -163,9 +165,23 @@ function playShot(e) {
     hitFx(e[1], e[2]);
     return true;
   }
+  if (e[0] === 'pa') {
+    // an arrow was picked up on the host: the stuck one closest to that spot goes
+    let best = -1,
+      bd = 9;
+    stuckArrows.forEach((s, k) => {
+      const d = Math.abs(s.x - e[1]) + Math.abs(s.y - e[2]);
+      if (d < bd) {
+        bd = d;
+        best = k;
+      }
+    });
+    if (best >= 0) stuckArrows.splice(best, 1);
+    return true;
+  }
   if (e[0] !== 'p') return false;
   if (e[1] === 'a' || e[1] === 'f')
-    arrows.push({ x: e[2], y: e[3], vx: e[4], vy: e[5], l: 150, fire: e[1] === 'f', tm: e[6] ?? undefined });
+    arrows.push({ x: e[2], y: e[3], vx: e[4], vy: e[5], l: 150, fire: e[1] === 'f', tm: e[6] ?? undefined, pick: !!e[7] });
   return e[1] === 'a' || e[1] === 'f';
 }
 function updArrows() {
@@ -208,11 +224,45 @@ function updArrows() {
     const wall = solid(Math.floor(a.x), Math.floor(a.y));
     if ((hit || wall) && a.fire) burnAt(a.x, a.y);
     if (wall && !hit && !a.fire) {
-      stuckArrows.push({ x: a.x, y: a.y, vx: a.vx, vy: a.vy, l: 240, stuck: true });
-      if (stuckArrows.length > 40) stuckArrows.shift();
+      // stuck in the wall or the ground: a bow's arrow can be picked up again (a minute),
+      // a tower's only stays for the looks
+      stuckArrows.push({ x: a.x, y: a.y, vx: a.vx, vy: a.vy, l: a.pick ? STUCK_LIFE : 240, stuck: true, pick: !!a.pick });
+      if (stuckArrows.length > 60) stuckArrows.shift();
       sfx('clack', a.x, a.y, 0.5);
     }
     if (hit || wall || --a.l <= 0) arrows.splice(k, 1);
+  }
+  for (let k = stuckArrows.length - 1; k >= 0; k--) if (--stuckArrows[k].l <= 0) stuckArrows.splice(k, 1);
+  if (!G.netClient) pickArrows();
+}
+// a Wühler that walks over a stuck arrow takes it back into the quiver (if its team has a bow)
+const STUCK_LIFE = 3600;
+function pickArrows() {
+  for (let k = stuckArrows.length - 1; k >= 0; k--) {
+    const s = stuckArrows[k];
+    if (!s.pick) continue;
+    // (the feathered end sticks out of the wall: that is what you reach)
+    const d = Math.hypot(s.vx, s.vy) || 1,
+      tx = s.x - (s.vx / d) * 4,
+      ty = s.y - (s.vy / d) * 4;
+    const c = crew.find(
+      o =>
+        !o.dead &&
+        o.ride == null &&
+        tx > o.x - 3 &&
+        tx < o.x + o.w + 3 &&
+        ty > o.y - 3 &&
+        ty < o.y + o.h + 3 &&
+        teamHas(o.team, 'bow'),
+    );
+    if (!c) continue;
+    stuckArrows.splice(k, 1);
+    useTeam(teamOf(c));
+    addArrows('arrow', 1);
+    useMine();
+    sfx('pick', c.x, c.y);
+    addFloat(c.x + 3, c.y - 2, '+1 ' + tr('Pfeil'), '#f2e2c0');
+    if (G.netHost) G.netEvent(['pa', Math.round(s.x), Math.round(s.y)]);
   }
 }
 // a fire arrow sets trees alight and lights up gas pockets
@@ -480,15 +530,19 @@ function drawArrow(ctx, a, x, y, alpha = 1) {
 // arrows that hit a wall stay stuck in it for a few seconds (only for the looks)
 const stuckArrows = [];
 function drawArrows(ctx, cx, cy) {
-  for (let k = stuckArrows.length - 1; k >= 0; k--) {
-    const s = stuckArrows[k];
-    if (--s.l <= 0) {
-      stuckArrows.splice(k, 1);
-      continue;
+  for (const s of stuckArrows) {
+    drawArrow(ctx, s, s.x - cx, s.y - cy, Math.min(1, s.l / 60));
+    // arrows you can pick up glint now and then at the feathers
+    if (s.pick && (G.frame + Math.round(s.x * 7)) % 100 < 8) {
+      const d = Math.hypot(s.vx, s.vy) || 1,
+        gx = s.x - (s.vx / d) * 6 - cx,
+        gy = s.y - (s.vy / d) * 6 - cy;
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.fillRect(gx - 0.25, gy - 1.25, 0.5, 2.5);
+      ctx.fillRect(gx - 1.25, gy - 0.25, 2.5, 0.5);
     }
-    drawArrow(ctx, s, s.x - cx, s.y - cy, Math.min(1, s.l / 40));
   }
   for (const a of arrows) drawArrow(ctx, a, a.x - cx, a.y - cy);
 }
 
-export { aimPath, canShoot, drawArrow, drawArrows, hasBow, swing, drawGear, enemy, fireArrow, guard, playShot, shoot, strike, swordContext, updArrows, updCombat };
+export { aimPath, canShoot, drawArrow, drawArrows, stuckArrows, hasBow, swing, drawGear, enemy, fireArrow, guard, playShot, shoot, strike, swordContext, updArrows, updCombat };

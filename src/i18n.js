@@ -58,6 +58,7 @@ const EN = {
   'Mit 10 Pfeilen. In der Leiste antippen, dann „Schießen“: tippen schießt in Laufrichtung, den Knopf ziehen zielt':
     'With 10 arrows. Tap it in the hotbar, then “Shoot”: a tap shoots the way you walk, dragging the button aims',
   Schießen: 'Shoot',
+  Pfeil: 'arrow',
   Schlagen: 'Strike',
   'Langbogen gekauft – „Schießen“ tippen schießt in Laufrichtung, Knopf ziehen zielt':
     'Longbow bought – tap “Shoot” to shoot the way you walk, drag the button to aim',
