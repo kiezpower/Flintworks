@@ -48,7 +48,7 @@ const TOOLS = {
   bow: {
     name: 'Langbogen',
     icon: 'bow',
-    sub: 'Mit 10 Pfeilen. In der Leiste antippen, dann „Schießen“ – der Stick zielt, sonst trifft er von selbst Monster',
+    sub: 'Mit 10 Pfeilen. In der Leiste antippen, dann „Schießen“: tippen schießt in Laufrichtung, den Knopf ziehen zielt',
     money: 40,
     need: { wood: 3, plank: 1 },
     res: ['archery'],
@@ -159,7 +159,7 @@ register('tool', (c, { id }) => {
     c.wield = id;
     return toastMsg(
       id === 'bow'
-        ? 'Langbogen gekauft – „Schießen“ drücken, der Stick zielt'
+        ? 'Langbogen gekauft – „Schießen“ tippen schießt in Laufrichtung, Knopf ziehen zielt'
         : 'Schwert gekauft – „Schlagen“ drücken, um zuzuschlagen',
     );
   }

@@ -31,7 +31,7 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 | Graben (gerade, ↓/↑ schräg) | „Graben“ halten oder kurz tippen | Shift / X |
 | Werfen | „Wurf“ | E |
 | Waffe wählen (Langbogen, Schwert: eigene Felder vorn in der Leiste) | Feld oben antippen | 1–9 oder Q |
-| Schießen / Schlagen (mit gewählter Waffe) | „Schießen“ / „Schlagen“, Stick zielt (gepunktete Flugbahn) | E, Pfeiltaste zielt |
+| Schießen / Schlagen (mit gewählter Waffe) | „Schießen“ tippen: in Laufrichtung · Knopf ziehen: zielen (gepunktete Flugbahn), loslassen schießt · „Schlagen“ | E (in Blickrichtung) |
 | Durch Holztreppe oder -brücke nach unten | Stick nach unten | ↓ / S |
 | Aktion (Fällen, Basis, Werk, Brücke, Treppe, Heim …) | Aktions-Knopf | F |
 | Enterhaken werfen (nach dem Kauf) | Stick zielt, „Haken“ | Pfeiltaste zielt, G |

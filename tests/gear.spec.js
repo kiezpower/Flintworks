@@ -142,14 +142,23 @@ test('weapons sit in the hotbar: tap the bow, "Schießen" shoots even with thing
     w.edge.throw = true;
     w.step(1);
     out.shotWithBag = w.arrows().length === 1 && c.inv.length === 2;
-    // aimed straight up with the stick
+    // aimed by dragging the button straight up (what the button sends when let go)
     w.step(30);
-    w.keys.u = 1;
-    w.edge.throw = true;
-    w.step(1);
-    w.keys.u = 0;
-    const a = w.arrows()[w.arrows().length - 1];
+    w.send('shoot', { dx: 0, dy: -1 });
+    let a = w.arrows()[w.arrows().length - 1];
     out.aimedUp = !!a && a.vy < -3 && Math.abs(a.vx) < 1;
+    // walking left with the stick held up and to the left, a tap shoots the way you walk:
+    // to the left and flat, the stick does not aim
+    w.joy.x = -1;
+    w.joy.y = -0.6;
+    w.step(10);
+    w.send('shoot', {});
+    w.joy.x = w.joy.y = 0;
+    a = w.arrows()[w.arrows().length - 1];
+    out.walkDir = !!a && a.vx < -3 && Math.abs(a.vy) < 1;
+    // an arrow into a wall stays stuck there for a while (drawn, not in the flying list)
+    w.step(200);
+    out.flownOut = w.arrows().length === 0;
     // a thing from the bag: the button throws again
     w.send('isel', { i: 0 });
     w.hud();
@@ -158,6 +167,7 @@ test('weapons sit in the hotbar: tap the bow, "Schießen" shoots even with thing
     w.send('tool', { id: 'sword' });
     w.hud();
     out.swordSlot = !!slot('sword') && btn() === 'Schlagen';
+    c.face = 1; // (looking right again, at the monster)
     const m = w.mkAnimal('monster', c.x + 7, 191);
     m.atk = 999; // (it does not hit back during the test)
     w.animals.push(m);
@@ -178,6 +188,8 @@ test('weapons sit in the hotbar: tap the bow, "Schießen" shoots even with thing
     label: 'Schießen',
     shotWithBag: true,
     aimedUp: true,
+    walkDir: true,
+    flownOut: true,
     backToThrow: true,
     swordSlot: true,
     struck: true,

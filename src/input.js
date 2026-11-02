@@ -153,11 +153,63 @@ const joyEnd = e => {
 };
 game.addEventListener('pointerup', joyEnd);
 game.addEventListener('pointercancel', joyEnd);
+// the bow chosen: the "Schießen" button is its own aiming stick (as in mobile shooters). A tap
+// shoots the way you walk, dragging aims (dotted path, render.js), letting go shoots. The
+// walking stick stays free, so you can run and shoot at the same time.
+const AIM_R = 34; // px of drag for a full aim
+const bowReady = () => {
+  const c = sel_();
+  return !!c && !c.dead && c.wield === 'bow' && c.ride == null;
+};
+let aimFrom = null,
+  aimDot = null;
+function aimMove(b, e) {
+  if (!aimFrom) return;
+  const dx = e.clientX - aimFrom.x,
+    dy = e.clientY - aimFrom.y,
+    d = Math.hypot(dx, dy);
+  // (a little wobble of the thumb is still a tap)
+  G.aimDrag = d > 10 ? { ax: dx / d, ay: dy / d } : null;
+  const k = Math.min(d, AIM_R) / (d || 1);
+  if (!aimDot) {
+    aimDot = document.createElement('i');
+    aimDot.className = 'aimdot';
+    b.appendChild(aimDot);
+  }
+  aimDot.style.transform = `translate(${dx * k}px,${dy * k}px)`;
+  b.classList.toggle('aiming', !!G.aimDrag);
+}
+function aimEnd(b, fire) {
+  if (!aimFrom) return;
+  const a = G.aimDrag;
+  aimFrom = null;
+  G.aimDrag = null;
+  aimDot?.remove();
+  aimDot = null;
+  b.classList.remove('aiming', 'on');
+  if (fire) send('shoot', a ? { dx: a.ax, dy: a.ay } : {});
+}
 for (const b of document.querySelectorAll('.pad')) {
   const name = b.dataset.b;
   let t0 = 0;
+  if (name === 'throw') {
+    b.addEventListener('pointermove', e => aimMove(b, e));
+    b.addEventListener('pointerup', () => aimEnd(b, true));
+    b.addEventListener('pointercancel', () => aimEnd(b, false));
+  }
   b.addEventListener('pointerdown', e => {
     t0 = performance.now();
+    if (name === 'throw' && bowReady()) {
+      aimFrom = { x: e.clientX, y: e.clientY };
+      G.aimDrag = null;
+      b.classList.add('on');
+      buzz(8);
+      try {
+        b.setPointerCapture(e.pointerId);
+      } catch {}
+      e.preventDefault();
+      return;
+    }
     // the grappling hook: one shot per tap, run on the host like stairs and bridges (climb.js)
     if (name === 'hook') {
       send('hook', aim());

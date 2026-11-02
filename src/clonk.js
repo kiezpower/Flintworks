@@ -1,5 +1,6 @@
 import { canShoot, hasBow, shoot, swing, swordContext } from './combat.js';
 import { hasTool } from './tools.js';
+import { register } from './commands.js';
 import { onDig } from './hazards.js';
 import { buzz } from './sound.js';
 import { chestNear, openChest } from './treasure.js';
@@ -816,7 +817,10 @@ function doThrow(c, I) {
   // a weapon chosen in the hotbar: the button uses it, whatever is in the bag (like Terraria)
   if (c.wield && !hasTool(c.wield)) c.wield = null;
   if (I.throwP && c.wield === 'sword' && c.ride == null && !c.climb && !c.tumble) return swing(c);
-  if (I.throwP && c.wield === 'bow' && !c.climb && !c.tumble && hasBow(c)) return shootOrTip(c, I);
+  // (the bow chosen: a press of E shoots the way you walk; on a touch screen the button sends
+  // its own 'shoot' command with the direction it was dragged, see input.js)
+  if (I.throwP && c.wield === 'bow' && !c.climb && !c.tumble && hasBow(c))
+    return shootOrTip(c, { ax: 0, ay: 0, aim: true });
   if (I.throwP && !c.inv.length && !c.climb && !c.tumble && hasBow(c)) return shootOrTip(c, I);
   if (!I.throwP || !c.inv.length || c.climb || c.tumble) return;
   if (c.ride != null) return; // vehicles use Throw themselves (catapult, airship)
@@ -838,6 +842,12 @@ function doThrow(c, I) {
   sfx('throw', c.x, c.y);
 }
 
+// the "Schießen" button let go: dx/dy is where it was dragged (0, 0: a plain tap)
+register('shoot', (c, { dx = 0, dy = 0 } = {}) => {
+  if (c.dead || c.wield !== 'bow' || c.climb || c.tumble || !hasBow(c)) return;
+  const m = Math.hypot(dx, dy);
+  shootOrTip(c, m > 0.3 ? { ax: dx / m, ay: dy / m, aim: true } : { ax: 0, ay: 0, aim: true });
+});
 function shootOrTip(c, I) {
   if (canShoot(c)) return shoot(c, I);
   // a bow but no arrows: say where to get them (not more often than once a second)

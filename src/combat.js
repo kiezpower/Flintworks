@@ -95,28 +95,29 @@ function swordContext(c) {
 const quiver = () => arrowsOf('arrow') + arrowsOf('farrow');
 const hasBow = c => !!c && hasTool('bow') && c.ride == null;
 const canShoot = c => hasBow(c) && quiver() > 0;
-// Wurf with an empty hand; normal arrows first, then fire arrows
+// Shoot an arrow; normal arrows first, then fire arrows. I.aim: aimed by dragging the
+// "Schießen" button (ax/ay is that direction, the walking stick stays free); without a drag
+// the arrow flies the way the Wühler is walking (at a monster right in front, if there is one)
 function shoot(c, I) {
   const fire = arrowsOf('arrow') <= 0;
   addArrows(fire ? 'farrow' : 'arrow', -1);
+  const aimed = !!I.aim && Math.hypot(I.ax, I.ay) > 0.3;
+  if (aimed && Math.abs(I.ax) > 0.2) c.face = Math.sign(I.ax);
   const sp = 4.4,
     ox = c.x + 3 + c.face * 4,
     oy = c.y + 4;
   // with the stick in the middle the arrow flies at the next monster in front (like a tower)
   // (in Versus also at the next Wühler of the other team)
   const foes = [...animals.filter(a => FOES[a.kind]), ...crew.filter(o => enemy(c, o))];
-  // aimed with the stick (all around, like in Terraria) when the bow is the chosen weapon
-  const aimed = c.wield === 'bow' && Math.hypot(I.ax, I.ay) > 0.3;
   const tgt =
     !aimed &&
-    Math.abs(I.ay) < 0.4 &&
+    (I.aim || Math.abs(I.ay) < 0.4) &&
     foes.find(a => (a.x + a.w / 2 - ox) * c.face > 0 && Math.hypot(a.x + a.w / 2 - ox, a.y + a.h / 2 - oy) < 170);
   let vx, vy;
   if (aimed) {
     const m = Math.hypot(I.ax, I.ay);
     vx = (I.ax / m) * sp;
     vy = (I.ay / m) * sp;
-    if (Math.abs(I.ax) > 0.2) c.face = Math.sign(I.ax);
   } else if (tgt) {
     const dx = tgt.x + tgt.w / 2 - ox,
       dy = tgt.y + tgt.h / 2 - oy,
@@ -124,7 +125,7 @@ function shoot(c, I) {
     vx = dx / t;
     vy = dy / t - 0.03 * t;
   } else {
-    const ang = I.ay < -0.4 ? 0.75 : I.ay > 0.4 ? -0.15 : 0.12;
+    const ang = I.aim ? 0.12 : I.ay < -0.4 ? 0.75 : I.ay > 0.4 ? -0.15 : 0.12;
     vx = Math.cos(ang) * sp * c.face;
     vy = -Math.sin(ang) * sp;
   }
@@ -135,7 +136,8 @@ function shoot(c, I) {
 function aimPath(c, I) {
   const sp = 4.4,
     m = Math.hypot(I.ax, I.ay) || 1;
-  let x = c.x + 3 + c.face * 4,
+  const f = Math.abs(I.ax) > 0.2 ? Math.sign(I.ax) : c.face;
+  let x = c.x + 3 + f * 4,
     y = c.y + 4,
     vx = (I.ax / m) * sp,
     vy = (I.ay / m) * sp;
@@ -145,7 +147,7 @@ function aimPath(c, I) {
     x += vx;
     y += vy;
     if (solid(Math.floor(x), Math.floor(y))) break;
-    if (t % 4 === 3) pts.push([x, y]);
+    if (t % 2 === 1) pts.push([x, y]);
   }
   return pts;
 }
@@ -204,6 +206,11 @@ function updArrows() {
     }
     const wall = solid(Math.floor(a.x), Math.floor(a.y));
     if ((hit || wall) && a.fire) burnAt(a.x, a.y);
+    if (wall && !hit && !a.fire) {
+      stuckArrows.push({ x: a.x, y: a.y, vx: a.vx, vy: a.vy, l: 240, stuck: true });
+      if (stuckArrows.length > 40) stuckArrows.shift();
+      sfx('clack', a.x, a.y, 0.5);
+    }
     if (hit || wall || --a.l <= 0) arrows.splice(k, 1);
   }
 }
@@ -290,13 +297,67 @@ function drawGear(ctx, c, x, y) {
     ctx.fillRect(f > 0 ? x + 0.5 : x + 5, y + 6, 0.5, 3.5);
   }
 }
-function drawArrow(ctx, a, x, y) {
-  const d = Math.hypot(a.vx, a.vy) || 1;
-  ctx.fillStyle = a.fire ? '#ffcf4a' : '#d9b98a';
-  ctx.fillRect(x, y, 1, 1);
-  ctx.fillRect(Math.round(x - (a.vx / d) * 2), Math.round(y - (a.vy / d) * 2), 1, 1);
-  ctx.fillStyle = a.fire ? '#ff7a2f' : '#4a4540';
-  ctx.fillRect(Math.round(x + a.vx / d), Math.round(y + a.vy / d), 1, 1);
+// An arrow as games draw them so the eye can follow it: longer than life, a dark outline
+// against any background, a bright shaft, a steel tip, red fletching, and a fading streak behind
+// it while it flies (fire arrows glow). x, y: the tip on screen.
+function drawArrow(ctx, a, x, y, alpha = 1) {
+  const d = Math.hypot(a.vx, a.vy) || 1,
+    ux = a.vx / d,
+    uy = a.vy / d;
+  const L = 6,
+    tx = x - ux * L,
+    ty = y - uy * L;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.lineCap = 'round';
+  const line = (x0, y0, x1, y1, w, col) => {
+    ctx.strokeStyle = col;
+    ctx.lineWidth = w;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+  };
+  if (!a.stuck) {
+    // the streak: where it was a moment ago
+    const g = ctx.createLinearGradient(tx, ty, tx - ux * 10, ty - uy * 10);
+    g.addColorStop(0, a.fire ? 'rgba(255,170,60,0.7)' : 'rgba(255,248,220,0.55)');
+    g.addColorStop(1, 'rgba(255,248,220,0)');
+    line(tx, ty, tx - ux * 10, ty - uy * 10, 1.5, g);
+    if (a.fire) {
+      ctx.fillStyle = 'rgba(255,150,40,0.35)';
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, 7);
+      ctx.fill();
+    }
+  }
+  line(tx, ty, x + ux, y + uy, 2.2, '#1a120c'); // outline
+  line(tx, ty, x, y, 1, a.fire ? '#ffb347' : '#f2e2c0'); // shaft
+  // steel (or burning) tip
+  ctx.fillStyle = a.fire ? '#ffe36a' : '#dfe6ee';
+  ctx.beginPath();
+  ctx.moveTo(x + ux * 1.6, y + uy * 1.6);
+  ctx.lineTo(x - ux + uy * 1.1, y - uy - ux * 1.1);
+  ctx.lineTo(x - ux - uy * 1.1, y - uy + ux * 1.1);
+  ctx.fill();
+  // fletching at the tail
+  ctx.fillStyle = a.fire ? '#ff6a2a' : '#d8433a';
+  ctx.fillRect(tx - 0.5 + uy * 0.8, ty - 0.5 - ux * 0.8, 1, 1);
+  ctx.fillRect(tx - 0.5 - uy * 0.8, ty - 0.5 + ux * 0.8, 1, 1);
+  ctx.restore();
+}
+// arrows that hit a wall stay stuck in it for a few seconds (only for the looks)
+const stuckArrows = [];
+function drawArrows(ctx, cx, cy) {
+  for (let k = stuckArrows.length - 1; k >= 0; k--) {
+    const s = stuckArrows[k];
+    if (--s.l <= 0) {
+      stuckArrows.splice(k, 1);
+      continue;
+    }
+    drawArrow(ctx, s, s.x - cx, s.y - cy, Math.min(1, s.l / 40));
+  }
+  for (const a of arrows) drawArrow(ctx, a, a.x - cx, a.y - cy);
 }
 
-export { aimPath, canShoot, drawArrow, hasBow, swing, drawGear, enemy, fireArrow, guard, playShot, shoot, strike, swordContext, updArrows, updCombat };
+export { aimPath, canShoot, drawArrow, drawArrows, hasBow, swing, drawGear, enemy, fireArrow, guard, playShot, shoot, strike, swordContext, updArrows, updCombat };

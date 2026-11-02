@@ -55,11 +55,12 @@ const EN = {
   Eisenhelm: 'Iron helmet',
   'In der Leiste antippen, dann „Schlagen“ – und alle Wühler wehren sich gegen Monster':
     'Tap it in the hotbar, then “Strike” – and all diggers fight back against monsters',
-  'Mit 10 Pfeilen. In der Leiste antippen, dann „Schießen“ – der Stick zielt, sonst trifft er von selbst Monster':
-    'With 10 arrows. Tap it in the hotbar, then “Shoot” – the stick aims, otherwise it finds monsters by itself',
+  'Mit 10 Pfeilen. In der Leiste antippen, dann „Schießen“: tippen schießt in Laufrichtung, den Knopf ziehen zielt':
+    'With 10 arrows. Tap it in the hotbar, then “Shoot”: a tap shoots the way you walk, dragging the button aims',
   Schießen: 'Shoot',
   Schlagen: 'Strike',
-  'Langbogen gekauft – „Schießen“ drücken, der Stick zielt': 'Longbow bought – press “Shoot”, the stick aims',
+  'Langbogen gekauft – „Schießen“ tippen schießt in Laufrichtung, Knopf ziehen zielt':
+    'Longbow bought – tap “Shoot” to shoot the way you walk, drag the button to aim',
   'Schwert gekauft – „Schlagen“ drücken, um zuzuschlagen': 'Sword bought – press “Strike” to hit',
   'Köcher leer – Pfeile in der Burg unter „Ausrüstung“ herstellen':
     'Quiver empty – make arrows in the castle under “Equipment”',
