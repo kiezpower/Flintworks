@@ -31,7 +31,7 @@ const TOOLS = {
   hook: {
     name: 'Enterhaken',
     icon: 'hook',
-    sub: 'Eigener Knopf (G): wirf den Haken, wohin du zielst – er zieht dich hin',
+    sub: 'Eigener Knopf „Haken“: tippen wirft zur nächsten Kante, ziehen zielt – er zieht dich hin (Taste G)',
     money: 30,
     need: { wood: 2, rock: 1 },
     lobby: true,

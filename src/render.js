@@ -41,7 +41,7 @@ import {
 } from './effects.js';
 import { drawBolt, drawRainFar, drawRainHaze, drawRainNear, drawRoofWeather, drawWet } from './rainfx.js';
 import { drawTutorial } from './tutorial.js';
-import { drawHook } from './climb.js';
+import { drawHook, hookPath } from './climb.js';
 import { lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
 import { isPlayer } from './players.js';
@@ -630,8 +630,27 @@ function render() {
       } else drawClonkHi(c, x, y, c.face, ctx);
     }
     drawGear(ctx, c, x, y);
+    // aiming the hook by dragging the "Haken" button: a dotted rope, and the claw where it catches
+    if (c === mine && G.aimKind === 'hook' && G.aimDrag && c.ride == null) {
+      const hp = hookPath(c, G.aimDrag);
+      for (const [px, py] of hp.pts) {
+        const qx = Math.round(px - cx),
+          qy = Math.round(py - cy);
+        ctx.fillStyle = 'rgba(26,18,12,0.7)';
+        ctx.fillRect(qx - 1, qy - 1, 3, 3);
+        ctx.fillStyle = hp.hit ? '#c9f08a' : '#d9c9a8';
+        ctx.fillRect(qx, qy, 1, 1);
+      }
+      const ex = Math.round(hp.end[0] - cx),
+        ey = Math.round(hp.end[1] - cy);
+      ctx.strokeStyle = hp.hit ? '#9be05a' : 'rgba(217,201,168,0.6)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(ex, ey, 3, 0, 7);
+      ctx.stroke();
+    }
     // aiming the bow by dragging the "Schießen" button: a dotted line shows where the arrow will fly
-    if (c === mine && c.wield === 'bow' && c.ride == null && G.aimDrag) {
+    if (c === mine && G.aimKind === 'bow' && c.wield === 'bow' && c.ride == null && G.aimDrag) {
       for (const [px, py] of aimPath(c, G.aimDrag)) {
         const qx = Math.round(px - cx),
           qy = Math.round(py - cy);

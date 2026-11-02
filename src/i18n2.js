@@ -74,10 +74,10 @@ const EN2 = {
   Heim: 'Home',
   Haken: 'Hook',
   Enterhaken: 'Grappling hook',
-  'Eigener Knopf (G): wirf den Haken, wohin du zielst – er zieht dich hin':
-    'Its own button (G): throw the hook wherever you aim – it pulls you there',
-  'Enterhaken: Halte den Stick in eine Richtung und tippe auf Haken – er zieht dich hin':
-    'Grappling hook: hold the stick in a direction and tap Hook – it pulls you there',
+  'Eigener Knopf „Haken“: tippen wirft zur nächsten Kante, ziehen zielt – er zieht dich hin (Taste G)':
+    'Its own “Hook” button: a tap throws it at the next ledge, dragging aims – it pulls you there (key G)',
+  'Enterhaken: Tippe auf Haken – oder zieh den Knopf in eine Richtung, dann loslassen':
+    'Grappling hook: tap Hook – or drag the button in a direction, then let go',
   'Enterhaken: Halte eine Pfeiltaste und drücke G – der Haken zieht dich hin':
     'Grappling hook: hold an arrow key and press G – the hook pulls you there',
   'nach dem Kauf des Enterhakens: wirft ihn in Stick-Richtung, sonst an die nächste Kante':
