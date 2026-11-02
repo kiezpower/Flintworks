@@ -3,7 +3,7 @@ import { drawCue } from './startcue.js';
 import { drawCastleCue } from './castlecue.js';
 import { buildSprite } from './skins.js';
 import { drawClonkHi } from './clonkhi.js';
-import { aimPath, drawArrow, drawGear } from './combat.js';
+import { aimPath, drawArrows, drawGear } from './combat.js';
 import { drawEvents } from './events.js';
 import { drawBackdrop } from './backdrop.js';
 import { hasGear } from './tools.js';
@@ -42,7 +42,7 @@ import {
 import { drawBolt, drawRainFar, drawRainHaze, drawRainNear, drawRoofWeather, drawWet } from './rainfx.js';
 import { drawTutorial } from './tutorial.js';
 import { drawHook } from './climb.js';
-import { arrows, lvl, terrOK } from './buildings.js';
+import { lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
 import { isPlayer } from './players.js';
 import { drawEmotes } from './net/emotes.js';
@@ -50,7 +50,7 @@ import { TEAM_COLS } from './teams.js';
 import { box, drawVehicles, wheel } from './vehicles/core.js';
 import { drawRails } from './vehicles/rails.js';
 import { topSolid } from './gen.js';
-import { game, inp, joyHome } from './input.js';
+import { game, joyHome } from './input.js';
 import { ICOL, SPR, drawHi, drawItemBig } from './sprites.js';
 import { drawCrafted } from './bldart.js';
 import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
@@ -575,7 +575,7 @@ function render() {
       ctx.fillRect(x + 1, y - 1, 1, 1);
     }
   }
-  for (const a of arrows) drawArrow(ctx, a, Math.floor(a.x - cx), Math.floor(a.y - cy));
+  drawArrows(ctx, cx, cy);
   drawEvents(ctx, cx, cy);
   for (const m of meteors) {
     const x = Math.floor(m.x - cx),
@@ -630,9 +630,9 @@ function render() {
       } else drawClonkHi(c, x, y, c.face, ctx);
     }
     drawGear(ctx, c, x, y);
-    // aiming the bow with the stick: a dotted line shows where the arrow will fly
-    if (c === mine && c.wield === 'bow' && c.ride == null && Math.hypot(inp.ax, inp.ay) > 0.3) {
-      for (const [px, py] of aimPath(c, inp)) {
+    // aiming the bow by dragging the "Schießen" button: a dotted line shows where the arrow will fly
+    if (c === mine && c.wield === 'bow' && c.ride == null && G.aimDrag) {
+      for (const [px, py] of aimPath(c, G.aimDrag)) {
         const qx = Math.round(px - cx),
           qy = Math.round(py - cy);
         ctx.fillStyle = 'rgba(26,18,12,0.7)';
