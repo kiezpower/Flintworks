@@ -388,6 +388,68 @@ test('steel pick digs through rock; the lamp is bought', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('the raft only moves on water: built at the shore, stops at the bank, stuck on land', async ({ page }) => {
+  const errors = await setup(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      c = w.crew[0],
+      { mat, W, WATER, AIR, EARTH, paint } = w.world;
+    const set = (x0, x1, y0, y1, m) => {
+      for (let x = x0; x < x1; x++)
+        for (let y = y0; y < y1; y++) {
+          mat[y * W + x] = m;
+          paint(y * W + x);
+        }
+    };
+    const out = {};
+    // far from water: no raft
+    Object.assign(c, { x: 400, y: 190 });
+    w.step(3);
+    w.send('vehicle', { kind: 'raft' });
+    out.refusedOnLand = !w.vehicles.some(v => v.kind === 'raft');
+    out.why = document.getElementById('toast').textContent;
+    // a pond from 500 to 560 (banks at the same height on both sides)
+    set(500, 560, 200, 214, WATER);
+    Object.assign(c, { x: 488, y: 190, face: 1 });
+    w.step(3);
+    w.send('vehicle', { kind: 'raft' });
+    const f = w.vehicles.find(v => v.kind === 'raft');
+    out.built = !!f;
+    out.overWater = !!f && f.x >= 500 && f.x + f.w <= 560;
+    w.step(40);
+    Object.assign(c, { x: f.x + 6, y: f.y - 10, vx: 0, vy: 0 });
+    w.context(c).fn(); // Einsteigen
+    w.keys.r = 1;
+    w.step(300);
+    w.keys.r = 0;
+    out.stopsAtRightBank = f.x + f.w <= 561 && c.ride === f.id;
+    w.keys.l = 1;
+    w.step(300);
+    w.keys.l = 0;
+    out.stopsAtLeftBank = f.x >= 499;
+    // the pond drained: the raft sits on the ground and does not move any more
+    set(500, 560, 200, 214, EARTH);
+    w.step(40);
+    const x0 = f.x;
+    w.keys.r = 1;
+    w.step(120);
+    w.keys.r = 0;
+    out.stuckOnLand = Math.abs(f.x - x0) < 0.5;
+    return out;
+  });
+  expect(r.why).toContain('am Wasser');
+  delete r.why;
+  expect(r).toEqual({
+    refusedOnLand: true,
+    built: true,
+    overWater: true,
+    stopsAtRightBank: true,
+    stopsAtLeftBank: true,
+    stuckOnLand: true,
+  });
+  expect(errors).toEqual([]);
+});
+
 test('drill wagon bores through rock, raft floats, riding wipf runs and jumps', async ({ page }) => {
   const errors = await setup(page);
   const r = await page.evaluate(() => {

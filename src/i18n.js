@@ -264,7 +264,10 @@ const EN = {
     'Hurls stones, flints and explosives far – tap “Hurl” to throw, drag the button to aim',
   Schleudern: 'Hurl',
   'Schnelles Reittier für die Oberfläche, springt hoch': 'Fast mount for the surface, jumps high',
-  'Schwimmt auf Wasser – über Teiche und Höhlenseen': 'Floats on water – across ponds and cave lakes',
+  'Schwimmt nur auf Wasser – über Teiche und Höhlenseen, am Ufer bauen':
+    'Floats only on water – across ponds and cave lakes, build it at the shore',
+  'Das Floß muss am Wasser gebaut werden': 'The raft has to be built by the water',
+  'Das Floß fährt nur auf Wasser': 'The raft only moves on water',
   'Zwei Masten (bis 400 Pixel auseinander) bilden eine Seilbahn – die Gondel fährt von allein':
     'Two masts (up to 400 pixels apart) make a cable car – the gondola runs by itself',
   Datenschutz: 'Privacy',

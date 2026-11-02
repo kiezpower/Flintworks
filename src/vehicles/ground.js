@@ -62,25 +62,158 @@ defineVehicle('drill', {
     }
     if (!v.drilling) fall(v, I);
     v.t += v.drilling ? 0.5 : Math.abs(v.vx) * 0.3;
-  },
-  draw(ctx, v, x, y) {
-    const f = v.face,
-      fx = f > 0 ? x + v.w : x - 1;
-    box(ctx, x, y + 2, v.w, v.h - 4, '#d9a52a');
-    box(ctx, x + (f > 0 ? 2 : v.w - 8), y - 1, 6, 4, '#8fd0e8');
-    // the drill bit: a cone with turning teeth
-    ctx.fillStyle = '#24160c';
-    for (let k = 0; k < 5; k++) ctx.fillRect(fx + f * k - (f < 0 ? 0 : 0), y + 1 + k * 0.6, 1, v.h - 3 - k * 1.2);
-    ctx.fillStyle = (v.t | 0) % 2 ? '#c8c8d0' : '#9a9aa6';
-    for (let k = 0; k < 4; k++) ctx.fillRect(fx + f * k, y + 2 + k * 0.6, 1, v.h - 5 - k * 1.2);
-    // wheels
-    for (const wx of [x + 3, x + v.w - 4]) wheel(ctx, wx + 0.5, y + v.h - 1.5, 1.6, (v.x || 0) / 1.6);
-    if (!v.icon && v.fuel < 20 && (G.frame >> 4) % 2) {
-      ctx.fillStyle = '#ff6a5a';
-      ctx.fillRect(x + v.w / 2 - 1, y - 4, 2, 2);
+    // the exhaust puffs: dark and often while boring, now and then while driving
+    if (v.drilling ? G.frame % 5 === 0 : Math.abs(v.vx) > 0.2 && G.frame % 14 === 0) {
+      const ex = v.face > 0 ? v.x + 2 : v.x + v.w - 2;
+      parts.push({ x: ex, y: v.y - 2, vx: -v.face * 0.15 + (rnd() - 0.5) * 0.2, vy: -0.45, l: v.drilling ? 34 : 22, c: v.drilling ? '#3e3a38' : '#8a8580' });
     }
   },
+  draw(ctx, v, x, y) {
+    drawDrill(ctx, v, x, y);
+  },
 });
+// The drill wagon: a yellow mining machine on caterpillar tracks, with a little cab, hazard
+// stripes at the back, an exhaust that puffs while it bores, a headlight, and in front a steel
+// drill cone whose spiral grooves run while it turns. All at double resolution.
+function drawDrill(ctx, v, x, y) {
+  const f = v.face || 1,
+    W2 = v.w;
+  const X = dx => (f > 0 ? x + dx : x + W2 - dx); // dx from the back
+  const L = (a, b) => Math.min(X(a), X(b)); // left edge of a span
+  const turn = v.t || 0;
+  ctx.save();
+  ctx.lineCap = 'round';
+  const rect = (a, b, y0, h, col) => {
+    ctx.fillStyle = col;
+    ctx.fillRect(L(a, b), y0, Math.abs(b - a), h);
+  };
+  // ---- tracks: a dark band, links running round, two road wheels ----
+  rect(0.5, 13.5, y + 5.6, 3.6, '#24160c');
+  rect(1, 13, y + 6, 2.8, '#3a3a42');
+  ctx.fillStyle = '#7a7a84';
+  const ph = (turn * 1.4) % 2;
+  for (let k = 0; k < 7; k++) {
+    const a = 1 + ((k * 2 + ph) % 12);
+    ctx.fillRect(X(a) - 0.25, y + 6, 0.5, 0.5); // top run
+    ctx.fillRect(X(13 - (a - 1)) - 0.25, y + 8.3, 0.5, 0.5); // bottom run, the other way
+  }
+  for (const a of [3, 7, 11]) {
+    ctx.fillStyle = '#24160c';
+    ctx.beginPath();
+    ctx.arc(X(a), y + 7.4, 1.25, 0, 7);
+    ctx.fill();
+    ctx.fillStyle = '#8b8b95';
+    ctx.beginPath();
+    ctx.arc(X(a), y + 7.4, 0.8, 0, 7);
+    ctx.fill();
+    ctx.fillStyle = '#24160c';
+    ctx.fillRect(X(a) - 0.25, y + 7.15, 0.5, 0.5);
+  }
+  // ---- hull: yellow with a dark edge, lit from above; hazard stripes at the back ----
+  rect(0, 14, y + 1.6, 4.6, '#24160c');
+  rect(0.5, 13.5, y + 2.1, 3.6, '#e0a92a');
+  rect(0.5, 13.5, y + 2.1, 0.6, '#f6cf5a');
+  rect(0.5, 13.5, y + 5.1, 0.6, '#a87818');
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(L(0.5, 3.2), y + 2.1, 2.7, 3.6);
+  ctx.clip();
+  ctx.strokeStyle = '#24160c';
+  ctx.lineWidth = 0.7;
+  for (let k = -1; k < 4; k++) {
+    ctx.beginPath();
+    ctx.moveTo(X(0.5 + k * 1.4), y + 5.7);
+    ctx.lineTo(X(0.5 + k * 1.4 + 2.2), y + 2.1);
+    ctx.stroke();
+  }
+  ctx.restore();
+  // rivets
+  ctx.fillStyle = '#a87818';
+  for (const a of [4.5, 7.5, 10.5]) ctx.fillRect(X(a) - 0.25, y + 3.6, 0.5, 0.5);
+  // ---- exhaust pipe at the back ----
+  rect(1.4, 2.6, y - 1.6, 3.4, '#24160c');
+  rect(1.7, 2.3, y - 1.3, 3, '#5a5a62');
+  rect(1.2, 2.8, y - 2, 0.7, '#24160c');
+  // ---- the cab: an open seat with a slanted windscreen and a roof lamp ----
+  rect(3.4, 9.2, y - 0.2, 2.1, '#24160c');
+  rect(3.8, 8.8, y + 0.2, 1.5, '#c08a1e');
+  ctx.strokeStyle = '#24160c';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(X(8.6), y + 1.6);
+  ctx.lineTo(X(9.8), y - 2.4);
+  ctx.stroke();
+  ctx.strokeStyle = '#8fd0e8';
+  ctx.lineWidth = 0.6;
+  ctx.stroke();
+  const low = !v.icon && v.fuel < 20;
+  ctx.fillStyle = low && (G.frame >> 4) % 2 ? '#ff4a3a' : '#7a3a2a';
+  ctx.fillRect(X(6.2) - 0.6, y - 1, 1.2, 0.9);
+  // ---- headlight on the front ----
+  const hx = X(12.6),
+    hy = y + 3;
+  if (!v.icon) {
+    const g = ctx.createRadialGradient(hx, hy, 0.5, hx + f * 6, hy + 1, 7);
+    g.addColorStop(0, 'rgba(255,242,168,0.45)');
+    g.addColorStop(1, 'rgba(255,242,168,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(hx, hy - 0.6);
+    ctx.lineTo(hx + f * 12, hy - 3);
+    ctx.lineTo(hx + f * 12, hy + 5);
+    ctx.lineTo(hx, hy + 0.6);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#24160c';
+  ctx.fillRect(hx - 0.8, hy - 0.8, 1.6, 1.6);
+  ctx.fillStyle = '#fff2a8';
+  ctx.fillRect(hx - 0.4, hy - 0.4, 0.8, 0.8);
+  // ---- drill: a collar, then the steel cone with running spiral grooves ----
+  rect(13.5, 15, y + 1.2, 5.4, '#24160c');
+  rect(13.8, 14.7, y + 1.6, 4.6, '#8b95a0');
+  const b0 = 15,
+    tip = 19.6,
+    cy = y + 3.9,
+    hh = 2.7;
+  const cone = (grow, col) => {
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.moveTo(X(b0), cy - hh - grow);
+    ctx.lineTo(X(tip + grow * 1.4), cy);
+    ctx.lineTo(X(b0), cy + hh + grow);
+    ctx.closePath();
+    ctx.fill();
+  };
+  cone(0.5, '#1e1a18');
+  cone(0, '#b8c0c8');
+  // grooves: slanted lines across the cone, moving towards the tip while it turns
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(X(b0), cy - hh);
+  ctx.lineTo(X(tip), cy);
+  ctx.lineTo(X(b0), cy + hh);
+  ctx.closePath();
+  ctx.clip();
+  ctx.strokeStyle = '#5d6670';
+  ctx.lineWidth = 0.55;
+  const gp = (turn * 2.2) % 1.5;
+  for (let k = -1; k < 4; k++) {
+    const a = b0 + k * 1.5 + gp;
+    ctx.beginPath();
+    ctx.moveTo(X(a), cy - hh);
+    ctx.lineTo(X(a + 1.4), cy + hh);
+    ctx.stroke();
+  }
+  ctx.restore();
+  // a bright edge along the top of the cone
+  ctx.strokeStyle = 'rgba(240,246,250,0.9)';
+  ctx.lineWidth = 0.4;
+  ctx.beginPath();
+  ctx.moveTo(X(b0 + 0.3), cy - hh + 0.5);
+  ctx.lineTo(X(tip - 0.6), cy - 0.2);
+  ctx.stroke();
+  ctx.restore();
+}
 function drillAhead(v, dir, slope) {
   const x0 = Math.floor(dir > 0 ? v.x + v.w : v.x - 4),
     y0 = Math.floor(v.y + slope * 4) - 1;
@@ -103,14 +236,16 @@ function drillAhead(v, dir, slope) {
 // ---- raft: floats on water ----
 defineVehicle('raft', {
   name: 'Floß',
-  info: 'Schwimmt auf Wasser – über Teiche und Höhlenseen',
+  info: 'Schwimmt nur auf Wasser – über Teiche und Höhlenseen, am Ufer bauen',
   cost: { wood: 4 },
   w: 18,
   h: 4,
   seat: [0, -10],
+  needsWater: true,
   upd(v, I) {
     unstuck(v);
     const wet = liquidAt(v.x + v.w / 2, v.y + v.h);
+    const water = x => liquidAt(x, v.y + v.h) || liquidAt(x, v.y + v.h + 1) || liquidAt(x, v.y + v.h + 2);
     if (wet) {
       // buoyancy: rise until the deck sits on the surface
       v.vy += liquidAt(v.x + v.w / 2, v.y + 1) ? -0.15 : 0.05;
@@ -119,15 +254,19 @@ defineVehicle('raft', {
         v.face = Math.sign(I.ax);
         v.vx += (v.face * 0.9 - v.vx) * 0.08;
       } else v.vx *= 0.97;
-      const [bx] = moveBody(v, v.vx, v.vy, 1);
+      // it only goes where there is water under its front edge: at the shore it stops
+      const front = v.vx > 0 ? v.x + v.w + v.vx : v.x + v.vx;
+      if (v.vx && !water(front)) v.vx = 0;
+      const [bx] = moveBody(v, v.vx, v.vy, 0);
       if (bx) v.vx = 0;
     } else {
-      // on land it can only be shoved along slowly (into the water)
-      if (I && Math.abs(I.ax) > 0.3) {
-        v.face = Math.sign(I.ax);
-        v.vx = v.face * 0.3;
+      // on land it does not move (it only sinks onto the ground or into water below)
+      if (I && Math.abs(I.ax) > 0.3 && !(G.frame - (v.tipT ?? -1e9) < 180)) {
+        v.tipT = G.frame;
+        toast('Das Floß fährt nur auf Wasser');
       }
-      fall(v, I);
+      v.vx = 0;
+      fall(v, null);
     }
     v.t += 0.05;
   },
@@ -415,4 +554,30 @@ defineVehicle('mount', {
   },
 });
 
-export { catapultAim, catapultPath, refuel };
+// the water surface next to a Wühler, where a raft can be put (or null): the column of
+// water closest to its feet within a few steps, and the top of that water
+function waterNear(c) {
+  const fx = Math.round(c.x + 3),
+    fy = Math.round(c.y + 10);
+  let best = null;
+  for (let dx = 0; dx <= 24 && !best; dx++)
+    for (const s of dx ? [c.face || 1, -(c.face || 1)] : [1]) {
+      const x = fx + dx * s;
+      for (let y = fy - 4; y <= fy + 16; y++)
+        if (liquidAt(x, y)) {
+          let top = y;
+          while (top > 0 && liquidAt(x, top - 1)) top--;
+          // how far the water reaches left and right just under its surface
+          let l = x,
+            r = x;
+          while (l > 0 && liquidAt(l - 1, top + 1)) l--;
+          while (r < W - 1 && liquidAt(r + 1, top + 1)) r++;
+          best = { x, top, l, r };
+          break;
+        }
+      if (best) break;
+    }
+  return best;
+}
+
+export { catapultAim, catapultPath, refuel, waterNear };
