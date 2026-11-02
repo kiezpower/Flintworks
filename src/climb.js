@@ -154,6 +154,24 @@ function fireHook(c, { ax = 0, ay = 0 } = {}) {
   sfx('throw', c.x, c.y);
 }
 register('hook', fireHook);
+// where a hook thrown in this direction would fly: points along the rope and whether it
+// catches (for the dotted line while the "Haken" button is dragged, render.js)
+function hookPath(c, { ax, ay }) {
+  const m = Math.hypot(ax, ay) || 1,
+    dx = ax / m,
+    dy = ay / m,
+    f = Math.abs(dx) > 0.2 ? Math.sign(dx) : c.face;
+  let x = c.x + 3 + f * 2,
+    y = c.y + 4;
+  const pts = [];
+  for (let d = 1; d <= HOOK_REACH; d++) {
+    x += dx;
+    y += dy;
+    if (solidAt(Math.floor(x), Math.floor(y))) return { pts, end: [x - dx, y - dy], hit: true };
+    if (d % 5 === 0) pts.push([x, y]);
+  }
+  return { pts, end: [x, y], hit: false };
+}
 // at a ledge found by itself: the hook flies there (lfly), then pulls the Wühler up under it and
 // over the edge (the safe way up out of a pit)
 function startHook(c, L) {
@@ -323,4 +341,4 @@ function rampHere(c, dir) {
   return !!L && L.dir === dir && L.wall && digWall(c, L) ? L : null;
 }
 
-export { buildStairs, climbContext, climbOut, drawHook, fireHook, goHome, hookTarget, rampHere, setDigTest, updHook };
+export { buildStairs, climbContext, climbOut, drawHook, fireHook, goHome, hookPath, hookTarget, rampHere, setDigTest, updHook };

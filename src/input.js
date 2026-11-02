@@ -6,6 +6,7 @@ import { audioInit } from './sound.js';
 import { G, crew } from './state.js';
 import { closePanel, openBag, openBuild, panelEl, toast, toggleMap, weaponsOf } from './ui.js';
 import { send } from './commands.js';
+import { hasGear } from './tools.js';
 
 // ---- Input ----
 const inp = { ax: 0, ay: 0, dig: false, jumpP: false, jumpUp: false, throwP: false, actP: false };
@@ -153,13 +154,24 @@ const joyEnd = e => {
 };
 game.addEventListener('pointerup', joyEnd);
 game.addEventListener('pointercancel', joyEnd);
-// the bow chosen: the "Schießen" button is its own aiming stick (as in mobile shooters). A tap
-// shoots the way you walk, dragging aims (dotted path, render.js), letting go shoots. The
-// walking stick stays free, so you can run and shoot at the same time.
+// Aiming buttons (as in mobile shooters): with the bow chosen the "Schießen" button, and the
+// "Haken" button for the grappling hook, are their own aiming sticks. A tap uses the default
+// (the arrow flies the way you walk, the hook goes to the next ledge or up and forward),
+// dragging aims (a dotted line, render.js), letting go shoots or throws. The walking stick
+// stays free, so you can run and aim at the same time.
 const AIM_R = 34; // px of drag for a full aim
-const bowReady = () => {
-  const c = sel_();
-  return !!c && !c.dead && c.wield === 'bow' && c.ride == null;
+const ready = c => !!c && !c.dead && c.ride == null;
+const AIMERS = {
+  throw: {
+    kind: 'bow',
+    ready: c => ready(c) && c.wield === 'bow',
+    fire: a => send('shoot', a ? { dx: a.ax, dy: a.ay } : {}),
+  },
+  hook: {
+    kind: 'hook',
+    ready: c => ready(c) && hasGear(c, 'hook') && !c.hook,
+    fire: a => send('hook', a || {}),
+  },
 };
 let aimFrom = null,
   aimDot = null;
@@ -181,27 +193,30 @@ function aimMove(b, e) {
 }
 function aimEnd(b, fire) {
   if (!aimFrom) return;
-  const a = G.aimDrag;
+  const a = G.aimDrag,
+    A = AIMERS[b.dataset.b];
   aimFrom = null;
-  G.aimDrag = null;
+  G.aimDrag = G.aimKind = null;
   aimDot?.remove();
   aimDot = null;
   b.classList.remove('aiming', 'on');
-  if (fire) send('shoot', a ? { dx: a.ax, dy: a.ay } : {});
+  if (fire) A.fire(a);
 }
 for (const b of document.querySelectorAll('.pad')) {
   const name = b.dataset.b;
   let t0 = 0;
-  if (name === 'throw') {
+  const A = AIMERS[name];
+  if (A) {
     b.addEventListener('pointermove', e => aimMove(b, e));
     b.addEventListener('pointerup', () => aimEnd(b, true));
     b.addEventListener('pointercancel', () => aimEnd(b, false));
   }
   b.addEventListener('pointerdown', e => {
     t0 = performance.now();
-    if (name === 'throw' && bowReady()) {
+    if (A && A.ready(sel_())) {
       aimFrom = { x: e.clientX, y: e.clientY };
       G.aimDrag = null;
+      G.aimKind = A.kind;
       b.classList.add('on');
       buzz(8);
       try {

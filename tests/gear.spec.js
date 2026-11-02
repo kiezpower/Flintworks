@@ -416,3 +416,60 @@ test('mine train runs on its rails; cable car shuttles; airship flies and drops'
   });
   expect(errors).toEqual([]);
 });
+
+// On a phone the "Schießen" (bow chosen) and "Haken" buttons are aiming sticks: a tap uses the
+// default, dragging aims, letting go shoots or throws; the walking stick stays free
+test.describe('aiming buttons on a touch screen', () => {
+  test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
+
+  test('drag "Haken" and "Schießen" to aim, let go to throw and shoot', async ({ page }) => {
+    const errors = await setup(page);
+    await page.evaluate(() => {
+      const w = window.__ww;
+      w.G.tools = { ...w.G.tools, hook: true };
+      w.send('tool', { id: 'bow' });
+      w.hud();
+    });
+    const drag = async (sel, dx, dy) => {
+      const b = await page.locator(sel).boundingBox();
+      const x = b.x + b.width / 2,
+        y = b.y + b.height / 2;
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      if (dx || dy) await page.mouse.move(x + dx, y + dy, { steps: 5 });
+      const during = await page.evaluate(() => ({ kind: window.__ww.G.aimKind, drag: !!window.__ww.G.aimDrag }));
+      await page.waitForTimeout(100); // (a few frames draw the dotted line)
+      await page.mouse.up();
+      return during;
+    };
+    // the hook, dragged straight up
+    const h = await drag('.pad.hook', 0, -40);
+    const hook = await page.evaluate(() => {
+      const k = window.__ww.crew[0].hook;
+      return k && { dx: k.dx, dy: k.dy };
+    });
+    // the bow: dragged up and right, then a plain tap the way you walk
+    await page.evaluate(() => {
+      const c = window.__ww.crew[0];
+      c.hook = null;
+      c.face = 1;
+    });
+    const b = await drag('.pad.throw', 30, -30);
+    const up = await page.evaluate(() => {
+      const l = window.__ww.arrows();
+      return l.length && { vx: l[l.length - 1].vx, vy: l[l.length - 1].vy };
+    });
+    await page.evaluate(() => window.__ww.step(200));
+    await drag('.pad.throw', 0, 0);
+    const tap = await page.evaluate(() => {
+      const l = window.__ww.arrows();
+      return l.length && { vx: l[l.length - 1].vx, vy: l[l.length - 1].vy };
+    });
+    expect(h).toEqual({ kind: 'hook', drag: true });
+    expect(hook && Math.abs(hook.dx) < 0.2 && hook.dy < -0.9).toBe(true);
+    expect(b).toEqual({ kind: 'bow', drag: true });
+    expect(up && up.vx > 2 && up.vy < -2).toBe(true);
+    expect(tap && tap.vx > 3 && Math.abs(tap.vy) < 1).toBe(true);
+    expect(errors).toEqual([]);
+  });
+});

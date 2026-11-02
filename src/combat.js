@@ -130,6 +130,7 @@ function shoot(c, I) {
     vy = -Math.sin(ang) * sp;
   }
   fireArrow({ x: ox, y: oy, vx, vy, l: 150, dmg: fire ? 40 : 28, fire, tm: teamOf(c), by: c.pid });
+  c.shotT = G.frame; // (the string snaps forward, drawBow)
   sfx('bow', c.x, c.y);
 }
 // where an aimed arrow would fly: points of its path (for the dotted line while aiming)
@@ -241,6 +242,61 @@ function updCombat() {
 }
 
 // ---- looks: helmet, shield on the back, sword at the hip or swinging ----
+// The longbow in the hand: a curved wooden bow with a string. Held upright in front while you
+// walk; while you aim (dragging "Schießen") it turns to the aim, the string is drawn back and
+// an arrow lies on it; after a shot the string snaps forward and quivers for a moment.
+function drawBow(ctx, c, x, y) {
+  const aiming = c.pid === G.myId && G.aimKind === 'bow' && G.aimDrag;
+  let dx = c.face,
+    dy = 0;
+  if (aiming) {
+    dx = G.aimDrag.ax;
+    dy = G.aimDrag.ay;
+  }
+  const pull = aiming ? 1 : 0,
+    since = G.frame - (c.shotT ?? -99),
+    snap = since >= 0 && since < 10 ? Math.sin(since * 2.4) * (1 - since / 10) * 0.9 : 0;
+  // (aiming: held out at arm's length, so the face stays free; walking: close in front)
+  const reach = pull ? 5.5 : 3,
+    nx = -dy,
+    ny = dx,
+    gx = x + 3 + dx * reach,
+    gy = y + (pull ? 4.5 : 5) + dy * reach;
+  const back = 0.9 + pull * 0.9,
+    t1 = [gx + nx * 4.6 - dx * back, gy + ny * 4.6 - dy * back],
+    t2 = [gx - nx * 4.6 - dx * back, gy - ny * 4.6 - dy * back],
+    cp = [gx + dx * (2.2 + pull * 0.9), gy + dy * (2.2 + pull * 0.9)];
+  // the string: drawn back to the nock while aiming, quivering after a shot
+  const mid = [(t1[0] + t2[0]) / 2, (t1[1] + t2[1]) / 2],
+    draw = pull * 2.8,
+    nk = [mid[0] - dx * draw + dx * snap, mid[1] - dy * draw + dy * snap];
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = 'rgba(240,232,214,0.95)';
+  ctx.lineWidth = 0.4;
+  ctx.beginPath();
+  ctx.moveTo(t1[0], t1[1]);
+  ctx.lineTo(nk[0], nk[1]);
+  ctx.lineTo(t2[0], t2[1]);
+  ctx.stroke();
+  // the bow: dark edge, wood, a lighter belly line, a leather grip
+  const limb = (w, col) => {
+    ctx.strokeStyle = col;
+    ctx.lineWidth = w;
+    ctx.beginPath();
+    ctx.moveTo(t1[0], t1[1]);
+    ctx.quadraticCurveTo(cp[0], cp[1], t2[0], t2[1]);
+    ctx.stroke();
+  };
+  limb(1.7, '#24160c');
+  limb(0.95, '#9a6232');
+  limb(0.35, '#d19a5c');
+  ctx.fillStyle = '#4a2c16';
+  ctx.fillRect(gx + dx * 0.5 - 0.7, gy + dy * 0.5 - 0.7, 1.4, 1.4);
+  ctx.restore();
+  // an arrow on the string while aiming
+  if (pull) drawArrow(ctx, { vx: dx, vy: dy, nocked: true, fire: arrowsOf('arrow') <= 0 }, nk[0] + dx * 8.6, nk[1] + dy * 8.6);
+}
 function drawGear(ctx, c, x, y) {
   if (c.dead || c.tumble) return;
   const f = c.face;
@@ -261,16 +317,7 @@ function drawGear(ctx, c, x, y) {
     ctx.fillStyle = '#d4dbe2';
     ctx.fillRect(x + 1.5, y - 0.5, 2, 0.5);
   }
-  if (c.wield === 'bow' && teamHas(c.team, 'bow') && !c.climb && !c.hangle) {
-    // the longbow held up in front
-    const bx = f > 0 ? x + 6 : x - 1.5;
-    ctx.fillStyle = '#24160c';
-    ctx.fillRect(bx - 0.5, y + 0.5, 2, 9);
-    ctx.fillStyle = '#b07a45';
-    ctx.fillRect(bx, y + 1, 1, 8);
-    ctx.fillStyle = '#e8e0d0';
-    ctx.fillRect(f > 0 ? bx - 0.5 : bx + 1, y + 1.5, 0.5, 7);
-  }
+  if (c.wield === 'bow' && teamHas(c.team, 'bow') && !c.climb && !c.hangle) drawBow(ctx, c, x, y);
   if (!teamHas(c.team, 'sword')) return;
   if (c.swing > 0) {
     // a blade sweeping from above the head down in front
@@ -297,14 +344,17 @@ function drawGear(ctx, c, x, y) {
     ctx.fillRect(f > 0 ? x + 0.5 : x + 5, y + 6, 0.5, 3.5);
   }
 }
-// An arrow as games draw them so the eye can follow it: longer than life, a dark outline
-// against any background, a bright shaft, a steel tip, red fletching, and a fading streak behind
-// it while it flies (fire arrows glow). x, y: the tip on screen.
+// An arrow drawn like a real one, at double resolution: a thin wooden shaft with a dark edge
+// (so it reads against sky and earth alike), a steel broadhead, two swept-back feathers (red
+// and white) and a nock. In flight a faint motion streak follows it; fire arrows glow.
+// x, y: the tip on screen.
 function drawArrow(ctx, a, x, y, alpha = 1) {
   const d = Math.hypot(a.vx, a.vy) || 1,
     ux = a.vx / d,
-    uy = a.vy / d;
-  const L = 6,
+    uy = a.vy / d,
+    px = -uy,
+    py = ux;
+  const L = 7.5,
     tx = x - ux * L,
     ty = y - uy * L;
   ctx.save();
@@ -318,32 +368,45 @@ function drawArrow(ctx, a, x, y, alpha = 1) {
     ctx.lineTo(x1, y1);
     ctx.stroke();
   };
-  if (!a.stuck) {
-    // the streak: where it was a moment ago
-    const g = ctx.createLinearGradient(tx, ty, tx - ux * 10, ty - uy * 10);
-    g.addColorStop(0, a.fire ? 'rgba(255,170,60,0.7)' : 'rgba(255,248,220,0.55)');
-    g.addColorStop(1, 'rgba(255,248,220,0)');
-    line(tx, ty, tx - ux * 10, ty - uy * 10, 1.5, g);
-    if (a.fire) {
-      ctx.fillStyle = 'rgba(255,150,40,0.35)';
-      ctx.beginPath();
-      ctx.arc(x, y, 3, 0, 7);
-      ctx.fill();
-    }
+  const poly = (col, ...p) => {
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.moveTo(p[0][0], p[0][1]);
+    for (let k = 1; k < p.length; k++) ctx.lineTo(p[k][0], p[k][1]);
+    ctx.closePath();
+    ctx.fill();
+  };
+  const at = (along, side) => [x + ux * along + px * side, y + uy * along + py * side];
+  if (!a.stuck && !a.nocked) {
+    // motion streak behind the feathers
+    const g = ctx.createLinearGradient(tx, ty, tx - ux * 9, ty - uy * 9);
+    g.addColorStop(0, a.fire ? 'rgba(255,170,60,0.6)' : 'rgba(255,250,235,0.35)');
+    g.addColorStop(1, 'rgba(255,250,235,0)');
+    line(tx, ty, tx - ux * 9, ty - uy * 9, 0.8, g);
   }
-  line(tx, ty, x + ux, y + uy, 2.2, '#1a120c'); // outline
-  line(tx, ty, x, y, 1, a.fire ? '#ffb347' : '#f2e2c0'); // shaft
-  // steel (or burning) tip
-  ctx.fillStyle = a.fire ? '#ffe36a' : '#dfe6ee';
-  ctx.beginPath();
-  ctx.moveTo(x + ux * 1.6, y + uy * 1.6);
-  ctx.lineTo(x - ux + uy * 1.1, y - uy - ux * 1.1);
-  ctx.lineTo(x - ux - uy * 1.1, y - uy + ux * 1.1);
-  ctx.fill();
-  // fletching at the tail
-  ctx.fillStyle = a.fire ? '#ff6a2a' : '#d8433a';
-  ctx.fillRect(tx - 0.5 + uy * 0.8, ty - 0.5 - ux * 0.8, 1, 1);
-  ctx.fillRect(tx - 0.5 - uy * 0.8, ty - 0.5 + ux * 0.8, 1, 1);
+  if (a.fire) {
+    ctx.fillStyle = 'rgba(255,150,40,0.35)';
+    ctx.beginPath();
+    ctx.arc(x, y, 2.6, 0, 7);
+    ctx.fill();
+  }
+  // shaft
+  line(tx, ty, x - ux, y - uy, 1.3, 'rgba(30,18,10,0.85)');
+  line(tx, ty, x - ux, y - uy, 0.55, a.fire ? '#e6a65a' : '#c99a5e');
+  // feathers, swept back from the tail
+  for (const sd of [1, -1]) {
+    const b = -L;
+    poly('rgba(30,18,10,0.8)', at(b + 2.9, 0), at(b + 0.9, sd * 1.45), at(b - 0.5, sd * 1.45), at(b + 0.2, 0));
+    poly(sd > 0 ? '#d8433a' : '#f1ece0', at(b + 2.4, 0), at(b + 0.9, sd * 1.05), at(b - 0.1, sd * 1.05), at(b + 0.4, 0));
+  }
+  // broadhead: dark edge, then steel (fire arrows: burning)
+  poly('#1e1a18', at(1.9, 0), at(-1.5, 1.35), at(-0.9, 0), at(-1.5, -1.35));
+  poly(a.fire ? '#ffd34a' : '#c3ccd5', at(1.3, 0), at(-1.1, 0.85), at(-0.7, 0), at(-1.1, -0.85));
+  ctx.fillStyle = a.fire ? '#fff2b0' : '#eef3f7';
+  ctx.fillRect(x + px * 0.2 - 0.25, y + py * 0.2 - 0.25, 0.5, 0.5);
+  // nock
+  ctx.fillStyle = '#24160c';
+  ctx.fillRect(tx - 0.4, ty - 0.4, 0.8, 0.8);
   ctx.restore();
 }
 // arrows that hit a wall stay stuck in it for a few seconds (only for the looks)

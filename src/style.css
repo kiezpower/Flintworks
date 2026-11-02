@@ -598,11 +598,13 @@ button:focus-visible {
   grid-row: 3;
   color: #ffb08f;
 }
-/* the bow chosen: drag the button to aim (input.js); the dot shows the thumb, a ring the reach */
-.pad.throw {
+/* aiming buttons (bow and hook): drag the button to aim (input.js); the dot shows the thumb,
+   a ring the reach */
+.pad.throw,
+.pad.hook {
   position: relative;
 }
-.pad.throw .aimdot {
+.pad .aimdot {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -615,7 +617,7 @@ button:focus-visible {
   box-shadow: 0 0 6px rgba(242, 194, 48, 0.8);
   pointer-events: none;
 }
-.pad.throw.aiming {
+.pad.aiming {
   transform: none;
   box-shadow: 0 0 0 26px rgba(242, 194, 48, 0.14), 0 0 0 28px rgba(242, 194, 48, 0.45);
 }
