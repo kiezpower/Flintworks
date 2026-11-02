@@ -35,6 +35,7 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 | Durch Holztreppe oder -brücke nach unten | Stick nach unten | ↓ / S |
 | Aktion (Fällen, Basis, Werk, Brücke, Treppe, Heim …) | Aktions-Knopf | F |
 | Enterhaken werfen (nach dem Kauf) | „Haken“ tippen: zur nächsten Kante · Knopf ziehen: zielen (gestrichelte Seil-Linie), loslassen wirft | Pfeiltaste zielt, G |
+| Katapult (eingestiegen) | Stick fährt · „Schleudern“ tippen: wirft im eingestellten Winkel · Knopf ziehen: Richtung und Winkel (gepunktete Flugbahn), loslassen wirft | Pfeile fahren, ↑/↓ Winkel, E wirft |
 | Bauen | „Bauen“ oben rechts | B |
 | Wühler wechseln | Porträt oben links oder Wühler antippen | Tab |
 | Karte | Kleine Karte oben rechts | M |

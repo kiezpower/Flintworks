@@ -47,7 +47,8 @@ import { sel_ } from './entities.js';
 import { isPlayer } from './players.js';
 import { drawEmotes } from './net/emotes.js';
 import { TEAM_COLS } from './teams.js';
-import { box, drawVehicles, wheel } from './vehicles/core.js';
+import { box, drawVehicles, vehicleOf, wheel } from './vehicles/core.js';
+import { catapultAim, catapultPath } from './vehicles/ground.js';
 import { drawRails } from './vehicles/rails.js';
 import { topSolid } from './gen.js';
 import { game, joyHome } from './input.js';
@@ -630,6 +631,21 @@ function render() {
       } else drawClonkHi(c, x, y, c.face, ctx);
     }
     drawGear(ctx, c, x, y);
+    // aiming the catapult by dragging "Schleudern": the stone's flight path
+    if (c === mine && G.aimKind === 'catapult' && G.aimDrag) {
+      const v = vehicleOf(c);
+      if (v && v.kind === 'catapult') {
+        const { face, ang } = catapultAim(v, G.aimDrag);
+        for (const [px, py] of catapultPath(v, face, ang)) {
+          const qx = Math.round(px - cx),
+            qy = Math.round(py - cy);
+          ctx.fillStyle = 'rgba(26,18,12,0.7)';
+          ctx.fillRect(qx - 1, qy - 1, 3, 3);
+          ctx.fillStyle = '#ffd08a';
+          ctx.fillRect(qx, qy, 1, 1);
+        }
+      }
+    }
     // aiming the hook by dragging the "Haken" button: a dotted rope, and the claw where it catches
     if (c === mine && G.aimKind === 'hook' && G.aimDrag && c.ride == null) {
       const hp = hookPath(c, G.aimDrag);

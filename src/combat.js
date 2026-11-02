@@ -319,30 +319,98 @@ function drawGear(ctx, c, x, y) {
   }
   if (c.wield === 'bow' && teamHas(c.team, 'bow') && !c.climb && !c.hangle) drawBow(ctx, c, x, y);
   if (!teamHas(c.team, 'sword')) return;
+  if (c.climb || c.hangle) return;
+  // (the sword hand: in front of the chest, below the face)
+  const hx = x + 3 + f * 3,
+    hy = y + 6.5;
   if (c.swing > 0) {
-    // a blade sweeping from above the head down in front
+    // the swing (12 frames): a short wind-up behind the head, a fast slash down in front with a
+    // bright smear along its path, then a follow-through. Angles: 0 is straight ahead, + is down.
     const t = 1 - c.swing / 12,
-      a = -1.3 + t * 2.2,
-      hx = x + 3 + f * 2,
-      hy = y + 5;
-    ctx.strokeStyle = '#24160c';
-    ctx.lineWidth = 1.6;
-    ctx.beginPath();
-    ctx.moveTo(hx, hy);
-    ctx.lineTo(hx + Math.cos(a) * 8 * f, hy + Math.sin(a) * 8);
-    ctx.stroke();
-    ctx.strokeStyle = '#e4e8ec';
-    ctx.lineWidth = 0.8;
-    ctx.stroke();
-    ctx.lineWidth = 1;
-    if (c.swing > 6) {
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
-      ctx.fillRect(hx + f * 4 - 2, hy - 4, 4, 8);
+      ease = u => 1 - (1 - u) * (1 - u) * (1 - u);
+    let a;
+    if (t < 0.2) a = -2.0 - (t / 0.2) * 0.35;
+    else if (t < 0.62) a = -2.35 + ease((t - 0.2) / 0.42) * 3.25;
+    else a = 0.9 - ((t - 0.62) / 0.38) * 0.35;
+    if (t >= 0.2) {
+      const a0 = -2.35,
+        a1 = Math.min(a, 0.9),
+        fade = t < 0.62 ? 0.75 : 0.75 * (1 - (t - 0.62) / 0.38);
+      smear(ctx, hx, hy, f, a0 + (a1 - a0) * 0.25, a1, fade);
     }
-  } else if (!c.climb && !c.hangle && !c.digging) {
-    ctx.fillStyle = '#aab0b6';
-    ctx.fillRect(f > 0 ? x + 0.5 : x + 5, y + 6, 0.5, 3.5);
+    drawSword(ctx, hx, hy, a, f);
+  } else if (c.wield === 'sword' && !c.digging) {
+    // chosen in the hotbar: held ready in the hand, blade up and forward
+    drawSword(ctx, hx, hy, -0.8 + Math.sin(G.frame * 0.08) * 0.05, f);
+  } else if (!c.digging) {
+    // sheathed at the hip
+    const sx = f > 0 ? x + 0.5 : x + 5.5;
+    ctx.fillStyle = '#24160c';
+    ctx.fillRect(sx - 0.75, y + 5.5, 1.5, 4.5);
+    ctx.fillStyle = '#6e4420';
+    ctx.fillRect(sx - 0.25, y + 6, 0.5, 3.5);
+    ctx.fillStyle = '#c9a43a';
+    ctx.fillRect(sx - 1, y + 5.5, 2, 0.5);
   }
+}
+// a sword at the hand hx, hy pointing at angle a (0 ahead, + down), mirrored by f: leather
+// grip and pommel, a golden crossguard, a steel blade with a dark edge and a bright ridge
+function drawSword(ctx, hx, hy, a, f) {
+  const ux = Math.cos(a) * f,
+    uy = Math.sin(a),
+    px = -uy,
+    py = ux;
+  const P = (along, side = 0) => [hx + ux * along + px * side, hy + uy * along + py * side];
+  const line = (p0, p1, w, col) => {
+    ctx.strokeStyle = col;
+    ctx.lineWidth = w;
+    ctx.beginPath();
+    ctx.moveTo(p0[0], p0[1]);
+    ctx.lineTo(p1[0], p1[1]);
+    ctx.stroke();
+  };
+  ctx.save();
+  ctx.lineCap = 'round';
+  // blade: dark edge, steel, ridge, a pointed tip
+  line(P(1.2), P(8.2), 1.9, '#1e1a18');
+  line(P(1.2), P(8.0), 1.1, '#cfd6dd');
+  line(P(1.4), P(7.6), 0.35, '#ffffff');
+  ctx.fillStyle = '#cfd6dd';
+  ctx.beginPath();
+  const t0 = P(9.4),
+    t1 = P(8.0, 0.55),
+    t2 = P(8.0, -0.55);
+  ctx.moveTo(t0[0], t0[1]);
+  ctx.lineTo(t1[0], t1[1]);
+  ctx.lineTo(t2[0], t2[1]);
+  ctx.fill();
+  // crossguard, grip, pommel
+  line(P(1.0, 1.6), P(1.0, -1.6), 1.3, '#24160c');
+  line(P(1.0, 1.3), P(1.0, -1.3), 0.6, '#e2b84a');
+  line(P(-1.6), P(0.6), 1.2, '#24160c');
+  line(P(-1.4), P(0.5), 0.55, '#7a4a24');
+  const pm = P(-1.9);
+  ctx.fillStyle = '#e2b84a';
+  ctx.fillRect(pm[0] - 0.5, pm[1] - 0.5, 1, 1);
+  ctx.restore();
+}
+// the bright crescent a fast blade leaves behind, from angle a0 to a1 around the hand
+function smear(ctx, hx, hy, f, a0, a1, alpha) {
+  if (a1 <= a0 || alpha <= 0) return;
+  ctx.save();
+  const s0 = f > 0 ? a0 : Math.PI - a0,
+    s1 = f > 0 ? a1 : Math.PI - a1;
+  ctx.beginPath();
+  ctx.arc(hx, hy, 9.6, s0, s1, f < 0);
+  ctx.arc(hx, hy, 4.5, s1, s0, f > 0);
+  ctx.closePath();
+  const g = ctx.createRadialGradient(hx, hy, 4.5, hx, hy, 9.6);
+  g.addColorStop(0, 'rgba(200,225,255,0)');
+  g.addColorStop(0.75, `rgba(220,238,255,${0.5 * alpha})`);
+  g.addColorStop(1, `rgba(255,255,255,${0.9 * alpha})`);
+  ctx.fillStyle = g;
+  ctx.fill();
+  ctx.restore();
 }
 // An arrow drawn like a real one, at double resolution: a thin wooden shaft with a dark edge
 // (so it reads against sky and earth alike), a steel broadhead, two swept-back feathers (red

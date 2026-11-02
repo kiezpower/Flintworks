@@ -7,6 +7,7 @@ import { G, crew } from './state.js';
 import { closePanel, openBag, openBuild, panelEl, toast, toggleMap, weaponsOf } from './ui.js';
 import { send } from './commands.js';
 import { hasGear } from './tools.js';
+import { vehicleOf } from './vehicles/core.js';
 
 // ---- Input ----
 const inp = { ax: 0, ay: 0, dig: false, jumpP: false, jumpUp: false, throwP: false, actP: false };
@@ -162,10 +163,13 @@ game.addEventListener('pointercancel', joyEnd);
 const AIM_R = 34; // px of drag for a full aim
 const ready = c => !!c && !c.dead && c.ride == null;
 const AIMERS = {
+  // (the same button aims the catapult while you sit in one)
   throw: {
-    kind: 'bow',
-    ready: c => ready(c) && c.wield === 'bow',
-    fire: a => send('shoot', a ? { dx: a.ax, dy: a.ay } : {}),
+    kind: c => (vehicleOf(c)?.kind === 'catapult' ? 'catapult' : 'bow'),
+    ready: c =>
+      (!!c && !c.dead && vehicleOf(c)?.kind === 'catapult') || (ready(c) && c.wield === 'bow'),
+    fire: (a, kind) =>
+      send(kind === 'catapult' ? 'catapult' : 'shoot', a ? { dx: a.ax, dy: a.ay } : {}),
   },
   hook: {
     kind: 'hook',
@@ -194,13 +198,14 @@ function aimMove(b, e) {
 function aimEnd(b, fire) {
   if (!aimFrom) return;
   const a = G.aimDrag,
-    A = AIMERS[b.dataset.b];
+    A = AIMERS[b.dataset.b],
+    kind = G.aimKind;
   aimFrom = null;
   G.aimDrag = G.aimKind = null;
   aimDot?.remove();
   aimDot = null;
   b.classList.remove('aiming', 'on');
-  if (fire) A.fire(a);
+  if (fire) A.fire(a, kind);
 }
 for (const b of document.querySelectorAll('.pad')) {
   const name = b.dataset.b;
@@ -216,7 +221,7 @@ for (const b of document.querySelectorAll('.pad')) {
     if (A && A.ready(sel_())) {
       aimFrom = { x: e.clientX, y: e.clientY };
       G.aimDrag = null;
-      G.aimKind = A.kind;
+      G.aimKind = typeof A.kind === 'function' ? A.kind(sel_()) : A.kind;
       b.classList.add('on');
       buzz(8);
       try {

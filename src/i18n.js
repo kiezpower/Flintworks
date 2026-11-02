@@ -253,8 +253,9 @@ const EN = {
     'Flies freely with the stick, Throw drops things – from castle level 2, needs coal',
   'Fährt auf deinen Schienen hin und her und bringt die Ladung der Helfer zur Burg':
     'Runs back and forth on your rails and takes the helpers’ load to the castle',
-  'Schleudert Steine, Feuersteine und Sprengladungen weit – Stick hoch/runter zielt, Wurf schießt':
-    'Hurls rocks, flints and explosives far – stick up/down aims, Throw fires',
+  'Schleudert Steine, Feuersteine und Sprengladungen weit – „Schleudern“ tippen wirft, Knopf ziehen zielt':
+    'Hurls stones, flints and explosives far – tap “Hurl” to throw, drag the button to aim',
+  Schleudern: 'Hurl',
   'Schnelles Reittier für die Oberfläche, springt hoch': 'Fast mount for the surface, jumps high',
   'Schwimmt auf Wasser – über Teiche und Höhlenseen': 'Floats on water – across ponds and cave lakes',
   'Zwei Masten (bis 400 Pixel auseinander) bilden eine Seilbahn – die Gondel fährt von allein':
