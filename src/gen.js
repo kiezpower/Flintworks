@@ -161,6 +161,9 @@ function gen() {
   G.rails = [];
   G.meteorNext = 15000 + rnd() * 8000;
   G.goldDust = G.earthDug = G.loamDug = G.oreDug = G.coalDug = 0;
+  // how many dug coal pixels give one lump (spawnFromDig, clonk.js): more coal outside the
+  // campaign, whose levels are tuned to the old amount
+  G.coalStep = GAME_MODES[G.mode]?.campaign ? 45 : 30;
   clearFresh();
   G.hintsSeen = new Set();
   for (let i = 0; i < W * H; i++) shade[i] = (rnd() * 4) | 0;
@@ -238,7 +241,7 @@ function gen() {
       blob(x, deep(x, 40), ri(4, 9), ri(3, 6), ORE);
     }
   } else {
-    for (let k = 0, n = perArea(22); k < n; k++) {
+    for (let k = 0, n = perArea(28); k < n; k++) {
       const x = spread(k, n, 150);
       blob(x, deep(x, 18), ri(6, 13), ri(3, 7), COAL);
     }
@@ -248,9 +251,9 @@ function gen() {
       const y = k % 2 ? deep(x, 22) : surf[x] + 22 + rnd() * Math.min(48, Math.max(4, H - 52 - surf[x]));
       blob(x, y, ri(5, 10), ri(3, 6), ORE);
     }
-    const cx = ri(30, 60),
+    const cx = ri(28, 52),
       ox = ri(125, 165);
-    blob(cx, surf[cx] + ri(14, 20), ri(5, 7), ri(3, 4), COAL);
+    blob(cx, surf[cx] + ri(14, 20), ri(7, 9), ri(4, 5), COAL);
     blob(ox, surf[ox] + ri(18, 26), ri(5, 7), ri(3, 4), ORE);
   }
   for (let k = 0, n = perArea(26); k < n; k++) {

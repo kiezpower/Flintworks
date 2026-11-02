@@ -45,8 +45,8 @@ test('worlds of 1400 × 400 come out exactly as before', async ({ page }) => {
   // (gold) again from v1.68.0, when they got more coal and ore closer to the surface (the
   // campaign worlds c3, c4 stay as they were)
   const want = [
-    [['gold', 7, 'meadow', false], 981730681],
-    [['gold', 99, 'desert', true], 3742618002],
+    [['gold', 7, 'meadow', false], 1290287662],
+    [['gold', 99, 'desert', true], 3798347540],
     [['c3', 3303, 'winter', false], 3226257325],
     [['c4', 4404, 'meadow', false], 4017410677],
   ];
@@ -91,7 +91,7 @@ test('coal and ore lie within reach, and next to the castle', async ({ page }) =
               if (x >= 120 && x <= 175) oreNear++;
             } else if (m === COAL) {
               coal++;
-              if (x >= 25 && x <= 65) coalNear++;
+              if (x >= 15 && x <= 65) coalNear++;
             }
           }
         return { ore, coal, oreNear, coalNear };
@@ -100,9 +100,9 @@ test('coal and ore lie within reach, and next to the castle', async ({ page }) =
     );
     // (before v1.68.0 some worlds had no ore at all in the top 60 px, and none by the castle)
     expect(r.ore, `${seed} ${biome}`).toBeGreaterThan(400);
-    expect(r.coal, `${seed} ${biome}`).toBeGreaterThan(500);
+    expect(r.coal, `${seed} ${biome}`).toBeGreaterThan(650);
     expect(r.oreNear, `${seed} ${biome}`).toBeGreaterThan(20);
-    expect(r.coalNear, `${seed} ${biome}`).toBeGreaterThan(20);
+    expect(r.coalNear, `${seed} ${biome}`).toBeGreaterThan(60);
   }
   expect(errors).toEqual([]);
 });
