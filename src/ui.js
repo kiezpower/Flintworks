@@ -8,7 +8,7 @@ const goalWrap = document.getElementById('goalWrap'),
   goalBar = document.getElementById('goalBar');
 import { BASELV, BT, BUY, UPG, costTxt, countRes, hasRes, lvl, mkLorry, resName, terrOn, tryBuild } from './buildings.js';
 import { context } from './digger.js';
-import { addDigger, sel_, spawnItem } from './entities.js';
+import { addDigger, isFoe, sel_, spawnItem } from './entities.js';
 import { held, joy, keys } from './input.js';
 import { calcTerr, cam } from './render.js';
 import { sfx } from './sound.js';
@@ -358,7 +358,7 @@ function drawMini(full) {
     mctx.fillRect(Math.floor(b.x / MK), Math.floor((b.gy - b.h) / MK), Math.ceil(b.w / MK), Math.ceil(b.h / MK));
   }
   for (const a of animals)
-    if (a.kind === 'monster') {
+    if (isFoe(a) && a.kind !== 'bat') {
       mctx.fillStyle = '#ff4040';
       mctx.fillRect(Math.floor(a.x / MK) - 1, Math.floor(a.y / MK) - 1, 4, 4);
     }

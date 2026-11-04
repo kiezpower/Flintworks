@@ -3,6 +3,7 @@
 // that soften hits. Swords and arrows also hurt the other team's castle.
 import { announce } from './announce.js';
 import { arrows } from './buildings.js';
+import { FOE_KINDS } from './entities.js';
 import { hurt } from './digger.js';
 import { addStat } from './stats.js';
 import { teamOf, useMine, useTeam } from './teams.js';
@@ -16,7 +17,8 @@ import { ignite } from './objects.js';
 import { isPlayer } from './players.js';
 import { rnd, solid } from './world.js';
 
-const FOES = { monster: 1, bat: 1 };
+// (the creatures that attack: entities.js)
+const FOES = FOE_KINDS;
 
 // ---- damage modifiers ----
 // kind: 'monster' (claws, bites) or 'hit' (stones, rubble, lightning)
@@ -195,13 +197,17 @@ function updArrows() {
     let hit = false;
     for (const m of animals) {
       if (!FOES[m.kind] || !(a.x > m.x && a.x < m.x + m.w && a.y > m.y && a.y < m.y + m.h)) continue;
+      // the stone golem: arrows half glance off its stone
+      const stone = m.kind === 'golem';
       if (!G.netClient) {
-        m.hp -= a.dmg || 20;
+        m.hp -= (a.dmg || 20) * (stone ? 0.5 : 1);
         m.hurt = 12;
-        m.vx += Math.sign(a.vx) * 0.8;
+        m.vx += Math.sign(a.vx) * (stone ? 0.2 : 0.8);
       }
       hit = true;
       sfx('clack', a.x, a.y);
+      if (stone)
+        for (let q = 0; q < 4; q++) parts.push({ x: a.x, y: a.y, vx: -Math.sign(a.vx) * rnd(), vy: -rnd(), l: 10, c: '#d8d2c8' });
       break;
     }
     // a bow's arrow that hits a fluffel only startles it (it jumps off, the shooter gets a little

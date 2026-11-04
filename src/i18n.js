@@ -621,6 +621,12 @@ const EN = {
   '{name} ist erschöpft': '{name} is exhausted',
   'Gräbt weiter – nochmal tippen stoppt': 'Keeps digging – tap again to stop',
   'Monster besiegt': 'Monster defeated',
+  'Giftspinne besiegt': 'Poison spider defeated',
+  'Lavaschleim besiegt': 'Lava slime defeated',
+  'Steingolem besiegt': 'Stone golem defeated',
+  Giftspinne: 'Poison spider',
+  Lavaschleim: 'Lava slime',
+  Steingolem: 'Stone golem',
   'Meteore am Himmel!': 'Meteors in the sky!',
   'Es fängt an zu regnen': 'It starts to rain',
   // HUD and panels

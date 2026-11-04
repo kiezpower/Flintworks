@@ -57,6 +57,7 @@ import {
   mat,
   paint,
   paintAll,
+  free,
   ri,
   rnd,
   shade,
@@ -358,9 +359,44 @@ function gen() {
   }
   // relaxed worlds have no creatures that hurt you
   if (!G.relaxed) for (const c of caves.slice(2, 10)) animals.push(mkAnimal('bat', c.x, c.y - 2));
-  for (let k = 0; k < 2 && k + 7 < caves.length && !G.relaxed; k++) {
-    const c = caves[7 + k];
-    animals.push(mkAnimal('monster', c.x - 6, c.y - 4));
+  if (GAME_MODES[G.mode]?.campaign) {
+    // (the campaign keeps its two cave monsters: its levels are tuned to them)
+    for (let k = 0; k < 2 && k + 7 < caves.length && !G.relaxed; k++) {
+      const c = caves[7 + k];
+      animals.push(mkAnimal('monster', c.x - 6, c.y - 4));
+    }
+  } else if (!G.relaxed) {
+    // the caves (deepest first: 0–1 lava, 2 acid, 3–6 water, then dry ones) get their
+    // monsters: the stone golem in the deepest dry cave, two cave monsters, two poison spiders
+    // a bit higher up, and a lava slime over each lava lake
+    // a spot in the cave: from its middle (or a little to the side) down onto the floor or the
+    // lava; false when it does not fit
+    const put = (kind, c) => {
+      if (!c) return false;
+      const a = mkAnimal(kind, 0, 0);
+      for (const dx of [0, -0.3, 0.3, -0.6, 0.6]) {
+        const x = Math.round(c.x + dx * c.rx - a.w / 2),
+          cx = Math.round(x + a.w / 2);
+        let y = Math.round(c.y - a.h / 2);
+        for (let u = 0; u < c.ry && !free(x, y, a.w, a.h); u++) y--;
+        if (!free(x, y, a.w, a.h)) continue;
+        const feet = yy => mat[Math.min(H - 1, yy + a.h) * W + cx];
+        while (y < H - a.h - 2 && free(x, y + 1, a.w, a.h) && !LIQ[feet(y + 1)]) y++;
+        a.x = x;
+        a.y = y;
+        animals.push(a);
+        return true;
+      }
+      return false;
+    };
+    // (the golem is big: the deepest dry cave it fits into)
+    for (let k = 7; k < caves.length && !put('golem', caves[k]); k++);
+    put('monster', caves[8]);
+    put('monster', caves[9]);
+    put('spider', caves[10]);
+    put('spider', caves[11]);
+    put('slime', caves[0]);
+    put('slime', caves[1]);
   }
   finishWorld();
 }

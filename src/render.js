@@ -201,8 +201,14 @@ function drawAnimal(a, sx, sy) {
   const f = a.face || 1,
     hurtF = a.hurt > 0 && a.hurt & 2;
   const ph = Math.sin(a.anim) > 0;
-  const glow = a.kind === 'monster' && Math.sin(G.frame * 0.15) > 0;
-  const key = `${a.kind}${ph}${hurtF}${glow}`;
+  // glowing: the monster's eye blinks, the spider's eyes, the slime pulses, the golem's
+  // cracks light up when it is about to strike
+  const glow =
+    a.kind === 'golem'
+      ? a.warn > 0
+      : (a.kind === 'monster' || a.kind === 'spider' || a.kind === 'slime') && Math.sin(G.frame * 0.15) > 0;
+  a.air = a.kind === 'slime' && Math.abs(a.vy || 0) > 0.6;
+  const key = `${a.kind}${ph}${hurtF}${glow}${a.air ? 1 : 0}`;
   let spr = animalCache[key];
   if (!spr) {
     spr = animalCache[key] = animalSprite(a, ph, hurtF, glow);
@@ -224,6 +230,16 @@ function drawAnimal(a, sx, sy) {
     ctx.scale(-1, 1);
     drawHi(ctx, spr, 0, sy - 2);
     ctx.restore();
+  }
+  // a hurt monster shows how much it has left
+  if (a.maxHp > 12 && a.hp < a.maxHp && a.hp > 0 && a.kind !== 'fluffel') {
+    const bw = Math.max(8, a.w),
+      bx = Math.round(sx + a.w / 2 - bw / 2),
+      by = Math.round(sy - (a.kind === 'golem' ? 5 : 4));
+    ctx.fillStyle = 'rgba(26,18,12,0.85)';
+    ctx.fillRect(bx - 0.5, by - 0.5, bw + 1, 2);
+    ctx.fillStyle = a.hp / a.maxHp > 0.35 ? '#e8503a' : '#ffb03a';
+    ctx.fillRect(bx, by, Math.max(0.5, (bw * a.hp) / a.maxHp), 1);
   }
 }
 // animal frames are painted once into small canvases (2px margin) and drawn smoothed at 2×
@@ -266,6 +282,121 @@ function animalSprite(a, ph, hurtF, glowOn) {
     put(-1, ph ? -1 : 0, 2, 1, '#c47f22');
     put(-1, ph ? 1 : 2, 1, 1, '#c47f22');
     put(3, 0, 1, 1, '#1a120c');
+  } else if (a.kind === 'spider') {
+    // poison spider: a round dark abdomen with green markings at the back, the head with a
+    // cluster of red eyes and pale fangs in front, four pairs of legs stepping in turn
+    // legs: thin and bent, the knees raised above the body, the back pair reaching behind,
+    // the front pair reaching ahead, the middle pair under it; they step in turn
+    const L = '#120a16',
+      J = '#3a2a48';
+    const legLine = (pts, col) => pts.forEach(([x, y]) => put(x, y, 1, 1, col));
+    const a1 = ph ? 0 : 1,
+      a2 = ph ? 1 : 0;
+    legLine([[0, -1], [-1, -1], [-2, 0], [-2, 1], [-2 - a1, 2], [-2 - a1, 3], [-3 + a2, 4], [-3 + a2, 5]], L);
+    legLine([[1, -2], [0, -2], [-1, -2]], L);
+    legLine([[7, -1], [8, -2], [9, -2], [10, -1], [10, 0], [10 + a2, 1], [10 + a2, 2], [10, 3], [10 - a1, 4], [10 - a1, 5]], L);
+    legLine([[9, 4], [9 + a1, 5]], L);
+    legLine([[2 + a1, 4], [2 + a1, 5], [5 + a2, 4], [5 + a2, 5], [7 - a1, 4], [7 - a1, 5]], L);
+    legLine([[-1, -1], [9, -2]], J); // a faint sheen on the knees
+    // outline, then the abdomen
+    put(0, -1, 5, 1, '#160c1c');
+    put(-1, 0, 7, 4, '#160c1c');
+    put(1, 0, 3, 1, '#2a1c36');
+    put(0, 1, 5, 2, '#3a2a48');
+    put(1, 3, 3, 1, '#2a1c36');
+    put(2, 1, 1, 1, '#7ad04a');
+    put(1, 2, 1, 1, '#5fae3a');
+    put(3, 2, 1, 1, '#5fae3a');
+    put(1, 0, 2, 1, '#54406a'); // sheen on top
+    // head
+    put(5, 0, 4, 4, '#160c1c');
+    put(5, 1, 3, 2, '#2a1c36');
+    put(7, 1, 1, 1, glowOn ? '#ff6a4a' : '#d83a2a');
+    put(8, 1, 1, 1, glowOn ? '#ff3a2a' : '#b82a20');
+    put(6, 1, 1, 1, '#8a2018');
+    put(8, 3, 1, 1, '#e8e0d0');
+    put(7, 3, 1, 1, '#c8c0b0');
+  } else if (a.kind === 'slime') {
+    // lava slime: a glowing drop of molten rock with a bright core, bubbles and a glint, two
+    // little eyes; squashed flat on the ground, stretched tall in the air
+    const air = a.air;
+    const rows = air
+      ? [
+          [3, 3],
+          [2, 5],
+          [1, 7],
+          [1, 7],
+          [1, 7],
+          [1, 7],
+          [2, 5],
+        ]
+      : [
+          [3, 4],
+          [1, 8],
+          [0, 10],
+          [0, 10],
+          [1, 8],
+        ];
+    const y0 = air ? 0 : 2;
+    rows.forEach(([x, w], r) => put(x - 1, y0 + r - (r === 0 ? 1 : 0), w + 2, r === 0 ? 2 : 1, '#4a1006'));
+    put(rows[rows.length - 1][0], y0 + rows.length, rows[rows.length - 1][1], 1, '#4a1006');
+    rows.forEach(([x, w], r) => put(x, y0 + r, w, 1, '#d8401a'));
+    const mid = y0 + Math.floor(rows.length / 2);
+    put(air ? 2 : 2, mid, air ? 5 : 6, 1, glowOn ? '#ffd25a' : '#ff9a3a');
+    put(air ? 3 : 3, mid + 1, air ? 3 : 4, 1, glowOn ? '#ffb43a' : '#f06a26');
+    put(rows[1][0], y0 + 1, 1, 1, '#ffe8a0'); // glint
+    put(air ? 5 : 7, mid + 1, 1, 1, '#ffcf6a'); // a bubble
+    // eyes, looking ahead: white with a dark pupil below
+    for (const ex of air ? [4, 6] : [5, 7]) {
+      put(ex, y0 + 1, 1, 1, '#fff2d8');
+      put(ex, y0 + 2, 1, 1, '#2a0a04');
+    }
+  } else if (a.kind === 'golem') {
+    // stone golem: a hulk of grey blocks with moss, a small head with amber eyes, and huge
+    // fists; the cracks in the stone glow, brightly while it is about to strike
+    const O = '#2a2622',
+      st = '#7b766f',
+      dk = '#5e5a55',
+      lt = '#9a948a',
+      moss = '#5f8a3a',
+      crack = glowOn ? '#ffc04a' : '#c86a1a';
+    // legs (one steps forward)
+    put(3, ph ? 10 : 11, 4, 4, O);
+    put(4, ph ? 10 : 11, 2, 3, dk);
+    put(9, ph ? 11 : 10, 4, 4, O);
+    put(10, ph ? 11 : 10, 2, 3, dk);
+    // the back arm and fist
+    put(-1, 4, 4, 8, O);
+    put(0, 5, 2, 6, dk);
+    // torso
+    put(1, 3, 13, 9, O);
+    put(2, 4, 11, 7, st);
+    put(2, 4, 11, 1, lt);
+    put(2, 7, 11, 1, dk); // a seam between the blocks
+    put(7, 4, 1, 3, dk);
+    put(5, 8, 1, 3, dk);
+    put(10, 8, 1, 3, dk);
+    put(3, 4, 3, 1, moss);
+    put(2, 5, 1, 1, moss);
+    put(11, 9, 2, 1, moss);
+    put(4, 5, 1, 2, crack);
+    put(9, 9, 2, 1, crack);
+    put(12, 5, 1, 1, crack);
+    // head
+    put(6, -1, 7, 5, O);
+    put(7, 0, 5, 3, st);
+    put(7, 0, 5, 1, lt);
+    put(7, 1, 5, 1, dk); // brow
+    put(10, 2, 1, 1, glowOn ? '#ffe06a' : '#ffb02a');
+    put(11, 2, 1, 1, glowOn ? '#ffe06a' : '#ffb02a');
+    // the front arm and its big fist
+    put(12, 4, 4, 6, O);
+    put(13, 5, 2, 4, dk);
+    put(11, 9, 6, 5, O);
+    put(12, 10, 4, 3, '#6e6862');
+    put(12, 10, 4, 1, lt);
+    put(13, 12, 1, 1, dk);
+    put(15, 12, 1, 1, dk);
   } else {
     // cave monster: hunched back with spikes, glowing eye, teeth
     put(1, 2, 10, 6, '#3d3a6b');
@@ -631,6 +762,16 @@ function render() {
       } else drawDiggerHi(c, x, y, c.face, ctx);
     }
     drawGear(ctx, c, x, y);
+    // poisoned by a spider: a green shimmer and little bubbles rising off the Wühler
+    if (c.poison > 0 && !c.dead) {
+      ctx.fillStyle = 'rgba(120,220,80,0.22)';
+      ctx.fillRect(x, y, 6, 10);
+      for (let k = 0; k < 3; k++) {
+        const t = (G.frame * 0.6 + k * 11) % 30;
+        ctx.fillStyle = k % 2 ? '#9be05a' : '#c9f08a';
+        ctx.fillRect(Math.round(x + 1 + ((k * 2 + (t > 15 ? 1 : 0)) % 5)), Math.round(y + 2 - t * 0.35), 1, 1);
+      }
+    }
     // aiming the catapult by dragging "Schleudern": the stone's flight path
     if (c === mine && G.aimKind === 'catapult' && G.aimDrag) {
       const v = vehicleOf(c);

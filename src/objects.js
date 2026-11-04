@@ -5,7 +5,7 @@ import { track } from './profile.js';
 import { FX_PAL, rainSplash, ripple, sparks, splash } from './effects.js';
 import { guard } from './combat.js';
 import { hurt, startTumble } from './digger.js';
-import { midMat, moveBody, overlap, spawnItem, unstuck } from './entities.js';
+import { isFoe, midMat, moveBody, overlap, spawnItem, unstuck } from './entities.js';
 import { canPlantAt, plantTree } from './gen.js';
 import { sfx } from './sound.js';
 import { treeSprite } from './sprites.js';
@@ -299,11 +299,21 @@ function ignite(t) {
   g.fillRect(0, 0, c.width, c.height);
   t.char = c;
 }
+// How the attacking creatures behave: speed and how far they notice you, how hard and how
+// often they strike (dmg on a hit, touch every frame of contact), knock-back, and what is
+// special: the spider leaps and poisons, the slime hops and sets you alight, the golem stomps.
+const FOE = {
+  monster: { speed: 0.5, accel: 0.08, sense: 110, warnAt: 20, dmg: 10, touch: 0.12, cd: 70, knock: 2.2, reach: 0, step: 3, climb: -2.4 },
+  spider: { speed: 0.9, accel: 0.15, sense: 130, warnAt: 30, dmg: 6, touch: 0.06, cd: 55, knock: 1.4, reach: 0, step: 3, climb: -2.4, leap: true, poison: 180 },
+  slime: { speed: 0, accel: 0, sense: 120, warnAt: 22, dmg: 12, touch: 0.1, cd: 60, knock: 1.8, reach: 0, step: 2, climb: -2, hop: true, burn: 90 },
+  golem: { speed: 0.26, accel: 0.05, sense: 100, warnAt: 28, dmg: 20, touch: 0.15, cd: 110, knock: 3.4, reach: 2, step: 3, climb: -2.0, stomp: true },
+};
 function updAnimal(a) {
   if (a.hurt > 0) a.hurt--;
   const m = midMat(a, 0.5),
     inL = LIQ[m];
-  if (m === LAVA || m === ACID) a.hp -= m === LAVA ? 2 : 0.3;
+  // (the lava slime lives in lava)
+  if ((m === LAVA && a.kind !== 'slime') || m === ACID) a.hp -= m === LAVA ? 2 : 0.3;
   if (a.hp <= 0) return false;
   if (a.kind === 'bat') {
     // flutter around inside caves, turn at walls
@@ -372,7 +382,7 @@ function updAnimal(a) {
     // (a fluffel lost in a level waits for its rescuer instead of running off)
     if (near) a.tvx = a.lost ? 0 : Math.sign(a.x - near.x) * 0.8;
     for (const o of animals)
-      if (o.kind === 'monster' && Math.abs(o.x - a.x) < 40 && Math.abs(o.y - a.y) < 20)
+      if (isFoe(o) && o.kind !== 'bat' && Math.abs(o.x - a.x) < 40 && Math.abs(o.y - a.y) < 20)
         a.tvx = Math.sign(a.x - o.x) * 0.9;
     // startled by an arrow (combat.js): runs off for a few seconds, a "!" over it at first
     if (a.scared > 0) {
@@ -382,8 +392,9 @@ function updAnimal(a) {
     a.warn = a.scared > 520 ? 1 : 0;
     a.vx += ((a.tvx || 0) - a.vx) * 0.2;
   } else {
+    const F = FOE[a.kind] || FOE.monster;
     let tgt = null,
-      bd = 110;
+      bd = F.sense;
     for (const c of crew) {
       if (c.dead) continue;
       const d = Math.hypot(c.x - a.x, c.y - a.y);
@@ -394,50 +405,96 @@ function updAnimal(a) {
     }
     // close enough to strike and ready: a warning shows over it first (render.js, only a picture:
     // the strike itself still comes on contact, as before)
-    a.warn = tgt && bd < 20 && a.atk <= 0 ? (a.warn || 0) + 1 : 0;
-    if (tgt) {
-      a.tvx = Math.sign(tgt.x + 3 - (a.x + 6)) * 0.5;
+    a.warn = tgt && bd < F.warnAt && a.atk <= 0 ? (a.warn || 0) + 1 : 0;
+    const dir = tgt ? Math.sign(tgt.x + 3 - (a.x + a.w / 2)) || 1 : 0;
+    if (a.leapCd > 0) a.leapCd--;
+    if (a.hopT > 0) a.hopT--;
+    if (F.hop) {
+      // the slime only moves by hopping: a squash, a jump, a splat
+      if (onG) {
+        a.vx *= 0.7;
+        if (!(a.hopT > 0)) {
+          a.hopT = tgt ? 38 : ri(60, 140);
+          a.vy = tgt ? -2.3 : -1.4;
+          a.vx = tgt ? dir * 1.25 : (rnd() < 0.5 ? -1 : 1) * 0.5;
+          sfx('land', a.x, a.y);
+        }
+      }
+      a.tvx = null;
+    } else if (tgt) {
+      a.tvx = dir * F.speed;
+      // the spider leaps at you from a little way off
+      if (F.leap && onG && !(a.leapCd > 0) && a.atk <= 0 && Math.abs(tgt.x - a.x) < 50 && Math.abs(tgt.y - a.y) < 16) {
+        a.vy = -2.3;
+        a.vx = dir * 2.2;
+        a.leapCd = 90;
+        sfx('clack', a.x, a.y);
+      }
       if (G.frame % 180 === 0) sfx('growl', a.x, a.y);
     } else if (--a.t <= 0) {
       a.t = ri(60, 200);
-      a.tvx = rnd() < 0.4 ? 0 : (rnd() < 0.5 ? -1 : 1) * 0.3;
+      a.tvx = rnd() < 0.4 ? 0 : (rnd() < 0.5 ? -1 : 1) * F.speed * 0.6;
     }
-    a.vx += ((a.tvx || 0) - a.vx) * 0.08;
+    // (in the air after a leap or a hop it keeps its speed)
+    if (a.tvx != null && onG) a.vx += ((a.tvx || 0) - a.vx) * F.accel;
     if (a.atk > 0) a.atk--;
     for (const c of crew) {
-      if (c.dead || !overlap(a, c, 0)) continue;
+      if (c.dead || !overlap(a, c, F.reach)) continue;
       const g = guard(c, 'monster');
-      hurt(c, 0.12 * g, true);
+      hurt(c, F.touch * g, true);
       if (a.atk <= 0) {
-        a.atk = 70;
-        startTumble(c, Math.sign(c.x - a.x || 1) * 2.2 * g, -1.6 * g);
-        hurt(c, 7 * g);
-        sfx('growl', a.x, a.y);
+        a.atk = F.cd;
+        const k = Math.sign(c.x - a.x || 1);
+        startTumble(c, k * F.knock * g, -1.6 * g);
+        hurt(c, F.dmg * g);
+        if (F.poison) c.poison = Math.max(c.poison || 0, F.poison);
+        if (F.burn) c.burn = Math.max(c.burn || 0, F.burn);
+        if (F.stomp) {
+          // the golem's fists hit the ground: dust and a shake
+          G.shake = Math.max(G.shake || 0, 7);
+          for (let q = 0; q < 10; q++)
+            parts.push({ x: a.x + a.w / 2 + k * 6, y: a.y + a.h - 1, vx: (rnd() - 0.5) * 2.4, vy: -rnd() * 1.2, l: 24, c: '#9a8f80' });
+          sfx('thud', a.x, a.y);
+        } else sfx('growl', a.x, a.y);
       }
     }
   }
   if (Math.abs(a.vx) > 0.05) a.face = Math.sign(a.vx);
-  const [bx, by] = moveBody(a, a.vx, a.vy, a.kind === 'monster' ? 3 : 2);
+  const F = FOE[a.kind];
+  const [bx, by] = moveBody(a, a.vx, a.vy, F ? F.step : 2);
   if (by) a.vy = 0;
   if (bx) {
-    if (onG) a.vy = a.kind === 'monster' ? -2.4 : -2;
+    if (onG) a.vy = F ? F.climb : -2;
     else a.vx *= -0.5;
   }
   if (onG) a.anim += Math.abs(a.vx) * 0.4;
   return true;
 }
+// what a beaten creature leaves: a puff in its colours, and loot by kind
+const LOOT = {
+  monster: { col: '#5a56a0', nug: 2, name: 'Monster besiegt' },
+  spider: { col: '#3a2a48', nug: 1, name: 'Giftspinne besiegt' },
+  slime: { col: '#ff7a2f', nug: 2, coal: 1, name: 'Lavaschleim besiegt' },
+  golem: { col: '#8a847c', nug: 4, ore: 2, gem: 0.35, name: 'Steingolem besiegt' },
+};
 function killAnimal(a) {
-  const col = { monster: '#5a56a0', fluffel: '#f2e6d0', bat: '#3a2f45' }[a.kind] || '#e0a13a';
-  for (let q = 0; q < 14; q++)
+  const L = LOOT[a.kind];
+  const col = L ? L.col : { fluffel: '#f2e6d0', bat: '#3a2f45' }[a.kind] || '#e0a13a';
+  for (let q = 0; q < (a.kind === 'golem' ? 26 : 14); q++)
     parts.push({ x: a.x + a.w / 2, y: a.y + a.h / 2, vx: (rnd() - 0.5) * 2, vy: -rnd() * 2, l: 30, c: col });
-  if (a.kind === 'monster') {
-    spawnItem('nug', a.x + 3, a.y, -0.6, -1.5, 10);
-    spawnItem('nug', a.x + 6, a.y, 0.6, -1.5, 10);
-    toast('Monster besiegt');
-    G.kills = (G.kills || 0) + 1;
-    track('monster');
-    sfx('growl', a.x, a.y);
-  }
+  if (!L) return;
+  const drop = (t, n) => {
+    for (let k = 0; k < n; k++) spawnItem(t, a.x + a.w / 2 - 1 + (k - n / 2) * 2, a.y, (k - (n - 1) / 2) * 0.5, -1.5, 10);
+  };
+  drop('nug', L.nug);
+  if (L.coal) drop('coal', L.coal);
+  if (L.ore) drop('ore', L.ore);
+  if (L.gem && rnd() < L.gem) drop('gem', 1);
+  if (a.kind === 'golem') G.shake = Math.max(G.shake || 0, 9);
+  toast(L.name);
+  G.kills = (G.kills || 0) + 1;
+  track('monster');
+  sfx(a.kind === 'golem' ? 'thud' : 'growl', a.x, a.y);
 }
 const DEBRIS = { [EARTH]: EARTH, [ROCK]: ROCK, [SAND]: SAND, [LOAM]: LOAM, [ORE]: ORE, [COAL]: COAL, [PLANK]: PLANK };
 const DEBCOL = {
