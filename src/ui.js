@@ -25,7 +25,7 @@ import { vehicleIcon, vehicleOf } from './vehicles/core.js';
 import { hasBow } from './combat.js';
 import { isPlayer } from './players.js';
 import { missionText } from './missions.js';
-import { G, INV_MAX, INV_SHOWN, animals, builds, crew, lorries } from './state.js';
+import { G, INV_MAX, INV_SHOWN, animals, builds, crew, lorries, safeCap } from './state.js';
 import { AIR, GOLD, H, MINI, W, bg, hex, mat, onResize } from './world.js';
 
 // ---- HUD, panels, minimap ----
@@ -167,7 +167,7 @@ function hud() {
       b.className = 'cbtn' + (o === c ? ' sel' : '') + (o.dead ? ' dead' : '') + (o.energy < 30 ? ' low' : '');
       b.setAttribute('aria-label', o.name);
       b.title = o.name;
-      b.innerHTML = `<span class="cap" style="background:${o.cap}"></span><span class="face"></span><span class="hp"><b style="width:${Math.max(0, o.energy)}%"></b></span>${isPlayer(o) ? '' : focusBadge(o)}`;
+      b.innerHTML = `<span class="cap" style="background:${safeCap(o.cap)}"></span><span class="face"></span><span class="hp"><b style="width:${Math.max(0, Number(o.energy) || 0)}%"></b></span>${isPlayer(o) ? '' : focusBadge(o)}`;
       // tap a Wühler: give out jobs (your own one: for everybody)
       b.addEventListener('click', () => openCrew(n));
       crewEl.appendChild(b);

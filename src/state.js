@@ -32,6 +32,11 @@ G.follow = false;
 G.bolt = null;
 const NAMES = ['Kurt', 'Hilde', 'Bodo', 'Gerda', 'Udo', 'Frieda', 'Paul'];
 const CAPS = ['#c8402c', '#2f7fd0', '#3f9e4a', '#9a4fc4', '#e08a1f', '#d04f8a', '#3fb3a8'];
+// a cap colour from another device goes into style attributes and canvas: only a plain #rgb(a)
+// hex colour is let through, anything else becomes the first cap colour
+const safeCap = c => (typeof c === 'string' && /^#[0-9a-f]{3,8}$/i.test(c) ? c : CAPS[0]);
+// text from another device that ends up in HTML
+const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 G.base = null;
 // a Wühler carries up to INV_MAX things; the HUD shows the first INV_SHOWN of them (keys 1–5),
 // the whole bag opens from the bag button (or key I)
@@ -42,6 +47,8 @@ export {
   INV_MAX,
   INV_SHOWN,
   CAPS,
+  esc,
+  safeCap,
   NAMES,
   animals,
   birds,

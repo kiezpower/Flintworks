@@ -5,7 +5,7 @@ import { mkLorry } from '../buildings.js';
 import { mkAnimal } from '../entities.js';
 import { ITEM, treeSprite } from '../sprites.js';
 import { mode } from '../modes.js';
-import { CAPS, G, NAMES, animals, builds, crew, items, lorries, trees, vehicles } from '../state.js';
+import { CAPS, G, NAMES, safeCap, animals, builds, crew, items, lorries, trees, vehicles } from '../state.js';
 import { VK } from '../vehicles/core.js';
 import { syncTeams, useMine, useTeam } from '../teams.js';
 
@@ -55,7 +55,7 @@ const KINDS = {
       id: d.id,
       kind: 'digger',
       name: d.nm || NAMES[0],
-      cap: d.cap || CAPS[0],
+      cap: safeCap(d.cap),
       w: 6,
       h: 10,
       x: d.x,
@@ -79,7 +79,7 @@ const KINDS = {
         pid: d.pid,
         bot: !!d.bot,
         name: d.nm,
-        cap: d.cap,
+        cap: safeCap(d.cap),
         hat: d.hat,
         skin: d.sk,
         face: d.f,

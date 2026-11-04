@@ -49,7 +49,7 @@ import { clearSave, hasSave, loadGame, saveGame, savedTut } from './save.js';
 import { simulate } from './sim.js';
 import { audioInit, sfx } from './sound.js';
 import { initUiArt } from './uiart.js';
-import { G, animals, builds, crew, lorries } from './state.js';
+import { G, animals, builds, crew, lorries, esc } from './state.js';
 import { $, closePanel, drawMini, hud, openBase, openBuild, panelEl, toast, toastEl, toggleMap } from './ui.js';
 import { register, send } from './commands.js';
 import { NET, inRoom, onGameMsg, sendTo } from './net/room.js';
@@ -320,13 +320,13 @@ function endScreen(won, why, winner = null) {
     // Versus: victory, defeat or a draw, with the reason
     const draw = winner === -2;
     card.innerHTML = `<h1>${tr(draw ? 'Unentschieden' : won ? 'Sieg!' : 'Niederlage')}</h1>
-      <p>${tr(why || '')}</p><p class="hint">${tr(M.name)} · ${tr('Zeit {time}', { time })}</p>`;
+      <p>${esc(tr(why || ''))}</p><p class="hint">${tr(M.name)} · ${tr('Zeit {time}', { time })}</p>`;
   } else
     card.innerHTML = won
       ? `<h1>${tr('Geschafft')}</h1><p class="stars">${'★'.repeat(stars)}<span>${'★'.repeat(3 - stars)}</span></p>
        <p>${tr(M.name)} · ${tr(M.desc, { goal: M.goal })} · ${tr('Zeit {time}', { time })}</p>
        <p class="hint">${tr('3 Sterne unter {a} Min., 2 Sterne unter {b} Min.', { a: M.stars[0], b: M.stars[1] })}</p>`
-      : `<h1>${tr(why ? 'Level verloren' : 'Crew verloren')}</h1><p>${tr(why || 'Alle Wühler sind erschöpft und die Kasse reicht für keinen neuen.')}</p>`;
+      : `<h1>${tr(why ? 'Level verloren' : 'Crew verloren')}</h1><p>${esc(tr(why || 'Alle Wühler sind erschöpft und die Kasse reicht für keinen neuen.'))}</p>`;
   // multiplayer: who did what, with awards
   if (G.net) card.innerHTML += statsHtml(G.mp && G.mp.stats, G.teams ? TEAM_COLS : null) + addButtonsHtml();
   // after a won campaign level: straight on to the next one

@@ -33,6 +33,11 @@ const levelEditor = {
   configureServer(server) {
     server.middlewares.use('/__levels/save', (req, res) => {
       if (req.method !== 'POST') return res.writeHead(405).end();
+      // only the editor on this dev server: JSON (other sites cannot send that without asking
+      // first, and the dev server does not allow it) from the same origin
+      const origin = req.headers.origin;
+      const sameOrigin = !origin || origin.replace(/^https?:\/\//, '') === req.headers.host;
+      if (!sameOrigin || !/^application\/json\b/.test(req.headers['content-type'] || '')) return res.writeHead(403).end();
       let body = '';
       req.on('data', c => (body += c));
       req.on('end', () => {
@@ -55,6 +60,36 @@ const levelEditor = {
   },
 };
 
+// Content Security Policy: scripts only from the game itself, network only to the relay and the
+// own web address. The dev server also lets the game reach a test relay anywhere (?mp=).
+const RELAY = 'wss://play.kiez-power.de';
+const LIVE_ORIGIN = 'https://kiezpower.github.io';
+function csp(dev) {
+  return [
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "font-src 'self' data:",
+    `connect-src 'self' ${LIVE_ORIGIN} ${RELAY} ws://localhost:* ws://127.0.0.1:*${dev ? ' ws: wss:' : ''}`,
+    "worker-src 'self'",
+    "manifest-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'none'",
+  ].join('; ');
+}
+const cspMeta = {
+  name: 'csp-meta',
+  transformIndexHtml: {
+    order: 'pre',
+    handler(html, ctx) {
+      const tag = `<meta http-equiv="Content-Security-Policy" content="${csp(!!ctx.server)}" />`;
+      return html.replace('<meta charset="utf-8" />', m => `${m}\n    ${tag}`);
+    },
+  },
+};
+
 export default defineConfig({
   base: './',
   define: { __APP_VERSION__: JSON.stringify(VERSION) },
@@ -62,6 +97,7 @@ export default defineConfig({
   plugins: [
     levelMaps,
     levelEditor,
+    cspMeta,
     // version.json lets installed apps and cached pages find out that a newer version exists
     {
       name: 'version-json',

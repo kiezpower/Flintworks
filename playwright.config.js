@@ -9,6 +9,8 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:5199/',
     viewport: { width: 900, height: 450 },
+    // the tests put helper scripts into the page (addScriptTag); the game's CSP forbids that
+    bypassCSP: true,
     launchOptions: { executablePath: process.env.PW_CHROMIUM || undefined },
   },
   webServer: { command: 'npx vite --port 5199 --strictPort', url: 'http://localhost:5199/', reuseExistingServer: true },

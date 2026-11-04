@@ -28,7 +28,7 @@ import { onlineCount } from './net/friends.js';
 import { netSaveInfo } from './net/netsave.js';
 import { fromTag, kindName, modeName, rotation } from './net/rotation.js';
 import { P } from './profile.js';
-import { G } from './state.js';
+import { G, safeCap } from './state.js';
 import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
 
 const ERRORS = { nope: 'Raum nicht gefunden', full: 'Der Raum ist voll', bad: 'Verbindung unterbrochen' };
@@ -112,7 +112,7 @@ function openInvite() {
     const add = canAdd(pl);
     const state = !pl.online ? tr('getrennt') : host ? tr('Host') : pl.ready ? tr('bereit') : tr('noch nicht bereit');
     opt(l, {
-      title: `<span class="lb-dot" style="background:${pl.cap}"></span>${esc(pl.name)}${pl.pid === NET.pid ? ' ' + tr('(du)') : ''}`,
+      title: `<span class="lb-dot" style="background:${safeCap(pl.cap)}"></span>${esc(pl.name)}${pl.pid === NET.pid ? ' ' + tr('(du)') : ''}`,
       sub: add ? `${state} · ${tr('Tippen: als Freund hinzufügen')}` : state,
       cost: add ? '+' : host ? '★' : pl.ready ? '✓' : '',
       short: true,

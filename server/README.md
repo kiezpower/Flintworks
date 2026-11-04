@@ -26,7 +26,23 @@ GitHub Action `.github/workflows/deploy-relay.yml`, bei jedem Push auf `main`, d
 
 ## Lokal testen
 
-`cd server && npm install && npm start` → Spiel mit `?mp=ws://localhost:8787` öffnen.
+`cd server && npm install && npm start` → Spiel mit `?mp=ws://localhost:8787` öffnen. `?mp=` wirkt nur im Dev-Server (`npm run dev`) oder wenn das Spiel selbst von `localhost` kommt; die veröffentlichte Seite verbindet sich immer mit `play.kiez-power.de`.
+
+## Schutz und Grenzen
+
+Jeder kann sich verbinden, darum begrenzt das Relay:
+
+| Grenze | Wert |
+|---|---|
+| Verbindungen pro IP (Umgebungsvariable `MAX_PER_IP`) | 16 (die IP kommt von Caddy aus `X-Forwarded-For`) |
+| Nachrichten pro Verbindung | 150/s (kurz bis 300); wer weit darüber liegt, wird getrennt |
+| Raum- und Freundes-Anfragen (`create`, `join`, `hello`, `list` …) | 4/s, kurz bis 20 |
+| Falsche Raum-Codes pro Verbindung | 20, dann getrennt (kein Durchprobieren privater Räume) |
+| Verschiedene Geräte-Tokens pro Verbindung | 3 |
+| Benutzer insgesamt (`MAX_USERS`) | 100 000 |
+| Gespeicherter Snapshot | 1 MB |
+
+Spielnachrichten, die nur der Host senden darf (`start`, `snap`, `ter`, `end`, `cfg`, `toast`, `cd`), leitet das Relay von anderen Spielern nicht weiter; die Clients prüfen das zusätzlich. Ein Raum, den alle verlassen haben, wird sofort gelöscht. Raum-Codes kommen aus `crypto.randomInt`.
 
 ## Logs auf dem Server
 

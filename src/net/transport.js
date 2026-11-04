@@ -1,8 +1,11 @@
 // WebSocket connection to the relay (server/relay.js). Reconnects by itself after a dropout
 // and measures the round trip time. Messages are plain objects (JSON).
 const DEFAULT_URL = 'wss://play.kiez-power.de';
-// ?mp=ws://localhost:8787 in the address points the game to a test server
-const URL_ = new URLSearchParams(location.search).get('mp') || DEFAULT_URL;
+// ?mp=ws://localhost:8787 in the address points the game to a test server – only in the dev
+// build or on this computer, so a prepared link cannot send players (and their token) elsewhere
+const LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) && !window.Capacitor?.isNativePlatform?.();
+const TEST_URL = import.meta.env?.DEV || LOCAL ? new URLSearchParams(location.search).get('mp') : null;
+const URL_ = TEST_URL || DEFAULT_URL;
 
 const T = { ws: null, status: 'off', rtt: 0, want: false }; // status: off | connecting | open
 const handlers = new Map(); // message type → [fn]
