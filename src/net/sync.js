@@ -43,6 +43,7 @@ const KINDS = {
       hm: c.hammer ? 1 : 0,
       fo: c.focus,
       bu: c.burn > 0 ? 1 : 0,
+      po: c.poison > 0 ? 1 : 0,
       sq: c.netSeq,
       te: c.team || 0,
       rd: c.ride ?? null,
@@ -105,6 +106,7 @@ const KINDS = {
         swing: d.sw || c.swing || 0,
         wield: d.wd || null,
         burn: d.bu ? 30 : 0,
+        poison: d.po ? 30 : 0,
         netBusy: !!(d.ch || d.br || d.tm || d.dead || d.rd != null),
       });
     },

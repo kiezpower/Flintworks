@@ -482,6 +482,11 @@ function updBody(c, I) {
     }
     if (G.frame % 40 === 0) sfx('crackle', c.x, c.y);
   }
+  // a spider's poison (objects.js): costs about ten energy over three seconds (bubbles: render.js)
+  if (c.poison > 0) {
+    c.poison--;
+    hurt(c, 0.055, true);
+  }
   if (headLiq) {
     c.breath -= 0.2;
     if (c.breath <= 0) {

@@ -51,7 +51,7 @@ function dangers(M) {
     if (L.map.includes('A')) out.push('Säure');
     if (L.map.includes('~')) out.push('Wasser');
     const kinds = new Set((L.objects || []).map(o => (o.t === 'animal' ? o.kind : o.t)));
-    if (kinds.has('monster')) out.push('Monster');
+    if (['monster', 'spider', 'slime', 'golem'].some(k => kinds.has(k))) out.push('Monster');
     if (kinds.has('gas')) out.push('Grubengas');
     if (L.lose && L.lose.time) out.push(tr('Zeitlimit {n} Min.', { n: L.lose.time }));
   } else if (M.campaign && M.diff !== 'relaxed') out.push('Monster', 'Grubengas');

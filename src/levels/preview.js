@@ -28,7 +28,7 @@ function marks(cx, L, k) {
   for (const b of builds) if (b.type === 'base') cx.fillRect(b.x / k, (b.gy - b.h) / k, b.w / k, b.h / k);
   for (const a of animals) {
     if (a.lost) dot(a.x + 2, a.y + 2, GOAL);
-    else if (a.kind === 'monster') dot(a.x + 6, a.y + 4, MONSTER, 6, 5);
+    else if (['monster', 'spider', 'slime', 'golem'].includes(a.kind)) dot(a.x + a.w / 2, a.y + a.h / 2, MONSTER, 6, 5);
   }
   for (const c of crew) if (c.trapped) dot(c.x + 3, c.y + 5, GOAL);
   const goals = (L && L.goals) || [];

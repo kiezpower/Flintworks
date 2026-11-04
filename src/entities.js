@@ -40,8 +40,23 @@ function addDigger(x, y) {
   crew.push(c);
   return c;
 }
+// the creatures that attack: the cave monster, the poison spider, the lava slime and the
+// stone golem (and the little bats); their size and hit points
+const FOE_KINDS = { monster: 1, spider: 1, slime: 1, golem: 1, bat: 1 };
+const isFoe = a => !!a && !!FOE_KINDS[a.kind];
+const SIZE = {
+  fluffel: [5, 4],
+  fish: [4, 2],
+  monster: [12, 9],
+  bat: [5, 3],
+  spider: [9, 6],
+  slime: [10, 7],
+  golem: [16, 14],
+};
+const HP = { monster: 90, spider: 45, slime: 70, golem: 220, fluffel: 10 };
 function mkAnimal(kind, x, y) {
-  const sz = { fluffel: [5, 4], fish: [4, 2], monster: [12, 9], bat: [5, 3] }[kind];
+  const sz = SIZE[kind] || SIZE.monster;
+  const hp = HP[kind] ?? 4;
   return {
     id: newId(),
     kind,
@@ -53,7 +68,8 @@ function mkAnimal(kind, x, y) {
     vy: 0,
     face: 1,
     t: ri(20, 120),
-    hp: kind === 'monster' ? 90 : kind === 'fluffel' ? 10 : 4,
+    hp,
+    maxHp: hp,
     hurt: 0,
     anim: 0,
     dry: 0,
@@ -133,4 +149,4 @@ const sel_ = () => crew.find(c => c.pid === G.myId) || null;
 // every entity gets a stable id (the network refers to things by it)
 const newId = () => (G.nextId = (G.nextId || 0) + 1);
 
-export { addDigger, insideB, midMat, mkAnimal, moveBody, newId, overlap, sel_, spawnItem, unstuck };
+export { FOE_KINDS, addDigger, insideB, isFoe, midMat, mkAnimal, moveBody, newId, overlap, sel_, spawnItem, unstuck };

@@ -323,6 +323,156 @@ test('an arrow startles a fluffel (a reward, no harm) and scores on the archery 
   expect(errors).toEqual([]);
 });
 
+test('stronger monsters: each kind hits as hard as it should, the shield halves it', async ({ page }) => {
+  const errors = await setup(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      c = w.crew[0];
+    // one strike of each kind, the monster standing right on the Wühler
+    const strike = kind => {
+      w.animals.length = 0;
+      Object.assign(c, { x: 450, y: 190, vx: 0, vy: 0, energy: 100, poison: 0, burn: 0, tumble: false, dead: false });
+      const m = w.mkAnimal(kind, 0, 0);
+      Object.assign(m, { x: c.x + 3 - m.w / 2, y: 200 - m.h });
+      w.animals.push(m);
+      w.step(2);
+      const hit = 100 - c.energy;
+      // what comes after the hit: poison and fire
+      const after = { poison: c.poison > 0, burn: c.burn > 0 };
+      w.animals.length = 0;
+      w.step(150);
+      return { hit: Math.round(hit), later: Math.round(100 - hit - c.energy), ...after };
+    };
+    const out = {};
+    for (const k of ['monster', 'spider', 'slime', 'golem']) out[k] = strike(k);
+    w.G.tools = { ...w.G.tools, shield: true };
+    out.golemShield = strike('golem').hit;
+    return out;
+  });
+  // the hit itself (plus a little contact damage)
+  expect(r.monster.hit).toBeGreaterThanOrEqual(10);
+  expect(r.monster.hit).toBeLessThanOrEqual(12);
+  expect(r.spider.hit).toBeGreaterThanOrEqual(6);
+  expect(r.spider.hit).toBeLessThanOrEqual(8);
+  expect(r.slime.hit).toBeGreaterThanOrEqual(12);
+  expect(r.slime.hit).toBeLessThanOrEqual(14);
+  expect(r.golem.hit).toBeGreaterThanOrEqual(20);
+  expect(r.golem.hit).toBeLessThanOrEqual(22);
+  expect(r.golemShield).toBeGreaterThanOrEqual(10);
+  expect(r.golemShield).toBeLessThanOrEqual(11);
+  // the spider poisons (about eight more over the next seconds), the slime sets you alight
+  expect(r.spider.poison).toBe(true);
+  expect(r.spider.later).toBeGreaterThanOrEqual(6);
+  expect(r.slime.burn).toBe(true);
+  expect(r.slime.later).toBeGreaterThanOrEqual(6);
+  expect(r.monster.poison || r.monster.burn).toBe(false);
+  expect(errors).toEqual([]);
+});
+
+test('the new monsters: the spider leaps, the slime lives in lava, arrows glance off the golem, all fall to the sword', async ({
+  page,
+}) => {
+  const errors = await setup(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      c = w.crew[0],
+      { mat, W, LAVA, paint } = w.world;
+    const out = {};
+    // a spider 40 px off leaps at you
+    const sp = w.mkAnimal('spider', c.x + 40, 194);
+    w.animals.push(sp);
+    let leapt = false;
+    for (let k = 0; k < 40; k++) {
+      w.step(1);
+      if (sp.vy < -1 && Math.abs(sp.vx) > 1.5) leapt = true;
+    }
+    out.spiderLeaps = leapt;
+    // a slime in a lava pool does not burn up
+    w.animals.length = 0;
+    for (let x = 600; x < 630; x++)
+      for (let y = 190; y < 200; y++) {
+        mat[y * W + x] = LAVA;
+        paint(y * W + x);
+      }
+    const sl = w.mkAnimal('slime', 610, 191);
+    w.animals.push(sl);
+    w.step(120);
+    out.slimeInLava = w.animals.includes(sl) && sl.hp === sl.maxHp;
+    // arrows do half to the golem
+    w.animals.length = 0;
+    const g = w.mkAnimal('golem', c.x + 60, 186);
+    Object.assign(g, { t: 9999 });
+    w.animals.push(g);
+    w.send('tool', { id: 'bow' });
+    w.send('shoot', { dx: 1, dy: -0.05 });
+    w.step(20);
+    out.golemArrow = g.maxHp - g.hp;
+    // each kind falls to the sword and leaves its loot
+    w.send('tool', { id: 'sword' });
+    out.loot = {};
+    for (const k of ['monster', 'spider', 'slime', 'golem']) {
+      w.animals.length = 0;
+      w.items.length = 0;
+      const m = w.mkAnimal(k, 0, 0);
+      Object.assign(m, { x: c.x + 8, y: 200 - m.h, atk: 9999, t: 9999 });
+      c.face = 1;
+      w.animals.push(m);
+      for (let n = 0; n < 12 && w.animals.includes(m); n++) {
+        c.swingCd = 0;
+        Object.assign(m, { x: c.x + 8, y: 200 - m.h, vx: 0, vy: 0 });
+        w.send('wield', { id: 'sword' });
+        w.edge.throw = true;
+        w.step(2);
+      }
+      const t = {};
+      for (const it of w.items) t[it.t] = (t[it.t] || 0) + 1;
+      out.loot[k] = { gone: !w.animals.includes(m), nug: t.nug || 0, coal: t.coal || 0, ore: t.ore || 0 };
+    }
+    // the watchtower aims at the new kinds as well (isFoe)
+    out.kills = w.G.kills;
+    return out;
+  });
+  expect(r.spiderLeaps).toBe(true);
+  expect(r.slimeInLava).toBe(true);
+  expect(r.golemArrow).toBe(14);
+  expect(r.loot).toEqual({
+    monster: { gone: true, nug: 2, coal: 0, ore: 0 },
+    spider: { gone: true, nug: 1, coal: 0, ore: 0 },
+    slime: { gone: true, nug: 2, coal: 1, ore: 0 },
+    golem: { gone: true, nug: 4, coal: 0, ore: 2 },
+  });
+  expect(r.kills).toBeGreaterThanOrEqual(4);
+  expect(errors).toEqual([]);
+});
+
+test('generated worlds get golem, spiders, slimes and cave monsters; relaxed worlds and the campaign do not', async ({
+  page,
+}) => {
+  const errors = await setup(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      G = w.G,
+      out = {};
+    for (const [mode, diff] of [
+      ['gold', 'adventure'],
+      ['gold', 'relaxed'],
+      ['c4', 'adventure'],
+    ]) {
+      Object.assign(G, { nextSeed: 99, nextBiome: 'desert', nextMode: mode, nextDiff: diff, nextVersus: false });
+      w.gen();
+      G.nextSeed = null;
+      const n = {};
+      for (const a of w.animals) if (['monster', 'spider', 'slime', 'golem'].includes(a.kind)) n[a.kind] = (n[a.kind] || 0) + 1;
+      out[mode + ' ' + diff] = n;
+    }
+    return out;
+  });
+  expect(r['gold adventure']).toEqual({ golem: 1, monster: 2, spider: 2, slime: 2 });
+  expect(r['gold relaxed']).toEqual({});
+  expect(Object.keys(r['c4 adventure'])).toEqual(['monster']);
+  expect(errors).toEqual([]);
+});
+
 test('sword strikes a monster; shield and helmet halve damage', async ({ page }) => {
   const errors = await setup(page);
   const r = await page.evaluate(() => {

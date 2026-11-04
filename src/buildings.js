@@ -8,7 +8,7 @@ import { digCell, lorryNear, onCase, spawnFromDig } from './digger.js';
 import { register } from './commands.js';
 import { teamOf, useMine, useTeam } from './teams.js';
 import { inputOf, isPlayer } from './players.js';
-import { insideB, midMat, moveBody, newId, overlap, sel_, spawnItem, unstuck } from './entities.js';
+import { insideB, isFoe, midMat, moveBody, newId, overlap, sel_, spawnItem, unstuck } from './entities.js';
 import { clearFoot } from './gen.js';
 import { calcTerr } from './render.js';
 import { sfx } from './sound.js';
@@ -468,7 +468,7 @@ function updBuilds() {
         let tgt = null,
           bd = 120;
         // monsters, and in Versus the other team's Wühler (the tower shoots for its team)
-        const foes = animals.filter(a => a.kind === 'monster');
+        const foes = animals.filter(a => isFoe(a) && a.kind !== 'bat');
         if (G.teams) foes.push(...crew.filter(o => !o.dead && teamOf(o) !== teamOf(b)));
         for (const a of foes) {
           const d = Math.hypot(a.x + a.w / 2 - ox, a.y + 4 - oy);
