@@ -211,6 +211,70 @@ test('the hook is thrown wherever you aim: it pulls you to what it hits, or come
   expect(errors).toEqual([]);
 });
 
+test('on the desktop G aims the hook at the mouse pointer: held shows the rope, let go throws', async ({ page }) => {
+  const errors = await field(page);
+  // rock ground with a wall from x 640, air above (as in the test before)
+  const gy = await page.evaluate(() => {
+    const w = window.__ww,
+      { mat, W, H, AIR, ROCK, paint, surf } = w.world,
+      gy = Math.min(H - 30, Math.max(170, surf[400] - 20));
+    for (let x = 360; x < 760; x++)
+      for (let y = gy - 150; y < gy + 20; y++) {
+        mat[y * W + x] = y >= gy || x >= 640 ? ROCK : AIR;
+        paint(y * W + x);
+      }
+    w.G.tools = { hook: true };
+    Object.assign(w.crew[0], { x: 600, y: gy - 10, vx: 0, vy: 0, face: -1, inv: [], hook: null });
+    w.step(5);
+    return gy;
+  });
+  // a world point on the page (where the canvas shows it)
+  const screen = (x, y) =>
+    page.evaluate(
+      ([x, y]) => {
+        const w = window.__ww,
+          r = document.getElementById('cv').getBoundingClientRect(),
+          k = r.width / w.G.VW;
+        return [r.left + (x - Math.round(w.cam.x)) * k, r.top + (y - Math.round(w.cam.y)) * k];
+      },
+      [x, y],
+    );
+  const state = () =>
+    page.evaluate(() => {
+      const w = window.__ww,
+        c = w.crew[0];
+      return { kind: w.G.aimKind, drag: w.G.aimDrag, hook: !!c.hook, x: c.x };
+    });
+  // the pointer to the right, at the wall: G held aims there (facing left does not matter)
+  // (the camera follows the Wühler on its own; wait till he is in the middle of the view)
+  await page.waitForFunction(() => {
+    const w = window.__ww;
+    return Math.abs(w.cam.x + w.G.VW / 2 - w.crew[0].x) < 10;
+  });
+  await page.mouse.move(...(await screen(660, gy - 6)));
+  await page.keyboard.down('KeyG');
+  let s = await state();
+  expect(s.kind).toBe('hook');
+  expect(s.drag.ax).toBeGreaterThan(0.9);
+  expect(s.hook).toBe(false);
+  await page.keyboard.up('KeyG');
+  s = await state();
+  expect(s.kind).toBe(null);
+  expect(s.hook).toBe(true);
+  await page.evaluate(() => window.__ww.step(80));
+  s = await state();
+  expect(s.hook).toBe(false);
+  expect(s.x).toBeGreaterThan(626);
+  // the pointer on the Wühler: no direction (no rope shown), thrown the default way
+  await page.mouse.move(...(await screen(s.x + 3, gy - 6)));
+  await page.keyboard.down('KeyG');
+  s = await state();
+  expect([s.kind, s.drag]).toEqual(['hook', null]);
+  await page.keyboard.up('KeyG');
+  expect((await state()).hook).toBe(true);
+  expect(errors).toEqual([]);
+});
+
 test('on the surface and in a tunnel walking into earth still digs straight', async ({ page }) => {
   await field(page);
   // an earth wall at the surface (no pit around): a tunnel straight in, no ramp
