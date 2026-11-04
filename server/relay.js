@@ -39,7 +39,12 @@
 // Friends are kept in memory only (nothing on disk): every client sends its whole list on each
 // connect, so after a restart the index rebuilds itself. Users without a connection for 30 days
 // are dropped.
-import { createHash } from 'node:crypto';
+//
+// Limits (anybody can connect, so nobody may use up the server): connections per IP address,
+// messages per second per connection (room and friends requests much fewer), failed room codes
+// per connection, the size of a kept snapshot, users in all. Game messages only the host may
+// send (start, snapshots, landscape, end, ...) are dropped when another player sends them.
+import { createHash, randomInt } from 'node:crypto';
 import { WebSocketServer } from 'ws';
 
 const PORT = Number(process.env.PORT || 8787);
@@ -47,6 +52,19 @@ const MAX = 4;
 const ROOM_TTL = 10 * 60 * 1000; // an empty room survives this long
 const HOST_GRACE = 5000; // a host that is gone this long hands over to another player
 const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const num = (v, d) => (Number.isFinite(Number(v)) && v !== '' && v != null ? Number(v) : d);
+const MAX_PER_IP = num(process.env.MAX_PER_IP, 16); // open connections per IP address
+const MSG_RATE = 150, // game messages per second (burst: twice that)
+  CTRL_RATE = 4, // room and friends requests per second
+  CTRL_BURST = 20,
+  MAX_DROPPED = 2000, // messages over the limit before the connection is closed
+  MAX_BAD_CODES = 20, // unknown room codes per connection (no guessing private rooms)
+  MAX_TOKENS = 3, // different friend tokens per connection
+  MAX_SNAP = 1024 * 1024, // bytes of a kept snapshot
+  MAX_USERS = num(process.env.MAX_USERS, 100000);
+// game messages only the host sends (the clients check this too)
+const HOST_ONLY = new Set(['start', 'snap', 'ter', 'end', 'cfg', 'toast', 'cd']);
+const CTRL = new Set(['create', 'join', 'quick', 'list', 'public', 'ready', 'hello', 'finvite', 'leave']);
 
 const rooms = new Map(); // code → room
 
@@ -56,6 +74,18 @@ const FID_RE = /^[A-Z2-9]{8}$/;
 const MAX_FRIENDS = 100;
 const USER_TTL = 30 * 24 * 3600 * 1000;
 const users = new Map(); // fid → {fid, name, friends:Set, ignored:Set, daily, ws, seen}
+const fans = new Map(); // fid → Set of fids that have it in their list (whether they exist or not)
+function setFriends(u, next) {
+  const old = u.friends || new Set();
+  for (const f of old)
+    if (!next.has(f)) {
+      const s = fans.get(f);
+      if (s && (s.delete(u.fid), !s.size)) fans.delete(f);
+    }
+  for (const f of next) if (!old.has(f)) (fans.get(f) || fans.set(f, new Set()).get(f)).add(u.fid);
+  u.friends = next;
+}
+const fansOf = u => [...(fans.get(u.fid) || [])].map(fid => users.get(fid)).filter(Boolean);
 function fidOf(token) {
   const h = createHash('sha256').update('fw-friend:' + token).digest();
   let s = '';
@@ -80,8 +110,8 @@ function friendsMsg(u) {
     const today = f.daily && u.daily && f.daily.day === u.daily.day && f.daily.score != null;
     list.push({ fid, name: f.name, online: !!f.ws, ...whereIs(f), daily: today ? f.daily.score : null });
   }
-  for (const f of users.values())
-    if (f !== u && f.friends.has(u.fid) && !u.friends.has(f.fid) && !u.ignored.has(f.fid)) asks.push({ fid: f.fid, name: f.name });
+  for (const f of fansOf(u))
+    if (f !== u && !u.friends.has(f.fid) && !u.ignored.has(f.fid) && asks.length < 20) asks.push({ fid: f.fid, name: f.name });
   return { t: 'friends', list, asks: asks.slice(0, 20) };
 }
 // tell u and everybody who has u in their list (at most once a second each)
@@ -89,7 +119,11 @@ const dirty = new Set();
 function touch(u) {
   if (!u) return;
   dirty.add(u);
-  for (const f of users.values()) if (f.ws && (f.friends.has(u.fid) || u.friends.has(f.fid))) dirty.add(f);
+  for (const f of fansOf(u)) if (f.ws) dirty.add(f);
+  for (const fid of u.friends || []) {
+    const f = users.get(fid);
+    if (f && f.ws) dirty.add(f);
+  }
 }
 setInterval(() => {
   for (const u of dirty) if (u.ws) send(u.ws, friendsMsg(u));
@@ -99,12 +133,25 @@ function hello(ws, m) {
   const token = clean(m.token, 40);
   if (!token) return send(ws, { t: 'error', e: 'bad' });
   const fid = fidOf(token);
+  // one device, one token: a connection that tries many is guessing (or filling the server)
+  ws.tokens ||= new Set();
+  ws.tokens.add(fid);
+  if (ws.tokens.size > MAX_TOKENS) return ws.close(4003, 'tokens');
   let u = users.get(fid);
-  if (!u) users.set(fid, (u = { fid }));
+  if (!u) {
+    if (users.size >= MAX_USERS) return send(ws, { t: 'error', e: 'busy' });
+    users.set(fid, (u = { fid }));
+  }
   const old = u.friends;
   if (u.ws && u.ws !== ws) u.ws.user = null;
-  Object.assign(u, { name: clean(m.name, 16), friends: codes(m.friends), ignored: codes(m.ignored), ws, seen: Date.now() });
-  u.friends.delete(fid);
+  if (ws.user && ws.user !== u && ws.user.ws === ws) {
+    ws.user.ws = null;
+    ws.user.seen = Date.now();
+  }
+  const next = codes(m.friends);
+  next.delete(fid);
+  setFriends(u, next);
+  Object.assign(u, { name: clean(m.name, 16), ignored: codes(m.ignored), ws, seen: Date.now() });
   const d = m.daily;
   if (d && Number.isInteger(d.day))
     u.daily = { day: d.day, score: Number.isFinite(d.score) ? Math.max(0, Math.round(d.score)) : null };
@@ -125,7 +172,7 @@ function finvite(ws, m) {
 
 function newCode() {
   for (;;) {
-    const c = Array.from({ length: 6 }, () => CHARS[(Math.random() * CHARS.length) | 0]).join('');
+    const c = Array.from({ length: 6 }, () => CHARS[randomInt(CHARS.length)]).join('');
     if (!rooms.has(c)) return c;
   }
 }
@@ -184,11 +231,26 @@ function join(ws, room, m) {
   touch(ws.user);
 }
 
+// a token bucket per connection: refills by rate per second up to burst
+function allow(b, rate, burst, now) {
+  b.n = Math.min(burst, b.n + ((now - b.t) / 1000) * rate);
+  b.t = now;
+  if (b.n < 1) return false;
+  b.n--;
+  return true;
+}
 function onMessage(ws, raw) {
   let m;
   try {
     m = JSON.parse(raw);
   } catch {
+    return;
+  }
+  if (!m || typeof m !== 'object') return;
+  const now = Date.now();
+  const ok = allow(ws.msgB, MSG_RATE, MSG_RATE * 2, now) && (!CTRL.has(m.t) || allow(ws.ctrlB, CTRL_RATE, CTRL_BURST, now));
+  if (!ok) {
+    if (++ws.dropped > MAX_DROPPED) ws.close(4001, 'rate');
     return;
   }
   const room = ws.room,
@@ -209,7 +271,10 @@ function onMessage(ws, raw) {
       return send(ws, { t: 'rooms', rooms: openRooms() });
     case 'join': {
       const r = rooms.get(clean(m.code, 6).toUpperCase());
-      if (!r) return send(ws, { t: 'error', e: 'nope' });
+      if (!r) {
+        if (++ws.badCodes > MAX_BAD_CODES) return ws.close(4002, 'codes');
+        return send(ws, { t: 'error', e: 'nope' });
+      }
       return join(ws, r, m);
     }
     case 'leave':
@@ -226,15 +291,18 @@ function onMessage(ws, raw) {
       me.ready = !!m.ready;
       return broadcast(room, playersMsg(room));
     case 'snap':
-      if (me.pid === room.host) room.snap = m.d;
+      if (me.pid === room.host) room.snap = raw.length <= MAX_SNAP ? m.d : null;
       return;
     case 'public':
       if (me.pid !== room.host) return;
       room.pub = !!m.on;
       return broadcast(room, playersMsg(room));
     case 'msg': {
+      const isHost = me.pid === room.host;
+      // what only the host may say (the others would take over the round)
+      if (m.d && typeof m.d === 'object' && HOST_ONLY.has(m.d.k) && !isHost) return;
       // what the room list shows: Koop or Versus, and whether a round is running
-      const k = m.d && me.pid === room.host && m.d.k;
+      const k = m.d && isHost && m.d.k;
       if (k === 'cfg') Object.assign(room, { versus: !!m.d.versus, ffa: !!m.d.ffa });
       else if (k === 'start' && m.to === 'all') room.playing = true;
       else if (k === 'end') room.playing = false;
@@ -263,6 +331,11 @@ function leave(room, p, forGood) {
   touch(u);
   if (forGood) room.players = room.players.filter(q => q !== p);
   else p.gone = Date.now();
+  // nobody left who could come back: the room is gone right away (no pile of empty rooms)
+  if (!room.players.length) {
+    if (rooms.get(room.code) === room) rooms.delete(room.code);
+    return;
+  }
   if (p.pid === room.host) room.hostGone = Date.now();
   if (!room.players.some(q => q.ws)) room.empty = Date.now();
   broadcast(room, playersMsg(room));
@@ -271,7 +344,11 @@ function leave(room, p, forGood) {
 // housekeeping: hand over the host role, drop old rooms
 setInterval(() => {
   const now = Date.now();
-  for (const [fid, u] of users) if (!u.ws && now - u.seen > USER_TTL) users.delete(fid);
+  for (const [fid, u] of users)
+    if (!u.ws && now - u.seen > USER_TTL) {
+      setFriends(u, new Set());
+      users.delete(fid);
+    }
   for (const [code, room] of rooms) {
     if (room.empty && now - room.empty > ROOM_TTL) {
       rooms.delete(code);
@@ -288,10 +365,31 @@ setInterval(() => {
   }
 }, 1000);
 
+// the player's address: Caddy in front puts it last in X-Forwarded-For (it replaces whatever a
+// client sent there), without a proxy it is the socket's own
+function ipOf(req) {
+  const xff = String(req.headers['x-forwarded-for'] || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+  return xff.length ? xff[xff.length - 1] : req.socket.remoteAddress || '?';
+}
+const perIp = new Map(); // ip → open connections
+
 const wss = new WebSocketServer({ port: PORT, maxPayload: 4 * 1024 * 1024 });
-wss.on('connection', ws => {
+wss.on('connection', (ws, req) => {
+  const ip = ipOf(req);
+  const n = (perIp.get(ip) || 0) + 1;
+  if (n > MAX_PER_IP) return ws.close(4004, 'too many');
+  perIp.set(ip, n);
+  const t = Date.now();
+  Object.assign(ws, { msgB: { n: MSG_RATE * 2, t }, ctrlB: { n: CTRL_BURST, t }, dropped: 0, badCodes: 0 });
   ws.on('message', raw => onMessage(ws, raw));
+  ws.on('error', () => {});
   ws.on('close', () => {
+    const left = (perIp.get(ip) || 1) - 1;
+    if (left > 0) perIp.set(ip, left);
+    else perIp.delete(ip);
     if (ws.room && ws.player && ws.player.ws === ws) leave(ws.room, ws.player, false);
     const u = ws.user;
     if (u && u.ws === ws) {

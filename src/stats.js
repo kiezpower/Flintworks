@@ -3,6 +3,8 @@
 import { tr } from './i18n.js';
 import { G, crew } from './state.js';
 
+// (the numbers come from the host: only numbers go into the table)
+const num = v => (Number.isFinite(+v) ? Math.round(+v) : 0);
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
 
 // the record of a player (pid), made on first use
@@ -32,13 +34,13 @@ const AWARDS = [
 ];
 // the ranking and the awards as HTML for the end screen (empty in a single game)
 function statsHtml(S, teamCols) {
-  const list = Object.values(S || {});
+  const list = Object.values(S && typeof S === 'object' ? S : {}).filter(s => s && typeof s === 'object');
   if (list.length < 2) return '';
   list.sort((a, b) => score(b) - score(a));
   const rows = list
     .map(
-      (s, k) => `<tr><td>${k + 1}.</td><td style="color:${teamCols ? teamCols[s.team] : 'inherit'}">${esc(s.name)}</td>
-        <td>${s.sold}</td><td>${Math.round(s.dig / 10)}</td><td>${s.kills}</td><td>${s.siege}</td><td>${s.chests}</td></tr>`,
+      (s, k) => `<tr><td>${k + 1}.</td><td style="color:${(teamCols && teamCols[num(s.team)]) || 'inherit'}">${esc(s.name)}</td>
+        <td>${num(s.sold)}</td><td>${Math.round(num(s.dig) / 10)}</td><td>${num(s.kills)}</td><td>${num(s.siege)}</td><td>${num(s.chests)}</td></tr>`,
     )
     .join('');
   const awards = AWARDS.map(([key, title, ico]) => {

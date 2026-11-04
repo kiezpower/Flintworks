@@ -7,7 +7,7 @@ import { Share } from '@capacitor/share';
 import { tr } from '../i18n.js';
 import { LIVE, isNative, ownWeb } from '../platform.js';
 import { P } from '../profile.js';
-import { G } from '../state.js';
+import { G, safeCap } from '../state.js';
 import { fromTag, rotation } from './rotation.js';
 import { connect, disconnect, on, send, transport } from './transport.js';
 
@@ -46,22 +46,31 @@ function token() {
   try {
     let t = localStorage.getItem('flintworks-token');
     if (!t) {
-      t = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      t = randomToken();
       localStorage.setItem('flintworks-token', t);
     }
     return t;
   } catch {
-    return 'anon' + Math.random();
+    return randomToken();
   }
+}
+// 128 random bits from the browser's secure generator (not Math.random: the token is the key to
+// the friend code)
+function randomToken() {
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  return Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
 }
 const me = () => ({ name: P.name || 'Kurt', cap: P.cap, hat: P.hat, skin: skinTag(P.outfit, P.bstyle, P.gear), token: token() });
 
+// the players as the relay reports them, with what others chose made safe to show
+const cleanPlayers = list =>
+  (Array.isArray(list) ? list : []).map(p => ({ ...p, name: String(p.name || '').slice(0, 16), cap: safeCap(p.cap) }));
 on('room', m => {
   NET.room = m.code;
   NET.pid = m.pid;
   NET.hostPid = m.host;
   NET.host = m.host === m.pid;
-  NET.players = m.players;
+  NET.players = cleanPlayers(m.players);
   NET.pub = !!m.pub;
   NET.auto = fromTag(m.tag);
   if (NET.auto) Object.assign(NET, { versus: NET.auto.versus, ffa: NET.auto.ffa, gmode: NET.auto.gmode });
@@ -73,7 +82,7 @@ on('room', m => {
   changed();
 });
 on('players', m => {
-  NET.players = m.players;
+  NET.players = cleanPlayers(m.players);
   NET.hostPid = m.host;
   NET.host = m.host === NET.pid;
   NET.pub = !!m.pub;
@@ -117,9 +126,13 @@ function setGMode(id) {
   sendCfg();
   changed();
 }
+// what only the host may tell the others (the relay passes on anything a player sends, but
+// says truthfully who sent it): the same from anybody else is dropped
+const HOST_ONLY = new Set(['start', 'snap', 'ter', 'end', 'cfg', 'toast', 'cd']);
 on('msg', m => {
-  const fn = m.d && msgHandlers.get(m.d.k);
-  if (fn) fn(m.d, m.from);
+  const fn = m.d && typeof m.d === 'object' && msgHandlers.get(m.d.k);
+  if (!fn || (HOST_ONLY.has(m.d.k) && m.from !== NET.hostPid)) return;
+  fn(m.d, m.from);
 });
 
 // (re)connect and enter the room; with no room yet a new one is created (or any open one taken)

@@ -198,3 +198,36 @@ test('Jeder gegen jeden over the network: three players, three castles, each the
   expect(bases).toEqual([3, 3, 3]);
   for (const p of [g, h, i]) expect(p.errors).toEqual([]);
 });
+
+test('only the host decides: a player cannot send host messages (settings, round end) to the others', async ({ browser }) => {
+  const a = await player(browser, 'Alma');
+  const b = await player(browser, 'Boris');
+  await a.page.waitForTimeout(500);
+  await a.page.locator('#lbCreate').click();
+  await expect(a.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  const code = await a.page.locator('.lb-codetap b').textContent();
+  await b.page.locator('#lbCodeIn').fill(code);
+  await b.page.locator('#lbJoinBtn').click();
+  await expect(b.page.locator('.lb-codetap b')).toHaveText(code);
+  // a third, hand-made connection joins as a plain player and pretends to be the host
+  const sent = await b.page.evaluate(
+    ([port, code]) =>
+      new Promise(ok => {
+        const ws = new WebSocket(`ws://localhost:${port}`);
+        ws.onopen = () => ws.send(JSON.stringify({ t: 'join', code, name: 'Mallory', token: 'mallory-token' }));
+        ws.onmessage = e => {
+          if (JSON.parse(e.data).t !== 'room') return;
+          ws.send(JSON.stringify({ t: 'msg', to: 'all', d: { k: 'cfg', versus: true, ffa: false, gmode: null } }));
+          ws.send(JSON.stringify({ t: 'msg', to: 'all', d: { k: 'end', why: '<img id="pwned" src="x">' } }));
+          setTimeout(() => ok(true), 500);
+        };
+      }),
+    [PORT, code],
+  );
+  expect(sent).toBe(true);
+  for (const p of [a, b]) {
+    expect(await p.page.evaluate(() => !!document.getElementById('pwned'))).toBe(false);
+    await expect(p.page.locator('.opt', { hasText: 'Versus' }).first()).not.toContainText('✓');
+  }
+  for (const p of [a, b]) expect(p.errors).toEqual([]);
+});
