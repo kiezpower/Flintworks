@@ -44,7 +44,7 @@ function styleIcon(id) {
   return c;
 }
 const UP_ICON = {
-  crew: () => SPR.clonkIcon,
+  crew: () => SPR.diggerIcon,
   vault: crystalIcon,
   cash: () => itemIcon('nug'),
   pick: () => itemIcon('rock'),

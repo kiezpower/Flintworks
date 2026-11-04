@@ -68,6 +68,17 @@ if (!P.name) {
   P.name = randomName();
   saveProfile();
 }
+// the Fluffel had another name before v1.69.0 (level id "wipfrettung"): carry over campaign stars, times and the chosen mode
+const oldIds = P.campaign?.wipfrettung != null || P.campaignTime?.wipfrettung != null || P.gmode === 'wipfrettung';
+if (P.campaign?.wipfrettung) P.campaign.fluffelrettung = Math.max(P.campaign.fluffelrettung || 0, P.campaign.wipfrettung);
+if (P.campaignTime?.wipfrettung) {
+  const t = P.campaignTime.fluffelrettung;
+  P.campaignTime.fluffelrettung = t ? Math.min(t, P.campaignTime.wipfrettung) : P.campaignTime.wipfrettung;
+}
+delete P.campaign?.wipfrettung;
+delete P.campaignTime?.wipfrettung;
+if (P.gmode === 'wipfrettung') P.gmode = 'fluffelrettung';
+if (oldIds) saveProfile();
 delete P.crystals;
 delete P.tutStats; // (tutorial numbers are analytics events now, analytics.js)
 delete P.chestDay;

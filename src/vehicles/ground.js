@@ -1,5 +1,5 @@
-// Ground and water vehicles: drill wagon, raft, catapult and the riding wipf.
-import { digCell, spawnFromDig } from '../clonk.js';
+// Ground and water vehicles: drill wagon, raft, catapult and the riding fluffel.
+import { digCell, spawnFromDig } from '../digger.js';
 import { moveBody, spawnItem, unstuck } from '../entities.js';
 import { onDig } from '../hazards.js';
 import { sfx } from '../sound.js';
@@ -514,9 +514,9 @@ defineVehicle('target', {
   },
 });
 
-// ---- riding wipf: fast and jumps high ----
+// ---- riding fluffel: fast and jumps high ----
 defineVehicle('mount', {
-  name: 'Reitwipf',
+  name: 'Reitfluffel',
   info: 'Schnelles Reittier für die Oberfläche, springt hoch',
   cost: { wood: 2, rock: 2 },
   w: 10,

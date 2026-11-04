@@ -100,7 +100,7 @@ function rescueTick() {
     if (!near(a)) continue;
     a.lost = false;
     G.rescued = (G.rescued || 0) + 1;
-    announce('Ein Wipf ist gerettet!');
+    announce('Ein Fluffel ist gerettet!');
   }
 }
 

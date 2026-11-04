@@ -4,7 +4,7 @@ import { addFloat } from './floats.js';
 import { track } from './profile.js';
 import { FX_PAL, rainSplash, ripple, sparks, splash } from './effects.js';
 import { guard } from './combat.js';
-import { hurt, startTumble } from './clonk.js';
+import { hurt, startTumble } from './digger.js';
 import { midMat, moveBody, overlap, spawnItem, unstuck } from './entities.js';
 import { canPlantAt, plantTree } from './gen.js';
 import { sfx } from './sound.js';
@@ -138,7 +138,7 @@ function updItems() {
           explode(it.x + 1, it.y + 1, 11, it.thrower);
           break;
         }
-        if (e.kind === 'clonk') {
+        if (e.kind === 'digger') {
           if (it.thrower) e.lastHit = { pid: it.thrower.pid ?? null, team: it.thrower.team || 0, f: G.frame };
           hurt(e, sp * 3 * guard(e, 'hit'));
           if (sp > 3.2) startTumble(e, it.vx * 0.6, -1);
@@ -361,7 +361,7 @@ function updAnimal(a) {
     if (LIQ[midMat(a, 0.1)]) a.vy -= 0.1;
   }
   const onG = !free(a.x, a.y + 1, a.w, a.h);
-  if (a.kind === 'wipf') {
+  if (a.kind === 'fluffel') {
     if (--a.t <= 0) {
       a.t = ri(30, 160);
       a.tvx = rnd() < 0.35 ? 0 : (rnd() < 0.5 ? -1 : 1) * (0.3 + rnd() * 0.4);
@@ -369,7 +369,7 @@ function updAnimal(a) {
     }
     let near = null;
     for (const c of crew) if (!c.dead && Math.abs(c.x - a.x) < 14 && Math.abs(c.y - a.y) < 10) near = c;
-    // (a wipf lost in a level waits for its rescuer instead of running off)
+    // (a fluffel lost in a level waits for its rescuer instead of running off)
     if (near) a.tvx = a.lost ? 0 : Math.sign(a.x - near.x) * 0.8;
     for (const o of animals)
       if (o.kind === 'monster' && Math.abs(o.x - a.x) < 40 && Math.abs(o.y - a.y) < 20)
@@ -427,7 +427,7 @@ function updAnimal(a) {
   return true;
 }
 function killAnimal(a) {
-  const col = { monster: '#5a56a0', wipf: '#f2e6d0', bat: '#3a2f45' }[a.kind] || '#e0a13a';
+  const col = { monster: '#5a56a0', fluffel: '#f2e6d0', bat: '#3a2f45' }[a.kind] || '#e0a13a';
   for (let q = 0; q < 14; q++)
     parts.push({ x: a.x + a.w / 2, y: a.y + a.h / 2, vx: (rnd() - 0.5) * 2, vy: -rnd() * 2, l: 30, c: col });
   if (a.kind === 'monster') {

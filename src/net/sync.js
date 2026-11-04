@@ -53,7 +53,7 @@ const KINDS = {
     }),
     create: d => ({
       id: d.id,
-      kind: 'clonk',
+      kind: 'digger',
       name: d.nm || NAMES[0],
       cap: d.cap || CAPS[0],
       w: 6,
@@ -134,7 +134,8 @@ const KINDS = {
       hu: a.hurt > 0 ? 1 : 0,
       ...(a.warn > 0 ? { w: 1 } : {}), // a monster about to strike (the "!" over it, render.js)
     }),
-    create: d => ({ ...mkAnimal(d.k, d.x, d.y), id: d.id }),
+    // (a host older than v1.69.0 still sends the Fluffel as 'wipf')
+    create: d => ({ ...mkAnimal(d.k === 'wipf' ? 'fluffel' : d.k, d.x, d.y), id: d.id }),
     apply: (a, d) => {
       a.face = d.f;
       a.vx = d.vx;

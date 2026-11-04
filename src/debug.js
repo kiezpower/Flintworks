@@ -15,11 +15,11 @@ import { setGoal } from './tapgo.js';
 import { foundation } from './buildings.js';
 import * as world from './world.js';
 import { gen } from './gen.js';
-import { addClonk, mkAnimal } from './entities.js';
+import { addDigger, mkAnimal } from './entities.js';
 import { arrows } from './buildings.js';
 import * as helpers from './helpers.js';
 import { send } from './commands.js';
-import { digZone, wantsDig } from './clonk.js';
+import { digZone, wantsDig } from './digger.js';
 import { LIQ, matAt, solid } from './world.js';
 
 import * as events from './events.js';
@@ -30,7 +30,7 @@ import * as modes from './modes.js';
 import * as versus from './versus.js';
 import * as bots from './bots.js';
 import * as climb from './climb.js';
-import { context } from './clonk.js';
+import { context } from './digger.js';
 import { TUT, ground } from './tutlevel.js';
 import * as analytics from './analytics.js';
 import { STEPS } from './tutsteps.js';
@@ -48,7 +48,7 @@ window.__ww = {
   combat,
   send,
   helpers,
-  addClonk,
+  addDigger,
   mkAnimal,
   arrows: () => arrows,
   step: n => {

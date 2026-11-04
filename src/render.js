@@ -2,7 +2,7 @@ import { drawGoal } from './tapgo.js';
 import { drawCue } from './startcue.js';
 import { drawCastleCue } from './castlecue.js';
 import { buildSprite } from './skins.js';
-import { drawClonkHi } from './clonkhi.js';
+import { drawDiggerHi } from './diggerhi.js';
 import { aimPath, drawArrows, drawGear } from './combat.js';
 import { drawEvents } from './events.js';
 import { drawBackdrop } from './backdrop.js';
@@ -246,8 +246,8 @@ function animalSprite(a, ph, hurtF, glowOn) {
     put(0, up ? 0 : 1, 1, 1, '#3a2f45');
     put(4, up ? 0 : 1, 1, 1, '#3a2f45');
     put(3, 1, 1, 1, '#ff5050');
-  } else if (a.kind === 'wipf') {
-    // fluffy Wipf with a ginger stripe, pointy ear and bushy tail
+  } else if (a.kind === 'fluffel') {
+    // fluffy Fluffel with a ginger stripe, pointy ear and bushy tail
     put(0, 1, 5, 2, '#f2e6d0');
     put(1, 0, 3, 1, '#fbf4e6');
     put(4, 0, 2, 2, '#f6ecd8');
@@ -603,7 +603,7 @@ function render() {
       ctx.save();
       ctx.translate(x + 3, y + 8);
       ctx.rotate((Math.PI / 2) * c.face);
-      drawClonkHi(c, -3, -5, c.face, ctx);
+      drawDiggerHi(c, -3, -5, c.face, ctx);
       ctx.restore();
       ctx.globalAlpha = 1;
       return;
@@ -613,7 +613,7 @@ function render() {
       ctx.save();
       ctx.translate(x + 3, y + 5);
       ctx.rotate(c.rot);
-      drawClonkHi(c, -3, -5, c.face, ctx);
+      drawDiggerHi(c, -3, -5, c.face, ctx);
       ctx.restore();
     } else {
       // squash on landing, a little stretch while jumping or falling fast (anchored at the feet)
@@ -626,9 +626,9 @@ function render() {
         ctx.save();
         ctx.translate(x + 3, y + 10);
         ctx.scale(kx, ky);
-        drawClonkHi(c, -3, -10, c.face, ctx);
+        drawDiggerHi(c, -3, -10, c.face, ctx);
         ctx.restore();
-      } else drawClonkHi(c, x, y, c.face, ctx);
+      } else drawDiggerHi(c, x, y, c.face, ctx);
     }
     drawGear(ctx, c, x, y);
     // aiming the catapult by dragging "Schleudern": the stone's flight path

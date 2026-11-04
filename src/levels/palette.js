@@ -1,5 +1,5 @@
 // The characters of a level map (map.txt): every character is one material, standing for
-// zoom × zoom cells of the world. Like the palette of Map.bmp in the original Clonk.
+// zoom × zoom cells of the world. Like the palette of a hand-painted map.
 import { ACID, AIR, COAL, EARTH, GEM, GOLD, GRANITE, LAVA, LOAM, ORE, PLANK, ROCK, SAND, WATER } from '../world.js';
 
 // [material, has a back wall (cave or tunnel)]

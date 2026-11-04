@@ -132,7 +132,7 @@ const EN = {
   'Level verloren': 'Level lost',
   'Alle Wühler sind verloren.': 'All diggers are lost.',
   'Die Zeit ist um.': 'Time is up.',
-  'Ein Wipf ist gerettet!': 'A wipf is rescued!',
+  'Ein Fluffel ist gerettet!': 'A fluffel is rescued!',
   Gerettet: 'Rescued',
   Taler: 'coins',
   'Monster besiegt': 'Monsters defeated',
@@ -142,16 +142,16 @@ const EN = {
   Minuten: 'Minutes',
   '{what} verkauft': '{what} sold',
   '{what} im Lager': '{what} in store',
-  Wipfrettung: 'Wipf rescue',
-  'Rette {goal} Wipfe aus ihren Höhlen': 'Rescue {goal} wipfs from their caves',
-  'Unter dem Hügel sitzen vier Wipfe in ihren Höhlen fest. Grab dich zu ihnen durch – die Karte (M) zeigt dir die Höhlen.':
-    'Four wipfs are stuck in their caves under the hill. Dig your way to them – the map (M) shows you the caves.',
+  Fluffelrettung: 'Fluffel rescue',
+  'Rette {goal} Fluffel aus ihren Höhlen': 'Rescue {goal} fluffels from their caves',
+  'Unter dem Hügel sitzen vier Fluffel in ihren Höhlen fest. Grab dich zu ihnen durch – die Karte (M) zeigt dir die Höhlen.':
+    'Four fluffels are stuck in their caves under the hill. Dig your way to them – the map (M) shows you the caves.',
   'Die Höhle ist von Fels umschlossen. Wirf einen Feuerstein dagegen, das sprengt ihn auf.':
     'The cave is surrounded by rock. Throw a flint at it, that blasts it open.',
   'Neben der tiefen Höhle glänzt Gold – das bringt Geld an der Burg.':
     'Gold glitters next to the deep cave – it brings money at the castle.',
   Halbzeit: 'Halfway',
-  'Zwei Wipfe sind frei, zwei warten noch.': 'Two wipfs are free, two are still waiting.',
+  'Zwei Fluffel sind frei, zwei warten noch.': 'Two fluffels are free, two are still waiting.',
   'Die alte Mine': 'The old mine',
   'Hier wurde früher Gold gegraben. Der alte Schacht führt zu drei Stollen – und ganz unten liegen die reichsten Adern.':
     'Gold was mined here long ago. The old shaft leads to three galleries – and the richest veins lie at the very bottom.',
@@ -228,7 +228,7 @@ const EN = {
   Bohrwagen: 'Drill wagon',
   Floß: 'Raft',
   Katapult: 'Catapult',
-  Reitwipf: 'Riding wipf',
+  Reitfluffel: 'Riding fluffel',
   Seilbahnmast: 'Cable car mast',
   Luftschiff: 'Airship',
   Grubenbahn: 'Mine train',

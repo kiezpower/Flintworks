@@ -46,7 +46,7 @@ import {
   surf,
 } from './world.js';
 
-// ---- Clonk ----
+// ---- Digger ----
 function hurt(c, a, silent) {
   if (c.dead || c.puppet || G.netClient) return; // in multiplayer only the host deals damage
   c.energy -= a;
@@ -57,9 +57,9 @@ function hurt(c, a, silent) {
   }
   c.hurt = 12;
   if (!silent && a > 3) sfx('hurt', c.x, c.y);
-  if (c.energy <= 0) killClonk(c);
+  if (c.energy <= 0) killDigger(c);
 }
-function killClonk(c) {
+function killDigger(c) {
   c.dead = true;
   c.energy = 0;
   c.deadT = 0;
@@ -99,7 +99,7 @@ setDigTest(digAtPx);
 const HARD = { [SAND]: 0.75, [EARTH]: 1, [LOAM]: 1.2, [GOLD]: 1.15, [COAL]: 1.25, [ORE]: 1.4, [GEM]: 1.5, [ROCK]: 1.7 };
 // automatic digging: walking into earth digs, stick down digs down-slanted, stick up under an
 // earth ceiling digs up-slanted. The test looks at exactly the area the next dig stroke would
-// remove (same centre and radius as in updClonk), so digging continues as long as there is
+// remove (same centre and radius as in updDigger), so digging continues as long as there is
 // earth in that direction. Returns 'up' or 'side' when climbing/hanging must be ended.
 // One dig stroke clears the Wühler's body box (with rounded corners) moved a few pixels along
 // the dig direction. Clearing the whole body outline means no corner of earth is left
@@ -408,7 +408,7 @@ function nearTree(c) {
   return null;
 }
 const NOIN = { ax: 0, ay: 0, dig: false, jumpP: false, jumpUp: false, throwP: false, actP: false };
-function updClonk(c, I) {
+function updDigger(c, I) {
   // wooden stairs and bridges hold the Wühler only from above (see setPlat)
   if (c.dropT > 0) c.dropT--;
   setPlat(c.vy < 0 || c.dropT > 0 ? 2 : 1);
@@ -490,7 +490,7 @@ function updBody(c, I) {
     }
   } else c.breath = Math.min(100, c.breath + 1.5);
   if (c.dead) return;
-  // AI for idle clonks: get out of liquids
+  // AI for idle diggers: get out of liquids
   if (I === NOIN && headLiq) I = { ...NOIN, ay: -1 };
 
   if (c.tumble) {
@@ -588,7 +588,7 @@ function updBody(c, I) {
   }
   const contact = !boxFree(c.x - 3, c.y - 3, 12, 16);
   if (I.dig && contact && !c.climb && !c.hangle) {
-    // Clonk-style digging: only horizontal or slanted, never straight up/down
+    // Classic digging: only horizontal or slanted, never straight up/down
     if (Math.abs(I.ax) > 0.25) c.face = Math.sign(I.ax);
     // snap to three directions: straight, slanted down, slanted up (same steepness)
     const mag = Math.hypot(I.ax, I.ay);
@@ -644,16 +644,16 @@ function updBody(c, I) {
   }
 
   const onG = !free(c.x, c.y + 1, 6, 10);
-  // frames in the air, for the jump and fall poses (clonkhi.js); a step down does not count
+  // frames in the air, for the jump and fall poses (diggerhi.js); a step down does not count
   c.airT = onG || inLiq ? 0 : (c.airT || 0) + 1;
   let tvx = Math.abs(I.ax) < 0.25 ? 0 : I.ax * (inLiq ? 0.6 : 1.05);
-  // starting off from standing, and stopping from a run, for the poses (clonkhi.js)
+  // starting off from standing, and stopping from a run, for the poses (diggerhi.js)
   if (onG && Math.abs(I.ax) > 0.25 && Math.abs(c.vx) < 0.15 && G.frame - (c.startF ?? -99) > 12) c.startF = G.frame;
   if (onG && Math.abs(I.ax) < 0.25 && Math.abs(c.vx) > 0.7 && G.frame - (c.stopF ?? -99) > 12) c.stopF = G.frame;
   if (Math.abs(I.ax) > 0.25) {
     // turning round from a run: the boots skid
     if (onG && Math.sign(I.ax) !== c.face && Math.abs(c.vx) > 0.7) dust(c.x + 3 - c.face * 2, c.y + 9, 2, '#b89a76');
-    if (Math.sign(I.ax) !== c.face) c.turnF = G.frame; // (a turn frame follows, clonkhi.js)
+    if (Math.sign(I.ax) !== c.face) c.turnF = G.frame; // (a turn frame follows, diggerhi.js)
     c.face = Math.sign(I.ax);
   }
   c.vx += (tvx - c.vx) * (onG ? 0.4 : inLiq ? 0.15 : 0.1);
@@ -950,7 +950,7 @@ export {
   doThrow,
   hangleUpd,
   hurt,
-  killClonk,
+  killDigger,
   lorryAct,
   lorryNear,
   nearTree,
@@ -958,5 +958,5 @@ export {
   spawnFromDig,
   startBridge,
   startTumble,
-  updClonk,
+  updDigger,
 };

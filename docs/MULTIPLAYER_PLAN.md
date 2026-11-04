@@ -19,8 +19,8 @@ Stand: v1.10.0 · Phasen 0–7 umgesetzt (✅ in 5.2). Server: `server/` → `ws
 | Game-Loop | `main.js` (`loop`, `step`) | Feste Schrittweite (16,7 ms ÷ Spieltempo), höchstens 4 Schritte pro Bild. Das Rendern ist getrennt. | ✅ Die Schrittweite hängt nicht von der Bildrate ab. Der Tick ist mit `G.frame` gut als Netz-Takt nutzbar. |
 | Terrain | `world.js`, `sim.js` | `mat` und `bg` sind je ein `Uint8Array` mit 1400×400 Zellen (je 560 KB). Fallsand und Flüssigkeiten nutzen aktive 32×32-Chunks und `dirty`-Chunks für den Upload. | ✅ Die Chunk-Struktur eignet sich direkt für Diffs. ⚠️ Fallsand und Wasser ändern laufend viele Zellen. |
 | Weltgenerator | `gen.js` | Nutzt `rnd()`. Mit `?seed=` ist das reproduzierbar, sonst wird `Math.random` verwendet. | ⚠️ Der Seed muss zur Laufzeit setzbar sein, damit Clients die Welt selbst erzeugen. |
-| Entities | `state.js` (Arrays `crew`, `items`, `animals`, `builds`, `trees`, `lorries` …), `objects.js`, `entities.js` | Einfache Objekte in globalen Arrays. Die Physik steckt in `moveBody`/`updClonk`. | ⚠️ Es gibt keine IDs. Die Netzsynchronisation braucht stabile `id`s. |
-| Spieler / Crew | `clonk.js`, `helpers.js`, `crewui.js` | `crew[0]` ist der eigene Wühler. `sel_()`, `G.sel` und die Kamera hängen daran (rund 30 Stellen). | ❌ Es braucht mehrere „eigene“ Wühler: `me()` bzw. `playerOf(id)` statt `crew[0]`. |
+| Entities | `state.js` (Arrays `crew`, `items`, `animals`, `builds`, `trees`, `lorries` …), `objects.js`, `entities.js` | Einfache Objekte in globalen Arrays. Die Physik steckt in `moveBody`/`updDigger`. | ⚠️ Es gibt keine IDs. Die Netzsynchronisation braucht stabile `id`s. |
+| Spieler / Crew | `digger.js`, `helpers.js`, `crewui.js` | `crew[0]` ist der eigene Wühler. `sel_()`, `G.sel` und die Kamera hängen daran (rund 30 Stellen). | ❌ Es braucht mehrere „eigene“ Wühler: `me()` bzw. `playerOf(id)` statt `crew[0]`. |
 | Helfer-KI | `helpers.js`, `pathfind.js` | A* in Zeitscheiben (`performance.now()`). Aufgaben pro Helfer, Abbaugebiet. | ⚠️ Das Ergebnis hängt von der Rechenzeit ab und ist deshalb nicht deterministisch. Die KI darf nur beim Host laufen. |
 | Input | `input.js`, `tapgo.js` | Ein globales `inp`-Objekt. `step()` gibt es direkt an `crew[G.sel]`. Kontextaktionen und Bauen wirken direkt auf `sel_()`. | ❌ Nötig sind Eingaben pro Spieler (`inputs[playerId]`) und Aktionen als Befehle (`{t:'build', type}`). |
 | Wirtschaft | `store.js`, `G.money`, `buildings.js` | Ein globales Lager, eine globale Kasse, eine Basis (`G.base`). | ❌ Für Versus muss das pro Team laufen: `teams[i].money/store/base`. |
@@ -34,9 +34,9 @@ Stand: v1.10.0 · Phasen 0–7 umgesetzt (✅ in 5.2). Server: `server/` → `ws
 
 | # | Umbau | Betroffene Dateien | Aufwand |
 |---|---|---|---|
-| U1 | `players.js` neu: `players[]` (id, name, Mütze, Team, crewRef), `me()`, `playerOf(c)`. Ersetzt `crew[0]`, `sel_()` und `G.sel`. | neu, plus `main.js`, `ui.js`, `render.js`, `helpers.js`, `crewui.js`, `missions.js`, `tutorial.js`, `hazards.js`, `ambience.js`, `buildings.js`, `clonk.js`, `store.js`, `gen.js` | M |
+| U1 | `players.js` neu: `players[]` (id, name, Mütze, Team, crewRef), `me()`, `playerOf(c)`. Ersetzt `crew[0]`, `sel_()` und `G.sel`. | neu, plus `main.js`, `ui.js`, `render.js`, `helpers.js`, `crewui.js`, `missions.js`, `tutorial.js`, `hazards.js`, `ambience.js`, `buildings.js`, `digger.js`, `store.js`, `gen.js` | M |
 | U2 | Eingaben pro Spieler: `inputs[id]`. Das lokale `inp` füllt nur `inputs[me]`. `tapgo` wird pro Spieler geführt. | `input.js`, `tapgo.js`, `main.js` | S |
-| U3 | Aktionen als Befehle: `doCommand(playerId, cmd)` für Bauen, Kontext, Werfen, Kaufen, Helfer-Aufgabe, Abbaugebiet. | `ui.js`, `buildings.js`, `clonk.js`, `crewui.js`, neu `commands.js` | M |
+| U3 | Aktionen als Befehle: `doCommand(playerId, cmd)` für Bauen, Kontext, Werfen, Kaufen, Helfer-Aufgabe, Abbaugebiet. | `ui.js`, `buildings.js`, `digger.js`, `crewui.js`, neu `commands.js` | M |
 | U4 | Teams: `teams[]` mit Geld, Lager, Basis und Gebiet. `G.money`, `G.store` und `G.base` werden zu Gettern auf das eigene Team. | `store.js`, `buildings.js`, `ui.js`, `modes.js`, `helpers.js`, `gen.js` | M |
 | U5 | Stabile `id` für alle Entities (`nextId++` beim Anlegen) | `entities.js`, `objects.js`, `buildings.js`, `gen.js`, `state.js` | S |
 | U6 | Seed zur Laufzeit setzen: `setSeed(n)` in `world.js` | `world.js`, `gen.js` | S |
@@ -98,9 +98,9 @@ GitHub Pages liefert nur statische Dateien. Signaling und Relay müssen deshalb 
 |---|---|
 | Snapshots | Host sendet 15 Hz. Inhalt: Spieler, Helfer, Tiere, Items, Loren, Bäume (nur Zustand), Gebäude (nur Änderungen). Positionen auf 0,25 px gerundet. Nur Felder, die sich geändert haben (Delta zum letzten bestätigten Snapshot). |
 | Fremde Figuren | Interpolation mit 100 ms Puffer zwischen zwei Snapshots |
-| Eigene Figur | **Client-Prediction**: Die eigene Figur läuft lokal mit `updClonk` auf dem lokalen Terrain. Der Host korrigiert sanft: unter 2 px nichts, 2–8 px über 6 Ticks angleichen, über 8 px springen. |
+| Eigene Figur | **Client-Prediction**: Die eigene Figur läuft lokal mit `updDigger` auf dem lokalen Terrain. Der Host korrigiert sanft: unter 2 px nichts, 2–8 px über 6 Ticks angleichen, über 8 px springen. |
 | Graben vom Client | Lokal sofort als Vorschau. Gilt erst, wenn das Terrain-Diff vom Host kommt. |
-| Rollback | **Nein**. Unnötig bei Clonk-Tempo, und der Aufwand wäre zu hoch. |
+| Rollback | **Nein**. Unnötig bei diesem Spieltempo, und der Aufwand wäre zu hoch. |
 | Eingaben | Client sendet mit 30 Hz `{tick, ax, ay, dig, jump, throw, act}`. Befehle (Bauen, Kaufen, Helfer-Aufgabe) gehen einzeln mit Bestätigung. |
 | Bandbreite | Host-Upload bei 3 Clients ca. 40–80 KB/s (0,3–0,6 Mbit/s). Pro Client ca. 15–25 KB/s herunter. |
 

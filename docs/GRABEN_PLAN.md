@@ -16,7 +16,7 @@
 > - Vorschau: drei Punkte in Grabrichtung, nur auf Touch-Geräten.
 > - Mehrspieler: Takt und Härte laufen auf dem Host; Gäste sehen die Hacken-Animation nach der
 >   eigenen Animation und bekommen Sound und Tonhöhe vom Host. Partikel bleiben beim Host.
-> - Code: `src/clonk.js` (Härte, Takt, Hieb, Beute), `src/clonkhi.js` (Hacke), `src/sound.js`,
+> - Code: `src/digger.js` (Härte, Takt, Hieb, Beute), `src/diggerhi.js` (Hacke), `src/sound.js`,
 >   `src/world.js` (feuchte Wände, Textur-Farben), `src/objects.js` (Geröll), Tests in
 >   `tests/dig.spec.js`.
 
@@ -28,7 +28,7 @@ dabei verlässlich.
 
 ---
 
-## 1. Bestandsaufnahme (Stand `src/clonk.js`, `src/world.js`, `src/sound.js`, `src/clonkhi.js`)
+## 1. Bestandsaufnahme (Stand `src/digger.js`, `src/world.js`, `src/sound.js`, `src/diggerhi.js`)
 
 So funktioniert Graben heute: Solange gegraben wird, löscht `digStroke` **jedes Frame** die
 Körperbox (6×10 px, Ecken 1 px abgerundet), ein paar Pixel in Grabrichtung verschoben. Der
@@ -43,7 +43,7 @@ Rausch-Sound, mit 14 % Chance pro Zelle ein 1–2 px großer Krümel in fester F
 | G3 | Stollen sehen ausgestanzt aus | Gerade, glatte Kanten, gleichförmige Breite, Treppenstufen bei Schrägen | `strokeCells` = Rechteck mit 1 px Eckabrundung |
 | G4 | Schwaches Partikel-Feedback | Krümel sind einzelne Pixel in Einheitsfarbe, kein Staub, kein Geröll, das liegen bleibt | `CRUMB`-Tabelle, `parts` als `fillRect` |
 | G5 | Dünner, monotoner Sound | Derselbe Rauschstoß alle 9 Frames, keine Variation, nicht synchron zur Animation | `sfx('dig')` mit `G.frame % 9` |
-| G6 | Hacke ohne Wucht | Hacke wackelt per `sin`, kein Ausholen/Zuschlagen/Zurückfedern, Körper reagiert nicht | `drawGear` in `clonkhi.js` |
+| G6 | Hacke ohne Wucht | Hacke wackelt per `sin`, kein Ausholen/Zuschlagen/Zurückfedern, Körper reagiert nicht | `drawGear` in `diggerhi.js` |
 | G7 | Beute erscheint „irgendwo“ | Nugget-, Erz-, Kohle-Zähler sind **global** für alle Wühler; das Nugget fällt bei dem, der zufällig den Zähler überlaufen lässt, auch bei Sprengungen | `G.goldDust`, `G.oreDug` … in `digCell`/`spawnFromDig` |
 | G8 | Fels-Wackeln flackert | Jede Fels-Zelle setzt `G.shake = 0.8` → Dauerzittern statt Schlägen | `digCell` |
 | G9 | Start/Stopp hakelig | Automatisches Graben startet erst nach 8/18 Frames Drücken, schaltet bei wenig Erde ab; keine Vorschau, wohin gegraben wird | `wantsDig`, `pushT`, `digZone`-Schwellen |
@@ -70,7 +70,7 @@ Rausch-Sound, mit 14 % Chance pro Zelle ein 1–2 px großer Krümel in fester F
 
 ### Etappe 1 – Materialhärte und Schlag-Takt (Kern, G1 G2 G8)
 
-- Neue Tabelle `HARD` in `clonk.js`: Sand 0,6 · Erde 1 · Lehm 1,3 · Kohle 1,4 · Erz 1,6 ·
+- Neue Tabelle `HARD` in `digger.js`: Sand 0,6 · Erde 1 · Lehm 1,3 · Kohle 1,4 · Erz 1,6 ·
   Gold 1,2 · Edelstein 1,8 · Fels 3 (nur mit Spitzhacke). Vorschuss-Tempo = Basis / Härte
   des Materials vor dem Gesicht (gemittelt über die Stroke-Zone), Spitzhacke teilt die Härte.
 - Schlag-Takt: `c.digT` zählt einen Zyklus von ~12 Frames (Sand 8, Fels 18). Bewegung läuft
@@ -104,7 +104,7 @@ Rausch-Sound, mit 14 % Chance pro Zelle ein 1–2 px großer Krümel in fester F
 
 ### Etappe 4 – Animation (G6)
 
-- Hacken-Zyklus in `clonkhi.js` an `c.digT` koppeln: Ausholen (Hacke hinter dem Kopf),
+- Hacken-Zyklus in `diggerhi.js` an `c.digT` koppeln: Ausholen (Hacke hinter dem Kopf),
   schneller Schlag, kurzes Nachfedern; Körper beugt sich im Treffer 1 px vor, Kopf nickt.
 - Eigene Posen für schräg hoch/runter; Hacke auf ganze Pixel runden (keine Halbpixel-Unschärfe).
 - Bei harten Materialien prallt die Hacke sichtbar zurück, bei Sand taucht sie ein.

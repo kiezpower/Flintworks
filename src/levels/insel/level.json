@@ -30,7 +30,7 @@
     {"t": "animal", "kind": "fish", "x": 950, "y": 200},
     {"t": "animal", "kind": "fish", "x": 1100, "y": 200},
     {"t": "animal", "kind": "fish", "x": 1220, "y": 200},
-    {"t": "animal", "kind": "wipf", "x": 760}
+    {"t": "animal", "kind": "fluffel", "x": 760}
   ],
   "areas": {"ufer": [190, 100, 80, 80]},
   "goals": [

@@ -1,14 +1,14 @@
 // A multiplayer client shows the host's game. It sends its stick and buttons to the host,
 // moves its own Wühler right away (prediction, corrected by the host's answer) and eases
 // everything else towards the positions the host reports.
-import { context, updClonk } from '../clonk.js';
+import { context, updDigger } from '../digger.js';
 import { addFloat, updFloats } from '../floats.js';
 import { inp } from '../input.js';
 import { updParts } from '../objects.js';
 import { playAnnounce } from '../announce.js';
 import { playShot, updArrows, updCombat } from '../combat.js';
 import { playBomb, updEvents } from '../events.js';
-import { clonkOf } from '../players.js';
+import { diggerOf } from '../players.js';
 import { sfx } from '../sound.js';
 import { G, flashes } from '../state.js';
 import { tapGotoInput } from '../tapgo.js';
@@ -137,10 +137,10 @@ function playEvent(e) {
 // one tick on a client (instead of the full simulation)
 function clientStep(paused) {
   G.frame++;
-  const me = clonkOf(G.myId);
+  const me = diggerOf(G.myId);
   if (G.state === 'play' && !paused) {
     tapGotoInput(me);
-    if (me && !me.dead && !me.netBusy) updClonk(me, { ...inp, throwP: false, actP: false });
+    if (me && !me.dead && !me.netBusy) updDigger(me, { ...inp, throwP: false, actP: false });
     if (inp.actP && me) {
       const cx = context(me);
       if (cx.ui) (cx.ui === 'base' ? openBase : openBuild)();

@@ -15,8 +15,8 @@
 // player id of its own (negative), so it counts like a player: it buys, throws, picks up,
 // keeps its explosives at the base and shows up in the ranking. Only the host runs bots; the
 // others see them like any Wühler. A person joining the round late takes over a bot's castle.
-import { NOIN } from './clonk.js';
-import { addClonk, insideB, midMat, spawnItem } from './entities.js';
+import { NOIN } from './digger.js';
+import { addDigger, insideB, midMat, spawnItem } from './entities.js';
 import { swordContext } from './combat.js';
 import { exec } from './commands.js';
 import { helperAI } from './helpers.js';
@@ -50,7 +50,7 @@ function standY(x) {
 function addBot(t, k = t) {
   const b = castleOf(t);
   if (!b) return null;
-  const c = addClonk(b.x + 12, b.gy - 10);
+  const c = addDigger(b.x + 12, b.gy - 10);
   Object.assign(c, {
     pid: botPid(t),
     bot: true,

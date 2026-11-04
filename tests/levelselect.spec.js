@@ -19,7 +19,7 @@ async function lobby(page, profile = {}) {
 const shown = page => page.evaluate(() => !document.getElementById('levelsel').hidden);
 
 test('the selection shows the chapters with pictures, the next level, locks and details', async ({ page }) => {
-  const errors = await lobby(page, { campaign: { wipfrettung: 3 }, campaignTime: { wipfrettung: 312 } });
+  const errors = await lobby(page, { campaign: { fluffelrettung: 3 }, campaignTime: { fluffelrettung: 312 } });
   await page.click('#lbGMode');
   expect(await shown(page)).toBe(true);
   // one chip per group: recommended, game modes, two chapters, maps
@@ -43,15 +43,15 @@ test('the selection shows the chapters with pictures, the next level, locks and 
   expect(cards.length).toBe(8);
   expect(cards.every(c => c.picture)).toBe(true);
   expect(cards.filter(c => c.next).map(c => c.id)).toEqual(['altemine']);
-  expect(cards.filter(c => !c.locked).map(c => c.id)).toEqual(['wipfrettung', 'altemine']);
+  expect(cards.filter(c => !c.locked).map(c => c.id)).toEqual(['fluffelrettung', 'altemine']);
   // the pictures load
   await page.waitForFunction(() =>
     [...document.querySelectorAll('.ls-sec[data-s="k2"] .ls-card img')].every(i => i.complete && i.naturalWidth > 0),
   );
   // details of a played level: its story, goal, star times and best time
-  await page.click('.ls-card[data-id="wipfrettung"]');
+  await page.click('.ls-card[data-id="fluffelrettung"]');
   const info = await page.textContent('.ls-info');
-  expect(info).toContain('Rette 4 Wipfe');
+  expect(info).toContain('Rette 4 Fluffel');
   expect(info).toContain('3 Sterne unter 6 Min.');
   expect(info).toContain('Bestzeit 5:12');
   expect(await page.textContent('.ls-go')).toBe('Spielen');
@@ -73,10 +73,10 @@ test('the selection shows the chapters with pictures, the next level, locks and 
 });
 
 test('arrow keys move between cards, Enter opens and starts, the lobby keeps the choice', async ({ page }) => {
-  const errors = await lobby(page, { campaign: { wipfrettung: 1 } });
+  const errors = await lobby(page, { campaign: { fluffelrettung: 1 } });
   await page.click('#lbGMode');
   await page.click('.ls-tab[data-t="k2"]');
-  await page.focus('.ls-sec[data-s="k2"] .ls-card[data-id="wipfrettung"]');
+  await page.focus('.ls-sec[data-s="k2"] .ls-card[data-id="fluffelrettung"]');
   // up: the row above (chapter 1), down again: back to the first card of chapter 2
   await page.keyboard.press('ArrowUp');
   expect(await page.evaluate(() => document.activeElement.closest('.ls-sec').dataset.s)).toBe('k1');
@@ -147,9 +147,9 @@ test('recommended: the level to go on with and the Tagesschacht, which opens its
 });
 
 test('after a won level the end screen offers the next one', async ({ page }) => {
-  const errors = await lobby(page, { gmode: 'wipfrettung' });
+  const errors = await lobby(page, { gmode: 'fluffelrettung' });
   await page.click('#lbPlay');
-  await page.waitForFunction(() => window.__ww.state === 'play' && window.__ww.G.mode === 'wipfrettung');
+  await page.waitForFunction(() => window.__ww.state === 'play' && window.__ww.G.mode === 'fluffelrettung');
   await page.evaluate(() => {
     const w = window.__ww,
       c = w.crew[0];
@@ -165,5 +165,24 @@ test('after a won level the end screen offers the next one', async ({ page }) =>
   expect(await page.textContent('#nextBtn')).toContain('Die alte Mine');
   await page.click('#nextBtn');
   await page.waitForFunction(() => window.__ww.state === 'play' && window.__ww.G.mode === 'altemine');
+  expect(errors).toEqual([]);
+});
+
+test('a profile from before the Fluffel (level id "wipfrettung") keeps its stars, time and choice', async ({
+  page,
+}) => {
+  const errors = await lobby(page, {
+    campaign: { wipfrettung: 2 },
+    campaignTime: { wipfrettung: 400 },
+    gmode: 'wipfrettung',
+  });
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')));
+  expect(saved.campaign).toEqual({ fluffelrettung: 2 });
+  expect(saved.campaignTime).toEqual({ fluffelrettung: 400 });
+  expect(saved.gmode).toBe('fluffelrettung');
+  // the next level is open, like before
+  await page.click('#lbGMode');
+  const open = await page.$$eval('.ls-sec[data-s="k2"] .ls-card:not(.locked)', cs => cs.map(c => c.dataset.id));
+  expect(open).toEqual(['fluffelrettung', 'altemine']);
   expect(errors).toEqual([]);
 });

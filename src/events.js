@@ -3,7 +3,7 @@
 // lightning live in weather.js. Everything here runs on the host; clients get the messages,
 // the shaking and the lava bombs as events, and the terrain through the normal sync.
 import { announce, quake } from './announce.js';
-import { hurt } from './clonk.js';
+import { hurt } from './digger.js';
 import { spawnItem } from './entities.js';
 import { startCaveIn } from './hazards.js';
 import { beamNear } from './mine.js';

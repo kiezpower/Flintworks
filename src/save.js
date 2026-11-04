@@ -203,7 +203,8 @@ function deserialize(d) {
     G.money = d.money;
     G.earned = d.earned || 0;
     G.dayT = d.dayT;
-    G.mode = d.mode || 'gold';
+    // (saves from before v1.69.0 use older names for the Fluffel and the Wühler)
+    G.mode = d.mode === 'wipfrettung' ? 'fluffelrettung' : d.mode || 'gold';
     G.tut = d.tut || null;
     G.relaxed = !!d.relaxed;
     G.store = d.store || {};
@@ -228,7 +229,7 @@ function deserialize(d) {
     G.gasClouds = d.gasClouds || [];
     G.hintsSeen = new Set(d.hints || []);
     crew.push(
-      ...d.crew.map(c => ({ ...c, chop: null, bridge: null, job: null, path: null, plan: null, laying: false })),
+      ...d.crew.map(c => ({ ...c, kind: 'digger', chop: null, bridge: null, job: null, path: null, plan: null, laying: false })),
     );
     items.push(...d.items.map(it => ({ ...it, thrower: null })));
     builds.push(...d.builds);
@@ -242,7 +243,7 @@ function deserialize(d) {
         return o;
       }),
     );
-    animals.push(...d.animals);
+    animals.push(...d.animals.map(a => (a.kind === 'wipf' ? { ...a, kind: 'fluffel' } : a)));
     lorries.push(...d.lorries);
     vehicles.length = 0;
     vehicles.push(...(d.vehicles || []));

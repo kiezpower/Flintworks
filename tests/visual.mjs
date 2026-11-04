@@ -90,7 +90,7 @@ async function selection(name, viewport, lang) {
   page.on('pageerror', e => errors.push(e.message));
   await page.addInitScript(l => {
     localStorage.setItem('flintworks-lang', l);
-    const camp = { wipfrettung: 3, altemine: 1 };
+    const camp = { fluffelrettung: 3, altemine: 1 };
     localStorage.setItem('flintworks-profile', JSON.stringify({ installAsked: 'done', tutorialDone: true, campaign: camp }));
   }, lang);
   await page.goto(base);

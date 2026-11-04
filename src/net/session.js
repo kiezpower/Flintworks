@@ -6,8 +6,8 @@
 import { P } from '../profile.js';
 import { parseSkin } from '../skins.js';
 import { addBot, takeOverBot } from '../bots.js';
-import { addClonk } from '../entities.js';
-import { clearInputs, clonkOf } from '../players.js';
+import { addDigger } from '../entities.js';
+import { clearInputs, diggerOf } from '../players.js';
 import { deserialize } from '../save.js';
 import { G, crew } from '../state.js';
 import { useMine } from '../teams.js';
@@ -50,13 +50,13 @@ function startMessage(gmode) {
 }
 const QUICK_MIN = 4;
 // a player's Wühler at the castle of its team
-function addPlayerClonk(p, self = false) {
-  if ((p.pid === G.myId && !self) || clonkOf(p.pid)) return;
+function addPlayerDigger(p, self = false) {
+  if ((p.pid === G.myId && !self) || diggerOf(p.pid)) return;
   const team = (G.netStart.teams && G.netStart.teams[p.pid]) || 0;
   // (a castle a bot plays: the player takes over the bot's Wühler)
   if (takeOverBot(team, p)) return;
   const base = teamBase(team);
-  const c = addClonk(base.x + 8 + (p.pid % 4) * 6, base.gy - 10);
+  const c = addDigger(base.x + 8 + (p.pid % 4) * 6, base.gy - 10);
   Object.assign(c, { pid: p.pid, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin, inv: [], team });
   // the castle takes the style of the first player of its team (the host sends it to the others)
   if (base && !base.skin) base.skin = parseSkin(p.skin).style;
@@ -88,16 +88,16 @@ function beginNet(d) {
   if (!G.relaxed && G.evRate) G.evRate *= 1.5;
   if (NET.host) {
     // your own Wühler (made by gen at the red castle) moves to its team's castle
-    const me = clonkOf(G.myId);
+    const me = diggerOf(G.myId);
     if (me && G.myTeam) {
       const b = teamBase(G.myTeam);
       Object.assign(me, { team: G.myTeam, x: b.x + 10, y: b.gy - 10 });
     }
-    // the host's castle in the host's style (the other castles: addPlayerClonk)
+    // the host's castle in the host's style (the other castles: addPlayerDigger)
     const self = d.players.find(p => p.pid === G.myId);
     const own = teamBase(G.myTeam);
     if (self && own) own.skin = parseSkin(self.skin).style;
-    for (const p of d.players) addPlayerClonk(p);
+    for (const p of d.players) addPlayerDigger(p);
     (d.bots || []).forEach((t, k) => addBot(t, k + (d.seed % 6)));
     useMine();
     startHost();
@@ -126,7 +126,7 @@ onRoomChange(() => {
     for (const p of NET.players)
       if (p.online && p.pid !== G.myId && !online.has(p.pid)) {
         teamFor(p.pid);
-        addPlayerClonk(p);
+        addPlayerDigger(p);
         welcome(p.pid, { ...G.netStart, players: NET.players });
       }
   online = now;
@@ -155,7 +155,7 @@ function resumeNet(s) {
   G.myTeam = G.netStart.teams[G.myId] || 0;
   clearInputs();
   online = new Set(cur.map(p => p.pid));
-  for (const p of cur) addPlayerClonk(p, true);
+  for (const p of cur) addPlayerDigger(p, true);
   useMine();
   startHost();
   for (const p of cur) if (p.pid !== G.myId) welcome(p.pid, { ...G.netStart, players: NET.players });

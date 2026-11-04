@@ -59,11 +59,11 @@ Bodenschicht kommen von allein.
 
 ```json
 {
-  "id": "wipfrettung",            // = Ordnername
+  "id": "fluffelrettung",            // = Ordnername
   "v": 1,                         // erhöhen, wenn sich das Level spürbar ändert
-  "name": "Wipfrettung",          // deutsch; englisch in src/i18n.js
+  "name": "Fluffelrettung",          // deutsch; englisch in src/i18n.js
   "icon": "crew",                 // Symbol in der Levelliste (toolIcon)
-  "desc": "Rette {goal} Wipfe …", // {goal} = Summe aller Ziele
+  "desc": "Rette {goal} Fluffel …", // {goal} = Summe aller Ziele
   "intro": "…",                   // Meldung kurz nach dem Start
   "biome": "meadow",              // meadow | desert | winter
   "size": [800, 300],             // 300–2800 × 150–700
@@ -94,7 +94,7 @@ Bodenschicht kommen von allein.
 | `base` | `x`, `lvl`, `team` | die Burg (Pflicht, sonst x = 60); `team: 1` = zweite Burg für Versus |
 | `tree` | `x`, `stage` (1–4) | |
 | `item` | `kind`, `x`, `y` | ohne `y` auf dem Boden |
-| `animal` | `kind` (wipf, monster, bat, fish), `x`, `y`, `lost` | `lost`: wartet auf Rettung |
+| `animal` | `kind` (fluffel, monster, bat, fish), `x`, `y`, `lost` | `lost`: wartet auf Rettung |
 | `trapped` | `x`, `y` | ein verschütteter Wühler, wartet auf Rettung |
 | `chest` | `x`, `y`, `re` | Schatztruhe (Höhle dafür in der Karte malen); `re`: füllt sich so viele Minuten nach dem Öffnen wieder |
 | `hill` | `x`, `r` | Versus: der Hügel, der dem haltenden Team Taler bringt (ohne: Mitte der Karte, `r` = 34) |
@@ -108,7 +108,7 @@ Bodenschicht kommen von allein.
 | `money` | `n` | Taler |
 | `sell` | `what`, `n` | verkaufte Stücke (`nug`, `ore`, `gem` …) |
 | `collect` | `what`, `n` | Stück im Lager |
-| `rescue` | `n` | gerettete Wipfe und Wühler |
+| `rescue` | `n` | gerettete Fluffel und Wühler |
 | `kills` | `n` | besiegte Monster |
 | `chests` | `n` | gefundene Truhen |
 | `depth` | `n` | tiefster Punkt in Metern |

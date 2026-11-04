@@ -7,8 +7,8 @@ const goalWrap = document.getElementById('goalWrap'),
   goalTxt = document.getElementById('goalTxt'),
   goalBar = document.getElementById('goalBar');
 import { BASELV, BT, BUY, UPG, costTxt, countRes, hasRes, lvl, mkLorry, resName, terrOn, tryBuild } from './buildings.js';
-import { context } from './clonk.js';
-import { addClonk, sel_, spawnItem } from './entities.js';
+import { context } from './digger.js';
+import { addDigger, sel_, spawnItem } from './entities.js';
 import { held, joy, keys } from './input.js';
 import { calcTerr, cam } from './render.js';
 import { sfx } from './sound.js';
@@ -686,15 +686,15 @@ function openBase() {
   toolSection(p, c, { opt, sec, toast, reopen: openBase, lacking });
   const l = sec(p, tr('Kaufen · Kasse: {m} Taler', { m: G.money }));
   for (const o of BUY) {
-    if (o.t === 'clonk' && G.noHelpers) continue; // (helpers switched off, settings.js)
-    const icon = ITEM[o.t] ? itemIcon(o.t) : o.t === 'lorry' ? SPR.lorryIcon : SPR.clonkIcon;
+    if (o.t === 'digger' && G.noHelpers) continue; // (helpers switched off, settings.js)
+    const icon = ITEM[o.t] ? itemIcon(o.t) : o.t === 'lorry' ? SPR.lorryIcon : SPR.diggerIcon;
     const alive = crew.filter(x => !x.dead).length;
-    const full = o.t === 'clonk' && alive >= BASELV[lvl()].crew,
+    const full = o.t === 'digger' && alive >= BASELV[lvl()].crew,
       poor = G.money < o.price;
     opt(l, {
       icon,
       title: resName(o.t),
-      sub: tr(o.t === 'clonk' ? 'Neues Crewmitglied' : o.t === 'lorry' ? 'Transportiert 25 Sachen' : ''),
+      sub: tr(o.t === 'digger' ? 'Neues Crewmitglied' : o.t === 'lorry' ? 'Transportiert 25 Sachen' : ''),
       cost: tr('{p} Taler', { p: o.price }),
       state: full ? 'locked' : poor ? 'poor' : 'ok',
       why: full ? tr('Crew voll – erst die Burg ausbauen') : poor ? lacking(c, null, o.price) : '',
@@ -731,11 +731,11 @@ register('take', (c, { t }) => {
 register('buy', (c, { t }) => {
   const o = BUY.find(b => b.t === t);
   if (!o || G.money < o.price) return;
-  if (t === 'clonk' && (G.noHelpers || crew.filter(x => !x.dead).length >= BASELV[lvl()].crew)) return;
+  if (t === 'digger' && (G.noHelpers || crew.filter(x => !x.dead).length >= BASELV[lvl()].crew)) return;
   G.money -= o.price;
   sfx('coin');
-  if (t === 'clonk') {
-    const n = addClonk(G.base.x + 15, G.base.gy - 10);
+  if (t === 'digger') {
+    const n = addDigger(G.base.x + 15, G.base.gy - 10);
     toast('{name} ist da', { name: n.name });
   } else if (t === 'lorry') {
     lorries.push(mkLorry(G.base.x + 12, G.base.gy - 8));

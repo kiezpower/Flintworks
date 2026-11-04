@@ -1,5 +1,5 @@
 import { setGoal } from './tapgo.js';
-import { NOIN } from './clonk.js';
+import { NOIN } from './digger.js';
 import { sel_ } from './entities.js';
 import { cam, cv } from './render.js';
 import { audioInit } from './sound.js';

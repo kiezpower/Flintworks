@@ -8,7 +8,7 @@ import { resetEvents } from './events.js';
 import { GAME_MODES, applyModeSetup, treasureGoal } from './modes.js';
 import { setupRound } from './versus.js';
 import { genLevel } from './levels/loader.js';
-import { addClonk, mkAnimal, newId, spawnItem } from './entities.js';
+import { addDigger, mkAnimal, newId, spawnItem } from './entities.js';
 import { calcTerr } from './render.js';
 import { simulate } from './sim.js';
 import { sp, treeSprite } from './sprites.js';
@@ -161,7 +161,7 @@ function gen() {
   G.rails = [];
   G.meteorNext = 15000 + rnd() * 8000;
   G.goldDust = G.earthDug = G.loamDug = G.oreDug = G.coalDug = 0;
-  // how many dug coal pixels give one lump (spawnFromDig, clonk.js): more coal outside the
+  // how many dug coal pixels give one lump (spawnFromDig, digger.js): more coal outside the
   // campaign, whose levels are tuned to the old amount
   G.coalStep = GAME_MODES[G.mode]?.campaign ? 45 : 30;
   clearFresh();
@@ -335,7 +335,7 @@ function gen() {
   }
   // crew
   G.money = 40;
-  for (let k = 0; k < 3; k++) addClonk(G.base.x + 10 + k * 6, G.base.gy - 10);
+  for (let k = 0; k < 3; k++) addDigger(G.base.x + 10 + k * 6, G.base.gy - 10);
   crew[0].pid = G.myId; // your own Wühler; the other two are helpers
   crew[0].inv = ['flint', 'rock'];
   crew[1].inv = ['loam'];
@@ -345,7 +345,7 @@ function gen() {
   // animals
   for (let k = 0, n = perWidth(6); k < n; k++) {
     const x = ri(200, W - 20);
-    animals.push(mkAnimal('wipf', x, topSolid(x) - 6));
+    animals.push(mkAnimal('fluffel', x, topSolid(x) - 6));
   }
   let fish = 0;
   for (let tr = 0; tr < 4000 && fish < 10; tr++) {
@@ -419,7 +419,7 @@ function genBase(t, cx) {
       n++;
     }
   for (let k = 0; k < 2; k++) {
-    const c = addClonk(b.x + 16 + k * 6, b.gy - 10);
+    const c = addDigger(b.x + 16 + k * 6, b.gy - 10);
     Object.assign(c, { team: t, inv: [k ? 'rock' : 'loam'] });
   }
 }

@@ -2,7 +2,7 @@
 // way there with the same A* as the helpers in the game (walking, dropping, hopping onto ledges
 // and digging new tunnels), digs the ore out and carries it home to the castle.
 // When the ground is empty, a fresh piece of land is made for the next round.
-import { drawClonkHi } from './clonkhi.js';
+import { drawDiggerHi } from './diggerhi.js';
 import { DIG, mkNav } from './pathfind.js';
 import { drawItemBig } from './sprites.js';
 
@@ -206,7 +206,7 @@ function updWorkers(land, t) {
   for (const w of workers) updWorker(w, land, t);
 }
 function drawWorkers(g) {
-  for (const w of workers) drawClonkHi(w, Math.round(w.x), Math.round(w.y), w.face, g);
+  for (const w of workers) drawDiggerHi(w, Math.round(w.x), Math.round(w.y), w.face, g);
   for (let k = dust.length - 1; k >= 0; k--) {
     const d = dust[k];
     d.x += d.vx;

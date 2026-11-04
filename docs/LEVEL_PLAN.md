@@ -1,10 +1,10 @@
-# Plan: Vorgebaute Level („Szenarien“ wie im Original-Clonk)
+# Plan: Vorgebaute Level („Szenarien“ wie in den Klassikern)
 
 > **Stand: alle Etappen umgesetzt (v1.33.0–v1.36.0).** Entscheidungen siehe
 > Abschnitt 11. Wie man ein Level baut: `docs/LEVELS.md`.
 >
 > Abweichungen in Etappen 7 und 8:
-> - Kapitel 2 hat die 8 geplanten Level: Wipfrettung, Die alte Mine, Insel im See, Labyrinth,
+> - Kapitel 2 hat die 8 geplanten Level: Fluffelrettung, Die alte Mine, Insel im See, Labyrinth,
 >   Feuerinsel, Säuresee, Gipfelsturm, Die Schlucht. Die Größen weichen teils vom Plan ab (Insel
 >   1600 × 350, Feuerinsel 1000 × 450, Schlucht 2400 × 500).
 > - Die drei Mehrspieler-Karten (Zwei Burgen, Wettgraben, Expedition) sind **Spielmodi in der
@@ -35,7 +35,7 @@
 >   bitgenau wie vorher.
 > - Ziele (`goals`) sind eine Liste, die ganz erfüllt sein muss (kein `any`); die Anzeige nennt
 >   das erste offene Ziel. Mehr hat noch kein Level gebraucht.
-> - Eingeschlossene Wipfe (`lost`) laufen nicht vor ihrem Retter weg und blinken auf der Karte.
+> - Eingeschlossene Fluffel (`lost`) laufen nicht vor ihrem Retter weg und blinken auf der Karte.
 > - Kapitel 2 ist von Anfang an offen (das erste Level), unabhängig von Kapitel 1.
 > - Die Lobby zeigt die Kapitel als Abschnitte mit eigenen Sternen; Vorschaubilder der Karten
 >   gibt es nicht, die Levelliste behält ihre Symbole (wenig Nutzen auf dem kleinen Platz).
@@ -65,15 +65,15 @@
 
 Ziel: Neben den Zufallswelten gibt es **von Hand gestaltete Level**. Jedes hat eine eigene
 Landschaft, eigene Startbedingungen, ein eigenes Ziel und kleine Ereignisse, so wie die Szenarien
-im Original-Clonk. Ein Level soll sich anfühlen wie ein Ort, den jemand gebaut hat, und nicht wie
+in den klassischen Grabespielen. Ein Level soll sich anfühlen wie ein Ort, den jemand gebaut hat, und nicht wie
 ein Seed mit Aufgabe.
 
 ---
 
-## 1. Wie das Original es gemacht hat
+## 1. Wie die Klassiker es gemacht haben
 
-In Clonk (ab Clonk 4 über Endeavour und Planet bis OpenClonk) ist jedes Spiel ein **Szenario**.
-Das ist ein Ordner (`.c4s`) mit wenigen, klar getrennten Teilen:
+In den klassischen Grabespielen ist jedes Spiel ein **Szenario**.
+Das ist ein Ordner mit wenigen, klar getrennten Teilen:
 
 | Teil im Original | Inhalt | Was Flintworks davon übernimmt |
 |---|---|---|
@@ -84,7 +84,7 @@ Das ist ein Ordner (`.c4s`) mit wenigen, klar getrennten Teilen:
 | `Objects.txt` | Alle vorplatzierten Objekte: Gebäude, Fahrzeuge, Tiere, Gegenstände, Crew | ✅ `objects` in `level.json` |
 | `Script.c` | Szenarioskript: `Initialize()`, Zeitgeber, Meldungen, Sieg- und Niederlage-Bedingungen, kleine Inszenierungen | ✅ deklarative **Auslöser** (`triggers`), dazu Code-Hooks wie heute `setup`/`tick` |
 | `Title.txt`, `Desc.rtf`, `Title.png` | Name, Beschreibungstext und Vorschaubild in der Szenarienauswahl | ✅ Titel, Text, automatisch erzeugtes Vorschaubild |
-| Ordner `.c4f` | Szenarien in Kapiteln und Paketen, Freischalten über gelöste Missionen | ✅ Kapitel in der Kampagne |
+| Szenario-Ordner | Szenarien in Kapiteln und Paketen, Freischalten über gelöste Missionen | ✅ Kapitel in der Kampagne |
 | Editor-Modus der Engine | Mit Pinsel, Linie, Rechteck und Füllen Material in die Landschaft malen, Objekte setzen, sofort ausprobieren | ✅ eigener Level-Editor (Etappe 5) |
 
 Was die Originale gut gemacht haben und wir übernehmen sollten:
@@ -98,8 +98,8 @@ Was die Originale gut gemacht haben und wir übernehmen sollten:
 4. **Gemischte Karten.** Feste Form (Berg, Schlucht, Burg) mit zufälligem Inhalt (Erz, Höhlen).
    So bleibt jedes Spiel etwas anders.
 
-Typische Szenario-Arten aus den Clonk-Teilen, die zu Flintworks passen: Rettungsmissionen (die
-bekannte „Wipfrettung“), Goldminen mit vorgezeichneten Schächten, Schatzsuche in Höhlenlabyrinthen,
+Typische Szenario-Arten aus den Klassikern, die zu Flintworks passen: Rettungsmissionen (etwa
+eingeschlossene Tiere retten), Goldminen mit vorgezeichneten Schächten, Schatzsuche in Höhlenlabyrinthen,
 Vulkan- und Inselkarten, Siedlungsaufbau unter Zeitdruck, Wettrennen/Parkour, und symmetrische
 Melee- und Belagerungskarten für mehrere Spieler.
 
@@ -164,7 +164,7 @@ Was schon passt und bleibt:
 ```
 src/levels/
   index.js               Liste der Kapitel und Level (Reihenfolge, Freischalten)
-  wipfrettung/
+  fluffelrettung/
     map.png              Kartenbild (Palette siehe 4.2)
     level.json           alles andere (4.3)
     level.js             optional: Code-Hooks für Sonderfälle
@@ -206,11 +206,11 @@ Web-App und in der APK und brauchen keinen Server.
 
 ```json
 {
-  "id": "wipfrettung",
+  "id": "fluffelrettung",
   "v": 1,
-  "name": "Wipfrettung",
-  "desc": "Bring {goal} Wipfe heil zur Burg",
-  "intro": "In den Höhlen unter dem Hügel sitzen Wipfe fest …",
+  "name": "Fluffelrettung",
+  "desc": "Bring {goal} Fluffel heil zur Burg",
+  "intro": "In den Höhlen unter dem Hügel sitzen Fluffel fest …",
   "biome": "meadow",
   "size": [1024, 384],
   "zoom": 4,
@@ -229,7 +229,7 @@ Web-App und in der APK und brauchen keinen Server.
   "objects": [
     { "t": "base", "x": 60 },
     { "t": "tree", "x": 140, "stage": 4 },
-    { "t": "animal", "kind": "wipf", "x": 520, "y": 210, "tag": "lost" },
+    { "t": "animal", "kind": "fluffel", "x": 520, "y": 210, "tag": "lost" },
     { "t": "chest", "x": 900, "y": 300 },
     { "t": "item", "kind": "tnt", "x": 300, "y": 180 },
     { "t": "build", "type": "hut", "x": 190, "done": true }
@@ -358,13 +358,13 @@ nach und nach, das ist aber kein Teil dieses Plans.
 ### 7.2 Kapitel 2 „Klassiker“
 
 Die 7 vorhandenen Level bilden **Kapitel 1**. Neu kommt
-**Kapitel 2** mit 8 handgebauten Leveln, angelehnt an typische Clonk-Szenarien. Reihenfolge nach
+**Kapitel 2** mit 8 handgebauten Leveln, angelehnt an typische Szenarien der Klassiker. Reihenfolge nach
 Lernkurve. Die Größen sind Startwerte für den Entwurf: kleine Karten für Rätsel, große für
 Expeditionen.
 
 | # | Level | Größe | Idee | Ziel | Was es lehrt/prüft |
 |---|---|---|---|---|---|
-| 1 | Wipfrettung | 800 × 300 | Wipfe sitzen in Höhlen unter einem Hügel, Zugänge teils mit Fels verschlossen | 4 Wipfe zur Burg bringen | Graben, Sprengen, Tragen |
+| 1 | Fluffelrettung | 800 × 300 | Fluffel sitzen in Höhlen unter einem Hügel, Zugänge teils mit Fels verschlossen | 4 Fluffel zur Burg bringen | Graben, Sprengen, Tragen |
 | 2 | Die alte Mine | 1000 × 600 | Verlassene Mine mit Schächten, morschen Balken, Grubenbahn-Resten und Gas | 25 Gold verkaufen | Stützbalken, Gas, Grubenbahn |
 | 3 | Insel im See | 1600 × 350 | Kleine Insel, wenig Holz, Gold auf der Nachbarinsel | 600 Taler | Floß, Brücken, Holz sparen |
 | 4 | Labyrinth | 1200 × 600 | Ein Höhlensystem mit Sackgassen und Wasserfallen, 5 Truhen | alle Truhen | Orientierung, Karte, Wasser ablassen |
@@ -391,7 +391,7 @@ Jedes Level bekommt beim Bauen eine **Spielzeit-Messung** (Testrunden), daraus d
 |---|---|---|---|
 | 1 | U9: verschiedene Weltgrößen, Weltbild in Kacheln | Freies Spiel läuft unverändert, im Entwicklungsmodus auch mit `?size=…`; alle Tests grün | L |
 | 2 | U1, U2, U3, U8: `gen()` aufteilen, Loader, Palette, Aufrauen; Tutorial-Welt als erstes Paket | Tutorial spielt sich wie vorher, kommt aber aus `map.png` | M |
-| 3 | U4: Ziele, Niederlage, Auslöser; HUD für Teilziele | Level 1 „Wipfrettung“ spielbar | M |
+| 3 | U4: Ziele, Niederlage, Auslöser; HUD für Teilziele | Level 1 „Fluffelrettung“ spielbar | M |
 | 4 | U5, U7: Speicherstand, Lobby mit Kapiteln und Vorschaubildern | Kapitel 2 in der Lobby, Freischalten | S–M |
 | 5 | Tests (Abschnitt 9) | Jedes Level wird bei `npm test` geladen und geprüft | S |
 | 6 | Level-Editor (nur Entwicklungsserver), danach U10: alte Level einfrieren | Level ohne Code bauen und testspielen; `c1`–`c7` hängen nicht mehr am Generator | M–L |

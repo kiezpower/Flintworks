@@ -3,7 +3,7 @@
 // that soften hits. Swords and arrows also hurt the other team's castle.
 import { announce } from './announce.js';
 import { arrows } from './buildings.js';
-import { hurt } from './clonk.js';
+import { hurt } from './digger.js';
 import { addStat } from './stats.js';
 import { teamOf, useMine, useTeam } from './teams.js';
 import { addFloat } from './floats.js';
@@ -204,14 +204,14 @@ function updArrows() {
       sfx('clack', a.x, a.y);
       break;
     }
-    // a bow's arrow that hits a wipf only startles it (it jumps off, the shooter gets a little
-    // reward) and drops to the ground; wipfs lost in a level are left alone
+    // a bow's arrow that hits a fluffel only startles it (it jumps off, the shooter gets a little
+    // reward) and drops to the ground; fluffels lost in a level are left alone
     if (!hit && a.pick)
       for (const m of animals) {
-        if (m.kind !== 'wipf' || m.lost || m.scared > 0) continue;
+        if (m.kind !== 'fluffel' || m.lost || m.scared > 0) continue;
         if (!(a.x > m.x - 1 && a.x < m.x + m.w + 1 && a.y > m.y - 1 && a.y < m.y + m.h + 1)) continue;
         hit = true;
-        if (!G.netClient) scareWipf(m, a);
+        if (!G.netClient) scareFluffel(m, a);
         dropArrow(a);
         break;
       }
@@ -265,9 +265,9 @@ function updArrows() {
   for (let k = stuckArrows.length - 1; k >= 0; k--) if (--stuckArrows[k].l <= 0) stuckArrows.splice(k, 1);
   if (!G.netClient) pickArrows();
 }
-// a startled wipf: jumps away from the arrow, shows a "!" for a moment (objects.js), and the
+// a startled fluffel: jumps away from the arrow, shows a "!" for a moment (objects.js), and the
 // shooter's team gets two Taler; then it has ten seconds' peace
-function scareWipf(m, a) {
+function scareFluffel(m, a) {
   const dir = Math.sign(a.vx) || 1;
   Object.assign(m, { scared: 600, scaredDir: dir, vy: -2.4, vx: dir * 1.4, tvx: dir * 1.1 });
   useTeam(a.tm ?? 0);
