@@ -30,8 +30,8 @@ import { ev } from './analytics.js';
 import { closeVeil, openVeil, veilOpen } from './veil.js';
 import { startCue, updCue } from './startcue.js';
 import { updBuilds, updLorry } from './buildings.js';
-import { NOIN, context, doThrow, updClonk } from './clonk.js';
-import { addClonk, insideB, sel_ } from './entities.js';
+import { NOIN, context, doThrow, updDigger } from './digger.js';
+import { addDigger, insideB, sel_ } from './entities.js';
 import { gen } from './gen.js';
 import { cycleCrew, readInput } from './input.js';
 import { helperAI } from './helpers.js';
@@ -481,7 +481,7 @@ function step() {
     crew.forEach((c, n) => {
       useTeam(teamOf(c)); // Versus: castle, cash and store of this Wühler's team
       const I = c.dead ? (isPlayer(c) ? inputOf(c.pid) : NOIN) : c.bot ? botAI(c, n) : isPlayer(c) ? inputOf(c.pid) : helperAI(c, n);
-      updClonk(c, I);
+      updDigger(c, I);
       if (isPlayer(c)) playerVehicleTick(c);
       if (isPlayer(c) && !c.dead) {
         G.cmdPid = c.pid; // messages from these actions go to that player

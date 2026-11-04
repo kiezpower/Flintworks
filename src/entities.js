@@ -3,11 +3,11 @@ import { CAPS, G, NAMES, crew, items } from './state.js';
 import { free, matAt, ri } from './world.js';
 
 // ---- Entities ----
-function addClonk(x, y) {
+function addDigger(x, y) {
   const n = crew.length;
   const c = {
     id: newId(),
-    kind: 'clonk',
+    kind: 'digger',
     name: NAMES[n % NAMES.length],
     cap: CAPS[n % CAPS.length],
     x,
@@ -41,7 +41,7 @@ function addClonk(x, y) {
   return c;
 }
 function mkAnimal(kind, x, y) {
-  const sz = { wipf: [5, 4], fish: [4, 2], monster: [12, 9], bat: [5, 3] }[kind];
+  const sz = { fluffel: [5, 4], fish: [4, 2], monster: [12, 9], bat: [5, 3] }[kind];
   return {
     id: newId(),
     kind,
@@ -53,7 +53,7 @@ function mkAnimal(kind, x, y) {
     vy: 0,
     face: 1,
     t: ri(20, 120),
-    hp: kind === 'monster' ? 90 : kind === 'wipf' ? 10 : 4,
+    hp: kind === 'monster' ? 90 : kind === 'fluffel' ? 10 : 4,
     hurt: 0,
     anim: 0,
     dry: 0,
@@ -133,4 +133,4 @@ const sel_ = () => crew.find(c => c.pid === G.myId) || null;
 // every entity gets a stable id (the network refers to things by it)
 const newId = () => (G.nextId = (G.nextId || 0) + 1);
 
-export { addClonk, insideB, midMat, mkAnimal, moveBody, newId, overlap, sel_, spawnItem, unstuck };
+export { addDigger, insideB, midMat, mkAnimal, moveBody, newId, overlap, sel_, spawnItem, unstuck };

@@ -2,7 +2,7 @@
 // is a game mode (campaign: true) in GAME_MODES, so goal, stars and the end screen just work.
 // Stars per level are kept in the profile (P.campaign); a level opens with one star on the last.
 import { announce } from './announce.js';
-import { addClonk, mkAnimal, sel_ } from './entities.js';
+import { addDigger, mkAnimal, sel_ } from './entities.js';
 import { tr } from './i18n.js';
 import { CHAPTER2 } from './levels/index.js';
 import { rescueTick } from './levels/goals.js';
@@ -70,7 +70,7 @@ const LEVELS = {
         const x = Math.round(baseX() + dx),
           y = surf[x] + dd;
         pocket(x, y, 16, 14);
-        const c = addClonk(x - 3, y - 3);
+        const c = addDigger(x - 3, y - 3);
         c.trapped = true;
         c.focus = 'stay';
       }

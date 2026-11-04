@@ -138,7 +138,7 @@ function finishCard(result) {
   const s = Math.round((G.playTicks || 0) / 60);
   // what you learned, as the game's own icons
   const learned = [
-    [SPR.clonkIcon.toDataURL(), 'Laufen'],
+    [SPR.diggerIcon.toDataURL(), 'Laufen'],
     [padIcon('dig'), 'Graben'],
     [itemIcon('nug').toDataURL(), 'Verkaufen'],
   ]

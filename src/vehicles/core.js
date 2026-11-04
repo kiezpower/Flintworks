@@ -1,5 +1,5 @@
 // Vehicles: things a Wühler can get into and steer (drill wagon, raft, catapult, airship,
-// riding wipf, cable car gondola) or that run by themselves (the mine train on rails).
+// riding fluffel, cable car gondola) or that run by themselves (the mine train on rails).
 // Every kind registers itself in VK with its size, cost and three functions:
 //   make(v)            set up a new one
 //   upd(v, I)          one tick; I is the rider's input (or null without rider)

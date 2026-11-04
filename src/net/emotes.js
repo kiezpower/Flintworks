@@ -1,6 +1,6 @@
 // Quick calls between players: a bubble with a symbol over your Wühler that everybody sees.
 import { tr } from '../i18n.js';
-import { clonkOf } from '../players.js';
+import { diggerOf } from '../players.js';
 import { G, crew } from '../state.js';
 import { closePanel, openPanel, opt, sec } from '../ui.js';
 import { onGameMsg, sendTo } from './room.js';
@@ -21,7 +21,7 @@ const EMOTES = [
   ['😂', 'Haha!'],
 ];
 function show(pid, k) {
-  const c = clonkOf(pid);
+  const c = diggerOf(pid);
   if (c && EMOTES[k]) c.emo = { e: EMOTES[k][0], l: 150 };
 }
 onGameMsg('emo', (d, from) => show(from, d.e));

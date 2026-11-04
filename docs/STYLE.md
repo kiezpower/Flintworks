@@ -2,8 +2,8 @@
 
 Alles in Flintworks wird im Code gezeichnet. Diese Regeln halten neue Grafiken im selben Stil.
 
-**Ziel (freigegeben, Details in [ART_RUBRIC.md](ART_RUBRIC.md)):** Clonk-Siedlungs- und Grabewelt im
-Querschnitt, echte Pixelgrafik mit Terraria-Klarheit; Siedlung dicht wie bei Clonk, aber ruhiger;
+**Ziel (freigegeben, Details in [ART_RUBRIC.md](ART_RUBRIC.md)):** Siedlungs- und Grabewelt im
+Querschnitt, echte Pixelgrafik mit Terraria-Klarheit; Siedlung dicht wie bei den Klassikern, aber ruhiger;
 Untertage tiefer und dunkler mit warmem Licht und leuchtenden Materialien wie Noita, nie ganz
 schwarz; HUD und Menüs knapp wie SteamWorld Dig 2 ([UI_STYLE.md](UI_STYLE.md)).
 
@@ -13,7 +13,7 @@ schwarz; HUD und Menüs knapp wie SteamWorld Dig 2 ([UI_STYLE.md](UI_STYLE.md)).
 |---|---|
 | Landschaftspixel (Zelle der Welt) | 1 px, im Weltbild 2×2 Texel (`RES = 2` in `world.js`) |
 | Feine Details (Wühler, Hacke, Funde) | auf das Halbpixel-Raster runden: `Math.round(v * 2) / 2` |
-| Wühler | 16×20 Texel = 8×10 Landschaftspixel (`portrait.js`, `clonkhi.js`) |
+| Wühler | 16×20 Texel = 8×10 Landschaftspixel (`portrait.js`, `diggerhi.js`) |
 | Funde in der Erde | 1 Zeichen = 1 Landschaftspixel, höchstens 9×8, ein Fund je 20×20-Block (`under.js`) |
 | Knopf-Icons | heute 12×12 (`PAD_ICONS` in `sprites.js`), neue Icons 24×24 |
 
@@ -72,13 +72,13 @@ Keine weichgezeichneten Kanten: Bilder ohne Glättung zeichnen, Koordinaten rund
 
 ## Animation
 
-- Klips sind Pixelzeilen und Phasen (`clonkhi.js`); das System dazu sind Physik (`clonk.js`),
+- Klips sind Pixelzeilen und Phasen (`diggerhi.js`); das System dazu sind Physik (`digger.js`),
   Partikel (`effects.js`), Ton (`sound.js`), Vibration und Kamera-Rütteln.
 - Jede Aktion: Vorbereitung → schneller Teil → Nachfedern. Kontakt (Schlag, Landung, Fuß) bekommt
   Bild, Ton und ggf. Vibration im selben Frame.
 - Pflichtposen für neue Figuren: Stehen, 4 Laufphasen, Sprung/Fall, Landung, Aktion. Füße rutschen nicht:
   die Laufphase folgt der Strecke (`c.anim`), nicht der Zeit.
-- Posen (`clonkhi.js`): `LEGS` (4 Laufphasen), `JUMP` (steigen: Beine angezogen, Arm halb hoch),
+- Posen (`diggerhi.js`): `LEGS` (4 Laufphasen), `JUMP` (steigen: Beine angezogen, Arm halb hoch),
   `FALL` (fallen: Beine gespreizt, Arm hoch), `CLIMB`. „In der Luft“ heißt `c.airT > 3` (eine Stufe
   hinab zählt nicht). Ab 3 Dingen im Gepäck trägt der Wühler einen Sack auf dem Rücken.
 - Wenden: 5 Bilder lang die Frontansicht `FRONT` (eigene Pixelzeilen, Hut wird mitgezeichnet; `c.turnF`).

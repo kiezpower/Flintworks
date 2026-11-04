@@ -13,12 +13,44 @@
 
 | # | Schritt | Wie |
 |---|---|---|
-| 1 | Google-Play-Entwicklerkonto | play.google.com/console, einmalig 25 $ |
-| 2 | Upload-Schlüssel erzeugen | `keytool -genkeypair -v -keystore upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000` (Passwort gut aufheben, Datei sicher sichern) |
+| 1 | Google-Play-Entwicklerkonto | ✅ vorhanden |
+| 2 | Upload-Schlüssel erzeugen | `keytool -genkeypair -v -keystore upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000` (Passwort gut aufheben, Datei sicher sichern – ohne sie gibt es keine Updates, nur über ein Zurücksetzen beim Google-Support) |
 | 3 | Secrets im Repo | Settings → Secrets → Actions: `ANDROID_KEYSTORE_BASE64` (= `base64 -w0 upload.jks`), `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` (= `upload`), `ANDROID_KEY_PASSWORD` |
-| 4 | Bundle bauen | Actions → *Play-Store-Bundle bauen* → *Run workflow*, Ergebnis `flintworks.aab` unter Artifacts |
-| 5 | App anlegen | Play Console → App erstellen → „Spiel“, kostenlos; Play App Signing aktiv lassen |
-| 6 | Interner Test | Release „Interner Test“ → AAB hochladen → Tester per E-Mail einladen |
+| 4 | Datenschutzerklärung fertig machen | In `public/privacy.html` oben Name, Anschrift und E-Mail eintragen (der gelbe Platzhalter), pushen, dann `https://kiezpower.github.io/Flintworks/privacy.html` prüfen |
+| 5 | Bundle bauen | Actions → *Play-Store-Bundle bauen* → *Run workflow*, Ergebnis `flintworks.aab` unter Artifacts |
+| 6 | App anlegen | Play Console → App erstellen → Name „Flintworks“, Standardsprache Deutsch, **Spiel**, **kostenlos**; Play App Signing aktiv lassen |
+| 7 | Store-Eintrag und Fragebögen | Texte, Bilder und Antworten unten eintragen (Dashboard → „App einrichten“) |
+| 8 | Interner Test (optional) | Release „Interner Test“ → AAB hochladen → sich selbst eintragen, kurz prüfen |
+| 9 | **Geschlossener Test** | siehe unten – Pflicht vor dem Store-Start |
+| 10 | Produktion beantragen | Dashboard → „Zugriff auf Produktion beantragen“, Fragen zum Test beantworten, dann Release „Produktion“ |
+
+**Kostenlos oder kostenpflichtig:** Eine App, die einmal kostenlos veröffentlicht ist, kann nicht
+mehr kostenpflichtig werden (umgekehrt geht es). In-App-Käufe (z. B. ein Unterstützer-Paket mit
+Skins) lassen sich später jederzeit ergänzen. Sobald die App Geld einnimmt (Preis oder Käufe),
+braucht das Konto ein Zahlungsprofil, und Google zeigt die Anschrift im Store an.
+
+## Geschlossener Test (Pflicht für neue private Konten)
+
+Bei privaten Entwicklerkonten, die nach dem 13. 11. 2023 angelegt wurden, gibt Google die
+Produktion erst frei, wenn ein geschlossener Test mit **mindestens 12 Testern** lief, die
+**14 Tage am Stück** dabei waren (aktuelle Zahlen in der Play Console unter Dashboard prüfen).
+
+| # | Schritt | Wie |
+|---|---|---|
+| 1 | Tester sammeln | 15–20 Leute mit Gmail-Adresse oder Google-Konto (ein paar Reserve, falls jemand abspringt) |
+| 2 | Liste anlegen | Testen → Geschlossene Tests → Track „Alpha“ → Tester → E-Mail-Liste (oder eine Google Group) |
+| 3 | Release | AAB hochladen, Länder: alle oder DACH, „Zur Überprüfung senden“ (die erste Prüfung dauert ein paar Tage) |
+| 4 | Einladen | Den Link „Am Test teilnehmen“ verschicken: Tester bestätigen die Teilnahme und installieren die App **aus dem Play Store** (nicht die APK aus den Releases) |
+| 5 | 14 Tage | App installiert lassen und ab und zu spielen; Rückmeldungen per Tester-Feedback in der Play Console. Updates sind währenddessen erlaubt (neue Version hochladen) |
+| 6 | Danach | Produktion beantragen (Fragen: wie Tester gefunden wurden, was geändert wurde, warum die App bereit ist) |
+
+Vorlage für die Einladung:
+
+> Hallo! Flintworks kommt in den Play Store, und Google verlangt vorher einen Test mit 12 Leuten
+> über 14 Tage. Machst du mit? 1. Schick mir die E-Mail-Adresse deines Google-Kontos. 2. Öffne
+> danach den Link, den ich dir schicke, tippe auf „Tester werden“ und installiere die App aus dem
+> Play Store. 3. Lass sie 14 Tage drauf und spiel ab und zu eine Runde (der Tagesschacht reicht).
+> Danke!
 
 ## Store-Eintrag
 
@@ -27,26 +59,88 @@
 | Name | Flintworks | Flintworks |
 | Kurzbeschreibung (80) | Grabe, baue und leite dein Bergwerk – allein oder mit Freunden. | Dig, build and run your own mine – alone or with friends. |
 | Kategorie | Spiele → Simulation (oder Strategie) | Games → Simulation |
+| Tags | Simulation, Pixel Art, Mehrspieler, Bauen, Abenteuer | |
+| Kontakt | E-Mail (Pflicht, öffentlich sichtbar), Website `https://kiezpower.github.io/Flintworks/` | |
 
-**Beschreibung (DE):**
-Flintworks ist ein Pixel-Grabspiel im Stil der Klassiker: Grabe dich durch Erde, Sand und Fels, finde Gold, Erz und Edelsteine und bring alles zu deiner Burg. Deine Helfer graben, fällen und bauen von selbst – du gibst ihnen Aufgaben und markierst Abbaugebiete. Baue Sägewerk, Hochofen, Werkstatt und Fahrstuhl, stütze deine Stollen mit Balken und hüte dich vor Einstürzen, Grubengas und Höhlenmonstern.
-Gemeinsam spielen: Lade bis zu drei Freunde per Link ein und grabt zusammen (Koop) oder tretet mit roter gegen blaue Burg gegeneinander an (Versus).
-Ohne Werbung, ohne Käufe, ohne Konto.
+**Beschreibung (DE, höchstens 4000 Zeichen):**
 
-**Description (EN):**
-Flintworks is a pixel digging game in the spirit of the classics: dig through earth, sand and rock, find gold, ore and gems and bring them home to your castle. Your helpers dig, chop and build on their own – you give them jobs and mark mining areas. Build a sawmill, furnace, workshop and lift, prop up your tunnels with beams and beware of cave-ins, mine gas and cave monsters.
-Play together: invite up to three friends with a link and dig together (co-op) or play red castle against blue castle (versus).
-No ads, no purchases, no account.
+Flintworks ist ein Grabe- und Aufbauspiel in einer Pixelwelt, die du komplett umgraben kannst. Grab dich durch Erde, Sand und Fels, finde Gold, Erz und Edelsteine und bring alles zu deiner Burg. Fäll Bäume, bau Sägewerk, Hochofen, Werkstatt und Fahrstuhl und verkaufe, was deine Produktion hergibt. Deine Helfer graben, sammeln und bringen alles heim – und pass auf Einstürze, Grubengas und Höhlenmonster auf.
+
+TAGESSCHACHT
+Jeden Tag eine neue Welt, für alle gleich: acht Minuten, so viele Taler wie möglich. Sammle Medaillen, halte deine Serie und vergleiche dich mit deinen Freunden.
+
+ZUSAMMEN SPIELEN
+Bis zu vier Spieler im Koop, im Versus (zwei Teams) oder Jeder gegen jeden. „Schnell spielen“ bringt dich ohne Code mit anderen zusammen, jede Stunde mit einem anderen Modus. Bist du allein, spielen Bots gegen dich. Freunde lädst du per Link, Code oder QR-Code ein – ganz ohne Konto.
+
+KAMPAGNE UND FREIES SPIEL
+Zwei Kapitel mit handgebauten Leveln (rette die Fluffel aus ihren Höhlen, erkunde eine alte Mine, erklimm den Gipfel), dazu Goldrausch, Siedler und Schatzsucher in Wiese, Wüste und Winter.
+
+HEIMATBERGWERK
+Deine Heim-Crew schürft Kristalle, auch wenn das Spiel zu ist. Gib sie für mehr Crew, kleine Boni und Skins für deinen Wühler und deine Gebäude aus.
+
+Ohne Werbung, ohne Käufe, ohne Konto. Auf Deutsch und Englisch.
+
+**Description (EN, at most 4000 characters):**
+
+Flintworks is a digging and building game in a pixel world you can dig up completely. Dig through earth, sand and rock, find gold, ore and gems and bring them home to your castle. Chop trees, build a sawmill, furnace, workshop and lift, and sell what your production makes. Your helpers dig, collect and carry everything home – and watch out for cave-ins, mine gas and cave monsters.
+
+DAILY SHAFT
+A new world every day, the same for everybody: eight minutes to earn as many coins as you can. Collect medals, keep your streak and compare with your friends.
+
+PLAY TOGETHER
+Up to four players in co-op, versus (two teams) or free-for-all. Quick play matches you with others without a code, with a different mode every hour. Alone? Bots play against you. Invite friends by link, code or QR code – no account needed.
+
+CAMPAIGN AND FREE PLAY
+Two chapters of hand-built levels (rescue the fluffels from their caves, explore an old mine, climb the summit), plus Gold Rush, Settlers and Treasure Hunt in meadow, desert and winter.
+
+HOME MINE
+Your home crew mines crystals even while the game is closed. Spend them on more crew, small boosts and skins for your digger and your buildings.
+
+No ads, no purchases, no account. In English and German.
 
 ## Fragebögen in der Play Console
 
+Stand v1.69.0. Wenn sich etwas ändert (Käufe, Werbung, Analyse-Dienst mit Versand, Chat), die
+Antworten hier und in der Play Console anpassen.
+
+**App-Inhalte (Richtlinie → App-Inhalte):**
+
 | Abschnitt | Antwort |
 |---|---|
-| Datensicherheit: Werden Daten erhoben? | Ja – nur im Mehrspieler: App-Aktivität (Spieldaten) und Gerätekennung, **nicht gespeichert**, nicht geteilt außer mit Mitspielern, verschlüsselt übertragen (wss), nicht erforderlich (Einzelspiel geht ohne) |
+| Datenschutzerklärung | `https://kiezpower.github.io/Flintworks/privacy.html` |
+| App-Zugriff | Alle Funktionen ohne besonderen Zugriff verfügbar (kein Login) |
 | Werbung | Nein |
-| In-App-Käufe | Nein |
-| Inhaltsbewertung (IARC) | Comic-Gewalt gering (Monster werden mit Steinen/Sprengstoff besiegt), keine Interaktion mit Fremden außer per Einladungslink, kein Chat (nur feste Zurufe) |
-| Zielgruppe | ab 10 Jahren (nicht „für Kinder“, sonst gelten Familienrichtlinien) |
+| Werbe-ID | Nein, die App verwendet keine Werbe-ID (keine Berechtigung `AD_ID` im Manifest) |
+| Zielgruppe | **13–15, 16–17, 18+** (nicht jünger: dann gelten die Familienrichtlinien, und „Schnell spielen“ bringt Fremde zusammen). „Spricht die App Kinder an?“ → Nein |
+| Nachrichten-App, Behörden, Finanzen, Gesundheit | Nein |
+
+**Datensicherheit:**
+
+| Frage | Antwort |
+|---|---|
+| Werden Nutzerdaten erhoben oder geteilt? | Ja (nur Mehrspieler und Freunde) |
+| Verschlüsselt übertragen? | Ja (wss / https) |
+| Können Nutzer das Löschen anfordern? | Es gibt kein Konto. Angeben: Daten liegen auf dem Gerät und verschwinden mit „App-Daten löschen“; der Server hält nur Arbeitsspeicher (Räume höchstens 10 Min., Freunde höchstens 30 Tage nach der letzten Verbindung) |
+
+| Datentyp | Erhoben | Geteilt | Kurzlebig verarbeitet? | Pflicht? | Zweck |
+|---|---|---|---|---|---|
+| Persönliche Angaben → **Name** (frei gewählter Name des Wühlers) | Ja | Nein (die Weitergabe an Mitspieler und Freunde geschieht auf Wunsch des Nutzers) | Nein | Optional (nur Mehrspieler/Freunde) | App-Funktionen |
+| Geräte- oder andere IDs (zufällige Geräte-Kennung, Freundescode) | Ja | Nein | Nein | Optional | App-Funktionen |
+| App-Aktivität → Interaktionen in der App (Spielzüge, Tagesschacht-Ergebnis) | Ja | Nein | Nein | Optional | App-Funktionen |
+
+Nicht erhoben: Standort, Kontakte, Fotos, Dateien, Finanzdaten, Gesundheit, Nachrichten, Absturzberichte, Analysedaten (die Tutorial-Ereignisse aus `src/analytics.js` bleiben auf dem Gerät).
+
+**Inhaltsbewertung (IARC-Fragebogen, Kategorie „Spiel“):**
+
+| Frage | Antwort |
+|---|---|
+| Gewalt | Ja, Fantasie-/Comic-Gewalt: Monster und gegnerische Wühler werden mit Hacke, Schwert, Bogen, Steinen und TNT besiegt; kein Blut, keine realistischen Menschen |
+| Angst, Sex, Drogen, Alkohol, Glücksspiel, Schimpfwörter | Nein (Schatztruhen sind kein Glücksspiel: kein echtes Geld) |
+| Interaktion zwischen Nutzern | **Ja**: Mehrspieler mit Fremden („Schnell spielen“, offene Räume); Kommunikation nur über feste Zurufe (kein freier Chat); frei gewählte Spielernamen (12 Zeichen) sind für Mitspieler sichtbar |
+| Teilt Standort | Nein |
+| Digitale Käufe | Nein |
+
+Erwartetes Ergebnis: etwa USK 6 / PEGI 7.
 
 ## Screenshots und Grafiken
 

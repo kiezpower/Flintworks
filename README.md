@@ -1,6 +1,6 @@
 # Flintworks
 
-Ein Aufbau- und Grabespiel mit Pixel-Physik im Stil der Klassiker, inspiriert von den Clonk-Spielen: Führe deine Crew, grabe nach Gold, fälle Bäume, baue eine Produktionskette und verkaufe alles an der Heimatbasis.
+Ein Aufbau- und Grabespiel mit Pixel-Physik im Stil der Klassiker: Führe deine Crew, grabe nach Gold, fälle Bäume, baue eine Produktionskette und verkaufe alles an der Heimatbasis.
 
 **Tagesschacht:** Jeden Tag eine neue Welt, für alle Spieler gleich. Acht Minuten Zeit, so viel Taler wie möglich verdienen, Medaillen und eine Serie von Tagen in Folge sammeln und das Ergebnis mit Freunden teilen (WhatsApp, Teilen-Menü oder Zwischenablage). Der geteilte Link `?daily` öffnet direkt den Schacht des Tages.
 
@@ -31,7 +31,7 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 | Graben (gerade, ↓/↑ schräg) | „Graben“ halten oder kurz tippen | Shift / X |
 | Werfen | „Wurf“ | E |
 | Waffe wählen (Langbogen, Schwert: eigene Felder vorn in der Leiste) | Feld oben antippen | 1–9 oder Q |
-| Schießen / Schlagen (mit gewählter Waffe) | „Schießen“ tippen: in Laufrichtung · Knopf ziehen: zielen (gepunktete Flugbahn), loslassen schießt · „Schlagen“. Pfeile, die in Wand oder Boden stecken (sie blinken), sammelt man durch Drüberlaufen wieder ein. Ein getroffener Wipf erschrickt nur (+2 Taler); zum Üben gibt es eine Zielscheibe (Bauen, nach „Bogenbau“) | E (in Blickrichtung) |
+| Schießen / Schlagen (mit gewählter Waffe) | „Schießen“ tippen: in Laufrichtung · Knopf ziehen: zielen (gepunktete Flugbahn), loslassen schießt · „Schlagen“. Pfeile, die in Wand oder Boden stecken (sie blinken), sammelt man durch Drüberlaufen wieder ein. Ein getroffener Fluffel erschrickt nur (+2 Taler); zum Üben gibt es eine Zielscheibe (Bauen, nach „Bogenbau“) | E (in Blickrichtung) |
 | Durch Holztreppe oder -brücke nach unten | Stick nach unten | ↓ / S |
 | Aktion (Fällen, Basis, Werk, Brücke, Treppe, Heim …) | Aktions-Knopf | F |
 | Enterhaken werfen (nach dem Kauf) | „Haken“ tippen: zur nächsten Kante · Knopf ziehen: zielen (gestrichelte Seil-Linie), loslassen wirft | Pfeiltaste zielt, G |
@@ -114,7 +114,7 @@ src/
   sim.js              Fallende Pixel: Sand, Wasser, Lava, Säure
   gen.js              Weltgenerator
   entities.js         Wühler, Tiere, Gegenstände anlegen; Bewegung
-  clonk.js            Wühler-Steuerung, Graben, Klettern, Aktionen
+  digger.js            Wühler-Steuerung, Graben, Klettern, Aktionen
   climb.js            Aus Gruben heraus: Kante erkennen, Rampe graben, Treppe, Heim; Enterhaken-Knopf
   buildings.js        Gebäude, Produktion, Strom, Gebiet
   objects.js          Gegenstände, Bäume, Tiere, Explosionen, Partikel

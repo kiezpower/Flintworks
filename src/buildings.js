@@ -4,7 +4,7 @@ import { celebrate } from './effects.js';
 import { track } from './profile.js';
 import { fireArrow } from './combat.js';
 import { tr } from './i18n.js';
-import { digCell, lorryNear, onCase, spawnFromDig } from './clonk.js';
+import { digCell, lorryNear, onCase, spawnFromDig } from './digger.js';
 import { register } from './commands.js';
 import { teamOf, useMine, useTeam } from './teams.js';
 import { inputOf, isPlayer } from './players.js';
@@ -141,7 +141,7 @@ const BUY = [
   { t: 'coal', price: 8 },
   { t: 'tnt', price: 25 },
   { t: 'lorry', price: 30 },
-  { t: 'clonk', price: 60 },
+  { t: 'digger', price: 60 },
 ];
 const BASELV = [
   null,
@@ -165,7 +165,7 @@ function terrOK(x, extra = 0) {
   for (const b of builds) if (b.type === 'flag' && b.done && Math.abs(x - (b.x + 3)) < 150 + extra) return true;
   return false;
 }
-const resName = t => tr(t === 'lorry' ? 'Lore' : t === 'clonk' ? 'Wühler' : ITEM[t].name);
+const resName = t => tr(t === 'lorry' ? 'Lore' : t === 'digger' ? 'Wühler' : ITEM[t].name);
 function resSources(c) {
   const src = [c.inv];
   const L = lorryNear(c);

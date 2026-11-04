@@ -6,24 +6,23 @@
 
 ## 1. Ziel und Maßstab (freigegeben)
 
-**Zielaussage:** Flintworks ist eine Clonk-Siedlungs- und Grabewelt im Querschnitt, in echter
-Pixelgrafik mit der Klarheit von Terraria. Die Welt zeigt so viel Siedlung und Leben wie Clonk Rage
-oder OpenClonk, aber ruhiger: Spielfiguren und Wertvolles heben sich immer vom Gelände ab.
+**Zielaussage:** Flintworks ist eine Siedlungs- und Grabewelt im Querschnitt, in echter
+Pixelgrafik mit der Klarheit von Terraria. Die Welt zeigt so viel Siedlung und Leben wie die
+klassischen Grabespiele, aber ruhiger: Spielfiguren und Wertvolles heben sich immer vom Gelände ab.
 Untertage wird es tiefer und dunkler, mit warmem Licht und leuchtenden Materialien wie in Noita.
 Ganz schwarz wird es nie, Bauplätze und Wege bleiben lesbar. HUD und Menüs sind knapp und klar
 wie in SteamWorld Dig 2, mit großen Knöpfen fürs Handy, im Holz- und Gold-Stil des Spiels.
 
 | Vorbild | Wofür | Gesichtete Bilder (Quelle) |
 |---|---|---|
-| Clonk Rage | Genre, Siedlung, Physik | 6 (clonkspot.org: Spielszenen, Lobby) |
-| OpenClonk | Genre, Siedlung, Physik | 10 (wiki.openclonk.org Press Kit: Siedlung, Bergbau, Kampf, Gegenstände) |
+| Klassische 2D-Grabespiele (zwei Titel) | Genre, Siedlung, Physik | 16 (Spielszenen, Lobby, Siedlung, Bergbau, Kampf, Gegenstände) |
 | Terraria | Pixelraster, Welt, HUD | 8 (Steam) |
 | Noita | Licht, Effekte, Pixel-Physik | 8 (Steam) |
 | SteamWorld Dig 2 | HUD, Menüs, Feinschliff | 8 (Steam) |
 
 Hinweise:
-- Keines der fünf Vorbilder ist ein AAA-Spiel. Die Clonks sind auch nicht als Pixelgrafik gemacht:
-  Clonk Rage nutzt vorgerenderte Sprites, OpenClonk ist 3D-gerendert. Deshalb gibt es je Kategorie
+- Keines der fünf Vorbilder ist ein AAA-Spiel. Die klassischen Grabespiele sind auch nicht als
+  Pixelgrafik gemacht: der eine nutzt vorgerenderte Sprites, der andere ist 3D-gerendert. Deshalb gibt es je Kategorie
   das Vorbild, das dort am besten ist.
 - Die Vorbilder liegen nur als Standbilder vor: Animation und Bewegung der Vorbilder sind **nicht
   bewertet**.
@@ -34,14 +33,14 @@ Figuren in großer zerstörbarer Welt, Material an Farbe und Struktur erkennbar,
 warmes Licht vor dunklem Untergrund.
 
 **Was nicht zusammenpasst:**
-- Fotostrukturen wie bei OpenClonk vertragen sich nicht mit dem Pixelraster.
+- Fotostrukturen wie bei den 3D-gerenderten Vorbildern vertragen sich nicht mit dem Pixelraster.
 - Die Dunkelheit von Noita steht gegen den Überblick, den man zum Bauen braucht.
 - Das volle HUD von Terraria passt nicht aufs Handy.
 
 ## 2. Bewegungs-Inventar (Flintworks)
 
-Animation entsteht im Code: Klips sind Pixelzeilen und Phasen in `clonkhi.js`; das ganze System
-umfasst zusätzlich Physik (`clonk.js`), Partikel (`effects.js`), Ton (`sound.js`), Vibration (`buzz`)
+Animation entsteht im Code: Klips sind Pixelzeilen und Phasen in `diggerhi.js`; das ganze System
+umfasst zusätzlich Physik (`digger.js`), Partikel (`effects.js`), Ton (`sound.js`), Vibration (`buzz`)
 und Kamera-Rütteln (`G.shake`).
 
 | Bewegung | Zweck | Heute (Code) | Kontakt / Sync | Ziel | Prüfen |
@@ -93,12 +92,12 @@ Burg, Bauen, Crew, Menü, Karte, Sieg und Niederlage (Desktop 1280×720 und Hand
 | 2 | **7** | 9 (SteamWorld Dig 2) | F: rote Mütze an der Oberfläche sofort zu sehen; Untertage nur dank Lichtkreis. D: Helfer (blau, grün) gehen auf Erde eher unter als der Spieler. | 1-Texel-Umriss heller im Dunkeln, Mützen sättigen | Asset | ja |
 | 3 | **7** | 9 (SteamWorld Dig 2) | F: Gold leuchtet, Kohle, Erz, Edelstein klar; große Erdflächen gleichförmig mit Sprenkeln. D: Sand- und Lehmlinsen sind beige Flecken ohne Form. | Linsen mit Rand und Licht von oben wie Adern | Asset | ja |
 | 4 | **6** | 10 (Noita) | F: Untertage dunkler mit warmem Kreis um den Wühler, Nacht mit warmen Fenstern. D: Mittlere Tiefe überall gleich hell; Höhlen ohne eigene Lichtquellen. | Tiefenstufen deutlicher, leuchtende Pilze/Kristalle in Höhlen | Licht | ja |
-| 5 | **5** | 9 (Clonk Rage, OpenClonk, SWD2) | F: Startfläche fast leer (Burg, ein Baum); die gestellte Siedlung hat 6 Gebäude in einer Reihe. D: Clonk-Siedlungen wirken durch Ebenen, Leitungen, Fahnen und Gerüste bewohnt. | Deko-Props zwischen Gebäuden (Fässer, Zäune, Laternen), Gebäude auf 2 Ebenen | Art Direction | teils |
+| 5 | **5** | 9 (klassische Grabespiele, SWD2) | F: Startfläche fast leer (Burg, ein Baum); die gestellte Siedlung hat 6 Gebäude in einer Reihe. D: Siedlungen der Vorbilder wirken durch Ebenen, Leitungen, Fahnen und Gerüste bewohnt. | Deko-Props zwischen Gebäuden (Fässer, Zäune, Laternen), Gebäude auf 2 Ebenen | Art Direction | teils |
 | 6 | **6** | nicht bewertet (keine Videos) | F (Code): 4 Laufphasen, Hacke mit Takt, Blinzeln; keine Sprung-, Fall- oder Wendepose; Landestaub nur bei hartem Aufprall. | Sprung-/Fallpose, Landestaub immer, Wendebild | Animation | ja |
 | 7 | **6** | 10 (Noita) | F: Funken und Rauch in harten Stufen (STYLE.md). D: Explosion und Kampf nicht gesichtet. | Explosion mit Lichtblitz auf dem Gelände | VFX | ja |
 | 8 | **5** | 8 (SteamWorld Dig 2) | F: Ob etwas leistbar ist, zeigt nur die Farbe einer 9-px-Kostenzeile (beige oder rot). Kachel und Icon sehen gleich aus. „Erst erforschen“ steht als Text. Metallurgie (60 Taler) bleibt auch mit 400 Talern rot, ein Grund ist im Bild nicht zu sehen. | Leistbar/zu teuer/gesperrt/gekauft als eigene Kachelzustände | UI | ja |
 | 9 | **6** | 9 (SteamWorld Dig 2) | F: einheitliche Rahmen; Knöpfe „Bauen/Menü“ und Untertitel in 9–10 px; Auftragschip und Tipp liegen oben übereinander. | Mindestschrift 12 px, Tipps und Auftrag in einer Zeile | UI | ja |
-| 10 | **6** | 4 (OpenClonk, bestes gesichtetes Menü) | F: Lobby und Levelauswahl wirken wie aus dem Spiel. Bau- und Burg-Fenster sind 480 px breite Listen mit 14 gleichen Kacheln und viel Text. Die Siegkarte bietet im freien Spiel nur „Zur Lobby“. | Breitere Fenster am Desktop, Reiter statt langer Liste, Hauptknopf „Neue Runde“ | UI | ja |
+| 10 | **6** | 4 (klassisches Grabespiel, bestes gesichtetes Menü) | F: Lobby und Levelauswahl wirken wie aus dem Spiel. Bau- und Burg-Fenster sind 480 px breite Listen mit 14 gleichen Kacheln und viel Text. Die Siegkarte bietet im freien Spiel nur „Zur Lobby“. | Breitere Fenster am Desktop, Reiter statt langer Liste, Hauptknopf „Neue Runde“ | UI | ja |
 | 11 | **7** | 9 (Terraria) | F: Eine Palette, ein Rahmen, zwei Pixelschriften. D: Der große Wühler der Lobby passt kaum zur kleinen Spielfigur. | Lobby-Wühler mit sichtbarem Pixelraster | Stimmigkeit | ja |
 | 12 | **7** | 8 | F: keine Artefakte gefunden. Grauschleier über der Welt hinter dem Startbildschirm und auf manchen Oberflächenbildern. | Schleier heller, Dunst am Morgen prüfen | Technik | ja |
 
@@ -235,7 +234,7 @@ Die drei zuletzt offenen Punkte sind umgesetzt, und zwar im Code statt durch ein
 1. **Ziel zu Rundenbeginn** (`startcue.js`): ein Banner mit dem Rundenziel; der gelbe Pfeil zeigt bis
    zum ersten Graben (höchstens 12 s) auf die nächste Goldader nahe der Oberfläche; der Wegweiser am
    Burghof dreht sich dorthin.
-2. **Neue Posen** (`clonkhi.js`): Frontansicht beim Wenden, Vorlage beim Loslaufen, Rücklage mit
+2. **Neue Posen** (`diggerhi.js`): Frontansicht beim Wenden, Vorlage beim Loslaufen, Rücklage mit
    gestemmten Beinen beim Bremsen. Dazu kommen Sprung, Fall und Tragen.
 3. **Gebäude in doppelter Auflösung** (`bldart.js`, Variante 1 nach Wahl des Nutzers):
    - Jeder Pixel der Vorlage wird als Stein, Holz, Dach oder Fenster erkannt und in 2×2 Texeln mit

@@ -11,7 +11,7 @@ test('the level editor paints, undoes, places objects and plays the draft', asyn
     localStorage.setItem('flintworks-lang', 'de');
     localStorage.setItem('flintworks-profile', JSON.stringify({ tutorialDone: true, installAsked: 'done' }));
   });
-  await page.goto('/editor.html?level=wipfrettung');
+  await page.goto('/editor.html?level=fluffelrettung');
   await page.waitForFunction(() => window.__editor && window.__editor.grid);
   const box = await page.locator('#cv').boundingBox();
   const sc = await page.evaluate(() => document.getElementById('cv').width / window.__editor.grid[0].length);
@@ -35,19 +35,19 @@ test('the level editor paints, undoes, places objects and plays the draft', asyn
   await page.mouse.move(...px(26, 54), { steps: 3 });
   await page.mouse.up();
   expect(await at(23, 52)).toBe('R');
-  // one more lost wipf
+  // one more lost fluffel
   const n = await page.evaluate(() => window.__editor.L.objects.length);
-  await page.selectOption('#objType', { label: 'Wipf (eingeschlossen)' });
+  await page.selectOption('#objType', { label: 'Fluffel (eingeschlossen)' });
   await page.mouse.click(...px(60, 33));
   expect(await page.evaluate(() => window.__editor.L.objects.length)).toBe(n + 1);
-  // play it: the game starts with the draft (rock where it was painted, five lost wipfs)
+  // play it: the game starts with the draft (rock where it was painted, five lost fluffels)
   await page.click('#playBtn');
   await page.waitForFunction(() => window.__ww && window.__ww.state === 'play');
   const game = await page.evaluate(() => {
     const w = window.__ww;
     return { mode: w.G.mode, lost: w.animals.filter(a => a.lost).length, rock: w.world.mat[210 * 800 + 92] };
   });
-  expect(game).toEqual({ mode: 'wipfrettung', lost: 5, rock: 2 });
+  expect(game).toEqual({ mode: 'fluffelrettung', lost: 5, rock: 2 });
   // and back to the editor, with the draft
   await page.click('text=← Editor');
   await page.waitForFunction(() => window.__editor && window.__editor.grid);

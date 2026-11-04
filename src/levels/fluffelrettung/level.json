@@ -1,10 +1,10 @@
 {
-  "id": "wipfrettung",
+  "id": "fluffelrettung",
   "v": 1,
-  "name": "Wipfrettung",
+  "name": "Fluffelrettung",
   "icon": "crew",
-  "desc": "Rette {goal} Wipfe aus ihren Höhlen",
-  "intro": "Unter dem Hügel sitzen vier Wipfe in ihren Höhlen fest. Grab dich zu ihnen durch – die Karte (M) zeigt dir die Höhlen.",
+  "desc": "Rette {goal} Fluffel aus ihren Höhlen",
+  "intro": "Unter dem Hügel sitzen vier Fluffel in ihren Höhlen fest. Grab dich zu ihnen durch – die Karte (M) zeigt dir die Höhlen.",
   "biome": "meadow",
   "size": [800, 300],
   "zoom": 4,
@@ -28,11 +28,11 @@
     { "t": "tree", "x": 770, "stage": 4 },
     { "t": "item", "kind": "flint", "x": 160 },
     { "t": "item", "kind": "flint", "x": 330 },
-    { "t": "animal", "kind": "wipf", "x": 208, "y": 130, "lost": true },
-    { "t": "animal", "kind": "wipf", "x": 380, "y": 118, "lost": true },
-    { "t": "animal", "kind": "wipf", "x": 496, "y": 222, "lost": true },
-    { "t": "animal", "kind": "wipf", "x": 704, "y": 186, "lost": true },
-    { "t": "animal", "kind": "wipf", "x": 640, "y": 80 }
+    { "t": "animal", "kind": "fluffel", "x": 208, "y": 130, "lost": true },
+    { "t": "animal", "kind": "fluffel", "x": 380, "y": 118, "lost": true },
+    { "t": "animal", "kind": "fluffel", "x": 496, "y": 222, "lost": true },
+    { "t": "animal", "kind": "fluffel", "x": 704, "y": 186, "lost": true },
+    { "t": "animal", "kind": "fluffel", "x": 640, "y": 80 }
   ],
   "areas": { "rock": [340, 96, 80, 48], "deep": [440, 180, 120, 80] },
   "goals": [{ "t": "rescue", "n": 4 }],
@@ -49,7 +49,7 @@
     },
     {
       "when": { "t": "rescued", "n": 2 },
-      "do": [{ "t": "banner", "title": "Halbzeit", "text": "Zwei Wipfe sind frei, zwei warten noch." }]
+      "do": [{ "t": "banner", "title": "Halbzeit", "text": "Zwei Fluffel sind frei, zwei warten noch." }]
     }
   ]
 }

@@ -1,5 +1,5 @@
 import { biome } from './biomes.js';
-import { hurt, startTumble } from './clonk.js';
+import { hurt, startTumble } from './digger.js';
 import { spawnItem } from './entities.js';
 import { topSolid } from './gen.js';
 import { explode, ignite } from './objects.js';

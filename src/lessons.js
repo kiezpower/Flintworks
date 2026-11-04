@@ -7,7 +7,7 @@
 //   task    the mission { text, goal, pay, prog | count }; tasks run in the order of this table
 //   urgent  shown even right after another tip or while in danger
 import { countRes, terrOK, terrOn } from './buildings.js';
-import { nearTree } from './clonk.js';
+import { nearTree } from './digger.js';
 import { sel_ } from './entities.js';
 import { tr } from './i18n.js';
 import { isPlayer } from './players.js';

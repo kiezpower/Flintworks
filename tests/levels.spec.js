@@ -127,9 +127,9 @@ test('a level comes out the same every time, whatever ran before', async ({ page
   expect(errors).toEqual([]);
 });
 
-test('Wipfrettung: reaching the wipfs frees them, the hints come, the level is won', async ({ page }) => {
+test('Fluffelrettung: reaching the fluffels frees them, the hints come, the level is won', async ({ page }) => {
   const errors = await lobby(page);
-  await start(page, 'wipfrettung');
+  await start(page, 'fluffelrettung');
   const r = await page.evaluate(() => {
     const w = window.__ww,
       c = w.crew[0],
@@ -158,13 +158,13 @@ test('Wipfrettung: reaching the wipfs frees them, the hints come, the level is w
   expect(r.counts).toEqual([1, 2, 3, 4]);
   expect(r.state).toBe('won');
   expect(r.toasts.some(t => t.includes('Feuerstein'))).toBe(true);
-  expect(r.stars.wipfrettung).toBeGreaterThan(0);
+  expect(r.stars.fluffelrettung).toBeGreaterThan(0);
   expect(errors).toEqual([]);
 });
 
 test('a level is lost when the crew is gone, and saved and loaded with its progress', async ({ page }) => {
   const errors = await lobby(page);
-  await start(page, 'wipfrettung');
+  await start(page, 'fluffelrettung');
   const saved = await page.evaluate(() => {
     const w = window.__ww,
       c = w.crew[0],
@@ -187,7 +187,7 @@ test('a level is lost when the crew is gone, and saved and loaded with its progr
     };
     return { before, after };
   });
-  expect(saved.after).toEqual({ ...saved.before, mode: 'wipfrettung' });
+  expect(saved.after).toEqual({ ...saved.before, mode: 'fluffelrettung' });
   expect(saved.before).toEqual({ rescued: 1, lost: 3, size: [800, 300] });
   const lost = await page.evaluate(() => {
     const w = window.__ww;

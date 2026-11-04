@@ -2,7 +2,7 @@
 // sends what happened: entity changes 15× a second, changed landscape chunks 20× a second,
 // plus sounds, floating texts and messages for single players.
 import { exec } from '../commands.js';
-import { clonkOf, consumeEdges, setInput } from '../players.js';
+import { diggerOf, consumeEdges, setInput } from '../players.js';
 import { G } from '../state.js';
 import { onGameMsg, sendTo } from './room.js';
 import { KINDS, packGame } from './sync.js';
@@ -45,7 +45,7 @@ onGameMsg('in', (d, from) => {
     throwP: !!d.t,
     actP: !!d.a,
   });
-  const c = clonkOf(from);
+  const c = diggerOf(from);
   if (c) c.netSeq = d.sq;
 });
 // a client is unsure about some ground: send it again

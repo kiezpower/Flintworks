@@ -2,7 +2,7 @@
 // the world, borders between materials are roughened so nothing looks like building blocks,
 // '?' areas are filled by the generator, then the objects are placed. Called by gen() after the
 // world was emptied and sized.
-import { addClonk, mkAnimal, newId, spawnItem } from '../entities.js';
+import { addDigger, mkAnimal, newId, spawnItem } from '../entities.js';
 import { blob, clearFoot, finishWorld, plantTree, settle, topSolid } from '../gen.js';
 import { setupTeams } from '../teams.js';
 import { G, animals, builds, crew } from '../state.js';
@@ -143,7 +143,7 @@ function placeObjects(L) {
       animals.push(a);
     } else if (o.t === 'trapped') {
       // a Wühler waiting under ground to be reached (counts for "rescue")
-      const c = addClonk(x - 3, o.y - 10);
+      const c = addDigger(x - 3, o.y - 10);
       c.trapped = true;
       c.focus = 'stay';
     } else if (o.t === 'chest') G.chests.push({ x: x - 4, y: o.y - 6, open: false, re: o.re || 0 });
@@ -156,7 +156,7 @@ function placeObjects(L) {
   const n = st.crew ?? 3,
     inv = st.inv || [['flint', 'rock'], ['loam'], ['rock']];
   for (let k = 0; k < n; k++) {
-    const c = addClonk(G.base.x + 10 + k * 6, G.base.gy - 10);
+    const c = addDigger(G.base.x + 10 + k * 6, G.base.gy - 10);
     c.inv = [...(inv[k] || [])];
   }
   crew[0].pid = G.myId;
@@ -164,7 +164,7 @@ function placeObjects(L) {
   // Versus: two helpers at the second castle, which gets the same start money
   if (second) {
     for (let k = 0; k < 2; k++) {
-      const c = addClonk(second.x + 16 + k * 6, second.gy - 10);
+      const c = addDigger(second.x + 16 + k * 6, second.gy - 10);
       Object.assign(c, { team: 1, inv: [k ? 'rock' : 'loam'] });
     }
     setupTeams([G.base, second]);

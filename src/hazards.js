@@ -2,7 +2,7 @@ import { sel_ } from './entities.js';
 import { hasGear } from './tools.js';
 // Cave hazards that grow with depth: cave-ins after a warning rumble, and hidden pockets of
 // mine gas that poison the air and explode when fire gets near.
-import { hurt } from './clonk.js';
+import { hurt } from './digger.js';
 import { spawnItem } from './entities.js';
 import { explode } from './objects.js';
 import { sfx } from './sound.js';

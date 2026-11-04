@@ -169,7 +169,7 @@ SPR.lorryIcon = sp(12, 8, R => {
   R(8, 5, 3, 2, '#2a2a2a');
   R(2, 0, 6, 1, '#f2c230');
 });
-SPR.clonkIcon = sp(6, 10, R => {
+SPR.diggerIcon = sp(6, 10, R => {
   R(1, 0, 4, 1, '#c8402c');
   R(0, 1, 5, 1, '#c8402c');
   R(1, 2, 4, 2, '#f0c49a');

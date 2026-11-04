@@ -11,11 +11,11 @@
 // stay); a marker sends the miners to a chosen spot. Miners put up support beams as they dig.
 // Bots (bots.js) think for themselves and only borrow the walking: a "goto" job takes them to a
 // spot and keeps them there.
-import { HARD, NOIN, digCell, diggable, nearTree, spawnFromDig } from './clonk.js';
+import { HARD, NOIN, digCell, diggable, nearTree, spawnFromDig } from './digger.js';
 import { midMat } from './entities.js';
 import { jobBubble, tryBeam } from './mine.js';
 import { trainStop } from './vehicles/rails.js';
-import { clonkOf, isPlayer } from './players.js';
+import { diggerOf, isPlayer } from './players.js';
 import { DIG, JUMP, mkNav } from './pathfind.js';
 import { ITEM } from './sprites.js';
 import { stock } from './store.js';
@@ -67,7 +67,7 @@ function block(ref) {
 }
 const takenBy = (c, ref) => crew.some(o => o !== c && !o.dead && o.job && o.job.ref === ref);
 // the player a helper follows (whoever gave the order; else your own Wühler)
-const leader = c => clonkOf(c.followPid ?? -1) || crew.find(p => isPlayer(p) && (p.team || 0) === (c.team || 0)) || c;
+const leader = c => diggerOf(c.followPid ?? -1) || crew.find(p => isPlayer(p) && (p.team || 0) === (c.team || 0)) || c;
 const baseX = () => G.base.x + G.base.w / 2;
 // helpers work within reach of the base
 const far = x => Math.abs(x - baseX()) > 560;

@@ -1,4 +1,4 @@
-// Lobby backdrop in the style of the classic Clonk menus: a cut through the landscape with
+// Lobby backdrop in the style of classic game menus: a cut through the landscape with
 // sky, mountains, the castle on a hill, tunnels and ore in the ground. The ground is a real
 // little world: the lobby workers (lobbyworkers.js) dig through it and carry the ore home.
 // The canvas fills the whole lobby; it has double resolution like the game view.

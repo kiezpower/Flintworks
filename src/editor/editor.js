@@ -1,6 +1,6 @@
 // Level editor (dev server only, /editor.html): paint the map of a level (map.txt) character by
 // character, place objects and areas, edit the rest of level.json, save it to src/levels/<id>/
-// and play it right away. Like painting Map.bmp and Objects.txt in the original Clonk.
+// and play it right away. Like painting a map and an object list by hand.
 import { CHARS, unpackMap } from '../levels/palette.js';
 import ORDER from '../levels/order.json';
 import './editor.css';
@@ -54,8 +54,8 @@ const OBJS = [
   ['Baum', { t: 'tree', stage: 4 }, false],
   ['Feuerstein', { t: 'item', kind: 'flint' }, false],
   ['Sprengstoff', { t: 'item', kind: 'tnt' }, false],
-  ['Wipf (eingeschlossen)', { t: 'animal', kind: 'wipf', lost: true }, true],
-  ['Wipf', { t: 'animal', kind: 'wipf' }, false],
+  ['Fluffel (eingeschlossen)', { t: 'animal', kind: 'fluffel', lost: true }, true],
+  ['Fluffel', { t: 'animal', kind: 'fluffel' }, false],
   ['Monster', { t: 'animal', kind: 'monster' }, true],
   ['Fledermaus', { t: 'animal', kind: 'bat' }, true],
   ['Wühler (verschüttet)', { t: 'trapped' }, true],

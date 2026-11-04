@@ -110,7 +110,7 @@ function drawPick(c, ox, oy, f, g, dph, lean, skin) {
     g.fillRect(q(hx), q(hy), 0.5, 0.5);
   }
 }
-function drawClonkHi(c, ox, oy, f, g) {
+function drawDiggerHi(c, ox, oy, f, g) {
   if (!BODY) init();
   const hurt = c.hurt > 0 && c.hurt & 2;
   const cap = c.dead ? '#77777f' : c.cap;
@@ -119,7 +119,7 @@ function drawClonkHi(c, ox, oy, f, g) {
   // digging: lean back while raising the pick, forward and down into the strike
   const dph = c.digging || c.picking > 0 ? digPhase(c) : -1,
     lean = dph < 0 ? 0 : dph >= 0.3 && dph < 0.45 ? -1 : dph >= 0.58 && dph < 0.72 ? 1 : 0;
-  // starting off leans forward and a little down, braking leans back (frames since, clonk.js)
+  // starting off leans forward and a little down, braking leans back (frames since, digger.js)
   const onFoot = !c.climb && !c.hangle && !(c.airT > 3) && dph < 0,
     starting = onFoot && c.startF != null && G.frame - c.startF < 4,
     braking = onFoot && c.stopF != null && G.frame - c.stopF < 5,
@@ -214,4 +214,4 @@ function drawClonkHi(c, ox, oy, f, g) {
     }
 }
 
-export { drawClonkHi };
+export { drawDiggerHi };

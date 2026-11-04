@@ -53,11 +53,11 @@ aktuellen Spiel (nach jeder Grafikänderung einmal laufen lassen; braucht Chromi
 |---|---|
 | Short description | Dig, build and blast your way through a pixel world – alone, in co-op or versus. |
 | Genre | Simulation |
-| Tags | pixel-art, digging, mining, sandbox, multiplayer, base-building, clonk |
+| Tags | pixel-art, digging, mining, sandbox, multiplayer, base-building |
 
 Beschreibung (Englisch, zum Einfügen):
 
-> **Flintworks** is a digging and building game in a fully destructible pixel world, inspired by the classic *Clonk*.
+> **Flintworks** is a digging and building game in a fully destructible pixel world, in the spirit of the classics.
 >
 > - Dig tunnels, mine gold and gems and sell them at your castle
 > - Your helpers work on their own: they chop trees, mine ore and bring everything home

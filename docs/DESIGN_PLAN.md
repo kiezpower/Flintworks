@@ -36,7 +36,7 @@ Code erzeugt:
 
 | Was | Wo | Wie |
 |---|---|---|
-| Wühler (Spiel und Lobby) | `portrait.js`, `clonkhi.js` | Pixel als Textzeilen, z. B. `'..oCCCCCCCCCCo..'` |
+| Wühler (Spiel und Lobby) | `portrait.js`, `diggerhi.js` | Pixel als Textzeilen, z. B. `'..oCCCCCCCCCCo..'` |
 | Gebäude, Fahrzeuge, Gegenstände, Knopf-Icons | `sprites.js` | Rechtecke per Code (`R(x, y, w, h, Farbe)`) |
 | Erde, Fels, Erze | `tex.js` | Rauschen und Voronoi, 128×128 nahtlos |
 | Himmel, Berge, Deko | `backdrop.js`, `effects.js`, `decor.js` | prozedural |
@@ -110,7 +110,7 @@ heutigen Sprites nebeneinander, damit Ausreißer sichtbar werden.
 - Höhlen bekommen eine dunklere, strukturierte Rückwand.
 
 ### Etappe 3 – Gebäude und Fahrzeuge (D3, D4)
-- Alle Gebäude in doppelter Auflösung neu zeichnen (wie der Wühler in `clonkhi.js`).
+- Alle Gebäude in doppelter Auflösung neu zeichnen (wie der Wühler in `diggerhi.js`).
 - Bauvorgang in Stufen (Gerüst → Mauern → fertig), Rauch aus Schornsteinen, Licht in Fenstern
   nachts, bewegte Teile (Sägeblatt, Rad am Fahrstuhl, Blasebalg am Hochofen).
 - Fahrzeuge mit Rädern, die sich drehen, und kleinen Wackelbewegungen.

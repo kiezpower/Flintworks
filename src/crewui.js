@@ -14,10 +14,10 @@ const FOCUS = [
   { id: 'ore', icon: 'nug', title: 'Gold & Erz', sub: 'Gräbt Gold, Erz, Kohle und Edelsteine' },
   { id: 'wood', icon: 'wood', title: 'Holz', sub: 'Fällt Bäume und bringt das Holz heim' },
   { id: 'build', icon: 'rock', title: 'Bauen & Sammeln', sub: 'Hilft auf Baustellen, sammelt Sachen ein' },
-  { id: 'follow', icon: 'clonk', title: 'Mir folgen', sub: 'Bleibt bei dir und sammelt unterwegs' },
+  { id: 'follow', icon: 'digger', title: 'Mir folgen', sub: 'Bleibt bei dir und sammelt unterwegs' },
   { id: 'stay', icon: 'loam', title: 'Pause', sub: 'Wartet in der Basis' },
 ];
-const icon = t => (t === 'clonk' ? SPR.clonkIcon : itemIcon(t));
+const icon = t => (t === 'digger' ? SPR.diggerIcon : itemIcon(t));
 const focusOf = c => FOCUS.find(f => f.id === (c.focus || 'all'));
 
 function setFocus(c, id, pid) {

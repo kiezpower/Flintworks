@@ -1,5 +1,5 @@
 // Every tool, piece of equipment and vehicle does what its description promises: catapult,
-// bow, sword, shield, helmet, steel pick, lamp, drill wagon, raft, riding wipf, mine train,
+// bow, sword, shield, helmet, steel pick, lamp, drill wagon, raft, riding fluffel, mine train,
 // cable car and airship. Each test builds a flat field, buys or builds the thing and uses it: npm test
 import { expect, test } from '@playwright/test';
 
@@ -259,15 +259,15 @@ test('arrows stuck in a wall or the ground are picked up again by walking over t
   expect(errors).toEqual([]);
 });
 
-test('an arrow startles a wipf (a reward, no harm) and scores on the archery target', async ({ page }) => {
+test('an arrow startles a fluffel (a reward, no harm) and scores on the archery target', async ({ page }) => {
   const errors = await setup(page);
   const r = await page.evaluate(() => {
     const w = window.__ww,
       c = w.crew[0];
     w.send('tool', { id: 'bow' });
     const out = {};
-    // a wipf standing still in front, aimed at
-    const m = w.mkAnimal('wipf', 440, 196);
+    // a fluffel standing still in front, aimed at
+    const m = w.mkAnimal('fluffel', 440, 196);
     m.t = 9999;
     w.animals.push(m);
     const money0 = w.G.money,
@@ -278,9 +278,9 @@ test('an arrow startles a wipf (a reward, no harm) and scores on the archery tar
     out.unhurt = m.hp === hp0;
     out.paid = w.G.money === money0 + 2;
     out.dropped = w.combat.stuckArrows.some(s => s.pick);
-    // a lost wipf (a rescue level) is never hit: the arrow flies on
+    // a lost fluffel (a rescue level) is never hit: the arrow flies on
     w.animals.length = 0;
-    const lost = w.mkAnimal('wipf', 440, 196);
+    const lost = w.mkAnimal('fluffel', 440, 196);
     Object.assign(lost, { t: 9999, lost: true });
     w.animals.push(lost);
     w.step(30);
@@ -454,7 +454,7 @@ test('digging coal gives a lump every 30 pixels (45 in the campaign)', async ({ 
   const errors = await setup(page);
   const r = await page.evaluate(async () => {
     const w = window.__ww,
-      { digCell, spawnFromDig } = await import('/src/clonk.js'),
+      { digCell, spawnFromDig } = await import('/src/digger.js'),
       { mat, W, COAL, paint } = w.world;
     // dig coal cell by cell (as a Wühler or the drill does) and count the lumps
     const lumps = n => {
@@ -489,7 +489,7 @@ test('digging coal gives a lump every 30 pixels (45 in the campaign)', async ({ 
   expect(errors).toEqual([]);
 });
 
-test('drill wagon bores through rock, raft floats, riding wipf runs and jumps', async ({ page }) => {
+test('drill wagon bores through rock, raft floats, riding fluffel runs and jumps', async ({ page }) => {
   const errors = await setup(page);
   const r = await page.evaluate(() => {
     const w = window.__ww,
@@ -538,7 +538,7 @@ test('drill wagon bores through rock, raft floats, riding wipf runs and jumps', 
     out.raft = f.x - fx > 20 && f.y < 202 && c.ride === f.id;
     w.context(c).fn();
     w.vehicles.length = 0;
-    // riding wipf on flat ground
+    // riding fluffel on flat ground
     set(300, 700, 160, 230, AIR);
     set(300, 700, 200, 230, EARTH);
     Object.assign(c, { x: 350, y: 185, vx: 0, vy: 0 });

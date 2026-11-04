@@ -12,7 +12,7 @@
 >   Eingefrorene Welten (Kapitel 1) und Prüfsummen von v1.29 bleiben gleich.
 > - **Gefunden:** Bei einem gesperrten Level fiel der Tastaturfokus ins Leere und Escape kam nicht
 >   mehr an; die Tasten hört der Bildschirm jetzt am Fenster ab.
-> - Ein Level mit nur einem Ziel zeigt in der Detailansicht seinen eigenen Satz („Rette 4 Wipfe
+> - Ein Level mit nur einem Ziel zeigt in der Detailansicht seinen eigenen Satz („Rette 4 Fluffel
 >   aus ihren Höhlen“), mehrere Ziele stehen als Liste da.
 > - Ein Tipp öffnet die Detailansicht, ein zweiter Tipp auf dieselbe Karte startet.
 > - Im Mehrspieler-Raum trägt die `cfg`-Nachricht des Hosts jetzt auch den Modus; Gäste sehen ihn
@@ -44,7 +44,7 @@ Heute gibt es zwei Wege, etwas zu starten:
 | A1 | Kein Bild | Die Level sind nur Namen. Was eine Karte besonders macht (Vulkan, See, Labyrinth), sieht man erst im Spiel. |
 | A2 | Nichts zum Lesen vor dem Start | Einleitung, Ziele und Gefahren kommen erst als Meldung im Spiel. |
 | A3 | Sternzeiten unsichtbar | „3 Sterne unter 6 Min.“ steht erst auf dem Ende-Bildschirm, wenn man schon gewonnen hat. |
-| A4 | Gesperrt ohne Grund | Ein 🔒 sagt nicht, was man tun muss („1 Stern in Wipfrettung“). |
+| A4 | Gesperrt ohne Grund | Ein 🔒 sagt nicht, was man tun muss („1 Stern in Fluffelrettung“). |
 | A5 | Lange Scroll-Liste im kleinen Panel | Auf dem Handy im Querformat sieht man 4–6 von 15 Leveln; das nächste offene Level muss man suchen. |
 | A6 | Karten nur durch Durchschalten | 7 Schritte im Kreis, ohne Beschreibung außer der Zielzeile. |
 | A7 | Keine Bestzeit | Das Profil kennt nur Sterne (`P.campaign`). |
@@ -55,7 +55,7 @@ Heute gibt es zwei Wege, etwas zu starten:
 
 Ein Skript hat jede Welt mit ihrem Seed erzeugt und Pixel für Pixel in den Kartenfarben gemalt
 (1 Bildpunkt = 2 Weltpixel, Himmel in der Farbe des Bioms). Die Burg ist hell markiert, Ziele wie
-eingeschlossene Wipfe und Truhen ebenfalls.
+eingeschlossene Fluffel und Truhen ebenfalls.
 
 ![Prototyp der Vorschaubilder](levelauswahl/prototyp.png)
 
@@ -100,7 +100,7 @@ Band „Weiter“ und ist beim Öffnen sichtbar.
 │ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐   │
 │ │   (Bild)     │ │   (Bild)     │ │ ▶ WEITER     │ │   (Bild)  🔒 │   │
 │ │              │ │              │ │   (Bild)     │ │   abgedunkelt│   │
-│ │1 Wipfrettung │ │2 Alte Mine   │ │3 Insel im See│ │4 Labyrinth   │   │
+│ │1 Fluffelrettung │ │2 Alte Mine   │ │3 Insel im See│ │4 Labyrinth   │   │
 │ │ ★★★          │ │ ★★☆          │ │ ☆☆☆          │ │              │   │
 │ └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘   │
 │ ┌──────────────┐ ┌──────────────┐ …                                   │
@@ -144,7 +144,7 @@ Karte startet direkt.
 |---|---|
 | Wann | Im Voraus: `npm run previews`, ein Playwright-Skript wie `store-shots`. Es erzeugt jedes Level und jede Karte mit ihrem Seed. |
 | Wohin | `public/levels/<id>.png`, zusätzlich `public/levels/previews.json` mit der Prüfsumme der Welt, aus der das Bild entstand. |
-| Aussehen | Wie im Prototyp: Kartenfarben, Himmel nach Biom, 1 Bildpunkt = 2 Weltpixel, 32 Farben. Markiert werden die Burg(en), die Ziele (Wipfe, Wühler, Truhen, Bereiche bei „erreichen“), Monster und Vulkan-/Lavaorte. |
+| Aussehen | Wie im Prototyp: Kartenfarben, Himmel nach Biom, 1 Bildpunkt = 2 Weltpixel, 32 Farben. Markiert werden die Burg(en), die Ziele (Fluffel, Wühler, Truhen, Bereiche bei „erreichen“), Monster und Vulkan-/Lavaorte. |
 | Größe | 1–6 KB pro Bild, rund 60 KB für alle. Die Bilder liegen im Offline-Speicher (PNG ist schon in `globPatterns`). |
 | Veraltet? | Der Level-Test vergleicht die Prüfsumme der Welt mit `previews.json`. Ändert sich ein Level oder der Generator, schlägt er an: „Vorschau neu erzeugen“. Das ist derselbe Weg wie beim Einfrieren von Kapitel 1. |
 | Ohne Bild | Ein Entwurf aus dem Editor oder ein neues Level ohne PNG wird direkt aus `map.txt` gemalt (ohne Zufallszonen und Aufrauen, dafür sofort). So geht die Auswahl nie leer aus. |

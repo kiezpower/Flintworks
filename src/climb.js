@@ -1,6 +1,6 @@
 // Getting out of a pit or a cave without knowing the tricks: a ledge too high for a jump is
 // found by itself (climbOut). In the modern controls the Wühler then digs a ramp up through
-// earth on his own (clonk.js wantsDig); where that does not work the action button offers the
+// earth on his own (digger.js wantsDig); where that does not work the action button offers the
 // way out: wooden stairs up to the ledge (1 plank or 1 wood), else "home" (back to the base,
 // like the menu). The grappling hook, once bought, has a button of its own (hook, key G): it is
 // thrown wherever the stick points (without a direction at the nearest ledge above, else up and
@@ -314,7 +314,7 @@ function drawHook(ctx, c, x, y, cx, cy) {
 function climbContext(c) {
   const L = climbOut(c);
   if (!L) return null;
-  // modern controls dig a ramp through earth by themselves (clonk.js wantsDig)
+  // modern controls dig a ramp through earth by themselves (digger.js wantsDig)
   if (G.autoDig && L.wall && digWall(c, L)) return null;
   const plan = stairPlan(c);
   if (plan && hasRes(c, stairCost(c))) return { label: 'Treppe', fn: () => buildStairs(c, plan) };
@@ -326,7 +326,7 @@ function climbContext(c) {
     },
   };
 }
-// can the wall up to this ledge be dug? (set by clonk.js: diggable() needs the steel pick for rock)
+// can the wall up to this ledge be dug? (set by digger.js: diggable() needs the steel pick for rock)
 let canDig = () => false;
 const setDigTest = fn => (canDig = fn);
 function digWall(c, L) {
