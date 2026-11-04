@@ -101,7 +101,7 @@ const LESSONS = [
     when: c => hasGear(c, 'hook'),
     tip: {
       touch: 'Enterhaken: Tippe auf Haken – oder zieh den Knopf in eine Richtung, dann loslassen',
-      keys: 'Enterhaken: Halte eine Pfeiltaste und drücke G – der Haken zieht dich hin',
+      keys: 'Enterhaken: Halte G und ziel mit der Maus, loslassen wirft – der Haken zieht dich hin',
     },
   },
   {

@@ -89,7 +89,7 @@ const DESK_KEYS = [
   ['E', 'werfen (Q wechselt, 1–9 wählt)'],
   ['F', 'Aktion: Fällen, Burg (Laden), Lore, Brücke'],
   ['I', 'Tasche öffnen'],
-  ['G', 'Enterhaken werfen, mit Pfeiltaste in diese Richtung (Burg oder für immer im Heimatbergwerk)'],
+  ['G', 'Enterhaken: G halten zielt zum Mauszeiger, loslassen wirft (oder Pfeiltaste + G; Burg oder für immer im Heimatbergwerk)'],
   ['B · Tab · M', 'Bauen · Wühler wechseln · Karte'],
   ['Esc', 'Menü'],
 ];

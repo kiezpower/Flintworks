@@ -2,7 +2,7 @@
 import { G, animals, builds, crew, items, lorries, parts, trees, vehicles } from './state.js';
 import { explode, ignite } from './objects.js';
 import { tryBuild, terrOK } from './buildings.js';
-import { calcTerr } from './render.js';
+import { calcTerr, cam } from './render.js';
 import { hud, openBase } from './ui.js';
 import { saveGame, loadGame, hasSave } from './save.js';
 import { lightning } from './weather.js';
@@ -47,6 +47,7 @@ window.__ww = {
   events,
   combat,
   send,
+  cam,
   helpers,
   addDigger,
   mkAnimal,

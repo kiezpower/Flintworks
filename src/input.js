@@ -59,7 +59,7 @@ addEventListener('keydown', e => {
   if (e.code === 'ArrowUp' || e.code === 'KeyW') edge.jumpUp = true;
   if (e.code === 'KeyC' || e.code === 'KeyE' || e.code === 'KeyK') edge.throw = true;
   if (e.code === 'KeyF') edge.act = true;
-  if (e.code === 'KeyG') send('hook', aim());
+  if (e.code === 'KeyG') hookKeyDown();
   if (e.code === 'KeyB') openBuild();
   if (e.code === 'KeyM') toggleMap();
   if (e.code === 'KeyI') openBag();
@@ -85,10 +85,12 @@ addEventListener('keydown', e => {
 });
 addEventListener('keyup', e => {
   if (e.code in KEYMAP) keys[KEYMAP[e.code]] = 0;
+  if (e.code === 'KeyG') hookKeyUp(true);
 });
 addEventListener('blur', () => {
   for (const k in keys) keys[k] = 0;
   held.dig = false;
+  hookKeyUp(false);
 });
 const game = document.getElementById('game'),
   joyEl = document.getElementById('joy'),
@@ -279,7 +281,50 @@ for (const b of document.querySelectorAll('.pad')) {
 }
 // where the grappling hook is thrown: the stick or the arrow keys held right now
 const aim = () => ({ ax: keys.r - keys.l || joy.x, ay: keys.d - keys.u || joy.y });
+// The hook with the mouse (desktop): holding G aims at the mouse pointer (the same dotted rope
+// as dragging the "Haken" button), letting go throws. With the pointer on the Wühler it goes
+// for the next ledge; an arrow key held when G goes down or up still aims as before.
+const mouse = { x: 0, y: 0, in: false };
+game.addEventListener('pointermove', e => {
+  if (e.pointerType !== 'mouse') return;
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  mouse.in = true;
+});
+game.addEventListener('pointerleave', e => {
+  if (e.pointerType === 'mouse') mouse.in = false;
+});
+const MOUSE_NEAR = 8; // world px around the Wühler's middle where the pointer means "no direction"
+let hookHeld = false;
+// the direction from the Wühler to the mouse pointer, or null when it is on him (or not there)
+function mouseAim(c) {
+  if (!mouse.in || !c) return null;
+  const r = cv.getBoundingClientRect(),
+    k = r.width / G.VW,
+    dx = (mouse.x - r.left) / k + Math.round(cam.x) - (c.x + 3),
+    dy = (mouse.y - r.top) / k + Math.round(cam.y) - (c.y + 4),
+    d = Math.hypot(dx, dy);
+  return d > MOUSE_NEAR ? { ax: dx / d, ay: dy / d } : null;
+}
+const keyAimed = () => !!(keys.l || keys.r || keys.u || keys.d);
+function hookKeyDown() {
+  const c = sel_();
+  // no mouse on the field (or no hook to throw): thrown at once, as with the arrow keys
+  if (!mouse.in || keyAimed() || !AIMERS.hook.ready(c)) return send('hook', aim());
+  hookHeld = true;
+  G.aimKind = 'hook';
+  G.aimDrag = mouseAim(c);
+}
+function hookKeyUp(fire) {
+  if (!hookHeld) return;
+  hookHeld = false;
+  const a = keyAimed() ? aim() : mouseAim(sel_());
+  if (G.aimKind === 'hook') G.aimDrag = G.aimKind = null;
+  if (fire && panelEl.hidden && G.state === 'play') send('hook', a || {});
+}
 function readInput() {
+  // (the rope follows the pointer, and the Wühler, while G is held)
+  if (hookHeld) G.aimDrag = keyAimed() ? null : mouseAim(sel_());
   const kx = keys.r - keys.l,
     ky = keys.d - keys.u;
   inp.ax = kx || joy.x;

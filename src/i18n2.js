@@ -78,8 +78,8 @@ const EN2 = {
     'Its own “Hook” button: a tap throws it at the next ledge, dragging aims – it pulls you there (key G)',
   'Enterhaken: Tippe auf Haken – oder zieh den Knopf in eine Richtung, dann loslassen':
     'Grappling hook: tap Hook – or drag the button in a direction, then let go',
-  'Enterhaken: Halte eine Pfeiltaste und drücke G – der Haken zieht dich hin':
-    'Grappling hook: hold an arrow key and press G – the hook pulls you there',
+  'Enterhaken: Halte G und ziel mit der Maus, loslassen wirft – der Haken zieht dich hin':
+    'Grappling hook: hold G and aim with the mouse, let go to throw – the hook pulls you there',
   'nach dem Kauf des Enterhakens: wirft ihn in Stick-Richtung, sonst an die nächste Kante':
     'once the grappling hook is bought: throws it the way the stick points, else at the nearest ledge',
   'Enterhaken werfen, mit Pfeiltaste in diese Richtung (nach dem Kauf)':
@@ -180,8 +180,8 @@ const EN2 = {
   'werfen (Q wechselt, 1–9 wählt)': 'throw (Q switches, 1–9 picks)',
   'mit dem Enterhaken (Burg oder für immer im Heimatbergwerk): wirft ihn in Stick-Richtung, sonst an die nächste Kante':
     'with the grappling hook (castle, or for good in the home mine): throws it where the stick points, otherwise to the nearest ledge',
-  'Enterhaken werfen, mit Pfeiltaste in diese Richtung (Burg oder für immer im Heimatbergwerk)':
-    'Throw the grappling hook, with an arrow key in that direction (castle, or for good in the home mine)',
+  'Enterhaken: G halten zielt zum Mauszeiger, loslassen wirft (oder Pfeiltaste + G; Burg oder für immer im Heimatbergwerk)':
+    'Grappling hook: hold G to aim at the mouse pointer, let go to throw (or arrow key + G; castle, or for good in the home mine)',
   'Für immer: Heimatbergwerk in der Lobby': 'For good: home mine in the lobby',
   'Ausrüstung · Einmal kaufen, in jedem Spiel dabei': 'Gear · Buy once, there in every game',
   'Eigener Knopf (G) in jedem Spiel – auch im Mehrspieler': 'Its own button (G) in every game – multiplayer too',
