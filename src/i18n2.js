@@ -215,5 +215,15 @@ const EN2 = {
     'Too far to jump: buy the grappling hook at the castle, or build a bridge – Action at the edge with loam or planks in hand.',
   'Die ferne Insel': 'The far island',
   'Gold und Edelsteine liegen unter dir': 'Gold and gems lie beneath you',
+  // level Bergdorf (src/levels/bergdorf)
+  Bergdorf: 'Mountain village',
+  'Baue dein Dorf auf drei Ebenen und verdiene Taler': 'Build your village on three levels and earn coins',
+  'Ein Tal, eine Terrasse mit Wald und Teich, ganz oben eine Hochebene. Unter ihr liegt ein altes Bergwerk – ein Fahrstuhl bringt dich hinunter.':
+    'A valley, a terrace with a wood and a pond, a high plateau on top. Beneath it lies an old mine – a lift takes you down.',
+  'Auf der Hochebene': 'On the high plateau',
+  'Hier oben steht der Wald: ein guter Platz für das Sägewerk.': 'The wood is up here: a good place for the sawmill.',
+  'Die Hochebene': 'The high plateau',
+  'Unter dir liegt das alte Bergwerk – bau hier einen Fahrstuhl': 'The old mine lies beneath you – build a lift here',
+  'Das alte Bergwerk! Gold liegt am Boden der Halle.': 'The old mine! Gold lies on the floor of the hall.',
 };
 export { EN2 };

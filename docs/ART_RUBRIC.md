@@ -293,3 +293,9 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
 - v1.75.1: Dampfwolken, wenn Wasser auf Lava trifft.
 - v1.75.2: Behoben: Stein- und Winterstil färbten Ofenfeuer und Ladenlicht grau. `restyle` lässt
   jetzt alles mit Sättigung über 0,7 stehen (Holz liegt bei höchstens 0,65); Test `skins.spec.js`.
+- v1.75.3: Die Mehrspieler-Tests laufen wieder (`npm test` installiert die Relay-Pakete selbst).
+- v1.76.0: Zweites Schaustück-Level „Bergdorf“: ein Tal mit der Burg, eine Terrasse mit Wald und
+  Teich, eine Hochebene mit Felskante, darunter ein altes Bergwerk mit Stützbalken und Gold.
+  Ziel: auf allen Ebenen bauen (Sägewerk, 2 Hütten, Fahrstuhl hinab ins Bergwerk) und 300 Taler.
+  Im Spiel geprüft: Die Hochebene zählt als erreicht, der Fahrstuhl fährt bis in die Halle, an
+  39 von 60 Stellen der Hochebene ist der Schacht ohne Fels.

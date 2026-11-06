@@ -1,0 +1,52 @@
+{
+  "id": "bergdorf",
+  "v": 1,
+  "name": "Bergdorf",
+  "icon": "stairs",
+  "desc": "Baue dein Dorf auf drei Ebenen und verdiene Taler",
+  "intro": "Ein Tal, eine Terrasse mit Wald und Teich, ganz oben eine Hochebene. Unter ihr liegt ein altes Bergwerk – ein Fahrstuhl bringt dich hinunter.",
+  "biome": "meadow",
+  "size": [1200, 500],
+  "zoom": 5,
+  "rough": 0.4,
+  "seed": 9011,
+  "diff": "adventure",
+  "fill": {"gold": 0.4, "coal": 1.2, "ore": 1.2, "caves": 0.3},
+  "start": {
+    "money": 80,
+    "crew": 3,
+    "inv": [["flint", "rock"], ["loam"], ["wood"]],
+    "store": {"wood": 6, "rock": 3}
+  },
+  "rules": {"meteors": false},
+  "objects": [
+    {"t": "base", "x": 40},
+    {"t": "tree", "x": 230, "stage": 4},
+    {"t": "tree", "x": 330, "stage": 3},
+    {"t": "tree", "x": 500, "stage": 4},
+    {"t": "tree", "x": 545, "stage": 4},
+    {"t": "tree", "x": 680, "stage": 3},
+    {"t": "tree", "x": 720, "stage": 4},
+    {"t": "tree", "x": 1160, "stage": 4},
+    {"t": "animal", "kind": "fish", "x": 625, "y": 238},
+    {"t": "animal", "kind": "fluffel", "x": 600},
+    {"t": "beam", "x": 900, "y0": 300, "y1": 340},
+    {"t": "beam", "x": 1000, "y0": 300, "y1": 340},
+    {"t": "beam", "x": 1100, "y0": 300, "y1": 340}
+  ],
+  "areas": {"mitte": [470, 140, 270, 90], "oben": [820, 60, 380, 90], "mine": [880, 290, 250, 60]},
+  "goals": [
+    {"t": "reach", "area": "oben", "label": "Auf der Hochebene"},
+    {"t": "build", "what": "saw", "n": 1},
+    {"t": "build", "what": "hut", "n": 2},
+    {"t": "build", "what": "lift", "n": 1},
+    {"t": "money", "n": 300}
+  ],
+  "lose": {"crewDead": true},
+  "stars": [14, 20],
+  "triggers": [
+    {"when": {"t": "enter", "area": "mitte"}, "do": [{"t": "say", "text": "Hier oben steht der Wald: ein guter Platz für das Sägewerk."}]},
+    {"when": {"t": "enter", "area": "oben"}, "do": [{"t": "banner", "title": "Die Hochebene", "text": "Unter dir liegt das alte Bergwerk – bau hier einen Fahrstuhl"}]},
+    {"when": {"t": "enter", "area": "mine"}, "do": [{"t": "say", "text": "Das alte Bergwerk! Gold liegt am Boden der Halle."}]}
+  ]
+}
