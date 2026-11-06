@@ -162,6 +162,14 @@ test('Fluffelrettung: reaching the fluffels frees them, the hints come, the leve
   expect(errors).toEqual([]);
 });
 
+test('Labyrinth: the level starts with the grappling hook and five chests', async ({ page }) => {
+  const errors = await lobby(page);
+  await start(page, 'labyrinth');
+  const r = await page.evaluate(() => ({ hook: !!window.__ww.G.tools.hook, chests: window.__ww.G.chests.length }));
+  expect(r).toEqual({ hook: true, chests: 5 });
+  expect(errors).toEqual([]);
+});
+
 test('a level is lost when the crew is gone, and saved and loaded with its progress', async ({ page }) => {
   const errors = await lobby(page);
   await start(page, 'fluffelrettung');
