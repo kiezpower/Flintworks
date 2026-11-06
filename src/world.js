@@ -81,8 +81,12 @@ const tint = (c, f) => {
 // further down, a blue-ish cast in the deepest layers. Only earth, loam and rock take part.
 const mixf = (a, b, t) => a + (b - a) * t,
   cl01 = v => (v < 0 ? 0 : v > 1 ? 1 : v);
-function layerTint(c, d) {
+// x: the column, for the strata – bands of slightly different colour that wave through the ground,
+// so the depth reads in the earth itself (Welt 2.0)
+function layerTint(c, d, x = 0) {
   if (d < 10) return c;
+  const band = Math.floor((d + 8 * Math.sin(x * 0.019) + 4 * Math.sin(x * 0.053 + 1.3)) / 26) % 3,
+    k = band === 1 ? 0.86 : band === 2 ? 1.08 : 1;
   const t1 = cl01((d - 10) / 30),
     t2 = cl01((d - 50) / 50),
     t3 = cl01((d - 110) / 60);
@@ -95,9 +99,9 @@ function layerTint(c, d) {
   r = mixf(r, 0.8, t3);
   g = mixf(g, 0.82, t3);
   b = mixf(b, 0.98, t3);
-  const R = Math.round((c & 255) * r),
-    G2 = Math.round(((c >>> 8) & 255) * g),
-    B = Math.round(((c >>> 16) & 255) * b);
+  const R = Math.round((c & 255) * r * k),
+    G2 = Math.round(((c >>> 8) & 255) * g * k),
+    B = Math.round(((c >>> 16) & 255) * b * k);
   return ((c & 0xff000000) | ((B > 255 ? 255 : B) << 16) | ((G2 > 255 ? 255 : G2) << 8) | (R > 255 ? 255 : R)) >>> 0;
 }
 const PAL_LIT = PAL.map(a => a.map(c => tint(c, 1.2)));
@@ -142,7 +146,7 @@ function texel(i, sx, sy) {
   const tex = m === EARTH && shade[i] & 4 ? topTex() : TEX[m];
   let c = tex ? tex[ti] : PAL[m][shade[i] & 3];
   if (tex) c = tint(c, WSH[i]);
-  if ((m === EARTH && !(shade[i] & 4)) || m === LOAM || m === ROCK) c = layerTint(c, ((i / W) | 0) - surf[i % W]);
+  if ((m === EARTH && !(shade[i] & 4)) || m === LOAM || m === ROCK) c = layerTint(c, ((i / W) | 0) - surf[i % W], i % W);
   c = underTexel(c, m, i, x, y, sx, sy, ((i / W) | 0) - surf[i % W], mat, SOLID, m === EARTH && shade[i] & 4);
   if (LIQ[m]) {
     // a bright line on open liquid surfaces

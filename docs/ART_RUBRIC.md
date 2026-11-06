@@ -263,3 +263,23 @@ und Licht in der Tiefe (7).
 - Ein älterer Fehler, gefunden beim Prüfen der Baustile: Stein- und Winterstil färben auch Ofenfeuer
   und das Werkstattfenster grau (`restyle` in `skins.js`), weil diese Farben als Holz erkannt werden.
 
+### Nachtrag v1.72.0 – Welt 2.0
+
+Neuer Vergleich mit Clonk Rage und OpenClonk: Figuren, Gebäude und UI sind nah dran; der größte
+Abstand war die Welt selbst (sanfte Hügel über einer einheitlichen Erdschicht mit kleinen Flecken).
+Umgesetzt im freien Spiel (`gen.js`, Kampagne und Tutorial unverändert):
+
+- Hochplateaus mit Steilhängen an der Oberfläche (nie an einer Burg).
+- Große Felsmassive in mittlerer Tiefe.
+- Große Hallen und gewundene Gänge, die Höhlen zu Systemen verbinden; eine große Grotte mit See.
+- Gesteinsschichten: wellige Bänder unterschiedlicher Helligkeit (`layerTint` in `world.js`),
+  die Tiefe ist in der Erde selbst zu sehen.
+- Die neuen Formen haben einen eigenen Zufallsgenerator und überdecken nie Erz, Kohle, Gold oder
+  Edelsteine: Rohstoffe, Truhen und Tiere liegen wie vorher (Tests in `worldsize.spec.js`).
+
+Kategorie 5 (Welt und Siedlung): Die Welt bekommt Landmarken und Hallen wie bei Clonk; die Note wird
+nach einem Bildvergleich in der nächsten Bewertung angepasst.
+
+Nächste Schritte laut Vergleich: größere Explosionen und Feuer, Wasser und Lava öfter sichtbar,
+ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
+
