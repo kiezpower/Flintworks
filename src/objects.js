@@ -711,6 +711,14 @@ function updParts() {
       continue;
     }
     if (p.b) {
+      // a falling leaf sways with the wind until it lies on the ground (effects.js leafFall)
+      if (p.leaf) {
+        if (p.rest) p.vx = 0;
+        else {
+          p.vx = G.wind * 0.35 + Math.sin(G.frame * 0.06 + p.ph) * 0.3;
+          if (p.vy > 0.35) p.vy = 0.35;
+        }
+      }
       // dug-out crumbs: bounce off walls and the floor, then lie there for a moment
       const nx = p.x + p.vx,
         ny = p.y + p.vy;
@@ -720,6 +728,7 @@ function updParts() {
         if (p.vy > 0.7) p.vy *= -0.3;
         else p.vy = 0;
         p.vx *= 0.6;
+        if (p.leaf) p.rest = 1;
       } else p.y = ny;
       if (--p.l <= 0) parts.splice(k, 1);
       continue;
