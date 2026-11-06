@@ -302,3 +302,7 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
 - v1.76.1: Wasserfälle mit Gischt (wie Noita/Terraria): Wo ein schmaler Wasserstrahl in einen
   Teich oder auf den Boden fällt, springen Tropfen und steigt ab und zu Nebel auf (`effects.js`,
   nur Bild). Ruhige Seen und abfließende Kanten bleiben ruhig.
+- v1.76.2: Tropfsteinhöhlen (wie SteamWorld Dig 2/Terraria): An Höhlendecken hängen nahe der
+  Oberfläche Wurzeln, tiefer Tropfsteine (im Winter Eiszapfen, in der Wüste sandfarben); jeder
+  dritte tropft, der Tropfen zerspritzt beim Aufschlag, ohne Wasser hinzuzufügen (`decor.js`,
+  nach Ort verteilt wie die Leuchtpilze, also in jeder Welt gleich).
