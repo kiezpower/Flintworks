@@ -1,13 +1,14 @@
 // Playing without a code: "quick play" puts strangers into the same open room, the list shows
 // open rooms, a room for friends stays hidden. Runs a relay of its own (server/relay.js): npm test
-import { spawn } from 'node:child_process';
 import { expect, test } from '@playwright/test';
+import { startRelay } from './relayproc.js';
 
 const PORT = 8791;
 let relay;
 test.beforeAll(async () => {
-  relay = spawn(process.execPath, ['server/relay.js'], { env: { ...process.env, PORT: String(PORT) }, stdio: 'pipe' });
-  await new Promise(ok => relay.stdout.once('data', ok));
+  const r = startRelay(PORT);
+  relay = r.relay;
+  await r.ready;
 });
 test.afterAll(() => relay?.kill());
 
