@@ -29,7 +29,9 @@ import {
   warmGlow,
 } from './light.js';
 import {
+  drawButterflies,
   drawFireflies,
+  leafFall,
   drawGemSparkles,
   drawLavaGlow,
   drawPart,
@@ -654,6 +656,7 @@ function render() {
       sx = t.x - cx,
       sy = t.gy - cy;
     if (sx + h < 0 || sx - h > G.VW || sy < 0 || sy - h > G.VH) continue;
+    leafFall(t);
     if (!t.fall) {
       // trees sway gently with the wind
       ctx.save();
@@ -674,6 +677,8 @@ function render() {
       ctx.restore();
     }
   }
+  // butterflies in front of the trees
+  if (G.res === 2 && G.lightFx) drawButterflies(ctx, cx, cy, darkness());
   drawVehicles(ctx, cx, cy);
   // lorries
   for (const L of lorries) {

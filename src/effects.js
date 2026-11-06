@@ -1,7 +1,7 @@
 import { biome } from './biomes.js';
 // Visual extras: distant mountains, glowing lava, dust and splashes.
 import { G, parts } from './state.js';
-import { AIR, COAL, GEM, GOLD, LAVA, ORE, W, WATER, mat, rnd } from './world.js';
+import { AIR, COAL, GEM, GOLD, LAVA, ORE, W, WATER, mat, rnd, surf } from './world.js';
 
 // Far mountain range with snow caps, drawn behind the hills
 function drawMountains(ctx, cx, cy, dark) {
@@ -155,6 +155,57 @@ function drawFireflies(ctx, cx, cy, dark) {
     ctx.fillStyle = `rgba(255,248,190,${a})`;
     ctx.fillRect(wx, wy, 1, 1);
   }
+}
+
+// Butterflies over the meadow by day (like the fireflies: no state, the path comes from sine
+// waves around fixed spots in the world, so they stay where they are when the camera moves)
+const WINGS = ['#ffffff', '#f2c230', '#e8853a', '#9ad0f0'];
+function drawButterflies(ctx, cx, cy, dark) {
+  if (dark > 0.15 || G.rainT > 0 || G.biome === 'winter' || G.biome === 'desert') return;
+  const t = G.frame * 0.02,
+    step = 110;
+  for (let a = Math.floor(cx / step) * step; a < cx + G.VW + step; a += step) {
+    const h = (Math.imul(a + 7, 2654435761) >>> 0) % 7;
+    if (h > 3) continue; // a little over half the spots have one
+    const k = a / step,
+      wx = Math.round(a + 60 + Math.sin(t * 0.5 + k) * 34 + Math.sin(t * 1.3 + k * 2) * 10);
+    if (wx < 1 || wx >= W - 1) continue;
+    const wy = Math.round(surf[wx] - 7 - Math.abs(Math.sin(t * 0.9 + k)) * 9),
+      sx = wx - cx,
+      sy = wy - cy;
+    if (sy < 2 || sy >= G.VH || mat[wy * W + wx] !== AIR) continue;
+    ctx.fillStyle = WINGS[h];
+    // wings beat: spread out to both sides, then folded up over the back
+    if (((G.frame >> 2) + h) & 1) {
+      ctx.fillRect(sx - 2, sy - 1, 2, 2);
+      ctx.fillRect(sx + 1, sy - 1, 2, 2);
+    } else ctx.fillRect(sx, sy - 2, 1, 2);
+    ctx.fillStyle = '#3a2a1e';
+    ctx.fillRect(sx, sy - 1, 1, 2);
+  }
+}
+// now and then a leaf comes off a leafy tree, drifts down swaying and turns yellow as it goes
+const LEAF = ['#6fae4a', '#8fbf4a', '#c9a43a', '#b8742e'];
+function leafFall(t) {
+  if (t.type !== 'oak' || t.fall || t.burn > 0 || G.biome !== 'meadow' || parts.length > 1200) return;
+  if (rnd() > 0.006 + Math.max(0, G.wind) * 0.008) return;
+  const w = t.spr.width,
+    h = t.spr.height,
+    l = 220 + rnd() * 120;
+  parts.push({
+    x: t.x + (rnd() - 0.5) * w * 0.6,
+    y: t.gy - h * (0.5 + rnd() * 0.35),
+    vx: 0,
+    vy: 0.1,
+    l,
+    l0: l,
+    pal: LEAF,
+    s: 1.5,
+    g: 0.003,
+    b: 1,
+    leaf: 1,
+    ph: rnd() * 6.28,
+  });
 }
 
 // A burst of golden sparks for finished buildings, chests, jobs and castle levels
@@ -342,6 +393,8 @@ const splash = (x, y, n) => {
 };
 
 export {
+  drawButterflies,
+  leafFall,
   FX_PAL,
   drawPart,
   flicker,

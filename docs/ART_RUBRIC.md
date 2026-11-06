@@ -306,3 +306,6 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
   Oberfläche Wurzeln, tiefer Tropfsteine (im Winter Eiszapfen, in der Wüste sandfarben); jeder
   dritte tropft, der Tropfen zerspritzt beim Aufschlag, ohne Wasser hinzuzufügen (`decor.js`,
   nach Ort verteilt wie die Leuchtpilze, also in jeder Welt gleich).
+- v1.76.3: Leben an der Oberfläche (wie Terraria): Schmetterlinge flattern am Tag über Wiesen
+  (nicht bei Regen, Nacht, Winter, Wüste; vor den Bäumen gezeichnet), und von Laubbäumen fallen
+  Blätter, die im Wind pendeln, sich gelb färben und kurz am Boden liegen bleiben.
