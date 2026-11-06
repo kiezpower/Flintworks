@@ -299,3 +299,6 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
   Ziel: auf allen Ebenen bauen (Sägewerk, 2 Hütten, Fahrstuhl hinab ins Bergwerk) und 300 Taler.
   Im Spiel geprüft: Die Hochebene zählt als erreicht, der Fahrstuhl fährt bis in die Halle, an
   39 von 60 Stellen der Hochebene ist der Schacht ohne Fels.
+- v1.76.1: Wasserfälle mit Gischt (wie Noita/Terraria): Wo ein schmaler Wasserstrahl in einen
+  Teich oder auf den Boden fällt, springen Tropfen und steigt ab und zu Nebel auf (`effects.js`,
+  nur Bild). Ruhige Seen und abfließende Kanten bleiben ruhig.
