@@ -27,6 +27,9 @@ import {
   SOLID,
 } from './world.js';
 
+// steam where water meets lava: white, cooling to a pale grey
+const STEAM = ['#ffffff', '#eef3f6', '#d6dee4', '#b9c3cb'];
+
 // ---- Falling-sand simulation ----
 G.frame = 1;
 G.hissT = 0;
@@ -82,15 +85,23 @@ function lavaReact(i, x, y) {
       paint(j);
       mat[i] = ROCK;
       paint(i);
-      parts.push({
-        x: j % W,
-        y: (j / W) | 0,
-        vx: (rnd() - 0.5) * 0.4,
-        vy: -0.5 - rnd() * 0.4,
-        l: 40,
-        c: '#e8eef2',
-        g: -0.004,
-      });
+      // a puff of steam that swells and cools from white to a pale grey as it rises
+      if (parts.length < 1800)
+        for (let k = rnd() < 0.5 ? 2 : 1; k > 0; k--) {
+          const l = 45 + rnd() * 35;
+          parts.push({
+            x: (j % W) + (rnd() - 0.5) * 2,
+            y: (j / W) | 0,
+            vx: G.wind * 0.2 + (rnd() - 0.5) * 0.5,
+            vy: -0.45 - rnd() * 0.45,
+            l,
+            l0: l,
+            pal: STEAM,
+            g: -0.003,
+            s: 1.5,
+            grow: 2.5,
+          });
+        }
       if (G.hissT <= 0) {
         sfx('hiss', x, y);
         G.hissT = 20;
