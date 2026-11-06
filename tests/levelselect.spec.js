@@ -22,14 +22,17 @@ test('the selection shows the chapters with pictures, the next level, locks and 
   const errors = await lobby(page, { campaign: { fluffelrettung: 3 }, campaignTime: { fluffelrettung: 312 } });
   await page.click('#lbGMode');
   expect(await shown(page)).toBe(true);
-  // one chip per group: recommended, game modes, two chapters, maps
+  // one chip per group: recommended, two chapters, maps (Koop and Versus), game modes
   expect(await page.locator('.ls-tab').allTextContents()).toEqual([
     'Empfohlen',
-    'Spielmodi',
     'Kapitel 1',
     'Kapitel 2',
     'Karten',
+    'Spielmodi',
   ]);
+  // and the sections come in the same order
+  const order = await page.evaluate(() => [...new Set([...document.querySelectorAll('.ls-sec')].map(s => s.dataset.g))]);
+  expect(order).toEqual(['rec', 'k1', 'k2', 'maps', 'modes']);
   await page.click('.ls-tab[data-t="k2"]');
   expect(await page.locator('.ls-tab.on').getAttribute('data-t')).toBe('k2');
   const cards = await page.evaluate(() =>

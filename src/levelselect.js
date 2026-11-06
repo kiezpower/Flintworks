@@ -1,9 +1,9 @@
 // The level selection: one screen for everything that can be started, scrolled from top to
 // bottom; every section is a row of big cards swiped sideways. On top what is recommended (the
-// next campaign level, the Tagesschacht), then each game mode with one card per world type,
-// the two campaign chapters and the hand-built maps. Cards show a picture (levels/preview.js, or
-// a small landscape of the world type), a tap opens the detail view with the story, goals,
-// dangers, star times and the best time before the start. Opened from the lobby (mode button).
+// next campaign level, the Tagesschacht), then the two campaign chapters, the hand-built maps
+// for Koop and Versus, and last each game mode with one card per world type. Cards show a
+// picture (levels/preview.js, or a small landscape of the world type), a tap opens the detail
+// view with the story, goals, dangers, star times and the best time before the start. Opened from the lobby (mode button).
 import { tr } from './i18n.js';
 import { MAP_IDS } from './levels/index.js';
 import { goalText } from './levels/goals.js';
@@ -19,13 +19,14 @@ import './levelselect.css';
 // game modes without an icon of their own
 const MODE_ICON = { gold: 'trophy', build: 'castle', treasure: 'chest' };
 const WORLDS = ['meadow', 'desert', 'winter'];
-// the jump chips in the header, each for a group of sections
+// the jump chips in the header, each for a group of sections, in the order of the list:
+// recommended, the two chapters, the maps for Koop and Versus, then the game modes
 const GROUPS = [
   { id: 'rec', name: 'Empfohlen' },
-  { id: 'modes', name: 'Spielmodi' },
   { id: 'k1', name: 'Kapitel 1', ids: () => CHAPTER1 },
   { id: 'k2', name: 'Kapitel 2', ids: () => CHAPTERS[1].ids },
   { id: 'maps', name: 'Karten' },
+  { id: 'modes', name: 'Spielmodi' },
 ];
 const mmss = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -225,18 +226,6 @@ function sections() {
     if (opts.onDaily) cards.push(dailyCard());
     if (cards.length) section(list, 'rec', 'rec', esc(tr('Empfohlen')), '', cards);
   }
-  if (allowed('modes'))
-    for (const id of MODE_IDS) {
-      const M = GAME_MODES[id];
-      section(
-        list,
-        id,
-        'modes',
-        esc(tr(M.name)),
-        tr(M.desc, { goal: M.goal }),
-        WORLDS.map(biome => card(id, { biome })),
-      );
-    }
   for (const grp of GROUPS.filter(g => g.ids && allowed(g.id))) {
     const ids = grp.ids(),
       got = ids.reduce((s, id) => s + starsOf(id), 0),
@@ -259,6 +248,18 @@ function sections() {
       tr('Koop und Versus'),
       MAP_IDS.map(id => card(id)),
     );
+  if (allowed('modes'))
+    for (const id of MODE_IDS) {
+      const M = GAME_MODES[id];
+      section(
+        list,
+        id,
+        'modes',
+        esc(tr(M.name)),
+        tr(M.desc, { goal: M.goal }),
+        WORLDS.map(biome => card(id, { biome })),
+      );
+    }
 }
 function chips() {
   const nav = root.querySelector('nav');
