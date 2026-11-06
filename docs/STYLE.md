@@ -89,6 +89,14 @@ Keine weichgezeichneten Kanten: Bilder ohne Glättung zeichnen, Koordinaten rund
   im Netz als Feld `w` der Tiere übertragen).
 - Bewegungs-Inventar und Lücken: ART_RUBRIC.md, Abschnitt 2.
 
+## Explosionen und Feuer (v1.74.0, `objects.js`)
+
+- Explosion: eine Rauchsäule aus dunklem, wachsendem Rauch (14 + 2·Radius Teilchen, übereinander
+  gestapelt, steigen gleichmäßig, kühlen ab), Glutfunken, die fliegen und fallen (4 + Radius),
+  ein kurzer Feuerball. Alles innerhalb des Partikelbudgets (unter 1800 Teilchen).
+- Brennende Bäume: Rauch über der Krone wächst und zieht mit dem Wind ab. Bäume in der Nähe einer
+  Explosion fangen Feuer, Feuer springt auf Nachbarbäume über (wie bisher).
+
 ## Welt-Formen (Welt 2.0, `gen.js`)
 
 - Freies Spiel: 2 Hochplateaus je 1400 px Breite (60–130 breit, 12–24 hoch, Hänge über 5–9 px),
