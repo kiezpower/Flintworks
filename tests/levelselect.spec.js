@@ -40,7 +40,7 @@ test('the selection shows the chapters with pictures, the next level, locks and 
       picture: !!c.querySelector('.ls-pv img, .ls-pv canvas:not(.ls-badge)'),
     })),
   );
-  expect(cards.length).toBe(8);
+  expect(cards.length).toBe(9);
   expect(cards.every(c => c.picture)).toBe(true);
   expect(cards.filter(c => c.next).map(c => c.id)).toEqual(['altemine']);
   expect(cards.filter(c => !c.locked).map(c => c.id)).toEqual(['fluffelrettung', 'altemine']);

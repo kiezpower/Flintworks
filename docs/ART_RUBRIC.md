@@ -283,3 +283,12 @@ nach einem Bildvergleich in der nächsten Bewertung angepasst.
 Nächste Schritte laut Vergleich: größere Explosionen und Feuer, Wasser und Lava öfter sichtbar,
 ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
 
+
+### Nachtrag v1.73.0–v1.75.0 – Wasser, Feuer, Schaustück
+
+- v1.73.0: Lavakammern tief unten und ein See in jeder zweiten Halle (Welt 2.0); Wasser und Lava
+  liegen jetzt in jeder freien Welt in Sichtweite.
+- v1.74.0: Explosionen mit Rauchsäule, Glut und Feuerball; brennende Bäume rauchen.
+- v1.75.0: Schaustück-Level „Himmelsinseln“: eine Terrassen-Burg links, ein Meer, vier schwebende
+  Inseln mit Gold und Edelsteinen, Land mit Goldhöhle rechts. Jede Insel ist mit dem Haken
+  erreichbar (geprüft für alle vier Sprünge); Ziel: die ferne Insel erreichen und 500 Taler.
