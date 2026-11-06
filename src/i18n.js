@@ -166,10 +166,10 @@ const EN = {
     'A raft (Build → Vehicles, 4 wood) carries you across the water. Digging under the lake floods the tunnel.',
   'Labyrinth': 'Labyrinth',
   'Finde {goal} Schatztruhen': 'Find {goal} treasure chests',
-  'Unter der Wiese liegt ein Labyrinth aus Fels. Fünf Truhen sind darin versteckt – die Karte (M) zeigt dir die Gänge.':
-    'Under the meadow lies a labyrinth of rock. Five chests are hidden in it – the map (M) shows you the passages.',
-  'Die Wände sind aus Fels. Wo Erde durchschimmert, kannst du eine Abkürzung graben.':
-    'The walls are rock. Where earth shows through, you can dig a short cut.',
+  'Unter der Wiese liegt ein Labyrinth aus Fels. Fünf Truhen sind darin versteckt. Mit dem Enterhaken (G) kommst du die Schächte wieder hinauf – die Karte (M) zeigt dir die Gänge.':
+    'Under the meadow lies a labyrinth of rock. Five chests are hidden in it. The grappling hook (G) gets you back up the shafts – the map (M) shows you the passages.',
+  'Die Wände sind aus Fels. Wo Erde durchschimmert, kannst du graben. Schächte hinauf schaffst du mit dem Enterhaken.':
+    'The walls are rock. Where earth shows through, you can dig. Use the grappling hook to get up the shafts.',
   'Feuerinsel': 'Fire island',
   'Hebe {goal} Schätze': 'Raise {goal} treasures',
   'Auf der Feuerinsel liegen zwei Schatztruhen: eine unter der Lavakammer, eine im rechten Hang. Der Berg bricht immer wieder aus.':

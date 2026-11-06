@@ -54,6 +54,8 @@ function applyModeSetup() {
   if (M.evKinds) G.evKinds = M.evKinds;
   if (M.money != null) G.money = M.money;
   for (const id of M.research || []) G.tools['r_' + id] = true;
+  // tools the level starts with (the Labyrinth needs the grappling hook)
+  for (const id of M.tools || []) G.tools[id] = true;
   Object.assign(G.store, M.store || {});
   M.setup?.();
 }

@@ -35,6 +35,7 @@ function registerLevel(L, n = 0, map = false) {
     money: st.money,
     research: st.research,
     store: st.store,
+    tools: st.tools,
     evRate: ru.evRate ?? (ru.events ? 1 : 0),
     evKinds: ru.events,
     get goal() {
