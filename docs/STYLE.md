@@ -94,6 +94,8 @@ Keine weichgezeichneten Kanten: Bilder ohne Glättung zeichnen, Koordinaten rund
 - Freies Spiel: 2 Hochplateaus je 1400 px Breite (60–130 breit, 12–24 hoch, Hänge über 5–9 px),
   5 Felsmassive je 1400 × 400 (34–56 × 14–24), 8 große Hallen (22–40 × 10–17), Gänge zwischen
   benachbarten Höhlen mit sanfter Steigung, eine Grotte mit See. Abstand zu Burgen 120–200 px.
+- Wasser und Lava (v1.73.0): jede zweite große Halle hat einen See, 2 Lavakammern je 1400 px nahe
+  dem Grund (mindestens 260 px von jeder Burg). Seen dürfen vor Rundenbeginn in die Gänge abfließen.
 - Eigener Zufall aus dem Seed (`lr`), Rohstoffe werden nie überdeckt. Kampagne und Tutorial: aus.
 - Gesteinsschichten: Bänder von 26 Reihen, Helligkeit ×0,86 / ×1 / ×1,08, wellig über x.
 
