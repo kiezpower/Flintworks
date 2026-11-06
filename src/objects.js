@@ -195,16 +195,22 @@ function updTrees() {
       }
       // embers carried high up by the heat
       if (rnd() < 0.12) sparks(t.x, t.gy - h * 0.8, 1, 1.6);
-      if (rnd() < 0.15)
+      // smoke over the crown: grows and cools as it drifts off with the wind
+      if (rnd() < 0.15) {
+        const l = 80 + rnd() * 40;
         parts.push({
           x: t.x + (rnd() - 0.5) * 4,
           y: t.gy - h,
-          vx: (rnd() - 0.5) * 0.2,
-          vy: -0.3,
-          l: 60,
-          c: '#4a4540',
-          g: -0.003,
+          vx: G.wind * 0.22 + (rnd() - 0.5) * 0.15,
+          vy: -0.3 - rnd() * 0.15,
+          l,
+          l0: l,
+          pal: FX_PAL.smokeDark,
+          g: -0.002,
+          s: 1,
+          grow: 1,
         });
+      }
       if (G.frame % 20 === k % 20)
         for (const o of trees) if (o !== t && !o.burn && !o.fall && Math.abs(o.x - t.x) < 16 && rnd() < 0.22) ignite(o);
       for (const c of crew)
@@ -556,16 +562,50 @@ function explode(cx, cy, r, by = null) {
       c: rnd() < 0.5 ? '#ffcf4a' : '#ff7a2f',
     });
   }
-  for (let q = 0; q < 8; q++)
+  // a column of smoke that rises, grows and cools (dark at the bottom, fire-lit at first), glowing
+  // embers that fly out and fall, and a short fireball – bigger blasts give more of each
+  // (within the particle budget)
+  const room = parts.length < 1800;
+  for (let q = 0, n = room ? 14 + 2 * r : 6; q < n; q++) {
+    // stacked from the blast upwards, all rising at about the same pace: one column
+    const l = 110 + rnd() * 80,
+      up = q / n;
     parts.push({
-      x: cx + (rnd() - 0.5) * r,
-      y: cy + (rnd() - 0.5) * r,
-      vx: (rnd() - 0.5) * 0.3,
-      vy: -0.3 - rnd() * 0.3,
-      l: 60,
-      c: '#5d5852',
-      g: -0.003,
+      x: cx + (rnd() - 0.5) * r * (0.4 + up * 0.5),
+      y: cy - up * r * 2.2 - rnd() * 2,
+      vx: G.wind * 0.15 + (rnd() - 0.5) * 0.1,
+      vy: -0.22 - rnd() * 0.1 - up * 0.12,
+      l,
+      l0: l,
+      pal: FX_PAL.smokeDark,
+      g: -0.0012,
+      s: r > 8 ? 2 : 1,
+      grow: r > 8 ? 2.5 : 1.5,
     });
+  }
+  if (room) {
+    for (let q = 0, n = 4 + r; q < n; q++) {
+      const a = -Math.PI * (0.1 + rnd() * 0.8),
+        v = 1 + rnd() * 2.2,
+        l = 40 + rnd() * 45;
+      parts.push({ x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, l, l0: l, pal: FX_PAL.spark, g: 0.06 });
+    }
+    for (let q = 0, n = 3 + Math.floor(r / 3); q < n; q++) {
+      const l = 12 + rnd() * 8;
+      parts.push({
+        x: cx + (rnd() - 0.5) * r * 0.6,
+        y: cy + (rnd() - 0.5) * r * 0.6,
+        vx: (rnd() - 0.5) * 0.4,
+        vy: -0.5 - rnd() * 0.4,
+        l,
+        l0: l,
+        pal: FX_PAL.spark,
+        g: -0.02,
+        s: 1,
+        grow: 1,
+      });
+    }
+  }
   flashes.push({ x: cx, y: cy, r: r + 4, l: 7 });
   if (Math.hypot(cx - cam.x - G.VW / 2, cy - cam.y - G.VH / 2) < G.VW * 0.7) buzz(60 + r * 6);
   G.shake = Math.max(G.shake, r > 15 ? 9 : 5);
