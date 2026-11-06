@@ -326,6 +326,9 @@ function gen() {
         ry = lri(10, 17);
       blob(x, cy, rx, ry, AIR, keep, lr);
       halls.push({ x, y: cy, rx, ry });
+      // every other hall holds a lake (it may run off into the tunnels before the round starts)
+      if (k % 2 === 0)
+        blob(x, cy + ry * 0.5, rx * 0.85, ry * 0.5, WATER, (i, xx, yy) => mat[i] === AIR && yy > cy + ry * 0.15, lr);
     }
     // winding tunnels join neighbouring caves into systems (gentle slopes: tunnels, not shafts)
     halls.sort((a, b) => a.x - b.x);
@@ -341,6 +344,16 @@ function gen() {
           y = a.y + (b.y - a.y) * t + Math.sin(t * Math.PI * 2 + ph) * 12;
         blob(x, y, 5.5, 4, AIR, keep, lr);
       }
+    }
+    // lava chambers near the bottom: glowing pools far from the castles
+    for (let k = 0, n = perWidth(2); k < n; k++) {
+      const x = lri(300, W - 60);
+      if (!clear(x, 260)) continue;
+      const y = H - 34 - lr() * 26,
+        rx = lri(18, 30),
+        ry = lri(6, 9);
+      blob(x, y, rx, ry, AIR, keep, lr);
+      blob(x, y + ry * 0.3, rx * 0.9, ry * 0.7, LAVA, (i, xx, yy) => mat[i] === AIR && yy > y - 1, lr);
     }
     // one big cavern deep down, with a lake at its bottom
     const gx = lri(Math.floor(W * 0.3), Math.floor(W * 0.8));
@@ -472,8 +485,8 @@ function gen() {
     for (let k = 7; k < caves.length && !put('golem', caves[k]); k++);
     put('monster', caves[8]);
     put('monster', caves[9]);
-    put('spider', caves[10]);
-    put('spider', caves[11]);
+    // (two spiders: a cave whose floor is now under water – Welt 2.0 lakes – passes to the next)
+    for (let k = 10, n = 2; k < caves.length && n > 0; k++) if (put('spider', caves[k])) n--;
     put('slime', caves[0]);
     put('slime', caves[1]);
   }

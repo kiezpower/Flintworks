@@ -43,11 +43,11 @@ test('worlds of 1400 × 400 come out exactly as before', async ({ page }) => {
   const errors = await open(page);
   // checksums taken from v1.29.0, before worlds could change their size; the free-play worlds
   // (gold) again from v1.68.0, when they got more coal and ore closer to the surface, and from
-  // v1.72.0 (Welt 2.0: plateaus, rock massifs, caverns, tunnels – the campaign worlds c3, c4 stay
+  // v1.73.0 (Welt 2.0: plateaus, rock massifs, caverns, tunnels, lakes, lava – the campaign worlds c3, c4 stay
   // as they were)
   const want = [
-    [['gold', 7, 'meadow', false], 2733954498],
-    [['gold', 99, 'desert', true], 1189646575],
+    [['gold', 7, 'meadow', false], 3387406330],
+    [['gold', 99, 'desert', true], 4278038948],
     [['c3', 3303, 'winter', false], 3226257325],
     [['c4', 4404, 'meadow', false], 4017410677],
   ];
