@@ -33,6 +33,7 @@ function scanLava(cx, cy) {
   waterSpots.length = 0;
   gemSpots.length = 0;
   oreSpots.length = 0;
+  let falls = 0;
   for (let y = 1; y < G.VH && lavaSpots.length < 160; y += 3)
     for (let x = 1; x < G.VW; x += 3) {
       const i = (cy + y) * W + cx + x;
@@ -45,6 +46,17 @@ function scanLava(cx, cy) {
           k++;
         }
         if (mat[j - W] === AIR) waterSpots.push(x, y - k);
+        // falling water (a stream, open to the air at its side) that hits a pool or the ground
+        if (falls < 24)
+          for (let dy = -1; dy <= 1; dy++)
+            for (let dx = -1; dx <= 1; dx++) {
+              const p = i + dy * W + dx;
+              if (mat[p] === WATER && fallsHere(p)) {
+                falls++;
+                spray(cx + x + dx, cy + y + dy, mat[p + W] !== WATER);
+                dx = dy = 2;
+              }
+            }
       }
       if (mat[i] === GEM && rnd() < 0.08) gemSpots.push(x, y);
       // gold, gems, ore and coal stay readable in the dimmed underground: how much light each gets
@@ -60,6 +72,47 @@ function scanLava(cx, cy) {
     }
   return lavaSpots;
 }
+// a waterfall's foot: water at least two cells tall above, with air beside it (so it falls),
+// landing in water that spreads to both sides (a pool) or on the ground with air beside it
+// (a stream: at most 4 cells wide, with air on both sides)
+function stream(q) {
+  if (mat[q] !== WATER) return false;
+  let l = 0,
+    r = 0;
+  for (let k = 1; k <= 4 && !l; k++) if (mat[q - k] === AIR) l = k;
+  for (let k = 1; k <= 4 && !r; k++) if (mat[q + k] === AIR) r = k;
+  return l && r && l + r <= 5;
+}
+function fallsHere(p) {
+  if (!stream(p - W) || !stream(p - 3 * W)) return false;
+  // into a pool: water on both sides, further out than the stream is wide
+  if (mat[p - 2] === WATER && mat[p + 2] === WATER && mat[p - 1] === WATER && mat[p + 1] === WATER) return true;
+  // onto the ground
+  const b = mat[p + W];
+  return b !== WATER && b !== AIR && stream(p);
+}
+// spray at a waterfall's foot: droplets jump up and fall back, now and then a puff of mist
+function spray(x, y, ground) {
+  if (parts.length > 1500) return;
+  if (rnd() < (ground ? 0.5 : 0.35)) {
+    const l = 14 + rnd() * 12;
+    parts.push({
+      x: x + (rnd() - 0.5) * 2,
+      y: y - 1,
+      vx: (rnd() - 0.5) * (ground ? 1.4 : 1),
+      vy: -0.5 - rnd() * 0.8,
+      l,
+      l0: l,
+      pal: FX_PAL.splash,
+      g: 0.07,
+    });
+  }
+  if (rnd() < 0.05) {
+    const l = 30 + rnd() * 20;
+    parts.push({ x, y: y - 2, vx: (rnd() - 0.5) * 0.3, vy: -0.15 - rnd() * 0.15, l, l0: l, pal: MIST, g: -0.002, s: 1, grow: 2 });
+  }
+}
+const MIST = ['rgba(236,246,255,0.55)', 'rgba(226,240,252,0.4)', 'rgba(214,232,248,0.25)'];
 function drawGemSparkles(ctx) {
   ctx.fillStyle = '#ffffff';
   for (let k = 0; k < gemSpots.length; k += 2) {
