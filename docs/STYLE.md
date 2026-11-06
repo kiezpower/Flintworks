@@ -89,6 +89,14 @@ Keine weichgezeichneten Kanten: Bilder ohne Glättung zeichnen, Koordinaten rund
   im Netz als Feld `w` der Tiere übertragen).
 - Bewegungs-Inventar und Lücken: ART_RUBRIC.md, Abschnitt 2.
 
+## Welt-Formen (Welt 2.0, `gen.js`)
+
+- Freies Spiel: 2 Hochplateaus je 1400 px Breite (60–130 breit, 12–24 hoch, Hänge über 5–9 px),
+  5 Felsmassive je 1400 × 400 (34–56 × 14–24), 8 große Hallen (22–40 × 10–17), Gänge zwischen
+  benachbarten Höhlen mit sanfter Steigung, eine Grotte mit See. Abstand zu Burgen 120–200 px.
+- Eigener Zufall aus dem Seed (`lr`), Rohstoffe werden nie überdeckt. Kampagne und Tutorial: aus.
+- Gesteinsschichten: Bänder von 26 Reihen, Helligkeit ×0,86 / ×1 / ×1,08, wellig über x.
+
 ## Welt-Details
 
 - **Oberfläche:** Gras, Blumen, Büsche, Steinchen (`decor.js`).

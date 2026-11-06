@@ -266,7 +266,13 @@ test('on the desktop G aims the hook at the mouse pointer: held shows the rope, 
   expect(s.hook).toBe(false);
   expect(s.x).toBeGreaterThan(626);
   // the pointer on the Wühler: no direction (no rope shown), thrown the default way
-  await page.mouse.move(...(await screen(s.x + 3, gy - 6)));
+  // (after the pull the camera catches up first, so the pointer really lands on him)
+  await page.waitForFunction(() => {
+    const w = window.__ww,
+      c = w.crew[0];
+    return Math.abs(w.cam.x + w.G.VW / 2 - c.x) < 4 && Math.abs(w.cam.y + w.G.VH / 2 - c.y) < 12;
+  });
+  await page.mouse.move(...(await screen((await state()).x + 3, gy - 6)));
   await page.keyboard.down('KeyG');
   s = await state();
   expect([s.kind, s.drag]).toEqual(['hook', null]);

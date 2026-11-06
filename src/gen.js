@@ -101,9 +101,10 @@ function balanceAround(cx) {
     }
   }
 }
-function blob(cx, cy, rx, ry, m, cond) {
-  const ph1 = rnd() * 9,
-    ph2 = rnd() * 9;
+// r: the random numbers to use (Welt 2.0 has its own, so the rest of the world stays as it was)
+function blob(cx, cy, rx, ry, m, cond, r = rnd) {
+  const ph1 = r() * 9,
+    ph2 = r() * 9;
   for (let y = Math.floor(cy - ry - 3); y <= cy + ry + 3; y++) {
     if (y < 0 || y >= H) continue;
     for (let x = Math.floor(cx - rx - 3); x <= cx + rx + 3; x++) {
@@ -179,6 +180,38 @@ function gen() {
     surf[x] = Math.round(
       hy + ha * 26 * Math.sin(x * 0.0062 + p1) + ha * 12 * Math.sin(x * 0.019 + p2) + ha * 4 * Math.sin(x * 0.061 + p3),
     );
+  // Welt 2.0 (free play): the big shapes of the Clonk worlds – plateaus with steep sides on the
+  // surface, large rock massifs, caves joined by winding tunnels and a big cavern with a lake.
+  // Campaign levels (and the tutorial) keep their tuned worlds; castles stand on flat ground.
+  // (its own random numbers from the seed: resources, chests and creatures come out as before)
+  const big = !GAME_MODES[G.mode]?.campaign,
+    castles = castleXs(),
+    clear = (x, r) => castles.every(cx => Math.abs(cx - x) > r);
+  let ls = (G.seed * 2654435761 + 0x6d2b79f5) >>> 0;
+  const lr = () => {
+      ls = (ls + 0x6d2b79f5) >>> 0;
+      let t = ls;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    },
+    lri = (a, b) => a + Math.floor(lr() * (b - a + 1));
+  if (big)
+    for (let k = 0, n = perWidth(2); k < n; k++) {
+      // a plateau: 60–130 wide, 12–24 high, sides over 5–9 pixels (steep, but they can be dug)
+      const w = lri(60, 130),
+        h = Math.round(lri(12, 24) * ha),
+        side = lri(5, 9);
+      let c = lri(260, W - 120);
+      for (let t = 0; t < 12 && !clear(c, w / 2 + 120); t++) c = lri(260, W - 120);
+      if (!clear(c, w / 2 + 120)) continue;
+      for (let x = Math.round(c - w / 2 - side); x <= c + w / 2 + side; x++) {
+        if (x < 0 || x >= W) continue;
+        const e = Math.min(x - (c - w / 2 - side), c + w / 2 + side - x) / side,
+          f = e >= 1 ? 1 : e * e * (3 - 2 * e);
+        surf[x] -= Math.round(h * f);
+      }
+    }
   const bh = surf[90];
   for (let x = 0; x < 160; x++) {
     const t = x < 120 ? 0 : (x - 120) / 40;
@@ -272,6 +305,52 @@ function gen() {
   for (let k = 0, n = perArea(12); k < n; k++) {
     const x = spread(k, n, 220);
     blob(x, H - 30 - rnd() * 80, ri(2, 4), ri(2, 3), GEM);
+  }
+  // Welt 2.0, laid over the finished ground with its own random numbers; ore, coal, gold and gems
+  // are never covered (TREASURE), so every world has the resources it had before
+  if (big) {
+    const keep = i => mat[i] !== ORE && mat[i] !== COAL && mat[i] !== GOLD && mat[i] !== GEM;
+    // rock massifs: a few big grey masses in the middle depths (the pick gets through them)
+    for (let k = 0, n = perArea(5); k < n; k++) {
+      const x = lri(260, W - 40);
+      if (!clear(x, 170)) continue;
+      blob(x, surf[x] + 40 + lr() * Math.max(10, H * 0.45 - 40), lri(34, 56), lri(14, 24), ROCK, keep, lr);
+    }
+    // large caverns, the open halls of the Clonk worlds
+    const halls = caves.slice();
+    for (let k = 0, n = perArea(8); k < n; k++) {
+      const x = lri(260, W - 40);
+      if (!clear(x, 180)) continue;
+      const cy = surf[x] + 36 + lr() * Math.max(4, H - 66 - surf[x]),
+        rx = lri(22, 40),
+        ry = lri(10, 17);
+      blob(x, cy, rx, ry, AIR, keep, lr);
+      halls.push({ x, y: cy, rx, ry });
+    }
+    // winding tunnels join neighbouring caves into systems (gentle slopes: tunnels, not shafts)
+    halls.sort((a, b) => a.x - b.x);
+    for (let k = 1; k < halls.length; k++) {
+      const a = halls[k - 1],
+        b = halls[k];
+      if (b.x - a.x > 240 || Math.abs(b.y - a.y) > (b.x - a.x) * 0.55 || lr() < 0.3) continue;
+      const n = Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 3),
+        ph = lr() * 6;
+      for (let st = 0; st <= n; st++) {
+        const t = st / n,
+          x = a.x + (b.x - a.x) * t,
+          y = a.y + (b.y - a.y) * t + Math.sin(t * Math.PI * 2 + ph) * 12;
+        blob(x, y, 5.5, 4, AIR, keep, lr);
+      }
+    }
+    // one big cavern deep down, with a lake at its bottom
+    const gx = lri(Math.floor(W * 0.3), Math.floor(W * 0.8));
+    if (clear(gx, 200)) {
+      const gy = Math.min(H - 40, surf[gx] + Math.round(H * 0.45)),
+        rx = lri(40, 60),
+        ry = lri(14, 20);
+      blob(gx, gy, rx, ry, AIR, keep, lr);
+      blob(gx, gy + ry * 0.55, rx * 0.8, ry * 0.45, WATER, (i, xx, yy) => mat[i] === AIR && yy > gy + 2, lr);
+    }
   }
   // balancing: one shallow gold vein close to the base for the first sale
   const xs = castleXs();
