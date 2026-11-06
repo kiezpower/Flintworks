@@ -260,8 +260,6 @@ und Licht in der Tiefe (7).
 
 **Offen:**
 - UX-Test mit echten Spielern.
-- Ein älterer Fehler, gefunden beim Prüfen der Baustile: Stein- und Winterstil färben auch Ofenfeuer
-  und das Werkstattfenster grau (`restyle` in `skins.js`), weil diese Farben als Holz erkannt werden.
 
 ### Nachtrag v1.72.0 – Welt 2.0
 
@@ -292,3 +290,6 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
 - v1.75.0: Schaustück-Level „Himmelsinseln“: eine Terrassen-Burg links, ein Meer, vier schwebende
   Inseln mit Gold und Edelsteinen, Land mit Goldhöhle rechts. Jede Insel ist mit dem Haken
   erreichbar (geprüft für alle vier Sprünge); Ziel: die ferne Insel erreichen und 500 Taler.
+- v1.75.1: Dampfwolken, wenn Wasser auf Lava trifft.
+- v1.75.2: Behoben: Stein- und Winterstil färbten Ofenfeuer und Ladenlicht grau. `restyle` lässt
+  jetzt alles mit Sättigung über 0,7 stehen (Holz liegt bei höchstens 0,65); Test `skins.spec.js`.

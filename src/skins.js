@@ -101,8 +101,9 @@ function restyle(spr, style) {
   for (let i = 0; i < d.length; i += 4) {
     if (!d[i + 3]) continue;
     const [hh, ss, ll] = hsl(d[i], d[i + 1], d[i + 2]);
-    // wood: orange-brown hues, not too bright (windows and lamps stay as they are)
-    if (hh < 12 || hh > 48 || ss < 0.18 || ll < 0.12 || ll > 0.72) continue;
+    // wood: orange-brown hues, not too bright (windows and lamps stay as they are); fire, embers,
+    // gold and lit windows are far more saturated than any wood (wood up to about 0.65)
+    if (hh < 12 || hh > 48 || ss < 0.18 || ss > 0.7 || ll < 0.12 || ll > 0.72) continue;
     const [r, gg, b] = rgb(...f(hh, ss, ll));
     d[i] = r;
     d[i + 1] = gg;

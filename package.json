@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview --host",
     "android": "vite build && cap sync android",
+    "pretest": "node tests/serverdeps.mjs",
     "test": "playwright test",
     "test:visual": "node tests/visual.mjs",
     "store-shots": "node tests/store-shots.mjs",
