@@ -1,0 +1,188 @@
+{
+  "id": "himmelsinseln",
+  "v": 1,
+  "name": "Himmelsinseln",
+  "icon": "hook",
+  "desc": "Erreiche die ferne Insel und verdiene Taler",
+  "intro": "Vier Inseln schweben über dem Meer. Mit dem Enterhaken (in der Burg) oder einer Brücke kommst du hinüber – auf der fernsten liegen Gold und Edelsteine.",
+  "biome": "meadow",
+  "size": [
+    1600,
+    350
+  ],
+  "zoom": 5,
+  "rough": 0.35,
+  "seed": 8901,
+  "diff": "adventure",
+  "fill": {
+    "gold": 0.5,
+    "caves": 0.2
+  },
+  "start": {
+    "money": 90,
+    "crew": 3,
+    "inv": [
+      [
+        "flint",
+        "rock"
+      ],
+      [
+        "loam",
+        "loam"
+      ],
+      [
+        "rock"
+      ]
+    ],
+    "store": {
+      "wood": 6,
+      "rock": 2
+    }
+  },
+  "rules": {
+    "meteors": false
+  },
+  "objects": [
+    {
+      "t": "base",
+      "x": 40
+    },
+    {
+      "t": "tree",
+      "x": 150,
+      "stage": 4
+    },
+    {
+      "t": "tree",
+      "x": 225,
+      "stage": 3
+    },
+    {
+      "t": "tree",
+      "x": 360,
+      "stage": 4
+    },
+    {
+      "t": "tree",
+      "x": 410,
+      "stage": 3
+    },
+    {
+      "t": "tree",
+      "x": 530,
+      "stage": 4
+    },
+    {
+      "t": "tree",
+      "x": 600,
+      "stage": 3
+    },
+    {
+      "t": "tree",
+      "x": 720,
+      "stage": 4
+    },
+    {
+      "t": "tree",
+      "x": 1050,
+      "stage": 3
+    },
+    {
+      "t": "tree",
+      "x": 1150,
+      "stage": 4
+    },
+    {
+      "t": "tree",
+      "x": 1300,
+      "stage": 3
+    },
+    {
+      "t": "tree",
+      "x": 1450,
+      "stage": 4
+    },
+    {
+      "t": "animal",
+      "kind": "fish",
+      "x": 420,
+      "y": 305
+    },
+    {
+      "t": "animal",
+      "kind": "fish",
+      "x": 600,
+      "y": 305
+    },
+    {
+      "t": "animal",
+      "kind": "fish",
+      "x": 820,
+      "y": 305
+    },
+    {
+      "t": "animal",
+      "kind": "fluffel",
+      "x": 560
+    }
+  ],
+  "areas": {
+    "ufer": [
+      240,
+      130,
+      60,
+      80
+    ],
+    "ferne": [
+      800,
+      40,
+      95,
+      80
+    ]
+  },
+  "goals": [
+    {
+      "t": "reach",
+      "area": "ferne",
+      "label": "Auf der fernen Insel"
+    },
+    {
+      "t": "money",
+      "n": 500
+    }
+  ],
+  "lose": {
+    "crewDead": true
+  },
+  "stars": [
+    12,
+    18
+  ],
+  "triggers": [
+    {
+      "when": {
+        "t": "enter",
+        "area": "ufer"
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Zu weit zum Springen: Kauf in der Burg den Enterhaken, oder bau eine Brücke – mit Lehm oder Brettern in der Hand Aktion an der Kante."
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "enter",
+        "area": "ferne"
+      },
+      "do": [
+        {
+          "t": "banner",
+          "title": "Die ferne Insel",
+          "text": "Gold und Edelsteine liegen unter dir"
+        }
+      ]
+    }
+  ]
+}

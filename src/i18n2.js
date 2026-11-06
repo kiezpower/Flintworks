@@ -205,5 +205,15 @@ const EN2 = {
   'Im schnellen Spiel besetzen Computergegner leere Burgen': 'In quick play, computer opponents take empty castles',
   'Schnelles Spiel wartet auf echte Mitspieler – keine Computergegner':
     'Quick play waits for real players – no computer opponents',
+  // level Himmelsinseln (src/levels/himmelsinseln)
+  Himmelsinseln: 'Sky islands',
+  'Erreiche die ferne Insel und verdiene Taler': 'Reach the far island and earn coins',
+  'Vier Inseln schweben über dem Meer. Mit dem Enterhaken (in der Burg) oder einer Brücke kommst du hinüber – auf der fernsten liegen Gold und Edelsteine.':
+    'Four islands float above the sea. The grappling hook (at the castle) or a bridge takes you across – gold and gems lie on the farthest.',
+  'Auf der fernen Insel': 'On the far island',
+  'Zu weit zum Springen: Kauf in der Burg den Enterhaken, oder bau eine Brücke – mit Lehm oder Brettern in der Hand Aktion an der Kante.':
+    'Too far to jump: buy the grappling hook at the castle, or build a bridge – Action at the edge with loam or planks in hand.',
+  'Die ferne Insel': 'The far island',
+  'Gold und Edelsteine liegen unter dir': 'Gold and gems lie beneath you',
 };
 export { EN2 };
