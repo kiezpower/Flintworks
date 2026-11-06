@@ -677,7 +677,7 @@ function updParts() {
   for (let k = parts.length - 1; k >= 0; k--) {
     const p = parts[k];
     p.vy += p.g !== undefined ? p.g : 0.12;
-    if (p.m !== undefined || p.rain) {
+    if (p.m !== undefined || p.rain || p.drop) {
       if (p.vy > 3.5) p.vy = 3.5;
       // flakes sway from side to side as they drift down
       if (p.snow) p.vx = G.wind * 0.3 + Math.sin(G.frame * 0.04 + p.ph) * 0.22;
@@ -695,8 +695,9 @@ function updParts() {
         const ok = cy >= 0 && cy < H && cx >= 0 && cx < W && mat[cy * W + cx] === AIR;
         if (p.snow) {
           // flakes just melt away
-        } else if (p.rain) {
-          if (ok && rnd() < 0.07) setMat(cx, cy, WATER);
+        } else if (p.rain || p.drop) {
+          // (a drop from a stalactite only splashes: it adds no water)
+          if (p.rain && ok && rnd() < 0.07) setMat(cx, cy, WATER);
           else if (mat[ty * W + tx] === WATER) {
             if (rnd() < 0.6) ripple(p.x, ty);
           } else if (rnd() < 0.6) rainSplash(p.x, ty);
