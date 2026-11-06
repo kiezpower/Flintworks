@@ -20,6 +20,7 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 
 - **Browser:** https://kiezpower.github.io/Flintworks/
 - **Handy als Web-App:** Adresse öffnen → iPhone: Teilen → „Zum Home-Bildschirm“ · Android: Menü → „App installieren“
+- **Updates:** Die Web-Version holt neue Versionen beim nächsten Start (oder in der Lobby) von selbst; mitten in einer Runde erscheint nur ein Hinweis, geladen wird danach.
 - **Android-App:** Unter [Releases](https://github.com/kiezpower/Flintworks/releases/latest) `flintworks.apk` herunterladen und öffnen (einmalig „Installation aus unbekannten Quellen“ erlauben)
 
 ## Steuerung

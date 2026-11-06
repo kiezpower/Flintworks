@@ -9,7 +9,7 @@ import { updBuildFx } from './bfx.js';
 import { updMusic } from './music.js';
 import { updFloats } from './floats.js';
 import { updDecor } from './decor.js';
-import { chosenBiome, hideLobby, lobbyFrame, lobbyOpen, showLobby } from './lobby.js';
+import { checkUpdate, chosenBiome, hideLobby, lobbyFrame, lobbyOpen, showLobby } from './lobby.js';
 import { P, finishGame, saveProfile } from './profile.js';
 import { skinTag } from './skins.js';
 import { addCrystals, applyStartBoosts, roundCrystals, setDigBoost } from './camp.js';
@@ -223,6 +223,8 @@ function discard() {
 const lobbyHooks = { play, discard, hasRun, keysHtml };
 setTutHooks({ play, menu, discard, save: saveGame });
 function menu() {
+  // (a new version waited for the round to end: the game is saved, load it now)
+  if (G.updateReady) return G.updateReady();
   showLobby(lobbyHooks);
 }
 function startGame(withTutorial = false) {
@@ -624,6 +626,8 @@ if (oldTut && !oldTut.run) clearSave();
 if (!P.tutorialDone && !(P.games > 0) && !linked && (!hasSave() || savedTut())) play(false, null, true);
 else menu();
 // an invitation that opens the app while the start screen waits: to the lobby and the room
+// (also on the start screen, which skips the lobby: an old offline copy updates itself)
+checkUpdate();
 G.onInvited = () => {
   if (!veilOpen()) return;
   closeVeil();
@@ -636,9 +640,21 @@ requestAnimationFrame(loop);
 // (and not inside other sites like itch.io)
 if (ownWeb() && 'serviceWorker' in navigator && !import.meta.env.DEV) {
   import('virtual:pwa-register').then(({ registerSW }) => {
+    // a new version is ready: outside a running round it is loaded at once (start screen, lobby,
+    // end card), in a round the button offers it and the next visit to the lobby loads it – so
+    // nobody keeps playing an old offline copy without noticing
     const update = registerSW({
       immediate: true,
+      // look for a new version right away and then every hour (an installed web app on a phone
+      // is rarely reloaded, so the browser's own check is not enough)
+      onRegisteredSW(url, r) {
+        if (!r) return;
+        r.update().catch(() => {});
+        setInterval(() => r.update().catch(() => {}), 3600 * 1000);
+      },
       onNeedRefresh() {
+        if (G.state !== 'play') return update(true);
+        G.updateReady = () => update(true);
         const b = $('updateBtn');
         b.hidden = false;
         b.onclick = () => update(true);
