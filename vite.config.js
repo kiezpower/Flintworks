@@ -127,6 +127,10 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,woff2}'],
+        // old offline copies are cleared once the new version has taken over
+        cleanupOutdatedCaches: true,
+        // a page asked for with ?v= (the update, lobby.js) always comes from the server
+        navigateFallbackDenylist: [/[?&]v=/],
       },
     }),
   ],

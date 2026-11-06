@@ -26,16 +26,47 @@ import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
 import { settingsSections } from './settings.js';
 
 const el = $('lobby');
-// ask the live web version which version is current; offer the update if this copy is older
-// (not on itch.io and other sites: they bring the new version themselves)
+// ask which version is current and bring this copy up to date. The own web version asks its own
+// server (the version that is deployed right now) and, outside a running round, drops its offline
+// copy and loads the new one by itself – once per version, so a failed load cannot loop. In a
+// round, and in the Android app, a link offers it instead. (Not on itch.io and other sites: they
+// bring the new version themselves.)
 let updateChecked = false;
+const newer = (a, b) => {
+  const x = String(a).split('.').map(Number),
+    y = String(b).split('.').map(Number);
+  for (let k = 0; k < 3; k++) if ((x[k] || 0) !== (y[k] || 0)) return (x[k] || 0) > (y[k] || 0);
+  return false;
+};
+async function freshLoad(version) {
+  // (each step at most 1.5 s: the service worker API can stall while a new worker installs)
+  const limit = pr => Promise.race([pr, new Promise(r => setTimeout(r, 1500))]);
+  try {
+    await limit(
+      (async () => {
+        for (const r of (await navigator.serviceWorker?.getRegistrations()) || []) await r.unregister();
+      })(),
+    );
+    await limit((async () => Promise.all((await caches.keys()).map(k => caches.delete(k))))());
+  } catch {}
+  // ?v= is never answered from the offline copy (vite.config.js): this load comes from the server
+  location.replace(location.pathname + '?v=' + version);
+}
 function checkUpdate() {
   if (updateChecked || import.meta.env.DEV || (!isNative() && !ownWeb())) return;
   updateChecked = true;
-  fetch(LIVE + 'version.json?t=' + Date.now(), { cache: 'no-store' })
+  fetch((isNative() ? LIVE : '') + 'version.json?t=' + Date.now(), { cache: 'no-store' })
     .then(r => r.json())
     .then(({ version }) => {
-      if (!version || version === __APP_VERSION__) return;
+      if (!version || !newer(version, __APP_VERSION__)) return;
+      if (!isNative() && G.state !== 'play') {
+        let tried = false;
+        try {
+          tried = sessionStorage.getItem('flintworks-update') === version;
+          sessionStorage.setItem('flintworks-update', version);
+        } catch {}
+        if (!tried) return freshLoad(version);
+      }
       const a = $('updateLink');
       a.textContent = tr('Neue Version v{v} verfügbar – tippen', { v: version });
       // the Android app gets a new APK, the web version simply reloads
@@ -45,13 +76,9 @@ function checkUpdate() {
       a.hidden = false;
       // web: drop the offline copy completely so the new version really loads
       if (!isNative())
-        a.onclick = async e => {
+        a.onclick = e => {
           e.preventDefault();
-          try {
-            for (const r of (await navigator.serviceWorker?.getRegistrations()) || []) await r.unregister();
-            for (const k of await caches.keys()) await caches.delete(k);
-          } catch {}
-          location.replace(location.pathname + '?v=' + version);
+          freshLoad(version);
         };
     })
     .catch(() => {});
@@ -460,4 +487,4 @@ G.onLeaveRoom = () => {
 };
 const chosenBiome = () => (P.mode && P.mode !== 'random' ? P.mode : null);
 
-export { chosenBiome, frame as lobbyFrame, hideLobby, lobbyOpen, showLobby };
+export { checkUpdate, chosenBiome, frame as lobbyFrame, hideLobby, lobbyOpen, showLobby };
