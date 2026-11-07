@@ -421,8 +421,8 @@ const EN = {
   'Tippen rechts': 'Tap right',
   'dein Wühler läuft dorthin': 'your digger walks there',
   'Fällen, Basis, Truhe, Brücke, Bauen': 'Chop, base, chest, bridge, build',
-  'erscheint mit etwas in der Hand; Stick hoch = Bogen, runter = ablegen':
-    'appears with something in hand; stick up = arc, down = drop',
+  'erscheint mit etwas in der Hand; tippen wirft (Stick hoch = Bogen, runter = ablegen), Knopf ziehen zielt':
+    'appears with something in hand; a tap throws (stick up = arc, down = drop), drag the button to aim',
   'Grab dich in die Erde: Stick nach unten drücken': 'Dig into the ground: push the stick down',
   'Fälle einen Baum mit Aktion und sammle 2 Holz': 'Chop a tree with Action and collect 2 wood',
   'Bau eine Hütte: Bauen → Hütte, dann drin stehen bleiben': 'Build a hut: Build → Hut, then stay inside',

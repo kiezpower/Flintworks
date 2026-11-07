@@ -1,5 +1,5 @@
 import { setGoal } from './tapgo.js';
-import { NOIN } from './digger.js';
+import { NOIN, canToss } from './digger.js';
 import { sel_ } from './entities.js';
 import { cam, cv } from './render.js';
 import { audioInit } from './sound.js';
@@ -166,12 +166,19 @@ const AIM_R = 34; // px of drag for a full aim
 const ready = c => !!c && !c.dead && c.ride == null;
 const AIMERS = {
   // (the same button aims the catapult while you sit in one)
+  // (and with something in hand it aims the throw: farther the longer the drag, see 'toss')
   throw: {
-    kind: c => (vehicleOf(c)?.kind === 'catapult' ? 'catapult' : 'bow'),
+    kind: c => (vehicleOf(c)?.kind === 'catapult' ? 'catapult' : c.wield === 'bow' ? 'bow' : 'toss'),
     ready: c =>
-      (!!c && !c.dead && vehicleOf(c)?.kind === 'catapult') || (ready(c) && c.wield === 'bow'),
-    fire: (a, kind) =>
-      send(kind === 'catapult' ? 'catapult' : 'shoot', a ? { dx: a.ax, dy: a.ay } : {}),
+      (!!c && !c.dead && vehicleOf(c)?.kind === 'catapult') ||
+      (ready(c) && c.wield === 'bow') ||
+      canToss(c),
+    fire: (a, kind) => {
+      // a plain tap throws as before (the walking stick still picks high or low)
+      if (kind === 'toss' && !a) edge.throw = true;
+      else if (kind === 'toss') send('toss', { dx: a.ax, dy: a.ay, p: a.p });
+      else send(kind === 'catapult' ? 'catapult' : 'shoot', a ? { dx: a.ax, dy: a.ay } : {});
+    },
   },
   hook: {
     kind: 'hook',
@@ -187,7 +194,7 @@ function aimMove(b, e) {
     dy = e.clientY - aimFrom.y,
     d = Math.hypot(dx, dy);
   // (a little wobble of the thumb is still a tap)
-  G.aimDrag = d > 10 ? { ax: dx / d, ay: dy / d } : null;
+  G.aimDrag = d > 10 ? { ax: dx / d, ay: dy / d, p: Math.min(d, AIM_R * 1.6) / (AIM_R * 1.6) } : null;
   const k = Math.min(d, AIM_R) / (d || 1);
   if (!aimDot) {
     aimDot = document.createElement('i');
