@@ -79,7 +79,7 @@ const TOUCH_KEYS = [
   ['Stick links', 'laufen, klettern, nach oben schnippen = springen; gegen Erde laufen oder runter drücken = graben'],
   ['Tippen rechts', 'dein Wühler läuft dorthin'],
   ['Aktion', 'Fällen, Burg (Laden), Truhe, Brücke, Bauen'],
-  ['Wurf', 'erscheint mit etwas in der Hand; Stick hoch = Bogen, runter = ablegen'],
+  ['Wurf', 'erscheint mit etwas in der Hand; tippen wirft (Stick hoch = Bogen, runter = ablegen), Knopf ziehen zielt'],
   ['Haken', 'mit dem Enterhaken (Burg oder für immer im Heimatbergwerk): wirft ihn in Stick-Richtung, sonst an die nächste Kante'],
 ];
 const DESK_KEYS = [

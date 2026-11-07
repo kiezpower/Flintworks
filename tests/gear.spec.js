@@ -883,3 +883,81 @@ test.describe('aiming buttons on a touch screen', () => {
     expect(errors).toEqual([]);
   });
 });
+
+test('dragging "Wurf" with something in hand aims the throw: direction, distance and a tap as before', async ({
+  page,
+}) => {
+  const errors = await setup(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      c = w.crew[0];
+    const last = () => w.items[w.items.length - 1];
+    c.face = 1;
+    c.inv = ['rock', 'rock', 'rock', 'rock'];
+    const out = {};
+    // dragged up and to the left: flies that way, the Wühler turns round
+    w.send('toss', { dx: -0.7, dy: -0.7, p: 1 });
+    let it = last();
+    out.upLeft = !!it && it.t === 'rock' && it.vx < -2 && it.vy < -2 && c.face === -1 && c.inv.length === 3;
+    // a short drag throws softer than a long one
+    w.send('toss', { dx: 1, dy: 0, p: 0 });
+    const soft = last().vx;
+    w.send('toss', { dx: 1, dy: 0, p: 1 });
+    out.farther = last().vx > soft + 1 && soft > 1;
+    // no direction (a tap): the old throw, the way you look
+    w.send('toss', {});
+    it = last();
+    out.tap = it.vx > 0 && it.vy === -2 && c.inv.length === 0;
+    // nothing left in hand: nothing happens
+    const n = w.items.length;
+    w.send('toss', { dx: 1, dy: -1 });
+    out.emptyHand = w.items.length === n;
+    return out;
+  });
+  expect(r).toEqual({ upLeft: true, farther: true, tap: true, emptyHand: true });
+  expect(errors).toEqual([]);
+});
+
+test.describe('aiming the throw on a touch screen', () => {
+  test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
+
+  test('drag "Wurf" with a flint in hand: see the arc, let go to throw it there; a tap throws as before', async ({
+    page,
+  }) => {
+    const errors = await setup(page);
+    await page.evaluate(() => {
+      const w = window.__ww,
+        c = w.crew[0];
+      c.face = 1;
+      c.inv = ['flint', 'rock'];
+      c.isel = 0;
+      w.hud();
+    });
+    const b = await page.locator('.pad.throw').boundingBox();
+    const x = b.x + b.width / 2,
+      y = b.y + b.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x - 40, y - 40, { steps: 5 });
+    const during = await page.evaluate(() => ({ kind: window.__ww.G.aimKind, drag: !!window.__ww.G.aimDrag }));
+    await page.waitForTimeout(100); // (a few frames draw the dotted arc)
+    await page.mouse.up();
+    const flint = await page.evaluate(() => {
+      const it = window.__ww.items.find(o => o.t === 'flint');
+      return it && { vx: it.vx, vy: it.vy, face: window.__ww.crew[0].face };
+    });
+    // a plain tap: the rock goes the old way, forward and a little up
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.up();
+    await page.evaluate(() => window.__ww.step(1));
+    const rock = await page.evaluate(() => {
+      const it = window.__ww.items.find(o => o.t === 'rock');
+      return it && { left: window.__ww.crew[0].inv.length, x: it.x - window.__ww.crew[0].x };
+    });
+    expect(during).toEqual({ kind: 'toss', drag: true });
+    expect(flint && flint.vx < -1.5 && flint.vy < -1.5 && flint.face === -1).toBe(true);
+    expect(rock && rock.left === 0).toBe(true);
+    expect(errors).toEqual([]);
+  });
+});
