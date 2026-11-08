@@ -17,7 +17,8 @@ import { biome } from './biomes.js';
 import { updAmbience } from './ambience.js';
 import { endTutorial, resumeTutorial, setTutHooks, startTutorial, tutHud, updTutorial } from './tutorial.js';
 import { applyStatic, tr } from './i18n.js';
-import { openPanel, opt, sec } from './ui.js';
+import { chips, openPanel, opt, sec, setTab } from './ui.js';
+import { onTrackerOpen, questBoard } from './questui.js';
 import { DIFF, applyControls, applyHelpers, diffOf, settingsSections } from './settings.js';
 import { goHome } from './climb.js';
 import '@fontsource/pixelify-sans/500.css';
@@ -425,7 +426,21 @@ function openMenu() {
     openMenu();
   });
   settingsSections(p, openMenu, { game: l });
+  // the task board (also opened by a tap on the task tracker under the money), not in the tutorial
+  if (!tut) {
+    const q = sec(p, 'Aufgaben');
+    q.className = 'qwrap';
+    questBoard(q, openMenu);
+    // (the board comes right after the game section)
+    l.after(q.previousElementSibling, q);
+    chips(p);
+  }
 }
+onTrackerOpen(() => {
+  if (G.state !== 'play' || G.tut) return;
+  setTab('Menü', 'Aufgaben');
+  openMenu();
+});
 // "back to base" when stuck
 register('home', c => {
   if (c.dead) return;

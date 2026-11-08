@@ -58,12 +58,15 @@ function missionText() {
   // Koop: a running team task comes first
   const ct = coopText();
   if (ct) return ct;
-  const M = mode();
-  if (M.campaign) return ''; // the goal bar shows the level's goal
+  // (the round's own task is in the task tracker under the money, questui.js)
+  return '';
+}
+// the running task of this round for the tracker and the board (null: none, or all done)
+function missionNow() {
+  if (G.teams || mode().campaign || G.tut || !G.mis) return null;
   const m = cur();
-  if (!m) return '';
-  const v = Math.min(m.goal, value(m));
-  return `${tr(m.text, { goal: m.goal })}${m.goal > 1 ? ` ${v}/${m.goal}` : ''} · +${m.pay}`;
+  if (!m) return null;
+  return { id: m.id, text: tr(m.text, { goal: m.goal }), v: Math.min(m.goal, value(m)), goal: m.goal, pay: m.pay };
 }
 
-export { missionText, updMissions };
+export { missionNow, missionText, updMissions };

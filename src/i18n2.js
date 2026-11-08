@@ -225,5 +225,8 @@ const EN2 = {
   'Die Hochebene': 'The high plateau',
   'Unter dir liegt das alte Bergwerk – bau hier einen Fahrstuhl': 'The old mine lies beneath you – build a lift here',
   'Das alte Bergwerk! Gold liegt am Boden der Halle.': 'The old mine! Gold lies on the floor of the hall.',
+  // the task tracker and board (questui.js)
+  'Auftrag der Runde': 'Task of this round',
+  'Neue Tagesaufgaben in {h} Std': 'New daily quests in {h} h',
 };
 export { EN2 };

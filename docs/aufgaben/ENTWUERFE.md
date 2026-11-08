@@ -28,3 +28,9 @@ auch während des Spiels einsehbar.
   statt Balken, Stempel „ERLEDIGT“. Links der Auftrag der Runde. Die Lobby zeigt dieselbe Tafel.
 - Bildschirmfläche: nur kurz während der Meldung.
 - `C1_spiel.png`, `C2_menue_tafel.png`
+
+## Entscheidung
+
+Umgesetzt (v1.77.0): **B1** im Spiel (Kasten unter den Talern, mit dem Auftrag der Runde; die
+Leiste oben mit dem Auftrag entfällt) und **C2** als Tafel, im Menü unter dem Reiter „Aufgaben“ und
+in der Lobby. Belohnungen werden direkt auf der Tafel abgeholt. Code: `src/questui.js`.

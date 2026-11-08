@@ -93,7 +93,7 @@ test('the game menu shows the same grouped settings; classic controls climb, mod
   const errors = await lobby(page);
   await play(page);
   await page.click('#menuBtn');
-  await expect(page.locator('#panel .psec')).toHaveText([/Spiel · v/, 'Ton', 'Steuerung', 'Anzeige', 'Grafik']);
+  await expect(page.locator('#panel .psec')).toHaveText([/Spiel · v/, 'Aufgaben', 'Ton', 'Steuerung', 'Anzeige', 'Grafik']);
   await expect(page.locator('#pBody .opt', { hasText: 'Karte' })).toHaveCount(0);
   expect(await page.evaluate(() => [window.__ww.G.autoDig, window.__ww.G.climbOn, window.__ww.G.jumpBtn])).toEqual([
     true,
@@ -317,4 +317,46 @@ test('an invitation opened in a browser on Android offers to open it in the app'
   await page.waitForTimeout(500);
   await expect(page.locator('#appBar')).toHaveCount(0);
   await ctx.close();
+});
+
+test('the tasks stay in view: a tracker under the money, the board in the menu and in the lobby', async ({ page }) => {
+  const day = new Date().toISOString().slice(0, 10);
+  const errors = await lobby(page, {
+    questDay: day,
+    quests: [
+      { id: 'chop', goal: 6, have: 4, done: false },
+      { id: 'gold', goal: 6, have: 6, done: false },
+      { id: 'sell', goal: 300, have: 120, done: false },
+    ],
+  });
+  // lobby: one note per quest, the finished one can be claimed
+  await page.click('#lbLvlBtn');
+  await expect(page.locator('#pBody .qnote')).toHaveCount(3);
+  await expect(page.locator('#pBody .qnote.ready button')).toHaveText('Abholen +60 XP');
+  await page.waitForTimeout(500);
+  await page.click('#pClose');
+  await play(page);
+  // in the round: the round's task and the three quests in the tracker, none at the top
+  await expect(page.locator('#qTrack .qt-row')).toHaveCount(4);
+  await expect(page.locator('#qTrack .qt-row').first()).toContainText('Gib einem Helfer eine Aufgabe');
+  await expect(page.locator('#misTxt')).toBeHidden();
+  await expect(page.locator('#qTrack .qt-ready')).toHaveText('1');
+  // a tap opens the menu at the tab "Aufgaben", where the reward is claimed
+  await page.waitForTimeout(500);
+  await page.click('#qTrack .qt-rows');
+  await expect(page.locator('#pTitle')).toHaveText('Menü');
+  await expect(page.locator('.pchips button.sel')).toHaveText('Aufgaben');
+  await expect(page.locator('#pBody .qnote.qmis')).toContainText('Auftrag der Runde');
+  await page.waitForTimeout(500);
+  await page.click('#pBody .qnote.ready button');
+  await expect(page.locator('#pBody .qnote.done .stamp')).toHaveText('Erledigt');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')).quests[1].done)).toBe(true);
+  await page.waitForTimeout(500);
+  await page.click('#pClose');
+  await expect(page.locator('#panel')).toBeHidden();
+  await expect(page.locator('#qTrack .qt-ready')).toHaveCount(0);
+  // the tracker folds away to its title
+  await page.click('#qTrack .qt-head');
+  await expect(page.locator('#qTrack .qt-row')).toHaveCount(0);
+  expect(errors).toEqual([]);
 });

@@ -540,7 +540,7 @@ const EN = {
   'Tutorial spielen': 'Play tutorial',
   'Neue Welt mit Anleitung': 'New world with guide',
   'Zur Lobby': 'Back to lobby',
-  'Aufgabe erfüllt! Hol dir die Belohnung in der Lobby': 'Quest complete! Claim your reward in the lobby',
+  'Aufgabe erfüllt! Belohnung unter Menü → Aufgaben': 'Quest complete! Claim it under Menu → Quests',
   'Verkaufe Waren für {n} Taler': 'Sell goods worth {n} coins',
   'Baue {n} Gebäude': 'Build {n} buildings',
   'Fälle {n} Bäume': 'Chop {n} trees',
