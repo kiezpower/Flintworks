@@ -150,7 +150,7 @@ function postShoot(c) {
 const balls = [];
 function updFort() {
   if (!G.netClient) for (const c of crew) postShoot(c);
-  if (G.frame % 20 === 0)
+  if (G.frame % 20 === 0 && !G.netClient)
     for (const b of builds) {
       if (!isFort(b) || !b.done || fortHp(b) >= FORT_HP[b.type] || G.frame - (b.fhitT || 0) < 300) continue;
       const near = crew.some(c => !c.dead && c.x + 6 > b.x - 10 && c.x < b.x + b.w + 10 && Math.abs(c.y + 10 - b.gy) < 14);
@@ -175,7 +175,8 @@ function updFort() {
         }
     if (!hit) continue;
     balls.splice(k, 1);
-    if (xi >= 0 && xi < W) explode(o.x, o.y, 4);
+    // (on a client the ball is only a picture: the blast comes from the host)
+    if (xi >= 0 && xi < W && !G.netClient) explode(o.x, o.y, 4);
   }
 }
 // the cannon tower: aims at the nearest monster within reach and fires an arcing ball
@@ -218,13 +219,23 @@ function cannonUpd(b) {
     ty = tgt.y + tgt.h / 2,
     t = Math.max(18, Math.hypot(tx - ox, ty - oy) / 3.2);
   b.aim = Math.sign(tx - ox);
-  balls.push({ x: ox + b.aim * 7, y: oy, vx: (tx - ox - b.aim * 7) / t, vy: (ty - oy) / t - 0.03 * t, l: 240 });
+  const ball = { x: ox + b.aim * 7, y: oy, vx: (tx - ox - b.aim * 7) / t, vy: (ty - oy) / t - 0.03 * t, l: 240 };
+  balls.push(ball);
+  if (G.netHost) G.netEvent(['cb', Math.round(ball.x), Math.round(ball.y), ball.vx, ball.vy]);
   b.cd = 150;
   b.fireT = G.frame;
   for (let k = 0; k < 6; k++)
     parts.push({ x: ox + b.aim * 8, y: oy, vx: b.aim * rnd() * 0.8, vy: -rnd() * 0.4, l: 30, c: 'rgba(200,196,188,0.6)', s: 2, g: -0.004 });
   G.shake = Math.max(G.shake || 0, 1.5);
   sfx('thud', ox, oy, 0.7);
+}
+
+// on a client: a ball the host fired, to show it flying
+function playBall(e) {
+  if (e[0] !== 'cb') return false;
+  balls.push({ x: e[1], y: e[2], vx: e[3], vy: e[4], l: 240 });
+  G.ballsSeen = (G.ballsSeen || 0) + 1; // (how many came in; the tests read it)
+  return true;
 }
 
 // drawing: the lintel over every gate, the cannon's barrel, cracks and a bar on damaged pieces,
@@ -274,4 +285,4 @@ function drawFort(ctx, cx, cy) {
   }
 }
 
-export { FORT_H, FORT_HP, breakFort, cannonUpd, clearWall, drawFort, fortHp, hitFort, isFort, joins, postOf, strikeFort, updFort, wallContext };
+export { playBall, FORT_H, FORT_HP, breakFort, cannonUpd, clearWall, drawFort, fortHp, hitFort, isFort, joins, postOf, strikeFort, updFort, wallContext };

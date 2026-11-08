@@ -14,6 +14,8 @@ import { sunAlt } from './weather.js';
 import { W, surf } from './world.js';
 
 const KINDS = ['monster', 'spider', 'golem'];
+// more players, more monsters: half again for every further player (only the common ones)
+const crowd = n => Math.round(n * (1 + 0.5 * ((G.mp && G.mp.np) || 1) - 0.5));
 const SIDE = { left: 'links', right: 'rechts', both: 'beiden Seiten' };
 const startOf = (cfg, k) => ((cfg.first ?? 3) + k * (cfg.every ?? 3)) * 3600;
 
@@ -34,7 +36,8 @@ function siegeTick(L, s) {
     if (t >= at) {
       const k = sg.wave++,
         list = [];
-      for (const kind of KINDS) for (let n = 0; n < (waves[k][kind] || 0); n++) list.push(kind);
+      for (const kind of KINDS)
+        for (let n = 0; n < (kind === 'monster' ? crowd(waves[k][kind] || 0) : waves[k][kind] || 0); n++) list.push(kind);
       list.forEach((kind, n) => {
         const side = from === 'both' ? (n % 2 ? 'right' : 'left') : from;
         sg.queue.push([kind, side, k]);
@@ -71,7 +74,7 @@ function nightTick() {
   if (!s.night && sun < -0.05) {
     s.night = true;
     const list = [];
-    for (let k = 0; k < 3 + 2 * s.n; k++) list.push('monster');
+    for (let k = 0; k < crowd(3 + 2 * s.n); k++) list.push('monster');
     if (s.n >= 1) list.push('spider');
     if (s.n >= 2) list.push('golem');
     list.forEach((kind, k) => s.queue.push([kind, k % 2 ? 'right' : 'left', s.n]));

@@ -177,6 +177,10 @@ const KINDS = {
       te: b.team || 0,
       hp: b.hp,
       sk: b.skin,
+      // fortress (fort.js): hit points, the cannon's aim and its last shot
+      fh: b.fhp,
+      am: b.aim,
+      ft: b.fireT != null ? G.frame - b.fireT : undefined,
     }),
     create: d => {
       const b = { id: d.id, type: d.ty, x: d.x, gy: d.gy, w: d.w, h: d.h, prog: 0, done: false, busy: 0, team: d.te };
@@ -186,6 +190,9 @@ const KINDS = {
     apply: (b, d) => {
       Object.assign(b, { prog: d.pr, done: !!d.dn, busy: d.bs, out: d.out, lvl: d.lv, open: d.op, moving: d.mv });
       Object.assign(b, { on: !!d.on, pipe: d.pp, skin: d.sk });
+      b.fhp = d.fh;
+      b.aim = d.am;
+      if (d.ft != null) b.fireT = G.frame - d.ft;
       if (d.hp != null && d.hp < (b.hp ?? 1e9)) b.hitT = G.frame; // (the bar flashes on a hit)
       b.hp = d.hp;
       if (b.cs && d.cs != null) b.cs.y = d.cs;
@@ -282,6 +289,12 @@ function packGame() {
     // the round: clock, hill, team task, what every player did (versus.js, coop.js, stats.js);
     // a new host carries on with it (a copy: the delta compares it with the last one sent)
     mp: G.mp && structuredClone(G.mp),
+    // a level's progress (areas, depth, waves, triggers) and the counts its goals read, and the
+    // nights of "Festung" (siege.js): the goal line shows the same for everybody
+    lvl: G.lvl && structuredClone(G.lvl),
+    kills: G.kills || 0,
+    rescued: G.rescued || 0,
+    fort: G.fort && structuredClone(G.fort),
   };
 }
 function applyGame(d) {
@@ -300,6 +313,10 @@ function applyGame(d) {
   });
   G.vs = d.vs || null;
   if (d.mp) G.mp = d.mp;
+  G.lvl = d.lvl || null;
+  G.kills = d.kills || 0;
+  G.rescued = d.rescued || 0;
+  G.fort = d.fort || null;
   const own = d.teams && d.teams[G.myTeam];
   if (own) {
     Object.assign(G, { money: own.money, earned: own.earned, store: own.store, tools: own.tools });
