@@ -870,8 +870,8 @@ const EN = {
   'Jeder gegen jeden': 'Free for all',
   'Jeder hat eine eigene Burg. Eine gestürmte Burg ist raus, wer als Letzter steht, gewinnt':
     'Everybody has a castle of their own. A stormed castle is out, the last one standing wins',
-  'Ab 3 Spielern: jeder mit eigener Burg, eine gestürmte Burg ist raus, der Letzte gewinnt (zu zweit Versus)':
-    'From 3 players: everybody has a castle, a stormed castle is out, the last one wins (two players: Versus)',
+  'Ab 3 Spielern: jeder mit eigener Burg (höchstens vier, ab 5 Spielern zu zweit), eine gestürmte Burg ist raus, der Letzte gewinnt (zu zweit Versus)':
+    'From 3 players: everyone with their own castle (four at most, from 5 players two share one), a stormed castle is out, the last one wins (Versus with two)',
   Unentschieden: 'Draw',
   'Sieg!': 'Victory!',
   Niederlage: 'Defeat',

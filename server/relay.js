@@ -1,4 +1,4 @@
-// Flintworks multiplayer relay. It does not run the game: it keeps rooms (a code, up to 4
+// Flintworks multiplayer relay. It does not run the game: it keeps rooms (a code, up to 8
 // players, who is host), forwards messages between the players of a room and remembers the
 // host's latest full snapshot for players who join late or reconnect.
 //
@@ -48,7 +48,7 @@ import { createHash, randomInt } from 'node:crypto';
 import { WebSocketServer } from 'ws';
 
 const PORT = Number(process.env.PORT || 8787);
-const MAX = 4;
+const MAX = 8;
 const ROOM_TTL = 10 * 60 * 1000; // an empty room survives this long
 const HOST_GRACE = 5000; // a host that is gone this long hands over to another player
 const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

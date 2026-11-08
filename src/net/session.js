@@ -30,17 +30,18 @@ function startMessage(gmode) {
   // to three castles)
   // (not when the host switched bots off in the settings)
   const fill = !!NET.auto && !!NET.versus && P.bots !== false;
-  const castles = free ? Math.max(n, fill ? 3 : 0) : fill && n < 2 ? 2 : 0;
+  // (at most four castles: from five players on, two share a castle)
+  const castles = free ? Math.min(4, Math.max(n, fill ? 3 : 0)) : fill && n < 2 ? 2 : 0;
   const bots = [];
   for (let t = n; t < castles; t++) bots.push(free ? t : 1);
   const versus = !!NET.versus && n + bots.length >= 2;
-  const ffa = versus && free && n + bots.length >= 3 ? n + bots.length : 0;
+  const ffa = versus && free && n + bots.length >= 3 ? Math.min(4, n + bots.length) : 0;
   // Versus: players in turn to the red and the blue castle (1:1, 2:1, 2:2); each to its own
   const teams = {};
   players
     .map(p => p.pid)
     .sort((a, b) => a - b)
-    .forEach((pid, k) => (teams[pid] = ffa ? k : versus ? k % 2 : 0));
+    .forEach((pid, k) => (teams[pid] = ffa ? k % ffa : versus ? k % 2 : 0));
   const np = n; // (Koop goals grow with the players)
   // more castles need a wider world: 1700 for three, 2000 for four
   const size = ffa ? [W0 + 300 * (ffa - 2), H0] : devSize;
