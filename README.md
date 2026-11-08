@@ -12,6 +12,8 @@ Ein Aufbau- und Grabespiel mit Pixel-Physik im Stil der Klassiker: Führe deine 
 
 **Heimatbergwerk:** Kristalle sind die Währung, die zwischen den Runden bleibt. Deine Heim-Crew schürft sie auch, wenn das Spiel zu ist (bis der Tresor voll ist, anfangs nach 4 Stunden), jede Runde bringt welche dazu (1 je 40 verdiente Taler, 10 für einen Sieg, Medaillen im Tagesschacht). Kassiert wird in der Lobby unter „Heimatbergwerk“. Ausgeben kannst du sie für mehr Heim-Crew und einen größeren Tresor, für kleine Boni im freien Spiel allein (Startkasse, schärfere Hacken, Holzvorrat; nie im Mehrspieler, im Tagesschacht, in der Kampagne oder im Tutorial) und für Skins: Outfits für deinen Wühler und Baustile für deine Gebäude. Die sehen auch deine Mitspieler. Kristalle gibt es nur durchs Spielen, nicht für Geld.
 
+**Aufgaben im Blick:** Links unter den Talern steht während der Runde ein schmaler Kasten mit höchstens drei Zeilen, je ein Symbol und ein Balken: zuerst der Auftrag der Runde, dann die noch nicht abgeholten Tagesaufgaben. Fertige werden gold, ein Fortschritt blinkt kurz auf. Ein Tipp darauf öffnet Menü → Aufgaben: eine Tafel mit angepinnten Zetteln (mit Text und Stand), auf der man die Belohnung (XP) gleich abholt; abgeholte tragen den Stempel „Erledigt“. Dieselbe Tafel öffnet in der Lobby der Level-Knopf oben rechts.
+
 **Produktion im Blick:** Im Burg-Menü zeigt „Produktion“, welches Gebäude läuft und welches auf was wartet. Fehlt Holz, Erz oder Kohle, schickt „Helfer schicken“ einen freien Helfer los. Wartet ein Gebäude länger als 30 Sekunden, blinkt seine Blase.
 
 Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch und Englisch (Umschalter im Startbildschirm). Beim allerersten Start geht es ohne Lobby direkt in eine kleine Welt („Die erste Schicht“): eine Taste oder ein Tippen, dann in drei Schritten laufen und springen, zum Gold graben und es an der Burg verkaufen – unter zwei Minuten. Wer es kann, sieht keine Anleitung; Überspringen geht jederzeit (Knopf oder Esc → Menü). Danach erklären Tipps und kleine Aufträge in der ersten echten Runde den Rest, nachzulesen unter Optionen → Spielhilfe. Ablauf und Messungen: [docs/TUTORIAL_PLAN.md](docs/TUTORIAL_PLAN.md).
@@ -151,6 +153,7 @@ src/
   arrow.js            Der gelbe Zielpfeil (Tutorial und Rundenbeginn)
   analytics.js        Analyse-Ereignisse (nur lokal), siehe docs/ANALYTICS.md
   lessons.js          Tipps und Aufträge nach dem Tutorial, Spielhilfe in der Lobby
+  questui.js          Aufgaben-Kasten unter den Talern und Aufgaben-Tafel (Menü, Lobby)
   versus.js           Versus: Burg-Lebenspunkte, Hügel, Rundenuhr, Nachschub, Sieger
   coop.js             Koop: Teamaufgaben
   daily.js            Tagesschacht: Welt des Tages, Uhr, Medaillen, Serie, Ergebnis teilen

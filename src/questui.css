@@ -1,0 +1,199 @@
+/* The task tracker under the money and the task board (questui.js) */
+.qtrack {
+  display: grid;
+  gap: 4px;
+  width: 92px;
+  padding: 5px 6px;
+  cursor: pointer;
+}
+.qt-row {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 5px;
+  align-items: center;
+  border-radius: 3px;
+}
+.qt-row img {
+  width: 18px;
+  height: 18px;
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+.qt-bar,
+.qbar {
+  position: relative;
+  height: 6px;
+  overflow: hidden;
+  background: #0d0906;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px #3a2616;
+}
+.qt-bar i,
+.qbar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(#7fe0ff, #2a90c8);
+  transition: width 0.4s;
+}
+.qt-row.full .qt-bar i {
+  background: linear-gradient(#ffe27a, #d99a12);
+}
+.qt-row.full img {
+  filter: drop-shadow(0 0 3px rgba(242, 194, 48, 0.8));
+}
+/* a step forward: the row flashes once */
+.qt-row.up {
+  animation: qtUp 0.9s ease-out;
+}
+@keyframes qtUp {
+  0% {
+    background: rgba(127, 224, 255, 0.45);
+  }
+  100% {
+    background: transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qt-row.up {
+    animation: none;
+  }
+}
+
+/* the board: notes pinned to planks */
+.qwrap {
+  display: block;
+}
+.qboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 12px;
+  align-items: start;
+  padding: 14px 12px;
+  background: repeating-linear-gradient(90deg, #6b4528 0 22px, #5e3c22 22px 44px);
+  border: 4px solid #3a2414;
+  border-radius: 4px;
+}
+.qnote {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  padding: 16px 9px 10px;
+  text-align: center;
+  color: #3a2414;
+  background: linear-gradient(#f3e3bd, #e2cb98);
+  border-radius: 3px;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+  transform: rotate(var(--rot, 0deg));
+}
+.qnote img {
+  width: 36px;
+  height: 36px;
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+.qnote b {
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 1.2;
+}
+.qnote em {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-style: normal;
+}
+.qnote .pin {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: #c8402c;
+  box-shadow: 0 1px 0 #6a1d12;
+}
+.qnote .qbar {
+  width: 100%;
+  height: 10px;
+  background: rgba(58, 36, 20, 0.25);
+  box-shadow: inset 0 0 0 2px #3a2414;
+}
+.qnote .qbar i {
+  background: #3f9e4a;
+}
+.qbox {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+}
+.qbox i {
+  width: 13px;
+  height: 10px;
+  border: 2px solid #3a2414;
+}
+.qbox i.on {
+  background: #3f9e4a;
+}
+.qnote.ready .qbox i.on,
+.qnote.done .qbox i.on {
+  background: #e0a516;
+}
+.qnote button {
+  width: 100%;
+  min-height: 34px;
+  font-size: 11px;
+}
+.qnote.ready {
+  box-shadow:
+    0 0 0 3px var(--gold),
+    0 4px 0 rgba(0, 0, 0, 0.35);
+}
+.qnote.done > :not(.stamp):not(.pin) {
+  opacity: 0.6;
+}
+.qnote .stamp {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  padding: 2px 5px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #c8402c;
+  background: rgba(243, 227, 189, 0.85);
+  border: 3px solid #c8402c;
+  border-radius: 4px;
+  transform: rotate(12deg);
+}
+/* the task of the round: a dark card, not a note */
+.qnote.qmis {
+  color: var(--ink);
+  background: #2a1a0e;
+  box-shadow:
+    0 0 0 2px var(--gold),
+    0 4px 0 rgba(0, 0, 0, 0.35);
+  --rot: 1deg;
+}
+.qnote.qmis small {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.qnote.qmis .qbar {
+  background: #0d0906;
+  box-shadow: inset 0 0 0 1px #3a2616;
+}
+.qnote.qmis .qbar i {
+  background: linear-gradient(#7fe0ff, #2a90c8);
+}
+.qfoot {
+  margin-top: 6px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  text-align: center;
+  color: #c9a97a;
+}

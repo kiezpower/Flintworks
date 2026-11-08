@@ -11,7 +11,7 @@ import './lobby.css';
 import { getLang, setLang, tr } from './i18n.js';
 import { camp as campState, pending, vaultFull } from './camp.js';
 import { openCamp } from './lobbycamp.js';
-import { CAPS, HATS, P, QUESTS, claimQuest, saveProfile, unlockText, xpNeed } from './profile.js';
+import { CAPS, HATS, P, saveProfile, unlockText, xpNeed } from './profile.js';
 import { openFriends, refreshFriendsChip } from './lobbyfriends.js';
 import { openInvite, refreshSlots } from './lobbyinvite.js';
 import { badge, dailyFromLink, dayNo, openDaily } from './daily.js';
@@ -24,6 +24,7 @@ import { padIcon } from './sprites.js';
 import { G } from './state.js';
 import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
 import { settingsSections } from './settings.js';
+import { questBoard } from './questui.js';
 
 const el = $('lobby');
 // ask which version is current and bring this copy up to date. The own web version asks its own
@@ -286,29 +287,7 @@ function openWho() {
 }
 function openQuests() {
   const p = openPanel('Tagesaufgaben');
-  sec(p, 'Jeden Tag neu').remove();
-  for (const q of P.quests) {
-    const Q = QUESTS[q.id];
-    const ready = !q.done && q.have >= q.goal;
-    const row = document.createElement('div');
-    row.className = 'lb-q' + (q.done ? ' done' : '');
-    row.innerHTML = `<b>${tr(Q.text, { n: q.goal })}</b>
-      <span class="lb-qbar"><i style="width:${(q.have / q.goal) * 100}%"></i><em>${q.have}/${q.goal}</em></span>`;
-    const btn = document.createElement('button');
-    btn.className = ready ? 'go' : 'ghost';
-    btn.disabled = !ready;
-    btn.textContent = q.done ? tr('Erledigt') : ready ? tr('Abholen +{n} XP', { n: Q.xp }) : `+${Q.xp} XP`;
-    btn.onclick = () => {
-      if (performance.now() - G.panelT < 450) return;
-      if (claimQuest(q)) {
-        sfx('done');
-        burst(20, ['#7fe0ff', '#ffffff']);
-      }
-      openQuests();
-    };
-    row.appendChild(btn);
-    p.appendChild(row);
-  }
+  questBoard(p, openQuests, () => burst(20, ['#7fe0ff', '#ffffff']));
 }
 function openOptions() {
   const p = openPanel('Optionen');

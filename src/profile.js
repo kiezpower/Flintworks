@@ -121,7 +121,7 @@ function track(id, amount = 1) {
   for (const q of P.quests)
     if (q.id === id && q.have < q.goal) {
       q.have = Math.min(q.goal, q.have + amount);
-      if (q.have >= q.goal) toast('Aufgabe erfüllt! Hol dir die Belohnung in der Lobby');
+      if (q.have >= q.goal) toast('Aufgabe erfüllt! Belohnung unter Menü → Aufgaben');
     }
   if (performance.now() - saveT > 2000) {
     saveT = performance.now();

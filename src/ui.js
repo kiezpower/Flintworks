@@ -25,6 +25,7 @@ import { vehicleIcon, vehicleOf } from './vehicles/core.js';
 import { hasBow } from './combat.js';
 import { isPlayer } from './players.js';
 import { missionText } from './missions.js';
+import { updTracker } from './questui.js';
 import { G, INV_MAX, INV_SHOWN, animals, builds, crew, lorries, safeCap } from './state.js';
 import { AIR, GOLD, H, MINI, W, bg, hex, mat, onResize } from './world.js';
 
@@ -95,6 +96,7 @@ function hud() {
         .map(([t, n]) => `<span title="${resName(t)}"><img src="${iconUrl(t)}" alt="">${n}</span>`)
         .join('');
   }
+  updTracker();
   const mt = missionText();
   if (mt !== G.misKey) {
     G.misKey = mt;
@@ -538,6 +540,10 @@ function chips(p) {
   // (a kept tab whose section is gone shows all)
   show([...row.children].some(b => b.textContent === tabOf[key]) ? tabOf[key] : null);
 }
+// the tab a panel opens with next time (title and section name as shown)
+function setTab(title, name) {
+  tabOf[tr(title)] = tr(name);
+}
 function sec(parent, t) {
   const d = document.createElement('div');
   d.className = 'psec';
@@ -769,7 +775,9 @@ export {
   pBody,
   pTitle,
   panelEl,
+  chips,
   sec,
+  setTab,
   toast,
   toastEl,
   toggleMap,
