@@ -310,6 +310,8 @@ function packGame() {
     fire: fireCells(),
     // the wandering trader (merchant.js)
     merchant: G.merchant && structuredClone(G.merchant),
+    // the settlers (villagers.js): where they walk, in their clothes
+    village: (G.villagers || []).map(v => ({ x: Math.round(v.x), vx: v.vx || 0, col: v.col, home: v.home, name: v.name })),
   };
 }
 function applyGame(d) {
@@ -334,6 +336,7 @@ function applyGame(d) {
   G.fort = d.fort || null;
   setFireCells(d.fire);
   G.merchant = d.merchant || null;
+  G.villagers = d.village || [];
   const own = d.teams && d.teams[G.myTeam];
   if (own) {
     Object.assign(G, { money: own.money, earned: own.earned, store: own.store, tools: own.tools });
