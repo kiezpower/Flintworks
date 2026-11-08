@@ -49,7 +49,7 @@ import { lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
 import { tossPath } from './digger.js';
 import { isPlayer } from './players.js';
-import { drawEmotes } from './net/emotes.js';
+import { drawEmotes, drawMates } from './net/emotes.js';
 import { TEAM_COLS } from './teams.js';
 import { box, drawVehicles, vehicleOf, wheel } from './vehicles/core.js';
 import { catapultAim, catapultPath } from './vehicles/ground.js';
@@ -970,6 +970,7 @@ function render() {
   drawCastleCue(ctx, cx, cy);
   drawBubbles(ctx, cx, cy);
   drawEmotes(ctx, cx, cy);
+  drawMates(ctx, cx, cy);
   drawFloats(ctx, cx, cy);
   drawTutorial(ctx, cx, cy);
 }
