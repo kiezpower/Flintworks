@@ -146,6 +146,9 @@ left, right, both) auf dem Boden und marschieren über Land auf die Burg zu. Wü
 greifen sie an; Mauern und ein geschlossenes Tor halten sie auf und werden beschädigt
 (`fort.js`); an der Burg schlagen sie auf die Burg ein (1000 Lebenspunkte). `lose.castle: true`
 verliert das Level, wenn die Burg fällt. Beispiel: „Belagerung“.
+Monster können nicht schwimmen: Ein Wassergraben, tiefer als ein Monster hoch ist (etwa 10
+Pixel), hält sie auf, und sie ertrinken darin. Ein Wühler, der direkt an einer Mauer steht,
+steigt mit der Aktionstaste hinauf und schießt von oben von selbst auf Monster in der Nähe.
 
 ### Steigende Lava (`rules.rise`)
 

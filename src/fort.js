@@ -14,7 +14,8 @@ import { stock, takeStock } from './store.js';
 import { toast } from './ui.js';
 import { isFoe } from './entities.js';
 import { addFloat } from './floats.js';
-import { W, rnd, solid } from './world.js';
+import { W, free, rnd, solid } from './world.js';
+import { fireArrow } from './combat.js';
 
 // how much a piece takes; and the height everything of a fortress closes off
 // (the castle only takes blows in a siege, siege.js; it never crumbles away, the level is lost)
@@ -88,9 +89,67 @@ function clearWall(b) {
   }
 }
 
-// every frame: damaged pieces are mended by a Wühler nearby, cannon balls fly
+// "Auf die Mauer": a Wühler standing right at a wall or a gate climbs up onto it
+const TOPS = { wall: 1, gate: 1 };
+function wallContext(c) {
+  if (c.climb || c.tumble || c.ride != null || free(c.x, c.y + 1, 6, 10)) return null;
+  for (const b of builds) {
+    if (!b.done || !TOPS[b.type] || Math.abs(c.y + 10 - b.gy) > 4) continue;
+    const touch = Math.abs(c.x + 6 - b.x) < 2.5 || Math.abs(c.x - (b.x + b.w)) < 2.5;
+    if (!touch) continue;
+    const nx = b.x + b.w / 2 - 3,
+      ny = b.gy - FORT_H - 10;
+    if (!free(nx, ny, 6, 10)) continue;
+    return {
+      label: 'Auf die Mauer',
+      fn: () => {
+        Object.assign(c, { x: nx, y: ny, vx: 0, vy: 0 });
+        sfx('jump', c.x, c.y);
+      },
+    };
+  }
+  return null;
+}
+// the piece a Wühler stands on top of (a post on the wall), or null
+const postOf = c =>
+  builds.find(
+    b => b.done && TOPS[b.type] && c.x + 6 > b.x && c.x < b.x + b.w && Math.abs(c.y + 10 - (b.gy - FORT_H)) < 1.5,
+  ) || null;
+// a Wühler on a wall shoots at monsters below by himself: an arrow a second, no bow needed
+const POST_RANGE = 150;
+function postShoot(c) {
+  if (c.dead || c.ride != null || !postOf(c)) return;
+  if (c.postCd > 0) {
+    c.postCd--;
+    return;
+  }
+  const ox = c.x + 3,
+    oy = c.y + 3;
+  let tgt = null,
+    bd = POST_RANGE;
+  for (const a of animals) {
+    if (!isFoe(a) || a.kind === 'bat') continue;
+    const d = Math.hypot(a.x + a.w / 2 - ox, a.y + a.h / 2 - oy);
+    if (d < bd) {
+      bd = d;
+      tgt = a;
+    }
+  }
+  if (!tgt) return;
+  const dx = tgt.x + tgt.w / 2 - ox,
+    dy = tgt.y + tgt.h / 2 - oy,
+    t = Math.max(8, Math.hypot(dx, dy) / 4.2);
+  c.face = Math.sign(dx) || c.face;
+  fireArrow({ x: ox, y: oy, vx: dx / t, vy: dy / t - 0.03 * t, l: 120, dmg: 16 });
+  c.postCd = 60;
+  sfx('bow', ox, oy);
+}
+
+// every frame: damaged pieces are mended by a Wühler nearby, cannon balls fly, Wühler on the
+// walls shoot
 const balls = [];
 function updFort() {
+  if (!G.netClient) for (const c of crew) postShoot(c);
   if (G.frame % 20 === 0)
     for (const b of builds) {
       if (!isFort(b) || !b.done || fortHp(b) >= FORT_HP[b.type] || G.frame - (b.fhitT || 0) < 300) continue;
@@ -215,4 +274,4 @@ function drawFort(ctx, cx, cy) {
   }
 }
 
-export { FORT_H, FORT_HP, breakFort, cannonUpd, clearWall, drawFort, fortHp, hitFort, isFort, joins, strikeFort, updFort };
+export { FORT_H, FORT_HP, breakFort, cannonUpd, clearWall, drawFort, fortHp, hitFort, isFort, joins, postOf, strikeFort, updFort, wallContext };

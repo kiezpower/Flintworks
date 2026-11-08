@@ -317,3 +317,6 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
   auf die Burg (`siege.js`); Mauern halten sie auf, die Burg hat in der Belagerung 1000
   Lebenspunkte. Neues Level „Belagerung“: Burg auf einem Hügel, Fels und Kohle gleich darunter,
   drei Wellen; Ziele: 4 Mauern, ein Kanonenturm, 3 Wellen abwehren.
+- v1.78.1: Wassergraben und Mauerschützen: Monster ertrinken in Wasser (ein Graben ist eine
+  Verteidigung); „Auf die Mauer“ an jeder Mauer und jedem Tor, ein Wühler oben schießt einen
+  Pfeil pro Sekunde auf Monster bis 150 weit (`fort.js`).
