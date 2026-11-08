@@ -52,6 +52,8 @@ const KINDS = {
       sw: c.swing > 0 ? c.swing : 0,
       wd: c.wield || 0,
       bot: c.bot ? 1 : 0,
+      // a float on the water (fishing.js): where, and whether something bites
+      fs: c.fish ? [c.fish.x, c.fish.y, c.fish.bite > 0 ? 1 : 0] : 0,
     }),
     create: d => ({
       id: d.id,
@@ -77,6 +79,7 @@ const KINDS = {
       burn: 0,
     }),
     apply: (c, d) => {
+      c.fish = d.fs ? { x: d.fs[0], y: d.fs[1], bite: d.fs[2] } : null;
       Object.assign(c, {
         pid: d.pid,
         bot: !!d.bot,

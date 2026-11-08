@@ -238,6 +238,7 @@ const ITEM = {
   coal: { name: 'Kohle', s: [3, 3], val: 4 },
   metal: { name: 'Metall', s: [4, 2], val: 15 },
   gem: { name: 'Edelstein', s: [3, 3], val: 45 },
+  fish: { name: 'Fisch', s: [5, 2], val: 8 }, // (from the fishing rod, fishing.js)
 };
 function drawItemPx(g, t, x, y, blink) {
   const R = (a, b, w, h, c) => {
@@ -288,6 +289,10 @@ function drawItemPx(g, t, x, y, blink) {
     R(1, 0, 1, 1, '#b6f6ff');
     R(0, 1, 3, 1, '#5fd3e8');
     R(1, 2, 1, 1, '#2f8fb0');
+  } else if (t === 'fish') {
+    R(0, 0, 4, 2, '#7fa8c8');
+    R(0, 0, 4, 1, '#b6d6ee');
+    R(4, 0, 1, 2, '#4a7aa0');
   }
 }
 // Bigger outlined item art (drawn bottom-centred over the item's physics box)
@@ -306,6 +311,7 @@ const ITEM_ART = {
   coal: [['.gc.', 'gccc', 'cckc', '.kk.'], { g: '#6a6560', c: '#2e2a2a', k: '#161414' }],
   metal: [['.hhh.', 'hmmmd', 'mmmdd'], { h: '#e4e8ec', m: '#aab0b6', d: '#6f767c' }],
   gem: [['.wc.', 'wcCc', 'cCcd', '.dd.'], { w: '#e8ffff', c: '#5ae0f0', C: '#2fa8d8', d: '#1f6fa8' }],
+  fish: [['.sss..', 'sbbbet', 'bbbbbt', '.ddd..'], { s: '#c8e2f4', b: '#7fa8c8', e: '#24160c', t: '#4a7aa0', d: '#5a86aa' }],
 };
 const artCache = {};
 function itemArt(t, blink) {
@@ -483,6 +489,13 @@ PAD_ICONS.stairs = R => {
   R(1, 11, 10, 1, '#8b5e34');
 };
 // the grappling hook: a rope coming down to a three-pronged iron hook
+// a fishing rod with its line and a red float (tools.js rod)
+PAD_ICONS.rod = R => {
+  for (let k = 0; k < 8; k++) R(2 + k, 10 - k, 1, 1, '#8b5e34');
+  R(10, 2, 1, 6, '#e8e2d6');
+  R(9, 8, 3, 1, '#e8504a');
+  R(9, 9, 3, 1, '#ffffff');
+};
 PAD_ICONS.hook = R => {
   R(5, 0, 2, 5, '#c9a46a');
   R(5, 5, 2, 5, '#9aa4ae');

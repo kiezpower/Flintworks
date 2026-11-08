@@ -1,4 +1,5 @@
 import { wallContext } from './fort.js';
+import { fishContext } from './fishing.js';
 import { igniteNear } from './fire.js';
 import { canShoot, hasBow, shoot, swing, swordContext } from './combat.js';
 import { hasTool } from './tools.js';
@@ -923,6 +924,9 @@ function context(c) {
   if (ch) return { label: 'Öffnen', fn: () => openChest(ch) };
   const L = lorryNear(c);
   if (L) return { label: 'Lore', fn: () => lorryAct(c, L) };
+  // at water with a fishing rod: cast, or pull in (fishing.js; before a tree on the bank)
+  const fc = fishContext(c);
+  if (fc) return fc;
   const t = nearTree(c);
   if (t && !free(c.x, c.y + 1, 6, 10))
     return {
