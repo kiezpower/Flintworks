@@ -397,5 +397,7 @@ const EN2 = {
   'Die Siedler hungern – baut Feld und Mühle für Brot.': 'The settlers are hungry – build a field and a mill for bread.',
   Dorfgründer: 'Village founder',
   'Habe {n} Siedler im Dorf': 'Have {n} settlers in your village',
+  // the slow-device switch (main.js)
+  'Grafik auf „schnell“ gestellt, damit es flüssig läuft (Einstellungen)': 'Graphics set to “fast” to keep it smooth (settings)',
 };
 export { EN2 };
