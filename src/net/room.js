@@ -29,7 +29,7 @@ const NET = {
 };
 let quick = false, // the next room to enter is any open one
   wantPub = false; // a room about to be created is open
-const MAX_PLAYERS = 4;
+const MAX_PLAYERS = 8; // (the relay's limit, server/relay.js MAX)
 const listeners = [];
 const msgHandlers = new Map(); // game message kind → fn(d, from)
 const changed = () => listeners.forEach(fn => fn(NET));
@@ -202,6 +202,10 @@ function leaveRoom(keepError) {
 function setReady(ready) {
   send({ t: 'ready', ready });
 }
+// watch the round instead of playing (net/watch.js); the host always plays
+function setWatch(on) {
+  send({ t: 'watch', on: !!on });
+}
 // game messages: to a player id, 'host' or 'all'
 function sendTo(to, d) {
   send({ t: 'msg', to, d });
@@ -280,6 +284,7 @@ const fromUrl = new URLSearchParams(location.search).get('room');
 if (fromUrl && /^[A-Z0-9]{6}$/i.test(fromUrl)) joinRoom(fromUrl);
 
 export {
+  setWatch,
   MAX_PLAYERS,
   token,
   NET,

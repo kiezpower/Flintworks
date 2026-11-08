@@ -1266,3 +1266,26 @@ button:focus-visible {
   opacity: 0.45;
   text-decoration: line-through;
 }
+
+/* watching a shared round (net/watch.js): a bar at the bottom with whom the camera follows */
+.watchbar {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  z-index: 20;
+  pointer-events: auto;
+}
+.watchbar .wname {
+  font-size: 13px;
+  white-space: nowrap;
+}
+body.watching #buildBtn,
+body.watching #inv,
+body.watching .pad {
+  display: none !important;
+}

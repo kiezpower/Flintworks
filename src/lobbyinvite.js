@@ -7,6 +7,7 @@ import { tr } from './i18n.js';
 import { openName } from './lobbyname.js';
 import {
   MAX_PLAYERS,
+  setWatch,
   NET,
   browseRooms,
   copyText,
@@ -110,7 +111,11 @@ function openInvite() {
     const host = pl.pid === NET.hostPid;
     // another player who is no friend yet: tap to add (they get a request)
     const add = canAdd(pl);
-    const state = !pl.online ? tr('getrennt') : host ? tr('Host') : pl.ready ? tr('bereit') : tr('noch nicht bereit');
+    const state = !pl.online
+      ? tr('getrennt')
+      : host
+        ? tr('Host')
+        : (pl.watch ? '👁 ' + tr('schaut zu') + ' · ' : '') + (pl.ready ? tr('bereit') : tr('noch nicht bereit'));
     opt(l, {
       title: `<span class="lb-dot" style="background:${safeCap(pl.cap)}"></span>${esc(pl.name)}${pl.pid === NET.pid ? ' ' + tr('(du)') : ''}`,
       sub: add ? `${state} · ${tr('Tippen: als Freund hinzufügen')}` : state,
@@ -166,6 +171,12 @@ function openInvite() {
       title: tr(mine && mine.ready ? 'Bereit ✓' : 'Bereit?'),
       sub: tr(NET.auto ? 'Sind alle bereit, geht es gleich los' : 'Der Host startet das Spiel'),
       onClick: () => setReady(!(mine && mine.ready)),
+    });
+    // watch instead of playing: no Wühler of your own, the camera follows the others
+    opt(a, {
+      title: tr(mine && mine.watch ? 'Zuschauen ✓' : 'Zuschauen'),
+      sub: tr('Ohne eigenen Wühler zusehen – „Mitspielen“ steigt jederzeit ein'),
+      onClick: () => setWatch(!(mine && mine.watch)),
     });
   } else {
     // a saved shared round: carry on with it

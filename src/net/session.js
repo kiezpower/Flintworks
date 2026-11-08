@@ -21,8 +21,11 @@ let online = new Set(); // players that were online at the last room update
 
 // the start message the host sends to everybody (gmode: the game mode or map)
 function startMessage(gmode) {
-  const players = NET.players.filter(p => p.online).map(({ pid, name, cap, hat, skin }) => ({ pid, name, cap, hat, skin }));
-  const n = players.length;
+  const players = NET.players
+    .filter(p => p.online)
+    .map(({ pid, name, cap, hat, skin, watch }) => ({ pid, name, cap, hat, skin, watch: !!watch }));
+  // (who only watches gets no Wühler, no team and no castle: net/watch.js)
+  const n = players.filter(p => !p.watch).length;
   // "Jeder gegen jeden": a castle for every player, from three on and in generated worlds (the
   // maps are built for two castles); with two it is plain Versus
   const free = NET.versus && NET.ffa && !GAME_MODES[gmode]?.pkg;
@@ -39,6 +42,7 @@ function startMessage(gmode) {
   // Versus: players in turn to the red and the blue castle (1:1, 2:1, 2:2); each to its own
   const teams = {};
   players
+    .filter(p => !p.watch)
     .map(p => p.pid)
     .sort((a, b) => a - b)
     .forEach((pid, k) => (teams[pid] = ffa ? k % ffa : versus ? k % 2 : 0));
@@ -52,7 +56,7 @@ function startMessage(gmode) {
 const QUICK_MIN = 4;
 // a player's Wühler at the castle of its team
 function addPlayerDigger(p, self = false) {
-  if ((p.pid === G.myId && !self) || diggerOf(p.pid)) return;
+  if ((p.pid === G.myId && !self) || diggerOf(p.pid) || p.watch) return;
   const team = (G.netStart.teams && G.netStart.teams[p.pid]) || 0;
   // (a castle a bot plays: the player takes over the bot's Wühler)
   if (takeOverBot(team, p)) return;
@@ -83,6 +87,7 @@ function beginNet(d) {
     teams: { ...d.teams },
   };
   G.myTeam = (d.teams && d.teams[G.myId]) || 0;
+  G.watching = !!(d.players || []).find(p => p.pid === G.myId && p.watch);
   clearInputs();
   online = new Set(NET.players.filter(p => p.online).map(p => p.pid));
   // more goes on in a shared round: natural events come half again as often
@@ -124,12 +129,25 @@ onRoomChange(() => {
   }
   const now = new Set(NET.players.filter(p => p.online).map(p => p.pid));
   if (G.netHost)
-    for (const p of NET.players)
-      if (p.online && p.pid !== G.myId && !online.has(p.pid)) {
-        teamFor(p.pid);
+    for (const p of NET.players) {
+      if (!p.online || p.pid === G.myId) continue;
+      if (!online.has(p.pid)) {
+        if (!p.watch) teamFor(p.pid);
         addPlayerDigger(p);
         welcome(p.pid, { ...G.netStart, players: NET.players });
+        continue;
       }
+      // switched between watching and playing during the round: in with a Wühler, or out (the
+      // Wühler stays as a helper)
+      const c = diggerOf(p.pid);
+      if (!p.watch && !c) {
+        teamFor(p.pid);
+        addPlayerDigger(p);
+      } else if (p.watch && c) delete c.pid;
+    }
+  // (on every device: am I watching?)
+  const mine = NET.players.find(p => p.pid === G.myId);
+  if (mine) G.watching = !!mine.watch;
   online = now;
 });
 

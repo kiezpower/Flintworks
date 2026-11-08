@@ -65,6 +65,7 @@ import { updVehicles } from './vehicles/core.js';
 import { playerVehicleTick } from './vehicles/index.js';
 import { updEmoBtn } from './net/emotes.js';
 import { updScoreBtn } from './scoreboard.js';
+import { updWatch } from './net/watch.js';
 import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
@@ -625,6 +626,7 @@ function loop(t) {
     tutHud();
     updEmoBtn();
     updScoreBtn();
+    updWatch();
   }
   if (G.tick % 10 === 0) drawMini(G.tick % 60 === 0);
   requestAnimationFrame(loop);

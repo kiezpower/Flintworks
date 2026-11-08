@@ -350,6 +350,13 @@ function readPad() {
     if (P.menu && G.state === 'play') closePanel();
     return;
   }
+  // watching a shared round: left and right switch whom the camera follows, A steps in
+  if (G.watching && G.net) {
+    if (P.dir === 'Left') G.watchCycle?.(-1);
+    if (P.dir === 'Right') G.watchCycle?.(1);
+    if (P.ok) G.watchPlay?.();
+    return;
+  }
   padStick = { ax: P.ax, ay: P.ay, dig: P.dig };
   if (P.jumpP) edge.jump = true;
   if (P.throwP) edge.throw = true;

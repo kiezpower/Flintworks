@@ -350,3 +350,48 @@ test('up to eight in a room: a fifth player gets in; "Jeder gegen jeden" with fi
   for (const p of ps) expect(p.errors).toEqual([]);
   for (const p of ps) await p.page.close();
 });
+
+test('watching: a guest who only watches gets no Wühler, the camera follows the host, "Mitspielen" steps in', async ({
+  browser,
+}) => {
+  const h = await player(browser, 'Tilda');
+  const g = await player(browser, 'Ulf');
+  await h.page.waitForTimeout(500);
+  await h.page.locator('#lbCreate').click();
+  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  const code = await h.page.locator('.lb-codetap b').textContent();
+  await g.page.waitForTimeout(500);
+  await g.page.locator('#lbCodeIn').fill(code);
+  await g.page.locator('#lbJoinBtn').click();
+  await expect(h.page.locator('.lb-players')).toContainText('Ulf');
+  // Ulf only wants to watch: the host sees it
+  await g.page.waitForTimeout(500);
+  await g.page.locator('.opt', { hasText: 'Zuschauen' }).click();
+  await expect(h.page.locator('.lb-players')).toContainText('schaut zu');
+  await g.page.waitForTimeout(500);
+  await g.page.locator('.opt', { hasText: 'Bereit?' }).click();
+  await h.page.waitForTimeout(500);
+  await h.page.locator('.opt', { hasText: 'Spiel starten' }).click();
+  for (const p of [h, g])
+    await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net, null, { timeout: 10000 });
+  // no Wühler for Ulf; on his screen the bar names Tilda and the camera is with her
+  expect(await h.page.evaluate(() => window.__ww.crew.filter(c => c.pid != null).map(c => c.name))).toEqual(['Tilda']);
+  await expect(g.page.locator('#watchBar')).toBeVisible();
+  await expect(g.page.locator('#watchBar')).toContainText('Tilda');
+  await g.page.waitForTimeout(1500);
+  const near = await g.page.evaluate(async () => {
+    const { cam } = await import('/src/render.js');
+    const w = window.__ww,
+      t = w.crew.find(c => c.name === 'Tilda');
+    return Math.abs(cam.x + w.G.VW / 2 - t.x) < w.G.VW / 2;
+  });
+  expect(near).toBe(true);
+  await g.page.screenshot({ path: test.info().outputPath('watch.png') });
+  // "Mitspielen": a Wühler of his own, the bar goes
+  await g.page.locator('#watchBar .wplay').click();
+  await h.page.waitForFunction(() => window.__ww.crew.some(c => c.name === 'Ulf' && c.pid != null), null, { timeout: 8000 });
+  await g.page.waitForFunction(() => window.__ww.crew.some(c => c.pid === window.__ww.G.myId), null, { timeout: 8000 });
+  await expect(g.page.locator('#watchBar')).toBeHidden();
+  for (const p of [h, g]) expect(p.errors).toEqual([]);
+  for (const p of [h, g]) await p.page.close();
+});
