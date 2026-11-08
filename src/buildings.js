@@ -33,6 +33,7 @@ import {
   matAt,
   paint,
   rnd,
+  setPlat,
   solid,
 } from './world.js';
 
@@ -578,7 +579,16 @@ function gdist(x, y) {
   for (let d = 0; d < 5; d++) if (!free(x, y + d, 1, 1)) return d;
   return 5;
 }
+// a lorry climbs steps as high as a Wühler does (3 px) and a bit more, so it can be pushed
+// up every hillside the crew walks; wooden stairs and bridges hold it like a platform
+// (setPlat(3): only its wheels touch them, so it rolls up onto a stair and under one)
+const LORRY_STEP = 4;
 function updLorry(L) {
+  setPlat(3);
+  updLorry_(L);
+  setPlat(0);
+}
+function updLorry_(L) {
   unstuck(L);
   const inLiq = LIQ[midMat(L, 0.5)];
   L.vy = Math.min(L.vy + (inLiq ? 0.03 : 0.15), 4);
@@ -604,7 +614,7 @@ function updLorry(L) {
       else c.x = Math.max(c.x, L.x + L.w - 3);
     }
   }
-  const [bx, by] = moveBody(L, L.vx, L.vy, 2);
+  const [bx, by] = moveBody(L, L.vx, L.vy, onG ? LORRY_STEP : 0);
   if (bx) L.vx = 0;
   if (by) L.vy = 0;
   if (

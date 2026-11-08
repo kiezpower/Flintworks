@@ -420,7 +420,10 @@ function setMat(x, y, m) {
 }
 // wooden stairs and bridges (PLANK) are platforms for the Wühler: with setPlat(1) they only
 // hold the feet (the bottom two rows of the box), so you walk through them from the side;
-// with setPlat(2) (jumping up, dropping down) the body passes through them entirely
+// with setPlat(2) (jumping up, dropping down) the body passes through them entirely;
+// setPlat(3) is the lorry's: only its two wheels (the bottom two rows of the box's second and
+// second-to-last column) stand on them, so the wide box neither sticks in a stair it is pushed
+// under nor gets caught on one it rolls up
 let plat = 0;
 const setPlat = v => (plat = v);
 function boxFree(x, y, w, h) {
@@ -429,8 +432,10 @@ function boxFree(x, y, w, h) {
   for (let yy = y0; yy < y0 + h; yy++)
     for (let xx = x0; xx < x0 + w; xx++) {
       if (!solid(xx, yy)) continue;
-      if (plat && xx >= 0 && xx < W && yy < H && mat[yy * W + xx] === PLANK && (plat === 2 || yy < y0 + h - 2))
-        continue;
+      if (plat && xx >= 0 && xx < W && yy < H && mat[yy * W + xx] === PLANK) {
+        if (plat === 2 || yy < y0 + h - 2) continue;
+        if (plat === 3 && w > 2 && xx !== x0 + 1 && xx !== x0 + w - 2) continue;
+      }
       return false;
     }
   return true;
