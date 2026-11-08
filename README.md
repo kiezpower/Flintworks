@@ -44,6 +44,8 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 | Karte | Kleine Karte oben rechts | M |
 | Menü (auch Tutorial überspringen) | „Menü“ oben rechts | Esc |
 
+**Gamepad** (Xbox- oder PlayStation-Belegung): Linker Stick / Steuerkreuz laufen und zielen · A springen · X oder rechter Trigger graben (halten) · B Aktion · Y werfen bzw. benutzen · RB Bauen · LB Enterhaken (halten, loslassen wirft) · Start Menü · Select Karte. In Menüs, Lobby und Levelauswahl bewegt das Steuerkreuz die Auswahl, A wählt, B geht zurück.
+
 **Anzeige** (Optionen → Anzeige): „Große Texte“ vergrößert Aufgabe, Tipps und Karten. Bei „Bewegung reduzieren“ im Betriebssystem bleiben Pfeil und Startknopf ruhig.
 
 Zwei Steuerungen (Optionen → Steuerung): **Modern** (Standard) gräbt, wenn man gegen Erde läuft, und hat einen eigenen Sprung-Knopf. **Klassisch** gräbt mit dem Graben-Knopf und lässt an Wänden klettern und an Decken hängen, wie im Original.

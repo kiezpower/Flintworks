@@ -5,6 +5,7 @@ import { cam, cv } from './render.js';
 import { audioInit } from './sound.js';
 import { G, crew } from './state.js';
 import { closePanel, openBag, openBuild, panelEl, toast, toggleMap, weaponsOf } from './ui.js';
+import { navBack, navMove, navOk, pad } from './gamepad.js';
 import { send } from './commands.js';
 import { hasGear } from './tools.js';
 import { vehicleOf } from './vehicles/core.js';
@@ -38,6 +39,8 @@ const KEYMAP = {
   KeyX: 'dig',
 };
 addEventListener('keydown', e => {
+  // (arrow keys and Enter a gamepad sends to move through menus are not the game's keys)
+  if (e.padNav) return;
   G.inputKind = 'keys';
   if (G.state === 'veil') return; // the start screen takes the key (veil.js)
   if (e.code === 'Escape') {
@@ -331,14 +334,41 @@ function hookKeyUp(fire) {
   if (G.aimKind === 'hook') G.aimDrag = G.aimKind = null;
   if (fire && panelEl.hidden && G.state === 'play') send('hook', a || {});
 }
+// the first gamepad (gamepad.js): in the game it steers like the keys, in menus it moves the focus
+// (a second pad steers the second player of a shared screen, local.js)
+let padStick = { ax: 0, ay: 0, dig: false };
+function readPad() {
+  const P = pad(0);
+  padStick = { ax: 0, ay: 0, dig: false };
+  if (!P) return;
+  if (P.any) G.inputKind = 'keys';
+  const menu = G.state !== 'play' || !panelEl.hidden;
+  if (menu) {
+    if (P.dir) navMove(P.dir);
+    if (P.ok) navOk();
+    if (P.back) navBack();
+    if (P.menu && G.state === 'play') closePanel();
+    return;
+  }
+  padStick = { ax: P.ax, ay: P.ay, dig: P.dig };
+  if (P.jumpP) edge.jump = true;
+  if (P.throwP) edge.throw = true;
+  if (P.actP) edge.act = true;
+  if (P.build) openBuild();
+  if (P.hookDown) hookKeyDown();
+  if (P.hookUp) hookKeyUp(true);
+  if (P.menu) G.openMenu?.();
+  if (P.map) toggleMap();
+}
 function readInput() {
+  readPad();
   // (the rope follows the pointer, and the Wühler, while G is held)
   if (hookHeld) G.aimDrag = keyAimed() ? null : mouseAim(sel_());
   const kx = keys.r - keys.l,
     ky = keys.d - keys.u;
-  inp.ax = kx || joy.x;
-  inp.ay = ky || joy.y;
-  inp.dig = !!(keys.dig || held.dig || G.digLatch);
+  inp.ax = kx || joy.x || padStick.ax;
+  inp.ay = ky || joy.y || padStick.ay;
+  inp.dig = !!(keys.dig || held.dig || G.digLatch || padStick.dig);
   inp.auto = !!G.autoDig;
   inp.jumpP = edge.jump || edge.jumpUp;
   inp.jumpUp = edge.jumpUp && !edge.jump;
