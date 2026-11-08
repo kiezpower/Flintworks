@@ -264,4 +264,6 @@ Verglichen mit Clonk Rage, OpenClonk und Terraria. Behoben:
 | Gamepad (v1.82.0) | Steuerung im Spiel und in allen Menüs (`gamepad.js`). | `gamepad.js`, `input.js` |
 | Bis zu 8 Spieler (v1.83.0) | Räume bis 8 (Relay `MAX`). „Jeder gegen jeden“ bleibt bei höchstens 4 Burgen: ab 5 Spielern teilen sich zwei eine Burg. Der zweite „+“-Platz in der Lobby zeigt, wie viele noch im Raum sind. | `server/relay.js`, `net/session.js`, `lobbyinvite.js` |
 
-Noch offen: Zuschauen, gemeinsamer Bildschirm. Eine Liga gibt es bewusst nicht (der Server speichert keine Daten).
+| Zuschauen (v1.84.0) | Im Raum „Zuschauen“: kein eigener Wühler, kein Team, keine Burg; die Kamera folgt einem Spieler (◀ ▶, Pfeiltasten, Steuerkreuz), „Mitspielen“ steigt jederzeit mit eigenem Wühler ein (wie ein Späteinsteiger). Der Relay trägt nur das Kennzeichen `watch` des Spielers im Raum, gespeichert wird nichts. Dazu behoben: die Lobby zeigte noch „x/4“ (Client-`MAX_PLAYERS`). | `net/watch.js`, `net/session.js`, `net/room.js`, `server/relay.js`, `lobbyinvite.js` |
+
+Noch offen: gemeinsamer Bildschirm. Eine Liga gibt es bewusst nicht (der Server speichert keine Daten).

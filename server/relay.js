@@ -10,6 +10,7 @@
 //   {t:'list'}                               which open rooms are there?
 //   {t:'public', on}                         host: open the room to everybody (or not)
 //   {t:'ready', ready}                       lobby ready flag
+//   {t:'watch', on}                          watch the round instead of playing (no Wühler)
 //   {t:'msg', to, d}                         forward d to a player id, 'host' or 'all' (default)
 //   {t:'snap', d}                            host: latest full snapshot (kept, not forwarded)
 //   {t:'leave'}                              leave the room
@@ -22,7 +23,7 @@
 //                                            every change
 //   {t:'finvite', to}                        invite a friend (code) into my room
 // Server → client:
-//   {t:'room', code, pid, host, players, pub, tag} you are in (players: [{pid,name,cap,hat,skin,ready,online}]);
+//   {t:'room', code, pid, host, players, pub, tag} you are in (players: [{pid,name,cap,hat,skin,ready,watch,online}]);
 //                                            tag: the mode of a quick play room (it starts by itself)
 //   {t:'players', players, host, pub}        someone joined, left, got ready or became host
 //   {t:'rooms', rooms}                       open rooms: [{code, host, n, versus, ffa, playing, tag}]
@@ -64,7 +65,7 @@ const MSG_RATE = 150, // game messages per second (burst: twice that)
   MAX_USERS = num(process.env.MAX_USERS, 100000);
 // game messages only the host sends (the clients check this too)
 const HOST_ONLY = new Set(['start', 'snap', 'ter', 'end', 'cfg', 'toast', 'cd']);
-const CTRL = new Set(['create', 'join', 'quick', 'list', 'public', 'ready', 'hello', 'finvite', 'leave']);
+const CTRL = new Set(['create', 'join', 'quick', 'list', 'public', 'ready', 'watch', 'hello', 'finvite', 'leave']);
 
 const rooms = new Map(); // code → room
 
@@ -176,7 +177,7 @@ function newCode() {
     if (!rooms.has(c)) return c;
   }
 }
-const pubP = p => ({ pid: p.pid, fid: p.token ? fidOf(p.token) : undefined, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin, ready: p.ready, online: !!p.ws });
+const pubP = p => ({ pid: p.pid, fid: p.token ? fidOf(p.token) : undefined, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin, ready: p.ready, watch: !!p.watch, online: !!p.ws });
 function send(ws, m) {
   if (ws && ws.readyState === 1) ws.send(JSON.stringify(m));
 }
@@ -289,6 +290,11 @@ function onMessage(ws, raw) {
   switch (m.t) {
     case 'ready':
       me.ready = !!m.ready;
+      return broadcast(room, playersMsg(room));
+    case 'watch':
+      // (the host always plays)
+      if (me.pid === room.host) return;
+      me.watch = !!m.on;
       return broadcast(room, playersMsg(room));
     case 'snap':
       if (me.pid === room.host) room.snap = raw.length <= MAX_SNAP ? m.d : null;

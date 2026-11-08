@@ -280,5 +280,12 @@ const EN2 = {
   'Blau hat jetzt Feuersteine und Sprengladungen im Lager': 'Blue now has flints and explosives in the store',
   'Die Festung hat gehalten!': 'The fortress has held!',
   'Gamepad verbunden: A springen, X graben, B Aktion, Y werfen': 'Gamepad connected: A jump, X dig, B action, Y throw',
+  // watching a shared round (net/watch.js)
+  Zuschauen: 'Watch',
+  'Zuschauen ✓': 'Watch ✓',
+  'Ohne eigenen Wühler zusehen – „Mitspielen“ steigt jederzeit ein': 'Watch without a Wühler of your own – “Join in” steps in any time',
+  'schaut zu': 'watching',
+  'Du schaust zu': 'You are watching',
+  Mitspielen: 'Join in',
 };
 export { EN2 };

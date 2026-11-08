@@ -81,7 +81,7 @@ test('a friend request, accepted, shows each other online and leads into the roo
   await anna.page.locator('#lbCreate').click();
   await expect(anna.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
   const room = await anna.page.locator('.lb-codetap b').textContent();
-  await expect(bert.page.locator('#frList')).toContainText('im Raum (1/4)', { timeout: 8000 });
+  await expect(bert.page.locator('#frList')).toContainText('im Raum (1/8)', { timeout: 8000 });
   await bert.page.waitForTimeout(500);
   await bert.page.locator('#frList .fr-act.yes').click();
   await expect(bert.page.locator('.lb-codetap b')).toHaveText(room, { timeout: 8000 });
