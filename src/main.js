@@ -487,6 +487,9 @@ function resetCam() {
 }
 
 function step() {
+  // (a panel the second player at one device opened acts for him until it is closed: what was
+  // picked in it has run by now, commands.js)
+  if (panelEl.hidden) G.panelPid = null;
   readInput();
   // (a multiplayer game never pauses: the others keep playing)
   const paused = !panelEl.hidden && !G.net;
@@ -512,7 +515,12 @@ function step() {
         if (I.actP) {
           const cx = context(c);
           if (cx.ui) {
-            if (c.pid === G.myId) (cx.ui === 'base' ? openBase : openBuild)();
+            // (two at one device: the second player opens the castle or the build menu for
+            // himself, local.js; what he picks there is his)
+            if (c.pid === G.myId || (G.local && !G.net && c.pid === 1)) {
+              G.panelPid = c.pid === G.myId ? null : c.pid;
+              (cx.ui === 'base' ? openBase : openBuild)();
+            }
           } else if (cx.fn) cx.fn();
         }
         G.cmdPid = null;

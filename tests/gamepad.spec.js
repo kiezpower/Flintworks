@@ -124,3 +124,46 @@ test('two at one device: the second player with the pad, the first with the keys
   await page.screenshot({ path: test.info().outputPath('local.png') });
   expect(errors).toEqual([]);
 });
+
+test('two at one device: the second player opens the build menu with RB and builds where he stands', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await withPad(page);
+  await page.goto('/?seed=7');
+  await page.evaluate(() => {
+    localStorage.setItem('flintworks-lang', 'de');
+    localStorage.setItem(
+      'flintworks-profile',
+      JSON.stringify({ tutorialDone: true, installAsked: 'done', games: 3, local: true, mode: 'meadow' }),
+    );
+  });
+  await page.reload();
+  await page.waitForFunction(() => window.__ww);
+  await page.click('#lbPlay');
+  await page.waitForFunction(() => window.__ww.state === 'play' && window.__ww.crew.some(c => c.pid === 1), null, {
+    timeout: 8000,
+  });
+  // player 2 on flat ground away from the castle, with what a hut costs
+  const x = await page.evaluate(() => {
+    const w = window.__ww,
+      { surf } = w.world,
+      p2 = w.crew.find(c => c.pid === 1);
+    let x = w.G.base.x + 120;
+    while (Math.abs(surf[x] - surf[x + 30]) > 1 && x < 900) x++;
+    Object.assign(p2, { x: x + 10, y: surf[x + 13] - 10, vx: 0, vy: 0 });
+    w.G.store = { ...w.G.store, wood: 6, rock: 4 };
+    return x + 10;
+  });
+  await page.waitForTimeout(300);
+  await press(page, 'RB');
+  await expect(page.locator('#panel')).toBeVisible();
+  expect(await page.evaluate(() => window.__ww.G.panelPid)).toBe(1);
+  await page.waitForTimeout(500);
+  await page.locator('#panel [data-tut="b_hut"]').click();
+  const hut = await page.evaluate(() => window.__ww.builds.find(b => b.type === 'hut'));
+  expect(hut).toBeTruthy();
+  expect(Math.abs(hut.x + hut.w / 2 - (x + 3))).toBeLessThan(6);
+  await page.waitForTimeout(200);
+  expect(await page.evaluate(() => window.__ww.G.panelPid)).toBe(null);
+  expect(errors).toEqual([]);
+});
