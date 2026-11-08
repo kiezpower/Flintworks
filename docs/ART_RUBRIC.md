@@ -323,7 +323,7 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
 - v1.79.0: Freier Modus „Festung“: Jede Nacht kommt eine Welle über Land von beiden Seiten,
   jede größer als die vorige (ab Nacht 2 eine Spinne, ab Nacht 3 ein Golem); ein Morgen mit
   stehender Burg zählt, Ziel 3 Nächte; Startausrüstung Fels, Bretter, Metall und Kohle.
-- v1.86.0: Öl und Feuer (wie Noita/Clonk): Öl (Material 14) schwimmt auf Wasser, liegt in Blasen
+- v1.87.0: Öl und Feuer (wie Noita/Clonk): Öl (Material 14) schwimmt auf Wasser, liegt in Blasen
   tief in der Erde (freies Spiel) und brennt; Lava, Explosionen, Brandpfeile und brennende Wühler
   zünden es, das Feuer breitet sich aus, wirft Flammen, Rauch und Licht in die Tiefe, setzt Wühler
   und Bäume in Brand, verletzt Monster und verbrennt das Öl (`fire.js`). Kartenzeichen `B`.
