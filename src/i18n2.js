@@ -254,5 +254,6 @@ const EN2 = {
   'Ein Kanonenturm schießt über die Mauer – er braucht Kohle im Lager': 'A cannon tower fires over the wall – it needs coal in the store',
   'Die Festung hält!': 'The fortress holds!',
   'Alle Angriffe sind abgewehrt': 'Every attack is beaten off',
+  'Auf die Mauer': 'Onto the wall',
 };
 export { EN2 };

@@ -139,3 +139,56 @@ test('a broken wall is gone; a Wühler next to a damaged one mends it', async ({
   expect(r.hp).toBe(600);
   expect(errors).toEqual([]);
 });
+
+test('a Wühler at a wall climbs onto it and shoots at monsters from there', async ({ page }) => {
+  const errors = await field(page);
+  const r = await page.evaluate(async () => {
+    const w = window.__ww,
+      { surf } = w.world,
+      me = window.__me,
+      x = window.__fx;
+    window.__put('wall', x);
+    const wall = w.builds.find(b => b.type === 'wall');
+    // stand right left of it: the action button offers the way up
+    Object.assign(me, { x: wall.x - 6, y: wall.gy - 10, vx: 0, vy: 0 });
+    w.step(2);
+    const { context } = await import('/src/digger.js');
+    const cx = context(me);
+    const label = cx.label;
+    cx.fn();
+    w.step(5);
+    const onTop = Math.abs(me.y + 10 - (wall.gy - 24)) < 1.5;
+    const m = w.mkAnimal('monster', wall.x + 70, surf[wall.x + 70] - 10);
+    w.animals.push(m);
+    for (let k = 0; k < 300; k++) {
+      w.step(1);
+      me.vx = 0;
+    }
+    return { label, onTop, still: Math.abs(me.y + 10 - (wall.gy - 24)) < 1.5, hurt: !w.animals.includes(m) || m.hp < m.maxHp };
+  });
+  expect(r).toEqual({ label: 'Auf die Mauer', onTop: true, still: true, hurt: true });
+  expect(errors).toEqual([]);
+});
+
+test('monsters cannot swim: in a moat they drown', async ({ page }) => {
+  const errors = await field(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      { mat, W, paint, activate, surf } = w.world,
+      x = window.__fx + 60,
+      g = surf[x];
+    // a moat 30 wide and 16 deep, full of water, a monster in it
+    for (let y = g; y < g + 16; y++)
+      for (let xx = x; xx < x + 30; xx++) {
+        mat[y * W + xx] = 5;
+        paint(y * W + xx);
+      }
+    for (let y = g; y < g + 16; y += 4) for (let xx = x; xx < x + 30; xx += 4) activate(xx, y);
+    const m = w.mkAnimal('monster', x + 10, g + 2);
+    w.animals.push(m);
+    for (let k = 0; k < 1200; k++) w.step(1);
+    return { gone: !w.animals.includes(m) };
+  });
+  expect(r.gone).toBe(true);
+  expect(errors).toEqual([]);
+});

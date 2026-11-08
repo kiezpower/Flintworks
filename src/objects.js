@@ -322,6 +322,11 @@ function updAnimal(a) {
     inL = LIQ[m];
   // (the lava slime lives in lava)
   if ((m === LAVA && a.kind !== 'slime') || m === ACID) a.hp -= m === LAVA ? 2 : 0.3;
+  // monsters cannot swim: in water they drown (a moat is a defence), bubbles rise off them
+  if (m === WATER && FOE[a.kind]) {
+    a.hp -= 0.12;
+    if (G.frame % 14 === 0) parts.push({ x: a.x + a.w / 2, y: a.y, vx: 0, vy: -0.3, l: 20, c: '#e6f4ff', g: -0.004 });
+  }
   if (a.hp <= 0) return false;
   if (a.kind === 'bat') {
     // flutter around inside caves, turn at walls
