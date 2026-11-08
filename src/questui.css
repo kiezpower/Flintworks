@@ -197,3 +197,57 @@
   text-align: center;
   color: #c9a97a;
 }
+
+/* achievements (achievements.js) below the daily quests */
+.achs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px;
+  padding: 2px 4px 8px;
+}
+.ach {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  grid-template-rows: auto auto auto;
+  column-gap: 6px;
+  padding: 5px 6px;
+  border-radius: 4px;
+  background: rgba(36, 22, 12, 0.35);
+  opacity: 0.8;
+  font-size: 12px;
+}
+.ach.done {
+  background: rgba(242, 194, 48, 0.18);
+  outline: 1px solid rgba(242, 194, 48, 0.55);
+  opacity: 1;
+}
+.ach .ico {
+  grid-row: 1 / span 3;
+  font-size: 20px;
+  line-height: 26px;
+  text-align: center;
+  filter: grayscale(0.8);
+}
+.ach.done .ico {
+  filter: none;
+}
+.ach small {
+  opacity: 0.8;
+  font-size: 11px;
+}
+.ach em {
+  font-style: normal;
+  font-size: 11px;
+}
+.ach .qbar {
+  height: 4px;
+  margin: 2px 0;
+}
+
+.achhead {
+  margin: 10px 4px 4px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}

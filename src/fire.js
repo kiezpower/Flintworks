@@ -4,14 +4,17 @@
 // then burns away. Only the host (or a single game) runs the fire; the others get the burning cells
 // with the game values (net/sync.js) and show the flames.
 import { G, animals, crew, parts, trees } from './state.js';
+import { track } from './profile.js';
 import { AIR, OIL, W, H, activate, mat, paint, rnd } from './world.js';
 
 const burning = new Map(); // cell → ticks left to burn
 const MAX = 1500; // (a whole lake can burn, but not more cells than this at once)
 
+let lit = 0; // cells set alight since the last report (an achievement, achievements.js)
 function igniteCell(i) {
   if (G.netClient || i < 0 || i >= W * H || mat[i] !== OIL || burning.has(i) || burning.size >= MAX) return;
   burning.set(i, 70 + ((rnd() * 70) | 0));
+  lit++;
 }
 // every oil cell within r of a spot catches fire
 function igniteNear(x, y, r = 2) {
@@ -45,6 +48,10 @@ const SMOKE = ['#7a5a48', '#5e5450', '#4a4846', '#3c3e46'];
 // every tick (host or single game): spread, flames, what stands in it, and the oil burns away
 function updFire() {
   if (G.netClient) return drawOnly();
+  if (lit && G.frame % 60 === 0) {
+    track('fire', lit);
+    lit = 0;
+  }
   if (!burning.size) return;
   const room = parts.length < 1400;
   for (const [i, t] of burning) {
