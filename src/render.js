@@ -56,6 +56,7 @@ import { fireSpots } from './fire.js';
 import { drawBossBar, drawWorms } from './boss.js';
 import { drawFishing } from './fishing.js';
 import { drawMerchant } from './merchant.js';
+import { drawFarms } from './farm.js';
 import { TEAM_COLS } from './teams.js';
 import { box, drawVehicles, vehicleOf, wheel } from './vehicles/core.js';
 import { catapultAim, catapultPath } from './vehicles/ground.js';
@@ -662,6 +663,8 @@ function render() {
   }
   // the fortress: lintels over gates, the cannon's barrel, damage and cannon balls (fort.js)
   drawFort(ctx, cx, cy);
+  // the crop on the fields (farm.js)
+  drawFarms(ctx, cx, cy);
   // trees
   for (const t of trees) {
     const w = t.spr.width,

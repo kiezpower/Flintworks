@@ -19,6 +19,7 @@ const ACH = [
   ['chest', 'chest', 10, '🗝️', 'Schatzsucher', 'Öffne {n} Schatztruhen', 150],
   ['deep', 'deep', 100, '⛏️', 'Tiefgräber', 'Grabe {n} m tief', 150],
   ['fish', 'fish', 20, '🎣', 'Angler', 'Fange {n} Fische', 150],
+  ['harvest', 'harvest', 10, '🌾', 'Bauer', 'Ernte {n}-mal ein Feld', 150],
   ['fire', 'fire', 500, '🔥', 'Feuerteufel', 'Setze Öl in Brand ({n} Felder)', 150],
   ['worm', 'worm', 1, '🐛', 'Wurmtöter', 'Besiege den Riesenwurm', 400],
   ['night', 'night', 3, '🏰', 'Festungsherr', 'Halte die Burg {n} Nächte', 300],

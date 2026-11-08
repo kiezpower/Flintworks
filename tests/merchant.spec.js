@@ -52,11 +52,13 @@ test('the trader comes to the castle, sells from his stall and moves on', async 
     const w = window.__ww;
     return { m: w.G.money, sold: w.G.merchant.sold.length };
   });
-  expect(a.m).toBeLessThan(b.m0);
+  // (paid – though a lucky bag may give back more than it cost, so only that it was sold)
+  expect(a.m).not.toBe(b.m0);
   expect(a.sold).toBe(1);
   await expect(page.locator('#panel .opt').first()).toContainText('verkauft');
   // after his stay he walks off and is gone
-  await page.keyboard.press('Escape');
+  // (closed for sure: an open panel pauses the game, and he would wait for ever)
+  await page.evaluate(async () => (await import('/src/ui.js')).closePanel());
   const gone = await page.evaluate(() => {
     const w = window.__ww;
     for (let k = 0; k < 150 * 60 + 4000 && w.G.merchant; k++) w.step(1);

@@ -156,6 +156,27 @@ const SPR = {
     R(2, 8, 4, 1, '#9aa4ae');
     R(3, 2, 1, 14, '#7a5230');
   }),
+  // a field (farm.js): dark tilled earth in furrows, the crop is drawn on it
+  field: sp(24, 4, R => {
+    R(0, 0, 24, 4, '#5a3a22');
+    for (let x = 1; x < 24; x += 3) R(x, 0, 1, 4, '#6e4a2c');
+    R(0, 0, 24, 1, '#7a5230');
+  }),
+  // the mill: a stone tower with a wooden cap and four sails
+  mill: sp(16, 26, R => {
+    R(4, 10, 8, 16, '#b8b0a4');
+    for (let y = 12; y < 26; y += 3) R(4 + (y % 2 ? 0 : 2), y, 1, 1, '#80796f');
+    R(4, 10, 1, 16, '#a69e92');
+    R(3, 7, 10, 3, '#8b5e34');
+    R(5, 5, 6, 2, '#6a4526');
+    R(6, 20, 4, 6, '#2a1a10');
+    R(7, 13, 2, 2, '#ffd77a');
+    R(7, 1, 2, 18, '#c08a50');
+    R(0, 8, 16, 2, '#c08a50');
+    R(7, 1, 1, 18, '#e0ae74');
+    R(0, 8, 16, 1, '#e0ae74');
+    R(7, 8, 2, 2, '#4a3a2a');
+  }),
   // a stretch of wall: dressed stone with mortar joints, two merlons on top
   wall: sp(8, 24, R => {
     R(0, 0, 3, 3, '#a69e92');
@@ -239,6 +260,8 @@ const ITEM = {
   metal: { name: 'Metall', s: [4, 2], val: 15 },
   gem: { name: 'Edelstein', s: [3, 3], val: 45 },
   fish: { name: 'Fisch', s: [5, 2], val: 8 }, // (from the fishing rod, fishing.js)
+  grain: { name: 'Korn', s: [3, 3], val: 3 }, // (farm.js)
+  bread: { name: 'Brot', s: [4, 3], val: 12 },
 };
 function drawItemPx(g, t, x, y, blink) {
   const R = (a, b, w, h, c) => {
@@ -289,6 +312,13 @@ function drawItemPx(g, t, x, y, blink) {
     R(1, 0, 1, 1, '#b6f6ff');
     R(0, 1, 3, 1, '#5fd3e8');
     R(1, 2, 1, 1, '#2f8fb0');
+  } else if (t === 'grain') {
+    R(1, 0, 1, 3, '#c9a43a');
+    R(0, 0, 3, 1, '#f2c230');
+  } else if (t === 'bread') {
+    R(0, 1, 4, 2, '#b8742e');
+    R(1, 0, 2, 1, '#d8a056');
+    R(0, 1, 4, 1, '#d8a056');
   } else if (t === 'fish') {
     R(0, 0, 4, 2, '#7fa8c8');
     R(0, 0, 4, 1, '#b6d6ee');
@@ -312,6 +342,8 @@ const ITEM_ART = {
   metal: [['.hhh.', 'hmmmd', 'mmmdd'], { h: '#e4e8ec', m: '#aab0b6', d: '#6f767c' }],
   gem: [['.wc.', 'wcCc', 'cCcd', '.dd.'], { w: '#e8ffff', c: '#5ae0f0', C: '#2fa8d8', d: '#1f6fa8' }],
   fish: [['.sss..', 'sbbbet', 'bbbbbt', '.ddd..'], { s: '#c8e2f4', b: '#7fa8c8', e: '#24160c', t: '#4a7aa0', d: '#5a86aa' }],
+  grain: [['y.y.y', 'gygyg', '.ggg.', '..g..'], { y: '#f2c230', g: '#c9a43a' }],
+  bread: [['.lll.', 'lLLLb', 'LLLbb', '.bbb.'], { l: '#e8b870', L: '#c88a42', b: '#9a6428' }],
 };
 const artCache = {};
 function itemArt(t, blink) {
