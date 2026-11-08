@@ -348,3 +348,6 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
 - v1.93.0: Gefährliche Nächte (wie Terraria): im freien Spiel ab der zweiten Nacht 1–3 Monster
   (im Koop mehr) auf der Oberfläche nahe den Wühlern, außerhalb des Bildes; bei Morgengrauen
   graben sich die, bei denen niemand ist, ein (`nights.js`). Nicht im entspannten Spiel.
+- v1.93.1: Lore-Fix: sie nimmt Stufen bis 4 px (Wühler: 3), lässt sich also jeden begehbaren Hang
+  hochschieben; Holztreppen und Brücken tragen sie nur an den Rädern (`setPlat(3)`), so rollt sie
+  unter einer Treppe durch und hinauf, statt daran hängen zu bleiben (`tests/lorry.spec.js`).
