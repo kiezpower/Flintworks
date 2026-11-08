@@ -1,6 +1,7 @@
 import { wallContext } from './fort.js';
 import { fishContext } from './fishing.js';
 import { merchantContext } from './merchant.js';
+import { farmContext } from './farm.js';
 import { igniteNear } from './fire.js';
 import { canShoot, hasBow, shoot, swing, swordContext } from './combat.js';
 import { hasTool } from './tools.js';
@@ -923,6 +924,9 @@ function context(c) {
   // next to the wandering trader: his stall (merchant.js)
   const mc = merchantContext(c);
   if (mc) return mc;
+  // on a ripe field: harvest (farm.js)
+  const hv = farmContext(c);
+  if (hv) return hv;
   if (vc) return vc;
   const ch = chestNear(c);
   if (ch) return { label: 'Öffnen', fn: () => openChest(ch) };

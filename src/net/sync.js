@@ -189,6 +189,7 @@ const KINDS = {
       sk: b.skin,
       // fortress (fort.js): hit points, the cannon's aim and its last shot
       fh: b.fhp,
+      gr: b.grow != null ? r2(b.grow) : undefined, // (a field's crop, farm.js)
       am: b.aim,
       ft: b.fireT != null ? G.frame - b.fireT : undefined,
     }),
@@ -201,6 +202,7 @@ const KINDS = {
       Object.assign(b, { prog: d.pr, done: !!d.dn, busy: d.bs, out: d.out, lvl: d.lv, open: d.op, moving: d.mv });
       Object.assign(b, { on: !!d.on, pipe: d.pp, skin: d.sk });
       b.fhp = d.fh;
+      b.grow = d.gr;
       b.aim = d.am;
       if (d.ft != null) b.fireT = G.frame - d.ft;
       if (d.hp != null && d.hp < (b.hp ?? 1e9)) b.hitT = G.frame; // (the bar flashes on a hit)

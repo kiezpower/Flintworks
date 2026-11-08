@@ -341,3 +341,7 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
   Minuten ein Händler über Land zur Burg, bleibt 2½ Minuten; an ihm öffnet die Aktion seinen Stand
   mit 3 wechselnden Angeboten (Sprengladungen, Metall, Kohle, Bretter, Glücksbeutel, Angelrute oder
   Enterhaken günstig), dann zieht er weiter (`merchant.js`).
+- v1.92.0: Ackerbau (wie OpenClonk): Feld (Korn wächst in Stufen, im Regen doppelt so schnell,
+  im Winter und in der Wüste langsamer; reif mit der Aktion ernten, 3 Korn, sät sich neu) und
+  Mühle (Korn → Brot von selbst); Brot bleibt in der Tasche, an der Burg nimmt ein Wühler ein
+  Laib mit und isst es, wenn seine Kraft unter 35 fällt (+50) (`farm.js`).

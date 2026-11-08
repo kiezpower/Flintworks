@@ -71,6 +71,7 @@ import { updFire } from './fire.js';
 import { bossTick } from './boss.js';
 import { updFishing } from './fishing.js';
 import { merchantMove, merchantTick } from './merchant.js';
+import { updFarm } from './farm.js';
 import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
@@ -538,6 +539,7 @@ function step() {
     updFort();
     updFishing();
     merchantMove();
+    updFarm();
     updBuildFx();
     updHazards();
     updBeams();

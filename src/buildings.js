@@ -119,6 +119,21 @@ const BT = {
     cost: { plank: 2, metal: 1 },
     info: 'Öffnet nur für deine Crew',
   },
+  // farming (farm.js): grain grows on the field, the mill bakes bread from it
+  field: {
+    name: 'Feld',
+    w: 24,
+    h: 4,
+    cost: { wood: 1, loam: 1 },
+    info: 'Korn wächst von selbst (im Regen schneller) – reif mit der Aktion ernten',
+  },
+  mill: {
+    name: 'Mühle',
+    w: 16,
+    h: 26,
+    cost: { wood: 3, rock: 2, plank: 2 },
+    info: 'Korn → Brot, ganz von selbst; Brot stärkt erschöpfte Wühler',
+  },
   // the fortress (fort.js): walls hold monsters off, the cannon tower shoots at them
   wall: {
     name: 'Mauer',

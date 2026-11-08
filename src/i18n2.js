@@ -378,5 +378,16 @@ const EN2 = {
   'Enterhaken (günstig)': 'Grappling hook (cheap)',
   'Sonst 30 Taler in der Burg': 'Otherwise 30 coins at the castle',
   'Ein Edelstein!': 'A gem!',
+  // farming (farm.js)
+  Feld: 'Field',
+  'Korn wächst von selbst (im Regen schneller) – reif mit der Aktion ernten': 'Grain grows by itself (faster in the rain) – harvest it with Action when ripe',
+  Mühle: 'Mill',
+  'Korn → Brot, ganz von selbst; Brot stärkt erschöpfte Wühler': 'Grain → bread, by itself; bread restores exhausted Wühler',
+  'Korn → Brot, ganz von selbst': 'Grain → bread, by itself',
+  Ernten: 'Harvest',
+  Korn: 'Grain',
+  Brot: 'Bread',
+  Bauer: 'Farmer',
+  'Ernte {n}-mal ein Feld': 'Harvest a field {n} times',
 };
 export { EN2 };
