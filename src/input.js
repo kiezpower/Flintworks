@@ -6,6 +6,7 @@ import { audioInit } from './sound.js';
 import { G, crew } from './state.js';
 import { closePanel, openBag, openBuild, panelEl, toast, toggleMap, weaponsOf } from './ui.js';
 import { navBack, navMove, navOk, pad } from './gamepad.js';
+import { p1HasPad } from './local.js';
 import { send } from './commands.js';
 import { hasGear } from './tools.js';
 import { vehicleOf } from './vehicles/core.js';
@@ -338,8 +339,9 @@ function hookKeyUp(fire) {
 // (a second pad steers the second player of a shared screen, local.js)
 let padStick = { ax: 0, ay: 0, dig: false };
 function readPad() {
-  const P = pad(0);
   padStick = { ax: 0, ay: 0, dig: false };
+  // (two at one device with one pad: that pad is the second player's, local.js; menus still use it)
+  const P = p1HasPad() || G.state !== 'play' || !panelEl.hidden ? pad(0) : null;
   if (!P) return;
   if (P.any) G.inputKind = 'keys';
   const menu = G.state !== 'play' || !panelEl.hidden;

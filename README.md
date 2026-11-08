@@ -44,6 +44,8 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 | Karte | Kleine Karte oben rechts | M |
 | Menü (auch Tutorial überspringen) | „Menü“ oben rechts | Esc |
 
+**Zu zweit an einem Gerät:** Lobby → „Zusammen spielen“ → „Zu zweit an diesem Gerät“. Spieler 2 spielt mit einem Gamepad (bei zwei Gamepads mit dem zweiten), die Kamera hält beide im Bild.
+
 **Gamepad** (Xbox- oder PlayStation-Belegung): Linker Stick / Steuerkreuz laufen und zielen · A springen · X oder rechter Trigger graben (halten) · B Aktion · Y werfen bzw. benutzen · RB Bauen · LB Enterhaken (halten, loslassen wirft) · Start Menü · Select Karte. In Menüs, Lobby und Levelauswahl bewegt das Steuerkreuz die Auswahl, A wählt, B geht zurück.
 
 **Anzeige** (Optionen → Anzeige): „Große Texte“ vergrößert Aufgabe, Tipps und Karten. Bei „Bewegung reduzieren“ im Betriebssystem bleiben Pfeil und Startknopf ruhig.

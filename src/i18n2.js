@@ -287,5 +287,10 @@ const EN2 = {
   'schaut zu': 'watching',
   'Du schaust zu': 'You are watching',
   Mitspielen: 'Join in',
+  // two at one device (local.js)
+  'Spieler 2': 'Player 2',
+  'Zu zweit an diesem Gerät': 'Two players on this device',
+  'Spieler 2 spielt mit einem Gamepad (bei zwei Gamepads das zweite)': 'Player 2 plays with a gamepad (the second one if two are plugged in)',
+  'oder an diesem Gerät': 'or on this device',
 };
 export { EN2 };

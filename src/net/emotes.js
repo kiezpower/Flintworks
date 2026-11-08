@@ -123,10 +123,11 @@ function edgeArrow(ctx, wx, wy, cx, cy, col, label, near) {
 }
 // fellow players (your team) and markers off the screen: arrows at the edge; markers on it: a pin
 function drawMates(ctx, cx, cy) {
-  if (!G.net) return;
+  // (also two at one device, local.js: then both get an arrow when off the screen)
+  if (!G.net && !G.local) return;
   const me = diggerOf(G.myId);
   for (const c of crew) {
-    if (!isPlayer(c) || c.dead || c === me || (G.teams && me && teamOf(c) !== teamOf(me))) continue;
+    if (!isPlayer(c) || c.dead || (c === me && !G.local) || (G.teams && me && teamOf(c) !== teamOf(me))) continue;
     const d = me ? Math.round(Math.hypot(c.x - me.x, c.y - me.y) / 4) : 0;
     edgeArrow(ctx, c.x + 3, c.y + 5, cx, cy, c.cap, c.emo ? c.emo.e : (c.name || '?').slice(0, 1), d + ' m');
   }
