@@ -52,6 +52,7 @@ import { isPlayer } from './players.js';
 import { drawEmotes, drawMates } from './net/emotes.js';
 import { watched } from './net/watch.js';
 import { localFocus } from './local.js';
+import { fireSpots } from './fire.js';
 import { TEAM_COLS } from './teams.js';
 import { box, drawVehicles, vehicleOf, wheel } from './vehicles/core.js';
 import { catapultAim, catapultPath } from './vehicles/ground.js';
@@ -434,7 +435,8 @@ function nameTag(text, x, y, col) {
   ctx.fillText(text, x + 0.5, y - 1.5);
 }
 const glows = [],
-  lanterns = [];
+  lanterns = [],
+  fires = [];
 function render() {
   flush();
   ctx.setTransform(G.res, 0, 0, G.res, 0, 0);
@@ -932,6 +934,9 @@ function render() {
     for (const t of trees) if (t.burn > 0) light(t.x - cx, t.gy - t.spr.height / 2 - cy, 36, 0.9);
     for (const c of crew) if (c.burn > 0) light(c.x + 3 - cx, c.y + 4 - cy, 24, 0.9);
     for (let k = 0; k < lava.length; k += 8) light(lava[k], lava[k + 1], 16, 0.7);
+    // burning oil lights the dark (fire.js)
+    fireSpots(cx, cy, fires);
+    for (let k = 0; k < fires.length; k += 2) light(fires[k], fires[k + 1], 22, 0.85);
     if (under)
       for (let k = 0; k < oreSpots.length; k += 3) lightHole(lctx, oreSpots[k], oreSpots[k + 1], 6, oreSpots[k + 2]);
     // glowing mushrooms and crystals in caves (decor.js)

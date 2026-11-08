@@ -1,6 +1,6 @@
 // The characters of a level map (map.txt): every character is one material, standing for
 // zoom × zoom cells of the world. Like the palette of a hand-painted map.
-import { ACID, AIR, COAL, EARTH, GEM, GOLD, GRANITE, LAVA, LOAM, ORE, PLANK, ROCK, SAND, WATER } from '../world.js';
+import { ACID, AIR, COAL, EARTH, GEM, GOLD, GRANITE, LAVA, LOAM, OIL, ORE, PLANK, ROCK, SAND, WATER } from '../world.js';
 
 // [material, has a back wall (cave or tunnel)]
 const CHARS = {
@@ -19,10 +19,11 @@ const CHARS = {
   '~': [WATER, 1],
   '%': [LAVA, 1],
   A: [ACID, 1],
+  B: [OIL, 1], // oil (burns, fire.js)
   '?': [EARTH, 1], // earth that the generator fills with stones, veins and caves (fill in level.json)
 };
 // these keep their exact outline: borders, pools and pipes must not leak
-const FIXED = new Set([GRANITE, WATER, LAVA, ACID, PLANK]);
+const FIXED = new Set([GRANITE, WATER, LAVA, ACID, PLANK, OIL]);
 
 // Maps are bundled run-length encoded (vite.config.js): "RLE1:" and per row runs like "12.3#"
 // (a count, then the character; the palette has no digits). Plain maps pass through.

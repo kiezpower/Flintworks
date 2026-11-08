@@ -7,6 +7,7 @@ import { inp } from '../input.js';
 import { updParts } from '../objects.js';
 import { playAnnounce } from '../announce.js';
 import { playBall, updFort } from '../fort.js';
+import { updFire } from '../fire.js';
 import { playShot, updArrows, updCombat } from '../combat.js';
 import { playBomb, updEvents } from '../events.js';
 import { diggerOf } from '../players.js';
@@ -159,6 +160,7 @@ function clientStep(paused) {
     updCombat();
     updEvents();
     updFort();
+    updFire(); // (only the flames of the cells the host says burn)
   }
   if (!paused) {
     updWeather();

@@ -1,4 +1,5 @@
 import { sfx } from './sound.js';
+import { igniteCell } from './fire.js';
 import { G, parts } from './state.js';
 import {
   ACID,
@@ -11,6 +12,7 @@ import {
   LAVA,
   LIQ,
   LOAM,
+  OIL,
   ROCK,
   SAND,
   W,
@@ -80,6 +82,8 @@ function lavaReact(i, x, y) {
   const nb = [i - W, i + W, x > 0 ? i - 1 : -1, x < W - 1 ? i + 1 : -1];
   for (const j of nb) {
     if (j < 0 || j >= W * H) continue;
+    // (oil next to lava catches fire, fire.js)
+    if (mat[j] === OIL) igniteCell(j);
     if (mat[j] === WATER) {
       mat[j] = AIR;
       paint(j);
@@ -181,6 +185,11 @@ function simulate() {
                 }
               }
             }
+          }
+          // water is heavier than oil: it sinks through it
+          if (m === WATER && mat[i + W] === OIL) {
+            swap(i, i + W);
+            continue;
           }
           flow(i, x, y, m === WATER ? 4 : 3);
         }

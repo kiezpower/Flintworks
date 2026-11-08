@@ -1,6 +1,7 @@
 // What the host tells the others about the game: compact copies of every entity and of the
 // shared game values. pack*() runs on the host, apply*() on the clients. Entities are matched
 // by their id; a client only shows them (it does not simulate anything but its own Wühler).
+import { fireCells, setFireCells } from '../fire.js';
 import { mkLorry } from '../buildings.js';
 import { mkAnimal } from '../entities.js';
 import { ITEM, treeSprite } from '../sprites.js';
@@ -295,6 +296,7 @@ function packGame() {
     kills: G.kills || 0,
     rescued: G.rescued || 0,
     fort: G.fort && structuredClone(G.fort),
+    fire: fireCells(),
   };
 }
 function applyGame(d) {
@@ -317,6 +319,7 @@ function applyGame(d) {
   G.kills = d.kills || 0;
   G.rescued = d.rescued || 0;
   G.fort = d.fort || null;
+  setFireCells(d.fire);
   const own = d.teams && d.teams[G.myTeam];
   if (own) {
     Object.assign(G, { money: own.money, earned: own.earned, store: own.store, tools: own.tools });

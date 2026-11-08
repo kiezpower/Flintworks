@@ -14,6 +14,7 @@ import { damageCastle } from './versus.js';
 import { toast } from './ui.js';
 import { blastForts, hitFort, strikeFort } from './fort.js';
 import { atCastle, siegeMarch } from './siege.js';
+import { igniteNear } from './fire.js';
 import {
   ACID,
   AIR,
@@ -31,6 +32,7 @@ import {
   SAND,
   W,
   WATER,
+  OIL,
   bg,
   free,
   mat,
@@ -293,6 +295,8 @@ function updTrees() {
     }
   }
 }
+// (fire.js sets trees standing in burning oil alight through G, to keep the modules apart)
+G.igniteTree = t => ignite(t);
 function ignite(t) {
   if (t.burn || t.fall) return;
   t.burn = 700;
@@ -322,6 +326,8 @@ function updAnimal(a) {
     inL = LIQ[m];
   // (the lava slime lives in lava)
   if ((m === LAVA && a.kind !== 'slime') || m === ACID) a.hp -= m === LAVA ? 2 : 0.3;
+  // the lava slime sets oil alight (fire.js)
+  if (m === OIL && a.kind === 'slime') igniteNear(a.x + a.w / 2, a.y + a.h, 2);
   // monsters cannot swim: in water they drown (a moat is a defence), bubbles rise off them
   if (m === WATER && FOE[a.kind]) {
     a.hp -= 0.12;
@@ -641,6 +647,8 @@ function explode(cx, cy, r, by = null) {
   }
   // (Versus: the other team's walls, gates and towers crack too, fort.js)
   blastForts(cx, cy, r, by);
+  // oil in reach catches fire (fire.js)
+  igniteNear(cx, cy, r + 2);
   if (by && G.teams)
     for (const b of builds) {
       if (b.type !== 'base') continue;
