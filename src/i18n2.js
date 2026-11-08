@@ -235,5 +235,24 @@ const EN2 = {
   '{name} zerstört!': '{name} destroyed!',
   Turm: 'Tower',
   'Keine Kohle': 'No coal',
+  // siege (siege.js) and level Belagerung (src/levels/belagerung)
+  'Späher: Monster nähern sich von {side}!': 'Scouts: monsters are coming from the {side}!',
+  'Angriff! Welle {n} von {m}': 'Attack! Wave {n} of {m}',
+  'Sie kommen von {side}': 'They come from the {side}',
+  links: 'left',
+  rechts: 'right',
+  'beiden Seiten': 'both sides',
+  'Wellen abgewehrt': 'Waves beaten off',
+  'Die Burg ist gefallen.': 'The castle has fallen.',
+  Belagerung: 'Siege',
+  'Baue eine Festung und wehre drei Angriffswellen ab': 'Build a fortress and beat off three waves of attack',
+  'Späher melden Monster im Westen und im Osten. In drei Minuten sind sie da – sie kommen über Land. Bau Mauern links und rechts der Burg, ein Tor für deine Crew und einen Kanonenturm.':
+    'Scouts report monsters in the west and in the east. They will be here in three minutes – over land. Build walls left and right of the castle, a gate for your crew and a cannon tower.',
+  'Mauern halten Monster auf, ein Tor daneben lässt deine Crew durch. Fels liegt gleich unter dem Gras am Hügel.':
+    'Walls hold monsters off, a gate next to them lets your crew through. There is rock right under the grass on the hill.',
+  'Die Mauern stehen': 'The walls stand',
+  'Ein Kanonenturm schießt über die Mauer – er braucht Kohle im Lager': 'A cannon tower fires over the wall – it needs coal in the store',
+  'Die Festung hält!': 'The fortress holds!',
+  'Alle Angriffe sind abgewehrt': 'Every attack is beaten off',
 };
 export { EN2 };

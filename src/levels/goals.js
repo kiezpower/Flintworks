@@ -11,6 +11,7 @@ import { goalScale } from '../modes.js';
 import { G, animals, builds, crew, vehicles } from '../state.js';
 import { VK } from '../vehicles/index.js';
 import { AIR, H, LAVA, W, activate, mat, paint, surf } from '../world.js';
+import { siegeTick, wavesBeaten } from '../siege.js';
 
 const lvl = () => G.lvl || (G.lvl = { fired: {}, flags: {}, reached: {}, depth: {} });
 // areas reached and the deepest point count per team (Versus maps; otherwise all are team 0)
@@ -48,6 +49,7 @@ const TYPES = {
   },
   reach: { val: g => (lvl().reached[team() + ':' + g.area] ? 1 : 0), label: g => tr(g.label || 'Ziel erreicht') },
   survive: { val: () => Math.floor((G.playTicks || 0) / 3600), label: () => tr('Minuten') },
+  waves: { val: () => wavesBeaten(lvl()), label: () => tr('Wellen abgewehrt') },
 };
 // money and deliveries grow in Koop and shrink in Versus (see goalScale), the rest stays
 const SCALED = { money: 1, sell: 1, collect: 1 };
@@ -153,6 +155,7 @@ function riseTick(L) {
 function levelTick(L) {
   const s = lvl();
   riseTick(L);
+  siegeTick(L, s);
   rescueTick();
   for (const c of alive()) {
     const t = teamOfC(c);
@@ -167,6 +170,7 @@ function levelTick(L) {
   });
   const lose = L.lose || {};
   if (lose.crewDead && !alive().length) G.onLevelEnd?.(false, 'Alle Wühler sind verloren.');
+  else if (lose.castle && G.base && G.base.fhp <= 0) G.onLevelEnd?.(false, 'Die Burg ist gefallen.');
   else if (lose.time && (G.playTicks || 0) >= lose.time * 3600) G.onLevelEnd?.(false, 'Die Zeit ist um.');
 }
 

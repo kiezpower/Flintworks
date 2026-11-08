@@ -12,7 +12,8 @@ import { treeSprite } from './sprites.js';
 import { INV_MAX, G, animals, builds, crew, flashes, items, lorries, parts, trees } from './state.js';
 import { damageCastle } from './versus.js';
 import { toast } from './ui.js';
-import { strikeFort } from './fort.js';
+import { hitFort, strikeFort } from './fort.js';
+import { atCastle, siegeMarch } from './siege.js';
 import {
   ACID,
   AIR,
@@ -438,6 +439,15 @@ function updAnimal(a) {
         sfx('clack', a.x, a.y);
       }
       if (G.frame % 180 === 0) sfx('growl', a.x, a.y);
+    } else if (a.siege) {
+      // a siege: march on the castle and strike it there (siege.js)
+      a.tvx = siegeMarch(a, F.speed);
+      if (atCastle(a) && a.atk <= 0 && G.base && !G.netClient) {
+        a.atk = F.cd;
+        a.face = Math.sign(G.base.x + G.base.w / 2 - (a.x + a.w / 2)) || 1;
+        hitFort(G.base, F.dmg, a.x + a.w / 2, a.y + a.h / 2);
+        sfx('growl', a.x, a.y);
+      }
     } else if (--a.t <= 0) {
       a.t = ri(60, 200);
       a.tvx = rnd() < 0.4 ? 0 : (rnd() < 0.5 ? -1 : 1) * F.speed * 0.6;
