@@ -1,3 +1,4 @@
+import { wallContext } from './fort.js';
 import { canShoot, hasBow, shoot, swing, swordContext } from './combat.js';
 import { hasTool } from './tools.js';
 import { register } from './commands.js';
@@ -926,6 +927,9 @@ function context(c) {
         c.chop = t;
       },
     };
+  // right at a wall: up onto it, to shoot from there (fort.js)
+  const wc = wallContext(c);
+  if (wc) return wc;
   // stuck below a ledge too high for a jump: hook, stairs or home (climb.js)
   const up = climbContext(c);
   if (up) return up;

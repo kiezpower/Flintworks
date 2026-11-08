@@ -9,6 +9,7 @@ import { updBuildFx } from './bfx.js';
 import { updMusic } from './music.js';
 import { updFloats } from './floats.js';
 import { updDecor } from './decor.js';
+import { updFort } from './fort.js';
 import { checkUpdate, chosenBiome, hideLobby, lobbyFrame, lobbyOpen, showLobby } from './lobby.js';
 import { P, finishGame, saveProfile } from './profile.js';
 import { skinTag } from './skins.js';
@@ -515,6 +516,7 @@ function step() {
     useMine();
     updVehicles();
     updBuilds();
+    updFort();
     updBuildFx();
     updHazards();
     updBeams();

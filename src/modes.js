@@ -1,5 +1,6 @@
 // Game modes chosen in the lobby: each has its own win condition and star times.
 import { G, builds } from './state.js';
+import { nightTick } from './siege.js';
 
 // Multiplayer: Koop goals grow by half for every further player, Versus goals are smaller
 // because the round has a clock (G.mp is made for every new world, see versus.js)
@@ -30,6 +31,23 @@ const GAME_MODES = {
         .size,
     stars: [10, 16],
   },
+  // a fortress against the night: a wave of monsters every night (siege.js nightTick); some
+  // stone, planks, metal and coal to start the walls with
+  fort: {
+    name: 'Festung',
+    icon: 'shield',
+    desc: 'Halte die Burg {goal} Nächte lang',
+    kit: true,
+    goal: 3,
+    prog: () => (G.fort && G.fort.held) || 0,
+    stars: [32, 40],
+    store: { rock: 6, plank: 4, metal: 2, coal: 3 },
+    intro: 'Jede Nacht greifen Monster über Land an. Bau Mauern, ein Tor und einen Kanonenturm um die Burg.',
+    setup() {
+      G.fort = null;
+    },
+    tick: () => nightTick(),
+  },
   treasure: {
     name: 'Schatzsucher',
     desc: 'Finde {goal} Schatztruhen',
@@ -48,8 +66,9 @@ function applyModeSetup() {
   G.introDone = false;
   G.daily = null;
   const M = mode();
-  // (campaign levels and the Tagesschacht, daily.js)
-  if (!M.campaign && !M.daily) return;
+  // (campaign levels, the Tagesschacht, daily.js, and free modes with a start kit)
+  G.fort = null;
+  if (!M.campaign && !M.daily && !M.kit) return;
   if (M.evRate != null) G.evRate = M.evRate;
   if (M.evKinds) G.evKinds = M.evKinds;
   if (M.money != null) G.money = M.money;

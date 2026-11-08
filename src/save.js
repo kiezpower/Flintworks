@@ -110,6 +110,7 @@ function serialize() {
       goldSold: G.goldSold || 0,
       sold: G.sold || {},
       lvl: G.lvl || null,
+      fort: G.fort || null,
       daily: G.daily || null,
       ev: { kills: G.kills, rescued: G.rescued, rate: G.evRate, kinds: G.evKinds, next: G.evNext },
       mineMark: G.mineMark || null,
@@ -215,6 +216,7 @@ function deserialize(d) {
     G.goldSold = d.goldSold || 0;
     G.sold = d.sold || {};
     G.lvl = d.lvl || null;
+    G.fort = d.fort || null;
     const ev = d.ev || {};
     Object.assign(G, {
       kills: ev.kills || 0,

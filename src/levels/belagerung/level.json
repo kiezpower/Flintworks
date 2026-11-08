@@ -1,0 +1,62 @@
+{
+  "id": "belagerung",
+  "v": 1,
+  "name": "Belagerung",
+  "icon": "castle",
+  "desc": "Baue eine Festung und wehre drei Angriffswellen ab",
+  "intro": "Späher melden Monster im Westen und im Osten. In drei Minuten sind sie da – sie kommen über Land. Bau Mauern links und rechts der Burg, ein Tor für deine Crew und einen Kanonenturm.",
+  "biome": "meadow",
+  "size": [1600, 400],
+  "zoom": 5,
+  "rough": 0.4,
+  "seed": 9101,
+  "diff": "adventure",
+  "fill": {"rock": 1.4, "coal": 1.3, "ore": 1.2, "caves": 0.3},
+  "start": {
+    "money": 150,
+    "crew": 3,
+    "inv": [["rock", "rock"], ["rock"], ["wood"]],
+    "store": {"rock": 6, "plank": 6, "metal": 4, "coal": 4, "wood": 4}
+  },
+  "rules": {
+    "meteors": false,
+    "siege": {
+      "first": 3,
+      "every": 3,
+      "waves": [
+        {"from": "left", "monster": 3},
+        {"from": "right", "monster": 4, "spider": 1},
+        {"from": "both", "monster": 5, "golem": 1}
+      ]
+    }
+  },
+  "objects": [
+    {"t": "base", "x": 782},
+    {"t": "tree", "x": 200, "stage": 4},
+    {"t": "tree", "x": 260, "stage": 3},
+    {"t": "tree", "x": 340, "stage": 4},
+    {"t": "tree", "x": 430, "stage": 4},
+    {"t": "tree", "x": 530, "stage": 3},
+    {"t": "tree", "x": 610, "stage": 4},
+    {"t": "tree", "x": 990, "stage": 4},
+    {"t": "tree", "x": 1070, "stage": 3},
+    {"t": "tree", "x": 1170, "stage": 4},
+    {"t": "tree", "x": 1270, "stage": 4},
+    {"t": "tree", "x": 1370, "stage": 3},
+    {"t": "tree", "x": 1450, "stage": 4},
+    {"t": "animal", "kind": "fluffel", "x": 300},
+    {"t": "animal", "kind": "fluffel", "x": 1320}
+  ],
+  "goals": [
+    {"t": "build", "what": "wall", "n": 4},
+    {"t": "build", "what": "cannon", "n": 1},
+    {"t": "waves", "n": 3}
+  ],
+  "lose": {"crewDead": true, "castle": true},
+  "stars": [13, 17],
+  "triggers": [
+    {"when": {"t": "after", "min": 0.3}, "do": [{"t": "say", "text": "Mauern halten Monster auf, ein Tor daneben lässt deine Crew durch. Fels liegt gleich unter dem Gras am Hügel."}]},
+    {"when": {"t": "goal", "n": 0}, "do": [{"t": "banner", "title": "Die Mauern stehen", "text": "Ein Kanonenturm schießt über die Mauer – er braucht Kohle im Lager"}]},
+    {"when": {"t": "goal", "n": 2}, "do": [{"t": "banner", "title": "Die Festung hält!", "text": "Alle Angriffe sind abgewehrt"}]}
+  ]
+}

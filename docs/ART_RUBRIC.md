@@ -309,3 +309,17 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
 - v1.76.3: Leben an der Oberfläche (wie Terraria): Schmetterlinge flattern am Tag über Wiesen
   (nicht bei Regen, Nacht, Winter, Wüste; vor den Bäumen gezeichnet), und von Laubbäumen fallen
   Blätter, die im Wind pendeln, sich gelb färben und kurz am Boden liegen bleiben.
+- v1.77.0: Festung (wie Clonk/OpenClonk): Mauer (24 hoch, für alle fest, Monster schlagen darauf
+  ein), Steinsturz über dem Tor, damit kein Monster darüber springt, Kanonenturm (Kugeln, die
+  beim Aufschlag platzen; 1 Kohle = 3 Schuss). Festungsteile dürfen direkt aneinander stehen,
+  haben Lebenspunkte mit Rissen und Balken, und ein Wühler daneben bessert sie aus (`fort.js`).
+- v1.78.0: Belagerung: Angriffswellen kommen nur über Land von den Kartenrändern und marschieren
+  auf die Burg (`siege.js`); Mauern halten sie auf, die Burg hat in der Belagerung 1000
+  Lebenspunkte. Neues Level „Belagerung“: Burg auf einem Hügel, Fels und Kohle gleich darunter,
+  drei Wellen; Ziele: 4 Mauern, ein Kanonenturm, 3 Wellen abwehren.
+- v1.78.1: Wassergraben und Mauerschützen: Monster ertrinken in Wasser (ein Graben ist eine
+  Verteidigung); „Auf die Mauer“ an jeder Mauer und jedem Tor, ein Wühler oben schießt einen
+  Pfeil pro Sekunde auf Monster bis 150 weit (`fort.js`).
+- v1.79.0: Freier Modus „Festung“: Jede Nacht kommt eine Welle über Land von beiden Seiten,
+  jede größer als die vorige (ab Nacht 2 eine Spinne, ab Nacht 3 ein Golem); ein Morgen mit
+  stehender Burg zählt, Ziel 3 Nächte; Startausrüstung Fels, Bretter, Metall und Kohle.

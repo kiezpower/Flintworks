@@ -115,6 +115,7 @@ Bodenschicht kommen von allein.
 | `build` | `what`, `n` | fertige Gebäude oder Fahrzeuge dieser Art |
 | `reach` | `area`, `label` | ein Wühler war im Bereich |
 | `survive` | `n` | Minuten |
+| `waves` | `n` | abgewehrte Angriffswellen (`rules.siege`) |
 
 ### Auslöser
 
@@ -131,6 +132,23 @@ Bodenschicht kommen von allein.
 | | | | `win` / `lose` | `text` (bei lose) |
 
 Alle Texte brauchen einen englischen Eintrag in `src/i18n.js`. Der Test prüft das.
+
+### Belagerung (`rules.siege`)
+
+```json
+"siege": { "first": 3, "every": 3,
+           "waves": [{ "from": "left", "monster": 3 }, { "from": "both", "monster": 5, "golem": 1 }] }
+```
+
+Ab Minute `first` kommt alle `every` Minuten eine Welle, eine halbe Minute vorher warnen Späher.
+Die Monster (`monster`, `spider`, `golem`) erscheinen am linken oder rechten Kartenrand (`from`:
+left, right, both) auf dem Boden und marschieren über Land auf die Burg zu. Wühler in der Nähe
+greifen sie an; Mauern und ein geschlossenes Tor halten sie auf und werden beschädigt
+(`fort.js`); an der Burg schlagen sie auf die Burg ein (1000 Lebenspunkte). `lose.castle: true`
+verliert das Level, wenn die Burg fällt. Beispiel: „Belagerung“.
+Monster können nicht schwimmen: Ein Wassergraben, tiefer als ein Monster hoch ist (etwa 10
+Pixel), hält sie auf, und sie ertrinken darin. Ein Wühler, der direkt an einer Mauer steht,
+steigt mit der Aktionstaste hinauf und schießt von oben von selbst auf Monster in der Nähe.
 
 ### Steigende Lava (`rules.rise`)
 

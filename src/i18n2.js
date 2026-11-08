@@ -228,5 +228,42 @@ const EN2 = {
   // the task tracker and board (questui.js)
   'Auftrag der Runde': 'Task of this round',
   'Neue Tagesaufgaben in {h} Std': 'New daily quests in {h} h',
+  // fortress (fort.js)
+  Mauer: 'Wall',
+  Kanonenturm: 'Cannon tower',
+  'Hält Monster auf – ein Tor daneben lässt die Crew durch': 'Holds monsters off – a gate next to it lets your crew through',
+  'Schießt Kugeln auf Monster, mit Kohle aus dem Lager': 'Fires cannon balls at monsters, with coal from the store',
+  'Mauer fertig: hält Monster auf, ein Tor daneben lässt die Crew durch': 'Wall done: holds monsters off, a gate next to it lets your crew through',
+  'Kanonenturm fertig: schießt auf Monster, braucht Kohle im Lager': 'Cannon tower done: fires at monsters, needs coal in the store',
+  '{name} zerstört!': '{name} destroyed!',
+  Turm: 'Tower',
+  'Keine Kohle': 'No coal',
+  // siege (siege.js) and level Belagerung (src/levels/belagerung)
+  'Späher: Monster nähern sich von {side}!': 'Scouts: monsters are coming from the {side}!',
+  'Angriff! Welle {n} von {m}': 'Attack! Wave {n} of {m}',
+  'Sie kommen von {side}': 'They come from the {side}',
+  links: 'left',
+  rechts: 'right',
+  'beiden Seiten': 'both sides',
+  'Wellen abgewehrt': 'Waves beaten off',
+  'Die Burg ist gefallen.': 'The castle has fallen.',
+  Belagerung: 'Siege',
+  'Baue eine Festung und wehre drei Angriffswellen ab': 'Build a fortress and beat off three waves of attack',
+  'Späher melden Monster im Westen und im Osten. In drei Minuten sind sie da – sie kommen über Land. Bau Mauern links und rechts der Burg, ein Tor für deine Crew und einen Kanonenturm.':
+    'Scouts report monsters in the west and in the east. They will be here in three minutes – over land. Build walls left and right of the castle, a gate for your crew and a cannon tower.',
+  'Mauern halten Monster auf, ein Tor daneben lässt deine Crew durch. Fels liegt gleich unter dem Gras am Hügel.':
+    'Walls hold monsters off, a gate next to them lets your crew through. There is rock right under the grass on the hill.',
+  'Die Mauern stehen': 'The walls stand',
+  'Ein Kanonenturm schießt über die Mauer – er braucht Kohle im Lager': 'A cannon tower fires over the wall – it needs coal in the store',
+  'Die Festung hält!': 'The fortress holds!',
+  'Alle Angriffe sind abgewehrt': 'Every attack is beaten off',
+  'Auf die Mauer': 'Onto the wall',
+  // free play Festung (modes.js, siege.js nightTick)
+  Festung: 'Fortress',
+  'Halte die Burg {goal} Nächte lang': 'Hold the castle for {goal} nights',
+  'Jede Nacht greifen Monster über Land an. Bau Mauern, ein Tor und einen Kanonenturm um die Burg.':
+    'Every night monsters attack over land. Build walls, a gate and a cannon tower around the castle.',
+  'Nacht {n}: Angriff!': 'Night {n}: attack!',
+  'Die Nacht ist überstanden – die Burg steht!': 'The night is over – the castle stands!',
 };
 export { EN2 };

@@ -31,6 +31,6 @@ auch während des Spiels einsehbar.
 
 ## Entscheidung
 
-Umgesetzt (v1.77.0, ab v1.77.1 schmal: nur Symbol und Balken, höchstens drei Zeilen): **B1** im Spiel (Kasten unter den Talern, mit dem Auftrag der Runde; die
+Umgesetzt (v1.80.0, schmal: nur Symbol und Balken, höchstens drei Zeilen): **B1** im Spiel (Kasten unter den Talern, mit dem Auftrag der Runde; die
 Leiste oben mit dem Auftrag entfällt) und **C2** als Tafel, im Menü unter dem Reiter „Aufgaben“ und
 in der Lobby. Belohnungen werden direkt auf der Tafel abgeholt. Code: `src/questui.js`.

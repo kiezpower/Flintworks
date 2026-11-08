@@ -12,6 +12,8 @@ import { treeSprite } from './sprites.js';
 import { INV_MAX, G, animals, builds, crew, flashes, items, lorries, parts, trees } from './state.js';
 import { damageCastle } from './versus.js';
 import { toast } from './ui.js';
+import { hitFort, strikeFort } from './fort.js';
+import { atCastle, siegeMarch } from './siege.js';
 import {
   ACID,
   AIR,
@@ -320,6 +322,11 @@ function updAnimal(a) {
     inL = LIQ[m];
   // (the lava slime lives in lava)
   if ((m === LAVA && a.kind !== 'slime') || m === ACID) a.hp -= m === LAVA ? 2 : 0.3;
+  // monsters cannot swim: in water they drown (a moat is a defence), bubbles rise off them
+  if (m === WATER && FOE[a.kind]) {
+    a.hp -= 0.12;
+    if (G.frame % 14 === 0) parts.push({ x: a.x + a.w / 2, y: a.y, vx: 0, vy: -0.3, l: 20, c: '#e6f4ff', g: -0.004 });
+  }
   if (a.hp <= 0) return false;
   if (a.kind === 'bat') {
     // flutter around inside caves, turn at walls
@@ -437,6 +444,15 @@ function updAnimal(a) {
         sfx('clack', a.x, a.y);
       }
       if (G.frame % 180 === 0) sfx('growl', a.x, a.y);
+    } else if (a.siege) {
+      // a siege: march on the castle and strike it there (siege.js)
+      a.tvx = siegeMarch(a, F.speed);
+      if (atCastle(a) && a.atk <= 0 && G.base && !G.netClient) {
+        a.atk = F.cd;
+        a.face = Math.sign(G.base.x + G.base.w / 2 - (a.x + a.w / 2)) || 1;
+        hitFort(G.base, F.dmg, a.x + a.w / 2, a.y + a.h / 2);
+        sfx('growl', a.x, a.y);
+      }
     } else if (--a.t <= 0) {
       a.t = ri(60, 200);
       a.tvx = rnd() < 0.4 ? 0 : (rnd() < 0.5 ? -1 : 1) * F.speed * 0.6;
@@ -470,7 +486,9 @@ function updAnimal(a) {
   const [bx, by] = moveBody(a, a.vx, a.vy, F ? F.step : 2);
   if (by) a.vy = 0;
   if (bx) {
-    if (onG) a.vy = F ? F.climb : -2;
+    // a wall or a closed gate in the way: the monster strikes it (fort.js)
+    if (F && strikeFort(a, F.dmg, F.cd)) a.vx = 0;
+    else if (onG) a.vy = F ? F.climb : -2;
     else a.vx *= -0.5;
   }
   if (onG) a.anim += Math.abs(a.vx) * 0.4;
