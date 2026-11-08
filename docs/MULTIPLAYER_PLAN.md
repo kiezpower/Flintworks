@@ -257,5 +257,6 @@ Verglichen mit Clonk Rage, OpenClonk und Terraria. Behoben:
 
 | Mitspieler finden (v1.80.2) | Mitspieler außerhalb des Bildes: ein Pfeil am Rand in ihrer Mützenfarbe, mit Entfernung und ihrem letzten Zuruf (im Versus nur das eigene Team). Neuer Zuruf „📍 Hierher!“ setzt eine Markierung für 15 s in der Welt und auf der Karte. Zurufe kommen bei den anderen auch als Zeile oben an („Ilse: 🆘 Hilfe!“). | `net/emotes.js`, `ui.js`, `render.js` |
 
-Weiter geplant: Punktestand während der Runde, neuer Modus (Belagerung Versus oder Flagge
-erobern).
+| Punktestand (v1.80.3) | Knopf 🏆 (nur im Mehrspieler) oder Taste P: im Versus die Uhr, je Team Fortschritt und Burg-Lebenspunkte; im Koop das gemeinsame Ziel; darunter die Rangliste aller Spieler mit Auszeichnungen wie am Rundenende. | `scoreboard.js`, `index.html`, `style.css` |
+
+Weiter geplant: neuer Modus (Belagerung Versus oder Flagge erobern).

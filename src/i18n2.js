@@ -266,5 +266,8 @@ const EN2 = {
   'Nacht {n}: Angriff!': 'Night {n}: attack!',
   'Die Nacht ist überstanden – die Burg steht!': 'The night is over – the castle stands!',
   'Hierher!': 'Over here!',
+  // the score in a shared round (scoreboard.js)
+  Punktestand: 'Score',
+  'Noch keine Punkte – grabt los!': 'No points yet – start digging!',
 };
 export { EN2 };
