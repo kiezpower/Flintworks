@@ -10,6 +10,7 @@ import { mkAnimal } from './entities.js';
 import { tr } from './i18n.js';
 import { sfx } from './sound.js';
 import { G, animals } from './state.js';
+import { sunAlt } from './weather.js';
 import { W, surf } from './world.js';
 
 const KINDS = ['monster', 'spider', 'golem'];
@@ -43,7 +44,10 @@ function siegeTick(L, s) {
       sfx('growl', G.base ? G.base.x : W / 2, 0);
     }
   }
-  // one creature every half second from the edge of the map, standing on the ground
+  spawnNext(sg);
+}
+// one creature every half second from the edge of the map, standing on the ground
+function spawnNext(sg) {
   const q = sg.queue.shift();
   if (q) {
     const [kind, side, k] = q,
@@ -55,8 +59,34 @@ function siegeTick(L, s) {
     a.wave = k;
     a.face = side === 'left' ? 1 : -1;
     animals.push(a);
-    sg.spawned[k]++;
+    if (sg.spawned) sg.spawned[k]++;
   }
+}
+
+// free play "Festung" (modes.js): a wave every night from both sides, bigger each night; a night
+// counts once the morning comes and the castle still stands
+function nightTick() {
+  const s = G.fort || (G.fort = { night: false, n: 0, held: 0, queue: [] }),
+    sun = sunAlt();
+  if (!s.night && sun < -0.05) {
+    s.night = true;
+    const list = [];
+    for (let k = 0; k < 3 + 2 * s.n; k++) list.push('monster');
+    if (s.n >= 1) list.push('spider');
+    if (s.n >= 2) list.push('golem');
+    list.forEach((kind, k) => s.queue.push([kind, k % 2 ? 'right' : 'left', s.n]));
+    s.n++;
+    announceBanner(tr('Nacht {n}: Angriff!', { n: s.n }), 'Sie kommen von {side}', { side: tr('beiden Seiten') });
+    sfx('growl', G.base ? G.base.x : W / 2, 0);
+  } else if (s.night && sun > 0.05) {
+    s.night = false;
+    if (G.base && !(G.base.fhp <= 0)) {
+      s.held++;
+      announce('Die Nacht ist überstanden – die Burg steht!');
+    }
+  }
+  spawnNext(s);
+  if (G.base && G.base.fhp <= 0) G.onLevelEnd?.(false, 'Die Burg ist gefallen.');
 }
 // how many waves have come in full and are beaten
 function wavesBeaten(s) {
@@ -84,4 +114,4 @@ const atCastle = a => {
   return !!b && a.x + a.w > b.x - 1 && a.x < b.x + b.w + 1 && a.y + a.h > b.gy - b.h && a.y < b.gy + 2;
 };
 
-export { atCastle, siegeMarch, siegeTick, wavesBeaten };
+export { atCastle, nightTick, siegeMarch, siegeTick, wavesBeaten };

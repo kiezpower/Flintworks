@@ -128,3 +128,41 @@ test('a wall stops the march; beaten waves count; a fallen castle loses the leve
   await page.waitForFunction(() => window.__ww.state === 'lost' || window.__ww.state === 'over' || window.__ww.state !== 'play');
   expect(errors).toEqual([]);
 });
+
+test('free play "Festung": a start kit, a wave at nightfall, a night held at morning', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto('/');
+  await page.evaluate(() =>
+    localStorage.setItem(
+      'flintworks-profile',
+      JSON.stringify({ tutorialDone: true, installAsked: 'done', games: 3, gmode: 'fort', mode: 'meadow' }),
+    ),
+  );
+  await page.reload();
+  await page.waitForFunction(() => window.__ww);
+  await page.click('#lbPlay');
+  await page.waitForFunction(() => window.__ww.state === 'play' && window.__ww.G.mode === 'fort');
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      b = w.G.base,
+      park = () => {
+        for (const c of w.crew) Object.assign(c, { x: b.x + 14, y: b.gy - 10, vx: 0, vy: 0 });
+      };
+    const kit = w.G.store.rock >= 6 && w.G.store.coal >= 3;
+    w.G.dayT = 0.49;
+    for (let k = 0; k < 900; k++) {
+      park();
+      w.step(1);
+    }
+    const night = w.animals.filter(a => a.siege).length;
+    w.G.dayT = 0.99;
+    for (let k = 0; k < 900; k++) {
+      park();
+      w.step(1);
+    }
+    return { kit, night, held: w.modes.GAME_MODES.fort.prog() };
+  });
+  expect(r).toEqual({ kit: true, night: 3, held: 1 });
+  expect(errors).toEqual([]);
+});

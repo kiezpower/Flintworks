@@ -255,5 +255,12 @@ const EN2 = {
   'Die Festung hält!': 'The fortress holds!',
   'Alle Angriffe sind abgewehrt': 'Every attack is beaten off',
   'Auf die Mauer': 'Onto the wall',
+  // free play Festung (modes.js, siege.js nightTick)
+  Festung: 'Fortress',
+  'Halte die Burg {goal} Nächte lang': 'Hold the castle for {goal} nights',
+  'Jede Nacht greifen Monster über Land an. Bau Mauern, ein Tor und einen Kanonenturm um die Burg.':
+    'Every night monsters attack over land. Build walls, a gate and a cannon tower around the castle.',
+  'Nacht {n}: Angriff!': 'Night {n}: attack!',
+  'Die Nacht ist überstanden – die Burg steht!': 'The night is over – the castle stands!',
 };
 export { EN2 };

@@ -320,3 +320,6 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
 - v1.78.1: Wassergraben und Mauerschützen: Monster ertrinken in Wasser (ein Graben ist eine
   Verteidigung); „Auf die Mauer“ an jeder Mauer und jedem Tor, ein Wühler oben schießt einen
   Pfeil pro Sekunde auf Monster bis 150 weit (`fort.js`).
+- v1.79.0: Freier Modus „Festung“: Jede Nacht kommt eine Welle über Land von beiden Seiten,
+  jede größer als die vorige (ab Nacht 2 eine Spinne, ab Nacht 3 ein Golem); ein Morgen mit
+  stehender Burg zählt, Ziel 3 Nächte; Startausrüstung Fels, Bretter, Metall und Kohle.
