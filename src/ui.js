@@ -123,11 +123,14 @@ function hud() {
     if ((P.castleTips || 0) < 3) {
       P.castleTips = (P.castleTips || 0) + 1;
       saveProfile();
-      toast(
-        G.inputKind === 'touch'
-          ? 'In der Burg: Tippe auf „Burg“ zum Einkaufen'
-          : 'In der Burg: Drück F zum Einkaufen',
-      );
+      if (G.inputKind !== 'touch' && G.padUsed && G.padLabels)
+        toast('In der Burg: Drück {b} zum Einkaufen', { b: G.padLabels().B });
+      else
+        toast(
+          G.inputKind === 'touch'
+            ? 'In der Burg: Tippe auf „Burg“ zum Einkaufen'
+            : 'In der Burg: Drück F zum Einkaufen',
+        );
     }
   }
   // the action button shows what it will do

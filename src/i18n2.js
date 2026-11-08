@@ -279,7 +279,10 @@ const EN2 = {
   'Der Sturm beginnt!': 'The storm begins!',
   'Blau hat jetzt Feuersteine und Sprengladungen im Lager': 'Blue now has flints and explosives in the store',
   'Die Festung hat gehalten!': 'The fortress has held!',
-  'Gamepad verbunden: A springen, X graben, B Aktion, Y werfen': 'Gamepad connected: A jump, X dig, B action, Y throw',
+  'Gamepad verbunden: {j} springen, {d} graben, {a} Aktion, {t} werfen, {w} Waffe':
+    'Gamepad connected: {j} jump, {d} dig, {a} action, {t} throw, {w} weapon',
+  '{b}: Laden öffnen': '{b}: open shop',
+  'In der Burg: Drück {b} zum Einkaufen': 'In the castle: press {b} to shop',
   // watching a shared round (net/watch.js)
   Zuschauen: 'Watch',
   'Zuschauen ✓': 'Watch ✓',

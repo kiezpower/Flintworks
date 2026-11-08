@@ -32,7 +32,12 @@ function drawCastleCue(ctx, cx, cy) {
   const inside = insideB(c, b),
     near = Math.abs(c.x + 3 - gx) < b.w / 2 + 70 && c.y > top - 70 && c.y < b.gy + 30;
   if (inside) {
-    const how = G.inputKind === 'touch' ? tr('Tippe „Burg“: Laden') : tr('F: Laden öffnen');
+    const how =
+      G.inputKind === 'touch'
+        ? tr('Tippe „Burg“: Laden')
+        : G.padUsed && G.padLabels
+          ? tr('{b}: Laden öffnen', { b: G.padLabels().B })
+          : tr('F: Laden öffnen');
     sign(ctx, how, Math.round(gx - cx), Math.round(top - cy) - 3);
   } else if (near) {
     const bob = G.reduceMotion ? 0 : Math.round(Math.sin(G.frame * 0.12) * 1.5);

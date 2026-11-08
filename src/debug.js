@@ -7,7 +7,7 @@ import { hud, openBase } from './ui.js';
 import { saveGame, loadGame, hasSave } from './save.js';
 import { lightning } from './weather.js';
 import { step } from './main.js';
-import { edge, inp, joy, keys } from './input.js';
+import { buzz, edge, inp, joy, keys } from './input.js';
 import { audioInit, sfx } from './sound.js';
 import { startCaveIn, onDig } from './hazards.js';
 import { chestNear, openChest } from './treasure.js';
@@ -47,6 +47,7 @@ window.__ww = {
   events,
   combat,
   send,
+  buzz,
   cam,
   helpers,
   addDigger,

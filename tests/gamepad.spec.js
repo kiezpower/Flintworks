@@ -3,14 +3,22 @@
 import { expect, test } from '@playwright/test';
 
 // a pretend gamepad in the standard layout; the test moves its stick and presses its buttons
-async function withPad(page) {
-  await page.addInitScript(() => {
+// (id: the name the browser gives the pad; its rumble motor writes down what it was asked to do)
+async function withPad(page, id = 'Xbox Wireless Controller (STANDARD GAMEPAD)') {
+  await page.addInitScript(id => {
     const buttons = Array.from({ length: 17 }, () => ({ pressed: false, value: 0 }));
+    window.__rumble = [];
+    const vibrationActuator = {
+      type: 'dual-rumble',
+      playEffect: (t, o) => (window.__rumble.push(o), Promise.resolve('complete')),
+    };
     window.__pad = { axes: [0, 0, 0, 0], buttons };
-    navigator.getGamepads = () => [{ index: 0, connected: true, mapping: 'standard', axes: window.__pad.axes, buttons }];
-  });
+    navigator.getGamepads = () => [
+      { index: 0, id, connected: true, mapping: 'standard', axes: window.__pad.axes, buttons, vibrationActuator },
+    ];
+  }, id);
 }
-const B = { A: 0, B: 1, X: 2, Y: 3, RB: 5, DOWN: 13 };
+const B = { A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, DOWN: 13 };
 // hold a button for a few ticks, then let go
 const press = async (page, b) => {
   await page.evaluate(k => (window.__pad.buttons[k].pressed = true), B[b]);
@@ -166,4 +174,95 @@ test('two at one device: the second player opens the build menu with RB and buil
   await page.waitForTimeout(200);
   expect(await page.evaluate(() => window.__ww.G.panelPid)).toBe(null);
   expect(errors).toEqual([]);
+});
+
+test('with a gamepad: LT changes the weapon, the right stick aims the bow and Y shoots that way, the pad rumbles', async ({
+  page,
+}) => {
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await withPad(page);
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.setItem('flintworks-lang', 'de');
+    localStorage.setItem('flintworks-profile', JSON.stringify({ tutorialDone: true, installAsked: 'done', games: 3 }));
+  });
+  await page.reload();
+  await page.waitForFunction(() => window.__ww);
+  await page.focus('#lbPlay');
+  await press(page, 'A');
+  await page.waitForFunction(() => window.__ww.state === 'play', null, { timeout: 8000 });
+  await page.waitForTimeout(500);
+  // a bow and a sword (both researched and bought), the bow in hand (the money for them only for a
+  // moment: so much would win the round's goal)
+  await page.evaluate(() => {
+    const w = window.__ww,
+      m0 = w.G.money;
+    w.G.money = 9999;
+    w.G.store = { wood: 50, plank: 50, metal: 50, rock: 50, coal: 50 };
+    const t = { ...(w.G.tools || {}) };
+    for (const id of ['mech', 'metal', 'archery', 'rails', 'armor', 'flight']) t['r_' + id] = true;
+    w.G.tools = t;
+    if (w.G.base) w.G.base.lvl = 3;
+    w.send('tool', { id: 'bow' });
+    w.send('tool', { id: 'sword' });
+    w.send('wield', { id: 'bow' });
+    w.G.money = m0;
+  });
+  const me = () => page.evaluate(() => window.__ww.crew.find(c => c.pid === window.__ww.G.myId).wield);
+  expect(await me()).toBe('bow');
+  // LT: the next slot (the sword), and again: on round
+  await press(page, 'LT');
+  expect(await me()).toBe('sword');
+  await press(page, 'LT');
+  expect(await me()).not.toBe('sword');
+  await page.evaluate(() => window.__ww.send('wield', { id: 'bow' }));
+  // the right stick straight up: the dotted line of the bow
+  await page.evaluate(() => (window.__pad.axes[3] = -1));
+  await page.waitForTimeout(200);
+  expect(await page.evaluate(() => [window.__ww.G.aimKind, Math.round(window.__ww.G.aimDrag?.ay)])).toEqual(['bow', -1]);
+  // Y shoots up
+  const n0 = await page.evaluate(() => window.__ww.arrows().length);
+  await page.evaluate(() => (window.__pad.buttons[3].pressed = true));
+  await page.waitForTimeout(60);
+  const shot = await page.evaluate(() => {
+    const a = window.__ww.arrows();
+    return a.length ? { n: a.length, vx: a[a.length - 1].vx, vy: a[a.length - 1].vy } : { n: 0 };
+  });
+  await page.evaluate(() => (window.__pad.buttons[3].pressed = false));
+  expect(shot.n).toBeGreaterThan(n0);
+  expect(shot.vy).toBeLessThan(-3);
+  expect(Math.abs(shot.vx)).toBeLessThan(1);
+  // the stick back in the middle: no line any more
+  await page.evaluate(() => (window.__pad.axes[3] = 0));
+  await page.waitForTimeout(150);
+  expect(await page.evaluate(() => window.__ww.G.aimDrag || null)).toBeNull();
+  // a shake goes to the pad that is played, not to the phone
+  await page.evaluate(() => {
+    window.__phone = 0;
+    navigator.vibrate = () => (window.__phone++, true);
+    window.__ww.G.vibe = true;
+    window.__ww.buzz(60);
+  });
+  expect(await page.evaluate(() => [window.__rumble.length > 0, window.__phone])).toEqual([true, 0]);
+  expect(errors).toEqual([]);
+});
+
+test('a Nintendo pad: the hints name its buttons (the bottom one is B there)', async ({ page }) => {
+  await withPad(page, 'Pro Controller (STANDARD GAMEPAD Vendor: 057e Product: 2009)');
+  await page.goto('/');
+  await page.evaluate(() => localStorage.setItem('flintworks-lang', 'de'));
+  await page.reload();
+  await page.waitForFunction(() => window.__ww);
+  const r = await page.evaluate(() => {
+    const ev = new Event('gamepadconnected');
+    ev.gamepad = navigator.getGamepads()[0];
+    dispatchEvent(ev);
+    return { toast: document.getElementById('toast').textContent, l: window.__ww.G.padLabels() };
+  });
+  expect(r.toast).toContain('B springen, Y graben, A Aktion, X werfen, ZL Waffe');
+  expect([r.l.A, r.l.B, r.l.LB, r.l.START]).toEqual(['B', 'A', 'L', '+']);
+  // and a PlayStation pad its symbols
+  const ps = await page.evaluate(() => window.__ww.G.padLabels('DualSense Wireless Controller (Vendor: 054c)'));
+  expect([ps.A, ps.B, ps.Y]).toEqual(['✕', '○', '△']);
 });
