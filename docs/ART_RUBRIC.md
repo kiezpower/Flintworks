@@ -309,3 +309,7 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
 - v1.76.3: Leben an der Oberfläche (wie Terraria): Schmetterlinge flattern am Tag über Wiesen
   (nicht bei Regen, Nacht, Winter, Wüste; vor den Bäumen gezeichnet), und von Laubbäumen fallen
   Blätter, die im Wind pendeln, sich gelb färben und kurz am Boden liegen bleiben.
+- v1.77.0: Festung (wie Clonk/OpenClonk): Mauer (24 hoch, für alle fest, Monster schlagen darauf
+  ein), Steinsturz über dem Tor, damit kein Monster darüber springt, Kanonenturm (Kugeln, die
+  beim Aufschlag platzen; 1 Kohle = 3 Schuss). Festungsteile dürfen direkt aneinander stehen,
+  haben Lebenspunkte mit Rissen und Balken, und ein Wühler daneben bessert sie aus (`fort.js`).

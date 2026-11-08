@@ -12,6 +12,7 @@ import { treeSprite } from './sprites.js';
 import { INV_MAX, G, animals, builds, crew, flashes, items, lorries, parts, trees } from './state.js';
 import { damageCastle } from './versus.js';
 import { toast } from './ui.js';
+import { strikeFort } from './fort.js';
 import {
   ACID,
   AIR,
@@ -470,7 +471,9 @@ function updAnimal(a) {
   const [bx, by] = moveBody(a, a.vx, a.vy, F ? F.step : 2);
   if (by) a.vy = 0;
   if (bx) {
-    if (onG) a.vy = F ? F.climb : -2;
+    // a wall or a closed gate in the way: the monster strikes it (fort.js)
+    if (F && strikeFort(a, F.dmg, F.cd)) a.vx = 0;
+    else if (onG) a.vy = F ? F.climb : -2;
     else a.vx *= -0.5;
   }
   if (onG) a.anim += Math.abs(a.vx) * 0.4;

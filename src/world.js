@@ -437,6 +437,12 @@ function free(x, y, w, h) {
   const x0 = Math.floor(x),
     y0 = Math.floor(y);
   for (const b of builds) {
+    // fortress (fort.js): a wall closes 24 rows for everybody, so does the stone lintel over a gate
+    if (b.type === 'wall' && b.done) {
+      if (x0 < b.x + b.w && x0 + w > b.x && y0 < b.gy && y0 + h > b.gy - 24) return false;
+      continue;
+    }
+    if (b.type === 'gate' && b.done && x0 < b.x + 8 && x0 + w > b.x && y0 < b.gy - 14 && y0 + h > b.gy - 24) return false;
     if (b.type === 'gate' && b.done && (b.open || 0) < 0.6) {
       const gx = b.x + 2,
         gy0 = b.gy - b.h + 2;
