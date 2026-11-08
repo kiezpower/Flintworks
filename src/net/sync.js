@@ -141,6 +141,8 @@ const KINDS = {
       // the giant worm's body (boss.js), whole numbers are enough for the picture
       ...(a.seg ? { sg: a.seg.flatMap(q => [Math.round(q.x), Math.round(q.y)]) } : {}),
       ...(a.warn > 0 ? { w: 1 } : {}), // a monster about to strike (the "!" over it, render.js)
+      // a Fluffel companion: whose it is and where it smells treasure (pets.js)
+      ...(a.pet != null ? { pt: a.pet, ...(a.sn ? { sn: a.sn } : {}) } : {}),
     }),
     // (a host older than v1.69.0 still sends the Fluffel as 'wipf')
     create: d => ({ ...mkAnimal(d.k === 'wipf' ? 'fluffel' : d.k, d.x, d.y), id: d.id }),
@@ -150,6 +152,8 @@ const KINDS = {
       a.hp = d.hp;
       a.hurt = d.hu ? 4 : 0;
       a.warn = d.w ? 1 : 0;
+      a.pet = d.pt ?? null;
+      a.sn = d.sn || null;
       if (d.sg) {
         a.seg = [];
         for (let k = 0; k < d.sg.length; k += 2) a.seg.push({ x: d.sg[k], y: d.sg[k + 1] });

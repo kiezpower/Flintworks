@@ -1,4 +1,5 @@
 import { wallContext } from './fort.js';
+import { petContext } from './pets.js';
 import { fishContext } from './fishing.js';
 import { merchantContext } from './merchant.js';
 import { farmContext } from './farm.js';
@@ -932,6 +933,9 @@ function context(c) {
   if (ch) return { label: 'Öffnen', fn: () => openChest(ch) };
   const L = lorryNear(c);
   if (L) return { label: 'Lore', fn: () => lorryAct(c, L) };
+  // next to a Fluffel with bread or a fish: feed it, and it comes along (pets.js)
+  const pc = petContext(c);
+  if (pc) return pc;
   // at water with a fishing rod: cast, or pull in (fishing.js; before a tree on the bank)
   const fc = fishContext(c);
   if (fc) return fc;
