@@ -7,6 +7,7 @@ import { sfx } from './sound.js';
 import { itemIcon, padIcon } from './sprites.js';
 import { G } from './state.js';
 import { tr } from './i18n.js';
+import { achList } from './achievements.js';
 import './questui.css';
 
 const urls = {};
@@ -142,6 +143,28 @@ function questBoard(parent, reopen, onClaim) {
   f.className = 'qfoot';
   f.textContent = tr('Neue Tagesaufgaben in {h} Std', { h: hoursLeft() });
   parent.appendChild(f);
+  achBoard(parent);
+}
+// the achievements below the daily quests: reached ones first in gold, the rest with how far
+function achBoard(parent) {
+  const list = achList(P),
+    n = list.filter(a => a.done).length;
+  const h = document.createElement('div');
+  // (not a .psec: the game menu makes a tab of every section, this belongs to "Aufgaben")
+  h.className = 'achhead';
+  h.textContent = `${tr('Erfolge')} ${n}/${list.length}`;
+  parent.appendChild(h);
+  const g = document.createElement('div');
+  g.className = 'achs';
+  g.id = 'achList';
+  for (const a of [...list.filter(a => a.done), ...list.filter(a => !a.done)]) {
+    const d = document.createElement('div');
+    d.className = 'ach' + (a.done ? ' done' : '');
+    d.innerHTML = `<span class="ico">${a.ico}</span><b>${esc(tr(a.name))}</b><small>${esc(tr(a.text, { n: a.n }))}</small>
+      ${a.done ? `<em>✓ +${a.xp} XP</em>` : `<span class="qbar"><i style="width:${(a.have / a.n) * 100}%"></i></span><em>${a.have}/${a.n}</em>`}`;
+    g.appendChild(d);
+  }
+  parent.appendChild(g);
 }
 
 export { onTrackerOpen, questBoard, updTracker };

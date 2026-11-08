@@ -7,7 +7,7 @@ import { addDigger } from './entities.js';
 import { pad, padCount } from './gamepad.js';
 import { tr } from './i18n.js';
 import { consumeEdges, diggerOf, setInput } from './players.js';
-import { P, saveProfile } from './profile.js';
+import { P, saveProfile, track } from './profile.js';
 import { G, crew } from './state.js';
 
 const P2 = 1;
@@ -30,6 +30,7 @@ function localSetup() {
   const b = G.base,
     c = addDigger(b.x + b.w + 6, b.gy - 10);
   Object.assign(c, { pid: P2, name: tr('Spieler 2'), cap: '#2f7fd0', hat: 'none', inv: [] });
+  track('local'); // (an achievement, achievements.js)
 }
 // which pad steers the second player (the first player keeps pad 0 only with two pads)
 const p2Pad = () => (padCount() >= 2 ? 1 : 0);

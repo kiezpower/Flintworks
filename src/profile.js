@@ -1,4 +1,5 @@
 // Player profile across games: level, trophies, hats and daily quests (stored locally).
+import { achCheck, achTrack } from './achievements.js';
 import { sfx } from './sound.js';
 import { G } from './state.js';
 import { toast } from './ui.js';
@@ -115,9 +116,12 @@ function addXp(n) {
 }
 // Progress event from the game: XP plus daily quest progress
 let saveT = 0;
-function track(id, amount = 1) {
+// (max: a counter that keeps its highest value, like the depth, achievements.js)
+function track(id, amount = 1, max = false) {
   rollQuests();
-  addXp(Math.round((XP[id] ?? 0) * amount));
+  if (!max) addXp(Math.round((XP[id] ?? 0) * amount));
+  if (achTrack(P, id, amount, addXp, max)) saveProfile();
+  if (max) return;
   for (const q of P.quests)
     if (q.id === id && q.have < q.goal) {
       q.have = Math.min(q.goal, q.have + amount);
@@ -169,6 +173,7 @@ function finishGame(won, earned, stars = 1) {
   } else t -= 3;
   P.trophies = Math.max(0, P.trophies + t);
   unlockHats();
+  achCheck(P, addXp); // (games won count for an achievement)
   return t;
 }
 

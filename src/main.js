@@ -11,7 +11,7 @@ import { updFloats } from './floats.js';
 import { updDecor } from './decor.js';
 import { updFort } from './fort.js';
 import { checkUpdate, chosenBiome, hideLobby, lobbyFrame, lobbyOpen, showLobby } from './lobby.js';
-import { P, finishGame, saveProfile } from './profile.js';
+import { P, finishGame, saveProfile, track } from './profile.js';
 import { skinTag } from './skins.js';
 import { addCrystals, applyStartBoosts, roundCrystals, setDigBoost } from './camp.js';
 import { biome } from './biomes.js';
@@ -322,6 +322,7 @@ function endScreen(won, why, winner = null) {
   const D = M.daily ? endCard() : null;
   const stars = D ? D.stars : won ? starsFor(s) : 0;
   if (won) recordCampaign(stars, s);
+  if (won && stars === 3 && !G.net) track('stars3');
   const tro = finishGame(won, G.earned || 0, stars);
   // crystals for the Heimatbergwerk: in every mode (Tagesschacht: the medal counts, not the win)
   const kri = addCrystals(roundCrystals(G.earned, D ? false : won, D ? D.stars : 0));
@@ -540,6 +541,11 @@ function step() {
     updResearch();
     if (G.frame % 30 === 0) updScenario();
     if (G.frame % 30 === 0) bossTick();
+    // how deep the own Wühler has been, for an achievement (achievements.js)
+    if (G.frame % 60 === 0) {
+      const me = sel_();
+      if (me && !me.dead && !G.tut) track('deep', Math.round((me.y + 10 - surf[Math.max(0, Math.min(W - 1, Math.round(me.x + 3)))]) / 4), true);
+    }
     updEvents();
     updCombat();
     updArrows();

@@ -499,7 +499,8 @@ function updAnimal(a) {
   if (bx) {
     // a wall or a closed gate in the way: the monster strikes it (fort.js)
     if (F && strikeFort(a, F.dmg, F.cd)) a.vx = 0;
-    else if (onG) a.vy = F ? F.climb : -2;
+    // (in water no jump up the side: in its weak pull a jump would carry it out of any moat)
+    else if (onG && !inL) a.vy = F ? F.climb : -2;
     else a.vx *= -0.5;
   }
   if (onG) a.anim += Math.abs(a.vx) * 0.4;
@@ -526,7 +527,10 @@ function killAnimal(a) {
   if (L.coal) drop('coal', L.coal);
   if (L.ore) drop('ore', L.ore);
   if (L.gem && rnd() < L.gem) drop('gem', L.gems || 1);
-  if (a.kind === 'worm') announceBanner('Riesenwurm besiegt!', 'Gold und Edelsteine liegen, wo er fiel');
+  if (a.kind === 'worm') {
+    announceBanner('Riesenwurm besiegt!', 'Gold und Edelsteine liegen, wo er fiel');
+    track('worm');
+  }
   if (a.kind === 'golem') G.shake = Math.max(G.shake || 0, 9);
   toast(L.name);
   G.kills = (G.kills || 0) + 1;

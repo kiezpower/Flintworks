@@ -177,14 +177,17 @@ test('monsters cannot swim: in a moat they drown', async ({ page }) => {
       { mat, W, paint, activate, surf } = w.world,
       x = window.__fx + 60,
       g = surf[x];
-    // a moat 30 wide and 16 deep, full of water, a monster in it
-    for (let y = g; y < g + 16; y++)
-      for (let xx = x; xx < x + 30; xx++) {
-        mat[y * W + xx] = 5;
+    // a moat 30 wide and 20 deep, the water 6 below the banks (full to the brim, a monster could
+    // float to the edge and step out), a monster in it
+    // (lined with stone, so no cave below drains it)
+    for (let y = g; y < g + 22; y++)
+      for (let xx = x - 2; xx < x + 32; xx++) {
+        const inside = xx >= x && xx < x + 30 && y < g + 20;
+        mat[y * W + xx] = !inside ? 2 : y < g + 6 ? 0 : 5;
         paint(y * W + xx);
       }
-    for (let y = g; y < g + 16; y += 4) for (let xx = x; xx < x + 30; xx += 4) activate(xx, y);
-    const m = w.mkAnimal('monster', x + 10, g + 2);
+    for (let y = g; y < g + 20; y += 4) for (let xx = x; xx < x + 30; xx += 4) activate(xx, y);
+    const m = w.mkAnimal('monster', x + 10, g + 8);
     w.animals.push(m);
     for (let k = 0; k < 1200; k++) w.step(1);
     return { gone: !w.animals.includes(m) };

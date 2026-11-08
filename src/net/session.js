@@ -3,7 +3,7 @@
 // and send their input (see host.js and client.js). Players may drop out and come back, join
 // late, and the host role moves to another player when the host is gone. A quick play room
 // fills empty castles with bots (bots.js); a late joiner takes over a bot's castle.
-import { P } from '../profile.js';
+import { P, track } from '../profile.js';
 import { parseSkin } from '../skins.js';
 import { addBot, takeOverBot } from '../bots.js';
 import { addDigger } from '../entities.js';
@@ -88,6 +88,7 @@ function beginNet(d) {
   };
   G.myTeam = (d.teams && d.teams[G.myId]) || 0;
   G.watching = !!(d.players || []).find(p => p.pid === G.myId && p.watch);
+  track('mp'); // (an achievement, achievements.js)
   clearInputs();
   online = new Set(NET.players.filter(p => p.online).map(p => p.pid));
   // more goes on in a shared round: natural events come half again as often

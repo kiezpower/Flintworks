@@ -7,6 +7,7 @@
 // first, every: minutes; from: left, right or both; then how many of each kind
 import { announce, announceBanner } from './announce.js';
 import { mkAnimal } from './entities.js';
+import { track } from './profile.js';
 import { tr } from './i18n.js';
 import { sfx } from './sound.js';
 import { G, animals } from './state.js';
@@ -88,6 +89,7 @@ function nightTick() {
     if (G.base && !(G.base.fhp <= 0)) {
       s.held++;
       announce('Die Nacht ist überstanden – die Burg steht!');
+      track('night');
     }
   }
   spawnNext(s);

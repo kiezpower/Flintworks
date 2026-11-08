@@ -7,7 +7,7 @@ import { BIOMES } from './biomes.js';
 import { tr } from './i18n.js';
 import { GAME_MODES } from './modes.js';
 import { LIVE, isNative, ownWeb } from './platform.js';
-import { P, saveProfile } from './profile.js';
+import { P, saveProfile, track } from './profile.js';
 import { G } from './state.js';
 import { copyText, inRoom } from './net/room.js';
 import { openPanel, opt, sec, toast } from './ui.js';
@@ -159,6 +159,7 @@ function record(n, score) {
   }
   D.top = Math.max(D.top || 0, D.streak);
   D.tries[n] = (D.tries[n] || 0) + 1;
+  track('daily'); // (an achievement, achievements.js)
   const best = !(D.best[n] >= score);
   if (best) D.best[n] = score;
   for (const k of Object.keys(D.best)) if (k < n - 30) delete D.best[k];
