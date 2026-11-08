@@ -389,5 +389,6 @@ const EN2 = {
   Brot: 'Bread',
   Bauer: 'Farmer',
   'Ernte {n}-mal ein Feld': 'Harvest a field {n} times',
+  'Die Nacht bricht herein – Monster streifen umher.': 'Night falls – monsters are roaming.',
 };
 export { EN2 };

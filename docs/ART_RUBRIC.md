@@ -345,3 +345,6 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
   im Winter und in der Wüste langsamer; reif mit der Aktion ernten, 3 Korn, sät sich neu) und
   Mühle (Korn → Brot von selbst); Brot bleibt in der Tasche, an der Burg nimmt ein Wühler ein
   Laib mit und isst es, wenn seine Kraft unter 35 fällt (+50) (`farm.js`).
+- v1.93.0: Gefährliche Nächte (wie Terraria): im freien Spiel ab der zweiten Nacht 1–3 Monster
+  (im Koop mehr) auf der Oberfläche nahe den Wühlern, außerhalb des Bildes; bei Morgengrauen
+  graben sich die, bei denen niemand ist, ein (`nights.js`). Nicht im entspannten Spiel.
