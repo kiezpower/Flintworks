@@ -1,0 +1,40 @@
+{
+  "id": "festungssturm",
+  "v": 1,
+  "name": "Festungssturm",
+  "icon": "shield",
+  "desc": "Rot hält die Festung {goal} Minuten, Blau stürmt sie",
+  "intro": "Rot baut auf dem Hügel eine Festung: Mauern, ein Tor, ein Kanonenturm. Blau sammelt sich im Lager und bekommt nach zwei Minuten Waffenruhe den Sprengstoff. Hält die Burg bis zum Schluss, gewinnt Rot.",
+  "biome": "meadow",
+  "size": [1400, 350],
+  "zoom": 5,
+  "rough": 0.35,
+  "seed": 9313,
+  "diff": "adventure",
+  "fill": {"rock": 1.2, "coal": 1.2, "caves": 0.3, "gold": 0.5},
+  "rules": {
+    "meteors": false,
+    "vsTime": 10,
+    "assault": {
+      "peace": 2,
+      "def": {"rock": 12, "plank": 6, "metal": 4, "coal": 6},
+      "att": {"wood": 6, "plank": 4, "loam": 4},
+      "arms": {"flint": 8, "tnt": 4}
+    }
+  },
+  "objects": [
+    {"t": "base", "x": 282},
+    {"t": "base", "x": -76, "team": 1},
+    {"t": "tree", "x": 120, "stage": 4},
+    {"t": "tree", "x": 180, "stage": 3},
+    {"t": "tree", "x": 640, "stage": 4},
+    {"t": "tree", "x": 690, "stage": 4},
+    {"t": "tree", "x": 740, "stage": 3},
+    {"t": "tree", "x": 790, "stage": 4},
+    {"t": "tree", "x": 1100, "stage": 4},
+    {"t": "tree", "x": 1180, "stage": 3}
+  ],
+  "goals": [{"t": "survive", "n": 10}],
+  "lose": {},
+  "stars": [10, 10]
+}

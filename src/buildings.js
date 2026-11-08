@@ -512,8 +512,14 @@ function updBuilds() {
       }
     }
     if (b.type === 'gate') {
+      // (in Versus only for the gate's own team)
       const near = crew.some(
-        c => !c.dead && Math.abs(c.x + 3 - (b.x + 4)) < 13 && c.y + 10 > b.gy - b.h - 4 && c.y < b.gy + 2,
+        c =>
+          !c.dead &&
+          (!G.teams || teamOf(c) === teamOf(b)) &&
+          Math.abs(c.x + 3 - (b.x + 4)) < 13 &&
+          c.y + 10 > b.gy - b.h - 4 &&
+          c.y < b.gy + 2,
       );
       const o = b.open || 0;
       b.open = clamp(o + (near ? 0.08 : -0.05), 0, 1);

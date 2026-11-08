@@ -218,3 +218,95 @@ test('the score while a Versus round runs: the clock, both teams with goal and c
   for (const p of [h, g]) expect(p.errors).toEqual([]);
   for (const p of [h, g]) await p.page.close();
 });
+
+test('Festungssturm: Red gets the fortress kit, Blue its explosives after the truce; walls and gate hold Blue; Red wins at time', async ({
+  browser,
+}) => {
+  const h = await player(browser, 'Moritz', { gmode: 'festungssturm' });
+  const g = await player(browser, 'Nele');
+  await h.page.waitForTimeout(500);
+  await h.page.locator('#lbCreate').click();
+  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  const code = await h.page.locator('.lb-codetap b').textContent();
+  await h.page.waitForTimeout(500);
+  await h.page.locator('.opt', { hasText: 'Versus' }).first().click();
+  await expect(h.page.locator('.opt', { hasText: 'Versus' }).first()).toContainText('✓');
+  await g.page.waitForTimeout(500);
+  await g.page.locator('#lbCodeIn').fill(code);
+  await g.page.locator('#lbJoinBtn').click();
+  await expect(h.page.locator('.lb-players')).toContainText('Nele');
+  await g.page.waitForTimeout(500);
+  await g.page.locator('.opt', { hasText: 'Bereit?' }).click();
+  await h.page.waitForTimeout(500);
+  await h.page.locator('.opt', { hasText: 'Spiel starten' }).click();
+  for (const p of [h, g])
+    await p.page.waitForFunction(
+      () => window.__ww.G.state === 'play' && window.__ww.G.teams && window.__ww.G.mode === 'festungssturm',
+      null,
+      { timeout: 10000 },
+    );
+  const r = await h.page.evaluate(async () => {
+    const w = window.__ww,
+      G = w.G,
+      { surf } = w.world,
+      { useTeam, teamOf } = await import('/src/teams.js');
+    const me = w.crew.find(c => c.pid === G.myId),
+      nele = w.crew.find(c => c.name === 'Nele');
+    const store = t => {
+      useTeam(t);
+      const s = { ...G.store };
+      useTeam(G.myTeam);
+      return s;
+    };
+    const out = { myTeam: G.myTeam, neleTeam: teamOf(nele), red: store(0).rock, blueFlint0: store(1).flint || 0 };
+    // Red builds wall | gate | wall right of its castle
+    const b = G.base,
+      put = (type, x) => {
+        Object.assign(me, { x, y: surf[x + 3] - 10, vx: 0, vy: 0, tumble: false });
+        w.step(6);
+        me.inv = ['rock', 'rock', 'rock', 'plank', 'plank', 'metal'];
+        const n = w.builds.length;
+        w.send('build', { type });
+        const q = w.builds[n];
+        if (q) {
+          q.prog = 1e9;
+          w.step(3);
+        }
+        return q;
+      };
+    const x0 = b.x + b.w + 30,
+      w1 = put('wall', x0),
+      gate = put('gate', x0 + 8);
+    put('wall', x0 + 16);
+    Object.assign(me, { x: b.x + 14, y: b.gy - 10 });
+    // the truce ends: Blue gets its explosives
+    G.playTicks = 2 * 3600;
+    w.step(31);
+    out.blueFlint = store(1).flint || 0;
+    // Blue at the gate: it stays shut for her
+    Object.assign(nele, { x: gate.x + 14, y: gate.gy - 10, vx: 0, vy: 0 });
+    for (let k = 0; k < 60; k++) w.step(1);
+    out.gateShut = (gate.open || 0) < 0.05;
+    // a blast of Blue's next to the wall: it cracks
+    const { explode } = await import('/src/objects.js');
+    const hp0 = w1.fhp ?? 600;
+    explode(w1.x - 6, w1.gy - 6, 5, { team: 1, pid: nele.pid });
+    out.wallHit = (w1.fhp ?? 600) < hp0;
+    // the clock runs out with the castle standing: Red wins
+    Object.assign(nele, { x: w.world.W - 60, y: surf[w.world.W - 57] - 10 });
+    G.playTicks = 10 * 3600 + 5;
+    for (let k = 0; k < 40; k++) w.step(1);
+    out.state = G.state;
+    return out;
+  });
+  expect(r.myTeam).toBe(0);
+  expect(r.neleTeam).toBe(1);
+  expect(r.red).toBeGreaterThanOrEqual(12);
+  expect(r.blueFlint0).toBe(0);
+  expect(r.blueFlint).toBe(8);
+  expect(r.gateShut).toBe(true);
+  expect(r.wallHit).toBe(true);
+  expect(r.state).toBe('won');
+  for (const p of [h, g]) expect(p.errors).toEqual([]);
+  for (const p of [h, g]) await p.page.close();
+});

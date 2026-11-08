@@ -259,4 +259,6 @@ Verglichen mit Clonk Rage, OpenClonk und Terraria. Behoben:
 
 | Punktestand (v1.80.3) | Knopf 🏆 (nur im Mehrspieler) oder Taste P: im Versus die Uhr, je Team Fortschritt und Burg-Lebenspunkte; im Koop das gemeinsame Ziel; darunter die Rangliste aller Spieler mit Auszeichnungen wie am Rundenende. | `scoreboard.js`, `index.html`, `style.css` |
 
-Weiter geplant: neuer Modus (Belagerung Versus oder Flagge erobern).
+| Festungssturm (v1.81.0) | Neue Versus-Karte mit `rules.assault`: Rot hält eine Festung auf dem Hügel (Startausrüstung Fels, Bretter, Metall, Kohle), Blau stürmt sie und bekommt nach 2 Minuten Waffenruhe Feuersteine und Sprengladungen. Hält die Burg 10 Minuten, gewinnt Rot; fällt sie, Blau. Kein Hügel, kein Nachschub. Dazu im Versus: das Tor öffnet nur für das eigene Team, auf Mauern steigt nur das eigene Team, Sprengstoff des anderen Teams beschädigt Mauern, Tore und Türme, Mauerschützen und Kanonen schießen auch auf gegnerische Wühler. In der Stunden-Rotation. | `versus.js`, `fort.js`, `buildings.js`, `objects.js`, `levels/festungssturm/`, `net/rotation.js` |
+
+Noch offen (größer): mehr als 4 Spieler, Zuschauen, Gamepad und gemeinsamer Bildschirm, Liga.

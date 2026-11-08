@@ -269,5 +269,15 @@ const EN2 = {
   // the score in a shared round (scoreboard.js)
   Punktestand: 'Score',
   'Noch keine Punkte – grabt los!': 'No points yet – start digging!',
+  // Versus map Festungssturm (rules.assault, versus.js)
+  Festungssturm: 'Fortress storm',
+  'Rot hält die Festung {goal} Minuten, Blau stürmt sie': 'Red holds the fortress for {goal} minutes, Blue storms it',
+  'Rot baut auf dem Hügel eine Festung: Mauern, ein Tor, ein Kanonenturm. Blau sammelt sich im Lager und bekommt nach zwei Minuten Waffenruhe den Sprengstoff. Hält die Burg bis zum Schluss, gewinnt Rot.':
+    'Red builds a fortress on the hill: walls, a gate, a cannon tower. Blue gathers in its camp and gets the explosives after a two-minute truce. If the castle stands to the end, Red wins.',
+  'Rot hält die Festung, Blau stürmt sie – Blau bekommt den Sprengstoff nach der Waffenruhe':
+    'Red holds the fortress, Blue storms it – Blue gets the explosives after the truce',
+  'Der Sturm beginnt!': 'The storm begins!',
+  'Blau hat jetzt Feuersteine und Sprengladungen im Lager': 'Blue now has flints and explosives in the store',
+  'Die Festung hat gehalten!': 'The fortress has held!',
 };
 export { EN2 };
