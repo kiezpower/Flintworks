@@ -5,7 +5,7 @@ import { cam, cv } from './render.js';
 import { audioInit } from './sound.js';
 import { G, crew } from './state.js';
 import { closePanel, openBag, openBuild, panelEl, toast, toggleMap, weaponsOf } from './ui.js';
-import { navBack, navMove, navOk, pad } from './gamepad.js';
+import { navBack, navMove, navOk, pad, rumble } from './gamepad.js';
 import { p1HasPad, p2Pad } from './local.js';
 import { send } from './commands.js';
 import { hasGear } from './tools.js';
@@ -19,9 +19,12 @@ G.digLatch = false;
 G.joyUpArmed = true;
 // what the player steers with right now ('touch' or 'keys'), so texts can name the right buttons
 G.inputKind = matchMedia('(hover: none), (pointer: coarse)').matches ? 'touch' : 'keys';
+// a short shake: the gamepad when one is played right now, else the phone
 function buzz(ms) {
+  if (G.vibe === false) return;
   try {
-    if (navigator.vibrate && G.vibe !== false) navigator.vibrate(ms);
+    if (G.padUsed && rumble(ms, Math.min(1, 0.25 + ms / 160))) return;
+    if (navigator.vibrate) navigator.vibrate(ms);
   } catch {}
 }
 const edge = { jump: false, jumpUp: false, throw: false, act: false };
@@ -43,6 +46,7 @@ addEventListener('keydown', e => {
   // (arrow keys and Enter a gamepad sends to move through menus are not the game's keys)
   if (e.padNav) return;
   G.inputKind = 'keys';
+  G.padUsed = false;
   if (G.state === 'veil') return; // the start screen takes the key (veil.js)
   if (e.code === 'Escape') {
     // Esc closes an open panel, otherwise opens the game menu (also the way to skip the tutorial)
@@ -76,19 +80,22 @@ addEventListener('keydown', e => {
   const c = sel_();
   // (sent like a tap on a slot, so it also works as a guest in multiplayer)
   // the hotbar: the weapons first, then the things in the bag (Q goes round all of them)
-  if (c && (e.code === 'KeyQ' || /^Digit[1-9]$/.test(e.code))) {
-    const wps = weaponsOf(),
-      cur = c.wield ? wps.indexOf(c.wield) : wps.length + c.isel,
-      all = wps.length + c.inv.length;
-    const n = e.code === 'KeyQ' ? (all ? (cur + 1) % all : -1) : +e.code.slice(5) - 1;
-    if (n >= 0 && n < wps.length) send('wield', { id: wps[n] });
-    else if (n >= wps.length && n < all) send('isel', { i: n - wps.length });
-  }
+  if (c && (e.code === 'KeyQ' || /^Digit[1-9]$/.test(e.code)))
+    pickSlot(c, e.code === 'KeyQ' ? 'next' : +e.code.slice(5) - 1);
   // Enter: a focused button on a card presses itself; otherwise the main button of the screen
   const onCard = document.activeElement?.tagName === 'BUTTON' && document.activeElement.closest('#overlay');
   if (e.code === 'Enter' && G.state !== 'play' && !onCard)
     document.getElementById(G.state === 'menu' ? 'lbPlay' : 'goBtn')?.click();
 });
+// a slot of the hotbar: n counted from 0, or 'next' (Q, the pad's LT) for the one after the current
+function pickSlot(c, n) {
+  const wps = weaponsOf(),
+    cur = c.wield ? wps.indexOf(c.wield) : wps.length + c.isel,
+    all = wps.length + c.inv.length;
+  if (n === 'next') n = all ? (cur + 1) % all : -1;
+  if (n >= 0 && n < wps.length) send('wield', { id: wps[n] });
+  else if (n >= wps.length && n < all) send('isel', { i: n - wps.length });
+}
 addEventListener('keyup', e => {
   if (e.code in KEYMAP) keys[KEYMAP[e.code]] = 0;
   if (e.code === 'KeyG') hookKeyUp(true);
@@ -112,6 +119,7 @@ function joyHome() {
 }
 game.addEventListener('pointerdown', e => {
   if (e.pointerType === 'touch') G.inputKind = 'touch';
+  G.padUsed = false;
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   if (e.pointerType === 'mouse' && G.state === 'play' && panelEl.hidden && e.target === cv) {
@@ -293,7 +301,8 @@ for (const b of document.querySelectorAll('.pad')) {
   b.addEventListener('contextmenu', e => e.preventDefault());
 }
 // where the grappling hook is thrown: the stick or the arrow keys held right now
-const aim = () => ({ ax: keys.r - keys.l || joy.x, ay: keys.d - keys.u || joy.y });
+// (or a gamepad's left stick)
+const aim = () => ({ ax: keys.r - keys.l || joy.x || padStick.ax, ay: keys.d - keys.u || joy.y || padStick.ay });
 // The hook with the mouse (desktop): holding G aims at the mouse pointer (the same dotted rope
 // as dragging the "Haken" button), letting go throws. With the pointer on the Wühler it goes
 // for the next ledge; an arrow key held when G goes down or up still aims as before.
@@ -319,7 +328,7 @@ function mouseAim(c) {
     d = Math.hypot(dx, dy);
   return d > MOUSE_NEAR ? { ax: dx / d, ay: dy / d } : null;
 }
-const keyAimed = () => !!(keys.l || keys.r || keys.u || keys.d);
+const keyAimed = () => !!(keys.l || keys.r || keys.u || keys.d || padStick.ax || padStick.ay);
 function hookKeyDown() {
   const c = sel_();
   // no mouse on the field (or no hook to throw): thrown at once, as with the arrow keys
@@ -337,7 +346,27 @@ function hookKeyUp(fire) {
 }
 // the first gamepad (gamepad.js): in the game it steers like the keys, in menus it moves the focus
 // (a second pad steers the second player of a shared screen, local.js)
+// The right stick aims like dragging the throw button (the dotted line, render.js): Y then shoots,
+// throws or fires the catapult that way, LB throws the hook that way. Back in the middle: no aim.
 let padStick = { ax: 0, ay: 0, dig: false };
+let padAim = null; // the right stick's aim while it is pushed, else null
+function padAimTick(P) {
+  const r = Math.hypot(P.rx, P.ry),
+    c = sel_(),
+    A = AIMERS.throw;
+  // (a finger on an aiming button or the hook held with the mouse have the line)
+  if (aimFrom || hookHeld) return (padAim = null);
+  if (r > 0.45 && A.ready(c)) {
+    padAim = { ax: P.rx / r, ay: P.ry / r, p: Math.min(1, (r - 0.3) / 0.7) };
+    G.aimKind = A.kind(c);
+    G.aimDrag = padAim;
+  } else if (padAim) {
+    padAim = null;
+    G.aimDrag = G.aimKind = null;
+  }
+  // (the hook takes the stick's way even when the throw button has nothing to aim)
+  return r > 0.45 ? { ax: P.rx / r, ay: P.ry / r } : null;
+}
 function readPad() {
   padStick = { ax: 0, ay: 0, dig: false };
   // (two at one device with one pad: that pad is the second player's, local.js; menus still use it,
@@ -345,8 +374,12 @@ function readPad() {
   const menu = G.state !== 'play' || !panelEl.hidden;
   const P = menu && G.local && G.panelPid === 1 ? pad(p2Pad()) : p1HasPad() || menu ? pad(0) : null;
   if (!P) return;
-  if (P.any) G.inputKind = 'keys';
+  if (P.any) {
+    G.inputKind = 'keys';
+    G.padUsed = true;
+  }
   if (menu) {
+    if (padAim) padAim = G.aimDrag = G.aimKind = null;
     if (P.dir) navMove(P.dir);
     if (P.ok) navOk();
     if (P.back) navBack();
@@ -361,11 +394,17 @@ function readPad() {
     return;
   }
   padStick = { ax: P.ax, ay: P.ay, dig: P.dig };
+  const rs = padAimTick(P);
   if (P.jumpP) edge.jump = true;
-  if (P.throwP) edge.throw = true;
+  if (P.throwP) {
+    if (padAim) AIMERS.throw.fire(padAim, G.aimKind);
+    else edge.throw = true;
+  }
   if (P.actP) edge.act = true;
+  if (P.next && sel_()) pickSlot(sel_(), 'next');
   if (P.build) openBuild();
-  if (P.hookDown) hookKeyDown();
+  if (P.hookDown && rs) send('hook', rs);
+  else if (P.hookDown) hookKeyDown();
   if (P.hookUp) hookKeyUp(true);
   if (P.menu) G.openMenu?.();
   if (P.map) toggleMap();

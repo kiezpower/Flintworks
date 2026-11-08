@@ -46,7 +46,7 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 
 **Zu zweit an einem Gerät:** Lobby → „Zusammen spielen“ → „Zu zweit an diesem Gerät“. Spieler 2 spielt mit einem Gamepad (bei zwei Gamepads mit dem zweiten), die Kamera hält beide im Bild.
 
-**Gamepad** (Xbox- oder PlayStation-Belegung): Linker Stick / Steuerkreuz laufen und zielen · A springen · X oder rechter Trigger graben (halten) · B Aktion · Y werfen bzw. benutzen · RB Bauen · LB Enterhaken (halten, loslassen wirft) · Start Menü · Select Karte. In Menüs, Lobby und Levelauswahl bewegt das Steuerkreuz die Auswahl, A wählt, B geht zurück.
+**Gamepad** (Xbox-Namen; es zählt, wo der Knopf sitzt, also springt überall der untere): Linker Stick / Steuerkreuz laufen und zielen · A springen · X oder rechter Trigger graben (halten) · B Aktion · Y werfen bzw. benutzen · rechter Stick zielt mit Wurf, Bogen und Katapult (gepunktete Flugbahn), Y schießt dann in diese Richtung, LB wirft den Enterhaken dorthin · LT nächste Waffe bzw. nächstes Teil aus der Tasche (wie Q) · RB Bauen · LB Enterhaken (halten, loslassen wirft) · Start Menü · Select Karte. In Menüs, Lobby und Levelauswahl bewegt das Steuerkreuz die Auswahl, A wählt, B geht zurück. Hinweise nennen die Knöpfe so, wie sie auf dem Gamepad stehen: PlayStation ✕ ○ □ △, L1/R1/L2/R2; Nintendo (Pro Controller, Joy-Con) B A Y X, L/R/ZL/ZR, +/−. Wo der Browser es kann, rüttelt das Gamepad statt des Handys (Optionen → Vibration).
 
 **Anzeige** (Optionen → Anzeige): „Große Texte“ vergrößert Aufgabe, Tipps und Karten. Bei „Bewegung reduzieren“ im Betriebssystem bleiben Pfeil und Startknopf ruhig.
 
