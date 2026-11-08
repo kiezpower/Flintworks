@@ -306,6 +306,8 @@ function packGame() {
     rescued: G.rescued || 0,
     fort: G.fort && structuredClone(G.fort),
     fire: fireCells(),
+    // the wandering trader (merchant.js)
+    merchant: G.merchant && structuredClone(G.merchant),
   };
 }
 function applyGame(d) {
@@ -329,6 +331,7 @@ function applyGame(d) {
   G.rescued = d.rescued || 0;
   G.fort = d.fort || null;
   setFireCells(d.fire);
+  G.merchant = d.merchant || null;
   const own = d.teams && d.teams[G.myTeam];
   if (own) {
     Object.assign(G, { money: own.money, earned: own.earned, store: own.store, tools: own.tools });

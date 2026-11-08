@@ -1,5 +1,6 @@
 import { wallContext } from './fort.js';
 import { fishContext } from './fishing.js';
+import { merchantContext } from './merchant.js';
 import { igniteNear } from './fire.js';
 import { canShoot, hasBow, shoot, swing, swordContext } from './combat.js';
 import { hasTool } from './tools.js';
@@ -919,6 +920,9 @@ function context(c) {
   if (sw) return sw;
   // (ui: a panel that opens on the device of the player who pressed the button)
   if (insideB(c, G.base)) return { label: 'Burg', ui: 'base' };
+  // next to the wandering trader: his stall (merchant.js)
+  const mc = merchantContext(c);
+  if (mc) return mc;
   if (vc) return vc;
   const ch = chestNear(c);
   if (ch) return { label: 'Öffnen', fn: () => openChest(ch) };

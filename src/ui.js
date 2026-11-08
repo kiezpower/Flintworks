@@ -1,3 +1,4 @@
+import { merchantStall } from './merchant.js';
 import { chainStatus, stock, takeStock } from './store.js';
 import { arrowsOf, hasGear, hasTool, toolSection } from './tools.js';
 import { knowsAll, needText, researchSection } from './research.js';
@@ -762,6 +763,8 @@ register('buy', (c, { t }) => {
 });
 
 export {
+  openMerchant,
+  openUi,
   lacking,
   openBag,
   $,
@@ -793,6 +796,15 @@ export {
   toastEl,
   toggleMap,
 };
+// the wandering trader's stall (merchant.js)
+function openMerchant() {
+  const p = openPanel('Wandernder Händler');
+  merchantStall(p, { opt, sec, send, reopen: openMerchant });
+}
+// a panel named by the action button (context(): 'base', 'build', 'merchant')
+function openUi(name) {
+  (name === 'base' ? openBase : name === 'merchant' ? openMerchant : openBuild)();
+}
 // for two at one device (local.js, which cannot import this module): is a panel open, and the
 // build menu for the second player
 G.menuOpen = () => !panelEl.hidden;
