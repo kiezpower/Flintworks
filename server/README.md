@@ -1,6 +1,6 @@
 # Flintworks Multiplayer-Relay
 
-Kleiner Node-Server für `wss://play.kiez-power.de`. Er rechnet das Spiel nicht, sondern hält Räume (Code, bis 4 Spieler, Host) und leitet Nachrichten weiter.
+Kleiner Node-Server für `wss://play.kiez-power.de`. Er rechnet das Spiel nicht, sondern hält Räume (Code, bis 8 Spieler, Host) und leitet Nachrichten weiter.
 
 Er läuft als Docker-Container `flintworks-relay` auf dem dogado-vServer **neben den kiez-power-Apps**: Er hängt im Docker-Netz `kiezpower-net`, und deren Caddy (`kiezpower-caddy`) leitet `play.kiez-power.de` an ihn weiter.
 

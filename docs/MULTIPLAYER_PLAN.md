@@ -4,7 +4,7 @@ Stand: v1.10.0 · Phasen 0–7 umgesetzt (✅ in 5.2). Server: `server/` → `ws
 
 **Entscheidungen:**
 - Koop und Versus kommen gleichzeitig.
-- Bis zu 4 Spieler.
+- Bis zu 4 Spieler (seit v1.83.0: 8).
 - Spiel übers Internet.
 - Serverbudget höchstens 5 € pro Monat.
 
@@ -261,4 +261,7 @@ Verglichen mit Clonk Rage, OpenClonk und Terraria. Behoben:
 
 | Festungssturm (v1.81.0) | Neue Versus-Karte mit `rules.assault`: Rot hält eine Festung auf dem Hügel (Startausrüstung Fels, Bretter, Metall, Kohle), Blau stürmt sie und bekommt nach 2 Minuten Waffenruhe Feuersteine und Sprengladungen. Hält die Burg 10 Minuten, gewinnt Rot; fällt sie, Blau. Kein Hügel, kein Nachschub. Dazu im Versus: das Tor öffnet nur für das eigene Team, auf Mauern steigt nur das eigene Team, Sprengstoff des anderen Teams beschädigt Mauern, Tore und Türme, Mauerschützen und Kanonen schießen auch auf gegnerische Wühler. In der Stunden-Rotation. | `versus.js`, `fort.js`, `buildings.js`, `objects.js`, `levels/festungssturm/`, `net/rotation.js` |
 
-Noch offen (größer): mehr als 4 Spieler, Zuschauen, Gamepad und gemeinsamer Bildschirm, Liga.
+| Gamepad (v1.82.0) | Steuerung im Spiel und in allen Menüs (`gamepad.js`). | `gamepad.js`, `input.js` |
+| Bis zu 8 Spieler (v1.83.0) | Räume bis 8 (Relay `MAX`). „Jeder gegen jeden“ bleibt bei höchstens 4 Burgen: ab 5 Spielern teilen sich zwei eine Burg. Der zweite „+“-Platz in der Lobby zeigt, wie viele noch im Raum sind. | `server/relay.js`, `net/session.js`, `lobbyinvite.js` |
+
+Noch offen: Zuschauen, gemeinsamer Bildschirm. Eine Liga gibt es bewusst nicht (der Server speichert keine Daten).

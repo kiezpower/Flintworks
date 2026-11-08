@@ -310,3 +310,43 @@ test('Festungssturm: Red gets the fortress kit, Blue its explosives after the tr
   for (const p of [h, g]) expect(p.errors).toEqual([]);
   for (const p of [h, g]) await p.page.close();
 });
+
+test('up to eight in a room: a fifth player gets in; "Jeder gegen jeden" with five makes four castles, two share one', async ({
+  browser,
+}) => {
+  const names = ['Olga', 'Paul', 'Quirin', 'Rosa', 'Sven'];
+  const ps = [];
+  for (const n of names) ps.push(await player(browser, n));
+  const [h, ...rest] = ps;
+  await h.page.waitForTimeout(500);
+  await h.page.locator('#lbCreate').click();
+  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  const code = await h.page.locator('.lb-codetap b').textContent();
+  await h.page.waitForTimeout(500);
+  await h.page.locator('.opt', { hasText: 'Jeder gegen jeden' }).first().click();
+  for (const p of rest) {
+    await p.page.waitForTimeout(500);
+    await p.page.locator('#lbCodeIn').fill(code);
+    await p.page.locator('#lbJoinBtn').click();
+  }
+  await expect(h.page.locator('.lb-players')).toContainText('Sven', { timeout: 8000 });
+  // the slot beside the hero says how many more there are
+  await expect(h.page.locator('#lbSlot2')).toContainText('+2');
+  for (const p of rest) {
+    await p.page.waitForTimeout(300);
+    await p.page.locator('.opt', { hasText: 'Bereit?' }).click();
+  }
+  await h.page.waitForTimeout(500);
+  await h.page.locator('.opt', { hasText: 'Spiel starten' }).click();
+  for (const p of ps)
+    await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.teams, null, { timeout: 15000 });
+  const r = await h.page.evaluate(() => {
+    const w = window.__ww;
+    const byTeam = {};
+    for (const c of w.crew) if (c.pid != null) byTeam[c.team || 0] = (byTeam[c.team || 0] || 0) + 1;
+    return { teams: w.G.teams.length, castles: w.builds.filter(b => b.type === 'base').length, byTeam: Object.values(byTeam).sort() };
+  });
+  expect(r).toEqual({ teams: 4, castles: 4, byTeam: [1, 1, 1, 2] });
+  for (const p of ps) expect(p.errors).toEqual([]);
+  for (const p of ps) await p.page.close();
+});

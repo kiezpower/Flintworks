@@ -147,7 +147,7 @@ function openInvite() {
       [
         2,
         'Jeder gegen jeden',
-        'Ab 3 Spielern: jeder mit eigener Burg, eine gestürmte Burg ist raus, der Letzte gewinnt (zu zweit Versus)',
+        'Ab 3 Spielern: jeder mit eigener Burg (höchstens vier, ab 5 Spielern zu zweit), eine gestürmte Burg ist raus, der Letzte gewinnt (zu zweit Versus)',
       ],
     ])
       opt(m, {
@@ -304,17 +304,19 @@ function shareRow() {
 const fresh = () => performance.now() - G.panelT >= 450;
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
 
-// the two "+" slots beside the hero show the other players
+// the two "+" slots beside the hero show the other players (with up to eight in a room, the second
+// one also says how many more there are)
 function refreshSlots() {
   const list = others();
   ['lbSlot1', 'lbSlot2'].forEach((id, k) => {
     const b = $(id),
-      pl = list[k];
+      pl = list[k],
+      more = k === 1 && list.length > 2 ? ` +${list.length - 2}` : '';
     b.classList.toggle('filled', !!pl);
     b.classList.toggle('waiting', !pl && !!NET.room);
     // a friend is drawn in the scene; the button only carries the name
     b.innerHTML = pl
-      ? `<span class="nm">${esc(pl.name)}${pl.ready || pl.pid === NET.hostPid ? ' ✓' : ''}</span>`
+      ? `<span class="nm">${esc(pl.name)}${pl.ready || pl.pid === NET.hostPid ? ' ✓' : ''}${more}</span>`
       : '<b>+</b>';
     b.title = pl ? pl.name : tr('Mitspieler einladen');
   });
