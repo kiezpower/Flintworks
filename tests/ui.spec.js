@@ -212,11 +212,19 @@ test('a bigger bag with five slots and its own button, and the castle shows itse
   await page.evaluate(() => window.__ww.step(2));
   // five slots (empty ones too) and the bag button with how full it is
   await expect(page.locator('#inv .slot:not(.bag)')).toHaveCount(5);
-  const n = await page.evaluate(() => window.__ww.crew.find(c => c.pid === window.__ww.G.myId).inv.length);
-  await expect(page.locator('#bagBtn')).toHaveText(`${n}/16`);
+  // (the button follows what is in the bag; standing in the castle, stones in it go to the store
+  // at any moment, so compare with the bag as it is now)
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.getElementById('bagBtn').textContent === `${window.__ww.crew.find(c => c.pid === window.__ww.G.myId).inv.length}/16`,
+      ),
+    )
+    .toBe(true);
+  // a full bag of loam: the castle leaves loam in the hand (store.js KEEP)
   await page.evaluate(() => {
     const me = window.__ww.crew.find(c => c.pid === window.__ww.G.myId);
-    while (me.inv.length < 16) me.inv.push('rock');
+    while (me.inv.length < 16) me.inv.push('loam');
     window.__ww.step(1);
   });
   await expect(page.locator('#bagBtn')).toHaveClass(/full/);
