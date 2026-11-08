@@ -348,3 +348,7 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
 - v1.93.0: Gefährliche Nächte (wie Terraria): im freien Spiel ab der zweiten Nacht 1–3 Monster
   (im Koop mehr) auf der Oberfläche nahe den Wühlern, außerhalb des Bildes; bei Morgengrauen
   graben sich die, bei denen niemand ist, ein (`nights.js`). Nicht im entspannten Spiel.
+- v1.94.0: Siedler (wie Terraria/Clonk-Siedlung): in jede fertige Hütte zieht nach und nach ein
+  Siedler, er läuft tagsüber zwischen Hütte und Burg, nachts ist er daheim, zahlt alle 30 s 2 Taler
+  und isst jeden Morgen ein Brot aus dem Lager; ohne Brot zieht er nach dem zweiten hungrigen Morgen
+  aus (`villagers.js`).
