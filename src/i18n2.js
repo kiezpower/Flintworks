@@ -265,5 +265,6 @@ const EN2 = {
     'Every night monsters attack over land. Build walls, a gate and a cannon tower around the castle.',
   'Nacht {n}: Angriff!': 'Night {n}: attack!',
   'Die Nacht ist überstanden – die Burg steht!': 'The night is over – the castle stands!',
+  'Hierher!': 'Over here!',
 };
 export { EN2 };

@@ -1,6 +1,7 @@
 // Fortress and siege in a shared round (Koop): the guest sees what the host's game knows – the
 // nights of "Festung", a wall's hit points, the cannon's balls – and with two players a night
-// brings more monsters. Runs a relay of its own (server/relay.js): npm test
+// brings more monsters. Finding each other: a call reaches the others as a line, "Hierher!"
+// sets a marker, players off the screen get an arrow. Runs a relay of its own: npm test
 import { expect, test } from '@playwright/test';
 import { startRelay } from './relayproc.js';
 
@@ -35,6 +36,8 @@ async function player(browser, name, extra = {}) {
   await expect(page.locator('#lbQuick')).toBeVisible();
   return { page, errors };
 }
+
+test.describe.configure({ mode: 'serial' });
 
 test('Festung in Koop: the guest sees the nights, the walls and the cannon; two players, more monsters', async ({
   browser,
@@ -118,6 +121,53 @@ test('Festung in Koop: the guest sees the nights, the walls and the cannon; two 
   });
   expect(balls.fn).toBe('function');
   expect(balls.seen).toBeGreaterThan(0);
+  for (const p of [h, g]) expect(p.errors).toEqual([]);
+  for (const p of [h, g]) await p.page.close();
+});
+
+test('finding each other: a call comes as a line, "Hierher!" sets a marker, an arrow points off screen', async ({
+  browser,
+}) => {
+  const h = await player(browser, 'Ilse');
+  const g = await player(browser, 'Jakob');
+  await h.page.waitForTimeout(500);
+  await h.page.locator('#lbCreate').click();
+  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  const code = await h.page.locator('.lb-codetap b').textContent();
+  await g.page.waitForTimeout(500);
+  await g.page.locator('#lbCodeIn').fill(code);
+  await g.page.locator('#lbJoinBtn').click();
+  await expect(h.page.locator('.lb-players')).toContainText('Jakob');
+  await g.page.waitForTimeout(500);
+  await g.page.locator('.opt', { hasText: 'Bereit?' }).click();
+  await h.page.waitForTimeout(500);
+  await h.page.locator('.opt', { hasText: 'Spiel starten' }).click();
+  for (const p of [h, g])
+    await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net, null, { timeout: 10000 });
+  // Ilse walks far off to the right and calls "Hierher!"
+  await h.page.evaluate(() => {
+    const w = window.__ww,
+      me = w.crew.find(c => c.pid === w.G.myId),
+      x = Math.min(w.world.W - 40, w.G.base.x + 400);
+    Object.assign(me, { x, y: w.world.surf[x + 3] - 10, vx: 0, vy: 0 });
+  });
+  // (every line shown on Jakob's screen from here on)
+  await g.page.evaluate(() => {
+    window.__lines = [];
+    const t = document.getElementById('toast');
+    new MutationObserver(() => window.__lines.push(t.textContent)).observe(t, { childList: true, characterData: true, subtree: true });
+  });
+  await h.page.locator('#emoBtn').click();
+  await h.page.waitForTimeout(500); // (a panel ignores taps in its first moment)
+  await h.page.locator('#panel .opt', { hasText: 'Hierher!' }).click();
+  // Jakob gets the line and the marker
+  await g.page.waitForFunction(() => window.__lines.some(l => l.includes('Ilse') && l.includes('Hierher')), null, {
+    timeout: 8000,
+  });
+  await g.page.waitForFunction(() => (window.__ww.G.pins || []).length === 1, null, { timeout: 8000 });
+  // and Ilse is off his screen: there is an arrow at its edge (an orange-ish mark near the right)
+  await g.page.waitForTimeout(600);
+  await g.page.screenshot({ path: test.info().outputPath('mates.png') });
   for (const p of [h, g]) expect(p.errors).toEqual([]);
   for (const p of [h, g]) await p.page.close();
 });

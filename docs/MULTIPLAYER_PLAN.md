@@ -255,5 +255,7 @@ Verglichen mit Clonk Rage, OpenClonk und Terraria. Behoben:
 | Festung | Lebenspunkte der Festungsteile, Ausrichtung und Schuss der Kanone, die Nächte von „Festung“ (`G.fort`) werden übertragen; Kanonenkugeln fliegen bei Mitspielern als Bild mit (Ereignis `cb`), die Explosion kommt vom Host. | `net/sync.js`, `fort.js`, `net/client.js` |
 | Wellen | Wie die Bosse in Terraria wachsen Belagerungswellen mit der Spielerzahl: je weiterem Spieler die Hälfte mehr Monster. | `siege.js` |
 
-Weiter geplant: Mitspieler finden (Pfeile am Rand, Minikarte), Markierung mit Schnellsätzen,
-Punktestand während der Runde, neuer Modus (Belagerung Versus oder Flagge erobern).
+| Mitspieler finden (v1.80.2) | Mitspieler außerhalb des Bildes: ein Pfeil am Rand in ihrer Mützenfarbe, mit Entfernung und ihrem letzten Zuruf (im Versus nur das eigene Team). Neuer Zuruf „📍 Hierher!“ setzt eine Markierung für 15 s in der Welt und auf der Karte. Zurufe kommen bei den anderen auch als Zeile oben an („Ilse: 🆘 Hilfe!“). | `net/emotes.js`, `ui.js`, `render.js` |
+
+Weiter geplant: Punktestand während der Runde, neuer Modus (Belagerung Versus oder Flagge
+erobern).

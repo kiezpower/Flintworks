@@ -377,6 +377,14 @@ function drawMini(full) {
         mctx.fillStyle = (G.tick >> 4) & 1 ? '#ffe066' : '#b8860b';
         mctx.fillRect(Math.floor(ch.x / MK) - 1, Math.floor(ch.y / MK) - 1, 5, 4);
       }
+  // markers set with "Hierher!" (net/emotes.js): a blinking cross in the player's colour
+  for (const p of G.pins || []) {
+    mctx.fillStyle = (G.tick >> 3) & 1 ? '#ffffff' : p.col;
+    const px = Math.floor(p.x / MK),
+      py = Math.floor(p.y / MK);
+    mctx.fillRect(px - 3, py, 7, 1);
+    mctx.fillRect(px, py - 3, 1, 7);
+  }
   crew.forEach((c, n) => {
     if (c.dead) return;
     const px = Math.floor(c.x / MK),
