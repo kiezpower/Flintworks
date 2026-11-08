@@ -3,7 +3,7 @@
 // A slow round-robin refresh of all chunks repairs anything that went missing.
 import { b64, unb64 } from '../save.js';
 import { crew } from '../state.js';
-import { ACID, AIR, CHn, CS, CWn, H, LAVA, SOLID, W, WATER, bg, mat, markFresh, netDirty, onResize, paint } from '../world.js';
+import { ACID, AIR, CHn, CS, CWn, H, LAVA, OIL, SOLID, W, WATER, bg, mat, markFresh, netDirty, onResize, paint } from '../world.js';
 
 const MAX_PER_PACKET = 24;
 let refresh = 0,
@@ -70,7 +70,7 @@ function resetSent() {
   sent = new Uint8Array(W * H);
   for (let i = 0; i < W * H; i++) sent[i] = mat[i] | (bg[i] << 4);
 }
-const FLOW = new Set([AIR, WATER, ACID, LAVA]);
+const FLOW = new Set([AIR, WATER, ACID, LAVA, OIL]);
 // 2: something solid changed (send now), 1: only liquid moved, 0: nothing
 function changeKind(c) {
   const x0 = (c % CWn) * CS,

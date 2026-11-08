@@ -23,10 +23,11 @@ const AIR = 0,
   ORE = 10,
   COAL = 11,
   PLANK = 12,
-  GEM = 13;
-const SOLID = [0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1];
-const LIQ = [0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0];
-const BLAST = [0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1];
+  GEM = 13,
+  OIL = 14; // (a liquid that floats on water and burns, fire.js; the network sends 4 bits per cell)
+const SOLID = [0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0];
+const LIQ = [0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1];
+const BLAST = [0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0];
 let mat = new Uint8Array(W * H),
   bg = new Uint8Array(W * H),
   shade = new Uint8Array(W * H),
@@ -51,6 +52,8 @@ const PAL = [
   ['#2a2626', '#33302e', '#232020', '#3b3735'].map(c => hex(c)),
   ['#a0703f', '#8b5e34', '#b07a45', '#946436'].map(c => hex(c)),
   ['#3fb5d6', '#5fd3e8', '#2f8fb0', '#b6f6ff'].map(c => hex(c)),
+  // oil: nearly black with a brown sheen
+  ['#2b2118', '#33271c', '#241b14', '#3d2f22'].map(c => hex(c, 235)),
 ];
 const TUN = ['#3a2416', '#33200f', '#402a1a', '#2e1c10'].map(c => hex(c));
 const MINI = [
@@ -68,6 +71,7 @@ const MINI = [
   '#2a2626',
   '#a0703f',
   '#5fd3e8',
+  '#3d2f22',
 ];
 // brighter / darker copies of a packed colour (alpha kept)
 // (written out without helpers: this runs for every texel of the world)
@@ -489,6 +493,7 @@ export {
   RES,
   paintAll,
   GEM,
+  OIL,
   setGroundTop,
   activateAll,
   markActive,

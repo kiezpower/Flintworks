@@ -2,6 +2,7 @@ import { placeGas } from './hazards.js';
 import { placeChests } from './treasure.js';
 import { endTeams, setupTeams } from './teams.js';
 import { scatterDecor } from './decor.js';
+import { clearFire } from './fire.js';
 import { biome, setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
 import { resetEvents } from './events.js';
@@ -37,6 +38,7 @@ import {
   GRANITE,
   H,
   LAVA,
+  OIL,
   LIQ,
   LOAM,
   ORE,
@@ -132,6 +134,7 @@ const perArea = k => Math.max(1, Math.round((k * W * H) / (W0 * H0))),
   perWidth = k => Math.max(1, Math.round((k * W) / W0));
 function gen() {
   endTeams();
+  clearFire();
   // a hand-built level (levels/) is loaded from its map instead of being generated
   const LP = GAME_MODES[G.nextMode]?.pkg;
   // the size of the new world: a level's own, otherwise 1400 × 400 (or ?size= in the dev server)
@@ -354,6 +357,13 @@ function gen() {
         ry = lri(6, 9);
       blob(x, y, rx, ry, AIR, keep, lr);
       blob(x, y + ry * 0.3, rx * 0.9, ry * 0.7, LAVA, (i, xx, yy) => mat[i] === AIR && yy > y - 1, lr);
+    }
+    // oil pockets deep in the earth (fire.js): dug open, the oil runs out and burns at a spark
+    for (let k = 0, n = perWidth(1.5); k < n; k++) {
+      const x = lri(200, W - 60);
+      if (!clear(x, 200)) continue;
+      const y = Math.round(surf[x] + (H - surf[x]) * (0.45 + lr() * 0.3));
+      blob(x, y, lri(9, 16), lri(4, 6), OIL, keep, lr);
     }
     // one big cavern deep down, with a lake at its bottom
     const gx = lri(Math.floor(W * 0.3), Math.floor(W * 0.8));

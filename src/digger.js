@@ -1,4 +1,5 @@
 import { wallContext } from './fort.js';
+import { igniteNear } from './fire.js';
 import { canShoot, hasBow, shoot, swing, swordContext } from './combat.js';
 import { hasTool } from './tools.js';
 import { register } from './commands.js';
@@ -26,6 +27,7 @@ import {
   GRANITE,
   H,
   LAVA,
+  OIL,
   LIQ,
   LOAM,
   ORE,
@@ -462,6 +464,8 @@ function updBody(c, I) {
   }
   if (mBody === ACID || mHead === ACID) hurt(c, 0.3, true);
   if ((mBody === LAVA || mFeet === LAVA) && c.burn < 120) c.burn = 240;
+  // a burning Wühler in oil sets it alight (fire.js)
+  if (c.burn > 0 && (mBody === OIL || mFeet === OIL)) igniteNear(c.x + 3, c.y + 9, 2);
   if (c.burn > 0) {
     c.burn--;
     hurt(c, 0.12, true);

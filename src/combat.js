@@ -14,6 +14,7 @@ import { sfx } from './sound.js';
 import { G, animals, builds, crew, flashes, parts, trees, vehicles } from './state.js';
 import { addArrows, arrowsOf, hasTool, teamHas } from './tools.js';
 import { ignite } from './objects.js';
+import { igniteNear } from './fire.js';
 import { isPlayer } from './players.js';
 import { rnd, solid } from './world.js';
 
@@ -326,6 +327,7 @@ function burnAt(x, y) {
   for (let q = 0; q < 6; q++)
     parts.push({ x, y, vx: (rnd() - 0.5) * 1.2, vy: -rnd(), l: 18, c: rnd() < 0.5 ? '#ffcf4a' : '#ff7a2f' });
   if (G.netClient) return;
+  igniteNear(x, y, 3); // (oil, fire.js)
   for (const t of trees) if (!t.fall && Math.abs(t.x - x) < 8 && y > t.gy - 40 && y < t.gy + 2) ignite(t);
 }
 

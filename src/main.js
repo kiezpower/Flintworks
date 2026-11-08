@@ -67,6 +67,7 @@ import { updEmoBtn } from './net/emotes.js';
 import { updScoreBtn } from './scoreboard.js';
 import { updWatch } from './net/watch.js';
 import { localSetup, localTick } from './local.js';
+import { updFire } from './fire.js';
 import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
@@ -577,6 +578,7 @@ function step() {
     updParts();
     dryFresh();
     simulate();
+    updFire();
     hostTick();
   }
   stepTail();
