@@ -135,6 +135,8 @@ const KINDS = {
       vx: r2(a.vx),
       hp: a.hp,
       hu: a.hurt > 0 ? 1 : 0,
+      // the giant worm's body (boss.js), whole numbers are enough for the picture
+      ...(a.seg ? { sg: a.seg.flatMap(q => [Math.round(q.x), Math.round(q.y)]) } : {}),
       ...(a.warn > 0 ? { w: 1 } : {}), // a monster about to strike (the "!" over it, render.js)
     }),
     // (a host older than v1.69.0 still sends the Fluffel as 'wipf')
@@ -145,6 +147,10 @@ const KINDS = {
       a.hp = d.hp;
       a.hurt = d.hu ? 4 : 0;
       a.warn = d.w ? 1 : 0;
+      if (d.sg) {
+        a.seg = [];
+        for (let k = 0; k < d.sg.length; k += 2) a.seg.push({ x: d.sg[k], y: d.sg[k + 1] });
+      }
     },
   },
   lorries: {

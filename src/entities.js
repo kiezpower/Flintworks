@@ -42,7 +42,7 @@ function addDigger(x, y) {
 }
 // the creatures that attack: the cave monster, the poison spider, the lava slime and the
 // stone golem (and the little bats); their size and hit points
-const FOE_KINDS = { monster: 1, spider: 1, slime: 1, golem: 1, bat: 1 };
+const FOE_KINDS = { monster: 1, spider: 1, slime: 1, golem: 1, bat: 1, worm: 1 };
 const isFoe = a => !!a && !!FOE_KINDS[a.kind];
 const SIZE = {
   fluffel: [5, 4],
@@ -52,8 +52,9 @@ const SIZE = {
   spider: [9, 6],
   slime: [10, 7],
   golem: [16, 14],
+  worm: [10, 10], // (the head; the body is a.seg, boss.js)
 };
-const HP = { monster: 90, spider: 45, slime: 70, golem: 220, fluffel: 10 };
+const HP = { monster: 90, spider: 45, slime: 70, golem: 220, fluffel: 10, worm: 900 };
 function mkAnimal(kind, x, y) {
   const sz = SIZE[kind] || SIZE.monster;
   const hp = HP[kind] ?? 4;

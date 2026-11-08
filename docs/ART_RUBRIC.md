@@ -327,3 +327,7 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
   tief in der Erde (freies Spiel) und brennt; Lava, Explosionen, Brandpfeile und brennende Wühler
   zünden es, das Feuer breitet sich aus, wirft Flammen, Rauch und Licht in die Tiefe, setzt Wühler
   und Bäume in Brand, verletzt Monster und verbrennt das Öl (`fire.js`). Kartenzeichen `B`.
+- v1.88.0: Boss „Riesenwurm“ (wie Terraria/Noita): Kopf und 13 Panzerglieder, gräbt sich durch die
+  Erde, bricht im Bogen an der Oberfläche aus, trifft, wen sein Körper berührt; Pfeile, Explosionen,
+  Kanone und brennendes Öl treffen den Kopf; Boss-Balken unten; besiegt 14 Goldklumpen, Erz und
+  Edelsteine. Kommt im freien Spiel einmal pro Welt nach 10 Minuten und in Nacht 3 von „Festung“.
