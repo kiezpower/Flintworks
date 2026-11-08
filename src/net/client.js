@@ -14,7 +14,7 @@ import { diggerOf } from '../players.js';
 import { sfx } from '../sound.js';
 import { G, flashes } from '../state.js';
 import { tapGotoInput } from '../tapgo.js';
-import { openBase, openBuild, toast } from '../ui.js';
+import { openBase, openBuild, openUi, toast } from '../ui.js';
 import { updWeather } from '../weather.js';
 import { onGameMsg, sendTo } from './room.js';
 import { KINDS, MOVING, applyGame } from './sync.js';
@@ -145,7 +145,7 @@ function clientStep(paused) {
     if (me && !me.dead && !me.netBusy) updDigger(me, { ...inp, throwP: false, actP: false });
     if (inp.actP && me) {
       const cx = context(me);
-      if (cx.ui) (cx.ui === 'base' ? openBase : openBuild)();
+      if (cx.ui) openUi(cx.ui);
     }
     sendInput(me);
     ease();

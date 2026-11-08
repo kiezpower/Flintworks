@@ -52,7 +52,7 @@ import { simulate } from './sim.js';
 import { audioInit, sfx } from './sound.js';
 import { initUiArt } from './uiart.js';
 import { G, animals, builds, crew, lorries, esc } from './state.js';
-import { $, closePanel, drawMini, hud, openBase, openBuild, panelEl, toast, toastEl, toggleMap } from './ui.js';
+import { $, closePanel, drawMini, hud, openBase, openBuild, openUi, panelEl, toast, toastEl, toggleMap } from './ui.js';
 import { register, send } from './commands.js';
 import { NET, inRoom, onGameMsg, sendTo } from './net/room.js';
 import { beginNet, endNet, resumeNet, startMessage } from './net/session.js';
@@ -70,6 +70,7 @@ import { localSetup, localTick } from './local.js';
 import { updFire } from './fire.js';
 import { bossTick } from './boss.js';
 import { updFishing } from './fishing.js';
+import { merchantMove, merchantTick } from './merchant.js';
 import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
@@ -523,7 +524,7 @@ function step() {
             // himself, local.js; what he picks there is his)
             if (c.pid === G.myId || (G.local && !G.net && c.pid === 1)) {
               G.panelPid = c.pid === G.myId ? null : c.pid;
-              (cx.ui === 'base' ? openBase : openBuild)();
+              openUi(cx.ui);
             }
           } else if (cx.fn) cx.fn();
         }
@@ -536,6 +537,7 @@ function step() {
     updBuilds();
     updFort();
     updFishing();
+    merchantMove();
     updBuildFx();
     updHazards();
     updBeams();
@@ -543,6 +545,7 @@ function step() {
     updResearch();
     if (G.frame % 30 === 0) updScenario();
     if (G.frame % 30 === 0) bossTick();
+    if (G.frame % 30 === 0) merchantTick();
     // how deep the own Wühler has been, for an achievement (achievements.js)
     if (G.frame % 60 === 0) {
       const me = sel_();
