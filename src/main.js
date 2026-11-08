@@ -614,24 +614,37 @@ function stepTail() {
 G.last = performance.now();
 G.acc = 0;
 G.tick = 0;
-// slow device: after a few seconds below ~40 fps switch to the lighter 1× canvas
+// slow device: after several seconds of choppy frames switch to the lighter 1× canvas. Only
+// when the device really cannot keep up: a stall (app or tab in the background, loading a world,
+// garbage collection) is skipped, and a screen or battery saver that hands out only 30 frames a
+// second (iOS Low Power Mode, Android power saving) is no reason as long as each frame's own work
+// is quick – otherwise the Wühler suddenly turned coarse in the middle of a round.
 let perfT = 0,
   perfN = 0,
-  perfSlow = 0;
+  perfW = 0,
+  perfSlow = 0,
+  workMs = 0;
 function perfGuard(dt) {
-  if (G.res === 1 || G.state !== 'play' || P.gfx === 'high') return;
-  perfT += Math.min(dt, 200);
+  if (G.res === 1 || G.state !== 'play' || P.gfx === 'high' || document.hidden) return;
+  if (dt > 120) return;
+  perfT += dt;
+  perfW += workMs;
   perfN++;
   if (perfT < 2000) return;
-  perfSlow = perfT / perfN > 25 ? perfSlow + 1 : 0;
-  perfT = perfN = 0;
-  if (perfSlow >= 2) {
+  const frame = perfT / perfN,
+    work = perfW / perfN;
+  perfSlow = frame > 45 || (frame > 25 && work > 14) ? perfSlow + 1 : 0;
+  perfT = perfN = perfW = 0;
+  if (perfSlow >= 3) {
+    perfSlow = 0;
     G.res = 1;
     resize();
+    toast('Grafik auf „schnell“ gestellt, damit es flüssig läuft (Einstellungen)');
   }
 }
 function loop(t) {
   perfGuard(t - G.last);
+  const t0 = performance.now();
   G.acc += Math.min(100, t - G.last);
   G.last = t;
   let n = 0;
@@ -660,6 +673,7 @@ function loop(t) {
     updWatch();
   }
   if (G.tick % 10 === 0) drawMini(G.tick % 60 === 0);
+  workMs = performance.now() - t0;
   requestAnimationFrame(loop);
 }
 G.openMenu = openMenu;

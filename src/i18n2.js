@@ -390,5 +390,7 @@ const EN2 = {
   Bauer: 'Farmer',
   'Ernte {n}-mal ein Feld': 'Harvest a field {n} times',
   'Die Nacht bricht herein – Monster streifen umher.': 'Night falls – monsters are roaming.',
+  // the slow-device switch (main.js)
+  'Grafik auf „schnell“ gestellt, damit es flüssig läuft (Einstellungen)': 'Graphics set to “fast” to keep it smooth (settings)',
 };
 export { EN2 };
