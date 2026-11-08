@@ -55,6 +55,7 @@ import { localFocus } from './local.js';
 import { fireSpots } from './fire.js';
 import { drawBossBar, drawWorms } from './boss.js';
 import { drawFishing } from './fishing.js';
+import { drawPets } from './pets.js';
 import { drawMerchant } from './merchant.js';
 import { drawVillagers } from './villagers.js';
 import { drawFarms } from './farm.js';
@@ -287,6 +288,8 @@ function animalSprite(a, ph, hurtF, glowOn) {
     put(-1, ph ? 0 : 1, 1, 2, '#d08a5a');
     put(ph ? 0 : 1, 3, 1, 1, '#b8a68c');
     put(ph ? 3 : 4, 3, 1, 1, '#b8a68c');
+    // a companion wears a red collar (pets.js)
+    if (a.pet != null) put(4, 2, 1, 1, '#d03838');
   } else if (a.kind === 'fish') {
     put(1, 0, 3, 2, '#e8a83c');
     put(1, 1, 3, 1, '#f6cf7a');
@@ -696,6 +699,7 @@ function render() {
   }
   // fishing lines and floats (fishing.js), the wandering trader (merchant.js)
   drawFishing(ctx, cx, cy);
+  drawPets(ctx, cx, cy); // (where a Fluffel companion smells treasure)
   drawMerchant(ctx, cx, cy);
   drawVillagers(ctx, cx, cy);
   // butterflies in front of the trees

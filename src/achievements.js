@@ -28,6 +28,7 @@ const ACH = [
   ['stars3', 'stars3', 1, '⭐', 'Glanzleistung', 'Schaffe ein Level mit 3 Sternen', 150],
   ['mp', 'mp', 1, '🤝', 'Gemeinsam', 'Spiele eine Runde mit anderen', 100],
   ['local', 'local', 1, '🎮', 'Zu zweit', 'Spiele zu zweit an einem Gerät', 100],
+  ['pet', 'pet', 1, '🐾', 'Tierfreund', 'Zähme einen Fluffel mit Brot oder Fisch', 100],
   ['daily', 'daily', 7, '📅', 'Stammgast', 'Spiele {n} Tagesschächte', 200],
 ].map(([id, key, n, ico, name, text, xp]) => ({ id, key, n, ico, name, text, xp }));
 

@@ -356,3 +356,4 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
 - v1.94.1: Lore-Fix: sie nimmt Stufen bis 4 px (Wühler: 3), lässt sich also jeden begehbaren Hang
   hochschieben; Holztreppen und Brücken tragen sie nur an den Rädern (`setPlat(3)`), so rollt sie
   unter einer Treppe durch und hinauf, statt daran hängen zu bleiben (`tests/lorry.spec.js`).
+- Nachtrag v1.96.0: Fluffel-Begleiter (pets.js): mit Brot oder Fisch gefüttert folgt er seinem Wühler, trägt ein rotes Halsband und zeigt mit einem pulsierenden Funkeln Gold und Edelsteine in bis zu 40 px Umkreis.

@@ -17,6 +17,7 @@ import { atCastle, siegeMarch } from './siege.js';
 import { wormUpd } from './boss.js';
 import { announceBanner } from './announce.js';
 import { igniteNear } from './fire.js';
+import { petFollow } from './pets.js';
 import {
   ACID,
   AIR,
@@ -395,7 +396,9 @@ function updAnimal(a) {
     if (LIQ[midMat(a, 0.1)]) a.vy -= 0.1;
   }
   const onG = !free(a.x, a.y + 1, a.w, a.h);
-  if (a.kind === 'fluffel') {
+  if (a.kind === 'fluffel' && a.pet != null && petFollow(a, onG)) {
+    // a companion follows its Wühler (pets.js)
+  } else if (a.kind === 'fluffel') {
     if (--a.t <= 0) {
       a.t = ri(30, 160);
       a.tvx = rnd() < 0.35 ? 0 : (rnd() < 0.5 ? -1 : 1) * (0.3 + rnd() * 0.4);

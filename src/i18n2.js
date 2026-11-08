@@ -402,5 +402,10 @@ const EN2 = {
   'wechselnde Welt': 'changing world',
   // the slow-device switch (main.js)
   'Grafik auf „schnell“ gestellt, damit es flüssig läuft (Einstellungen)': 'Graphics set to “fast” to keep it smooth (settings)',
+  Füttern: 'Feed',
+  '{name} hat jetzt einen Fluffel als Begleiter. Er erschnüffelt Gold und Edelsteine.':
+    '{name} now has a Fluffel companion. It sniffs out gold and gems.',
+  Tierfreund: 'Animal friend',
+  'Zähme einen Fluffel mit Brot oder Fisch': 'Tame a Fluffel with bread or a fish',
 };
 export { EN2 };
