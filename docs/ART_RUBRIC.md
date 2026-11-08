@@ -352,3 +352,4 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
   Siedler, er läuft tagsüber zwischen Hütte und Burg, nachts ist er daheim, zahlt alle 30 s 2 Taler
   und isst jeden Morgen ein Brot aus dem Lager; ohne Brot zieht er nach dem zweiten hungrigen Morgen
   aus (`villagers.js`).
+- Nachtrag v1.95.0: Spielmodi haben in der Auswahl nur noch eine Karte; das Bild zeigt Wiese, Wüste und Winter nebeneinander, die Welt wechselt jede Runde.
