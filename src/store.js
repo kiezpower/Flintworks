@@ -9,7 +9,7 @@ import { addStat } from './stats.js';
 import { G, builds } from './state.js';
 import { flyCoins } from './reward.js';
 
-const SELL = ['nug', 'gem'];
+const SELL = ['nug', 'gem', 'fish'];
 const KEEP = ['flint', 'tnt', 'loam']; // tools stay in the hand
 const stock = t => (G.store && G.store[t]) || 0;
 function addStock(t, n = 1) {

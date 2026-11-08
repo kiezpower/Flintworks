@@ -339,5 +339,19 @@ const EN2 = {
   'Spiele zu zweit an einem Gerät': 'Play two players on one device',
   Stammgast: 'Regular',
   'Spiele {n} Tagesschächte': 'Play {n} daily shafts',
+  // fishing (fishing.js)
+  Angelrute: 'Fishing rod',
+  'Am Wasser „Angeln“: beißt etwas an (!), mit der Aktion einholen – Fische verkaufst du in der Burg':
+    'At water “Fish”: when something bites (!), pull it in with Action – sell fish at the castle',
+  Angeln: 'Fish',
+  Einholen: 'Pull in',
+  'Einholen!': 'Pull in!',
+  Fisch: 'Fish',
+  'Ein Fisch!': 'A fish!',
+  'Nur ein alter Stein …': 'Just an old stone …',
+  'Ein Schatz am Haken!': 'A treasure on the hook!',
+  'Entwischt!': 'It got away!',
+  Angler: 'Angler',
+  'Fange {n} Fische': 'Catch {n} fish',
 };
 export { EN2 };

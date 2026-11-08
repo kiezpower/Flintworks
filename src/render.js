@@ -54,6 +54,7 @@ import { watched } from './net/watch.js';
 import { localFocus } from './local.js';
 import { fireSpots } from './fire.js';
 import { drawBossBar, drawWorms } from './boss.js';
+import { drawFishing } from './fishing.js';
 import { TEAM_COLS } from './teams.js';
 import { box, drawVehicles, vehicleOf, wheel } from './vehicles/core.js';
 import { catapultAim, catapultPath } from './vehicles/ground.js';
@@ -688,6 +689,8 @@ function render() {
       ctx.restore();
     }
   }
+  // fishing lines and floats (fishing.js)
+  drawFishing(ctx, cx, cy);
   // butterflies in front of the trees
   if (G.res === 2 && G.lightFx) drawButterflies(ctx, cx, cy, darkness());
   drawVehicles(ctx, cx, cy);

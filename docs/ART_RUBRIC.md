@@ -334,3 +334,6 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
 - v1.89.0: Erfolge: 18 Langzeitziele (Gold, Taler, Bäume, Gebäude, Edelsteine, Monster, Truhen,
   Tiefe, Öl, Riesenwurm, Festungsnächte, Siege, 3 Sterne, Mehrspieler, zu zweit, Tagesschächte),
   nur im Profil auf dem Gerät, mit Banner und XP; Liste auf der Aufgaben-Tafel (`achievements.js`).
+- v1.90.0: Angeln (wie Terraria): Angelrute in der Burg (25 Taler, 2 Holz); am Wasser „Angeln“,
+  beißt etwas an (Schwimmer taucht, „!“), holt die Aktion es ein: meist ein Fisch (8 Taler), sonst
+  Gold, ein Edelstein, Taler oder ein Stein; Fische in der Nähe beißen schneller (`fishing.js`).

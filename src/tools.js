@@ -36,6 +36,14 @@ const TOOLS = {
     need: { wood: 2, rock: 1 },
     lobby: true,
   },
+  // at water the action button casts (fishing.js): fish to sell, now and then a treasure
+  rod: {
+    name: 'Angelrute',
+    icon: 'rod',
+    sub: 'Am Wasser „Angeln“: beißt etwas an (!), mit der Aktion einholen – Fische verkaufst du in der Burg',
+    money: 25,
+    need: { wood: 2 },
+  },
   sword: {
     name: 'Schwert',
     icon: 'sword',

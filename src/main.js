@@ -69,6 +69,7 @@ import { updWatch } from './net/watch.js';
 import { localSetup, localTick } from './local.js';
 import { updFire } from './fire.js';
 import { bossTick } from './boss.js';
+import { updFishing } from './fishing.js';
 import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
@@ -534,6 +535,7 @@ function step() {
     updVehicles();
     updBuilds();
     updFort();
+    updFishing();
     updBuildFx();
     updHazards();
     updBeams();
