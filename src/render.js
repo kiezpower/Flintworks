@@ -56,6 +56,7 @@ import { fireSpots } from './fire.js';
 import { drawBossBar, drawWorms } from './boss.js';
 import { drawFishing } from './fishing.js';
 import { drawMerchant } from './merchant.js';
+import { drawVillagers } from './villagers.js';
 import { drawFarms } from './farm.js';
 import { TEAM_COLS } from './teams.js';
 import { box, drawVehicles, vehicleOf, wheel } from './vehicles/core.js';
@@ -696,6 +697,7 @@ function render() {
   // fishing lines and floats (fishing.js), the wandering trader (merchant.js)
   drawFishing(ctx, cx, cy);
   drawMerchant(ctx, cx, cy);
+  drawVillagers(ctx, cx, cy);
   // butterflies in front of the trees
   if (G.res === 2 && G.lightFx) drawButterflies(ctx, cx, cy, darkness());
   drawVehicles(ctx, cx, cy);

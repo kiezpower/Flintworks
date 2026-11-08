@@ -73,6 +73,7 @@ import { updFishing } from './fishing.js';
 import { merchantMove, merchantTick } from './merchant.js';
 import { updFarm } from './farm.js';
 import { roamTick } from './nights.js';
+import { villageMove, villageTick } from './villagers.js';
 import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
@@ -541,6 +542,7 @@ function step() {
     updFishing();
     merchantMove();
     updFarm();
+    villageMove();
     updBuildFx();
     updHazards();
     updBeams();
@@ -550,6 +552,7 @@ function step() {
     if (G.frame % 30 === 0) bossTick();
     if (G.frame % 30 === 0) merchantTick();
     if (G.frame % 30 === 0) roamTick();
+    if (G.frame % 30 === 0) villageTick();
     // how deep the own Wühler has been, for an achievement (achievements.js)
     if (G.frame % 60 === 0) {
       const me = sel_();
