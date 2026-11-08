@@ -27,6 +27,7 @@ import {
 import { addPlayer, canAdd, openFriends } from './lobbyfriends.js';
 import { onlineCount } from './net/friends.js';
 import { netSaveInfo } from './net/netsave.js';
+import { setLocal } from './local.js';
 import { fromTag, kindName, modeName, rotation } from './net/rotation.js';
 import { P } from './profile.js';
 import { G, safeCap } from './state.js';
@@ -87,6 +88,19 @@ function openInvite() {
       joinRoom(code);
     });
     $('lbCodeIn').addEventListener('keydown', e => e.key === 'Enter' && $('lbJoinBtn').click());
+    // two at this device, no network (local.js): the second player with a gamepad
+    box.insertAdjacentHTML('beforeend', `<p class="lb-or">${tr('oder an diesem Gerät')}</p>`);
+    const loc = document.createElement('button');
+    loc.className = 'lb-way';
+    loc.id = 'lbLocal';
+    loc.innerHTML = `🎮 ${tr('Zu zweit an diesem Gerät')}${G.local ? ' ✓' : ''}<small>${tr('Spieler 2 spielt mit einem Gamepad (bei zwei Gamepads das zweite)')}</small>`;
+    loc.addEventListener('click', () => {
+      if (!fresh()) return;
+      setLocal(!G.local);
+      refreshSlots();
+      openInvite();
+    });
+    box.appendChild(loc);
     return;
   }
   // the code, a QR code for friends right next to you and the ways to send the link come first:
@@ -320,8 +334,9 @@ const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;'
 function refreshSlots() {
   const list = others();
   ['lbSlot1', 'lbSlot2'].forEach((id, k) => {
+    // (two at this device: the first slot shows the second player, local.js)
     const b = $(id),
-      pl = list[k],
+      pl = list[k] || (k === 0 && G.local && !NET.room ? { name: '🎮 ' + tr('Spieler 2'), ready: true } : null),
       more = k === 1 && list.length > 2 ? ` +${list.length - 2}` : '';
     b.classList.toggle('filled', !!pl);
     b.classList.toggle('waiting', !pl && !!NET.room);
@@ -347,3 +362,4 @@ onRoomChange(() => {
 G.onFriendJoin = () => openInvite();
 
 export { openInvite, refreshSlots };
+

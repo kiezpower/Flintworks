@@ -67,3 +67,60 @@ test('with a gamepad: start from the lobby, walk, jump, build menu, back', async
   expect(Math.abs(xb - xa)).toBeLessThan(2);
   expect(errors).toEqual([]);
 });
+
+test('two at one device: the second player with the pad, the first with the keys, the camera keeps both', async ({
+  page,
+}) => {
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await withPad(page);
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.setItem('flintworks-lang', 'de');
+    localStorage.setItem('flintworks-profile', JSON.stringify({ tutorialDone: true, installAsked: 'done', games: 3 }));
+  });
+  await page.reload();
+  await page.waitForFunction(() => window.__ww);
+  // in the lobby: "Zusammen spielen" → "Zu zweit an diesem Gerät"
+  await page.click('#lbSlot1');
+  await expect(page.locator('#lbLocal')).toBeVisible();
+  await page.waitForTimeout(500);
+  await page.click('#lbLocal');
+  await expect(page.locator('#lbLocal')).toContainText('✓');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#lbSlot1')).toContainText('Spieler 2');
+  await page.click('#lbPlay');
+  await page.waitForFunction(() => window.__ww.state === 'play', null, { timeout: 8000 });
+  await page.waitForTimeout(800);
+  const pos = () =>
+    page.evaluate(() => {
+      const w = window.__ww;
+      return { p1: w.crew.find(c => c.pid === 0).x, p2: w.crew.find(c => c.pid === 1)?.x, np: w.G.mp.np };
+    });
+  const a = await pos();
+  expect(a.p2).toBeDefined();
+  expect(a.np).toBe(2);
+  // the pad moves player 2 only
+  await page.evaluate(() => (window.__pad.axes[0] = 1));
+  await page.waitForTimeout(700);
+  await page.evaluate(() => (window.__pad.axes[0] = 0));
+  const b = await pos();
+  expect(b.p2).toBeGreaterThan(a.p2 + 5);
+  expect(Math.abs(b.p1 - a.p1)).toBeLessThan(3);
+  // the keys move player 1
+  await page.keyboard.down('ArrowLeft');
+  await page.waitForTimeout(700);
+  await page.keyboard.up('ArrowLeft');
+  const c = await pos();
+  expect(c.p1).toBeLessThan(b.p1 - 5);
+  // the camera keeps both in view
+  await page.waitForTimeout(800);
+  const inView = await page.evaluate(async () => {
+    const { cam } = await import('/src/render.js');
+    const w = window.__ww;
+    return w.crew.filter(q => q.pid != null).every(q => q.x > cam.x && q.x < cam.x + w.G.VW);
+  });
+  expect(inView).toBe(true);
+  await page.screenshot({ path: test.info().outputPath('local.png') });
+  expect(errors).toEqual([]);
+});

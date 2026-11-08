@@ -66,6 +66,7 @@ import { playerVehicleTick } from './vehicles/index.js';
 import { updEmoBtn } from './net/emotes.js';
 import { updScoreBtn } from './scoreboard.js';
 import { updWatch } from './net/watch.js';
+import { localSetup, localTick } from './local.js';
 import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
@@ -156,7 +157,8 @@ function play(withTutorial, level = null, veil = false) {
       // tutorial and levels have their own size; free play is 1400 × 400 (or ?size= when developing)
       G.nextSize = L ? L.size || [W0, H0] : null;
       G.nextVersus = false;
-      G.nextNp = 1;
+      // (two at one device: the goals grow as for two in Koop, local.js)
+      G.nextNp = G.local && !withTutorial && !L ? 2 : 1;
       gen();
       G.nextSeed = G.nextSize = null;
       // Heimatbergwerk upgrades (free play alone only, camp.js)
@@ -266,6 +268,7 @@ function startGame(withTutorial = false) {
   calcTerr();
   G.crewKey = '';
   G.state = 'play';
+  localSetup();
   hideLobby();
   overlay.hidden = true;
   if (withTutorial !== 'resume') {
@@ -516,6 +519,7 @@ function step() {
       }
     });
     useMine();
+    localTick();
     updVehicles();
     updBuilds();
     updFort();

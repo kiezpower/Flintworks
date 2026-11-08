@@ -51,6 +51,7 @@ import { tossPath } from './digger.js';
 import { isPlayer } from './players.js';
 import { drawEmotes, drawMates } from './net/emotes.js';
 import { watched } from './net/watch.js';
+import { localFocus } from './local.js';
 import { TEAM_COLS } from './teams.js';
 import { box, drawVehicles, vehicleOf, wheel } from './vehicles/core.js';
 import { catapultAim, catapultPath } from './vehicles/ground.js';
@@ -438,8 +439,9 @@ function render() {
   flush();
   ctx.setTransform(G.res, 0, 0, G.res, 0, 0);
   ctx.imageSmoothingEnabled = false;
-  // (watching a shared round: the player the camera follows, net/watch.js)
-  const s = sel_() || watched() || crew[0];
+  // (watching a shared round: the player the camera follows, net/watch.js; two at one screen: the
+  // middle between both, local.js)
+  const s = localFocus() || sel_() || watched() || crew[0];
   const mine = sel_();
   const fx = s ? s.x + 3 : W / 2,
     fy = s ? s.y + 5 : H / 2;
