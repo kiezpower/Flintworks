@@ -47,6 +47,7 @@ import { drawTutorial } from './tutorial.js';
 import { drawHook, hookPath } from './climb.js';
 import { lvl, terrOK } from './buildings.js';
 import { sel_ } from './entities.js';
+import { tossPath } from './digger.js';
 import { isPlayer } from './players.js';
 import { drawEmotes } from './net/emotes.js';
 import { TEAM_COLS } from './teams.js';
@@ -812,6 +813,23 @@ function render() {
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(ex, ey, 3, 0, 7);
+      ctx.stroke();
+    }
+    // aiming a throw by dragging "Wurf" with something in hand: the arc it will fly, and where it lands
+    if (c === mine && G.aimKind === 'toss' && G.aimDrag && c.ride == null) {
+      const tp = tossPath(c, G.aimDrag);
+      for (const [px, py] of tp.pts) {
+        const qx = Math.round(px - cx),
+          qy = Math.round(py - cy);
+        ctx.fillStyle = 'rgba(26,18,12,0.7)';
+        ctx.fillRect(qx - 1, qy - 1, 3, 3);
+        ctx.fillStyle = '#ffd08a';
+        ctx.fillRect(qx, qy, 1, 1);
+      }
+      ctx.strokeStyle = 'rgba(255,208,138,0.7)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(Math.round(tp.end[0] - cx), Math.round(tp.end[1] - cy), 3, 0, 7);
       ctx.stroke();
     }
     // aiming the bow by dragging the "Schießen" button: a dotted line shows where the arrow will fly

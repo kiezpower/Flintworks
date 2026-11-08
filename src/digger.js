@@ -34,6 +34,7 @@ import {
   W,
   WATER,
   bg,
+  clamp,
   boxFree,
   cssOf,
   free,
@@ -829,9 +830,6 @@ function doThrow(c, I) {
   if (I.throwP && !c.inv.length && !c.climb && !c.tumble && hasBow(c)) return shootOrTip(c, I);
   if (!I.throwP || !c.inv.length || c.climb || c.tumble) return;
   if (c.ride != null) return; // vehicles use Throw themselves (catapult, airship)
-  if (c.isel >= c.inv.length) c.isel = c.inv.length - 1;
-  const t = c.inv.splice(c.isel, 1)[0];
-  if (c.isel >= c.inv.length) c.isel = Math.max(0, c.inv.length - 1);
   let vx = c.face * 2.5 + c.vx * 0.5,
     vy = -2;
   if (I.ay < -0.4) {
@@ -841,10 +839,50 @@ function doThrow(c, I) {
     vx = c.face * 0.5;
     vy = 0;
   }
+  throwItem(c, vx, vy);
+}
+function throwItem(c, vx, vy) {
+  if (c.isel >= c.inv.length) c.isel = c.inv.length - 1;
+  const t = c.inv.splice(c.isel, 1)[0];
+  if (c.isel >= c.inv.length) c.isel = Math.max(0, c.inv.length - 1);
   const it = spawnItem(t, c.x + 2 + c.face * 3, c.y + 1, vx, vy, 40, c);
   if (t === 'flint') it.armed = true;
   if (t === 'tnt') it.fuse = 110;
   sfx('throw', c.x, c.y);
+}
+// An aimed throw (the "Wurf" button dragged like an aiming stick, see input.js): the thing in
+// hand flies in the dragged direction; a long drag throws farther than a short one
+const TOSS_MIN = 1.6,
+  TOSS_MAX = 3.8;
+const canToss = c =>
+  !!c && !c.dead && c.ride == null && !c.climb && !c.tumble && c.inv.length > 0 && !c.wield;
+function tossVel(c, a) {
+  const m = Math.hypot(a.ax, a.ay) || 1,
+    sp = TOSS_MIN + (TOSS_MAX - TOSS_MIN) * clamp(a.p ?? 1, 0, 1);
+  return [(a.ax / m) * sp, (a.ay / m) * sp];
+}
+register('toss', (c, { dx = 0, dy = 0, p = 1 } = {}) => {
+  if (!canToss(c)) return;
+  if (Math.hypot(dx, dy) < 0.3) return doThrow(c, { ...NOIN, throwP: true });
+  if (Math.abs(dx) > 0.2) c.face = Math.sign(dx);
+  const [vx, vy] = tossVel(c, { ax: dx, ay: dy, p });
+  throwItem(c, vx, vy);
+});
+// where an aimed throw would fly (the dotted line while aiming): steps like updItems in the air
+function tossPath(c, a) {
+  const f = Math.abs(a.ax) > 0.2 ? Math.sign(a.ax) : c.face;
+  let x = c.x + 2 + f * 3 + 1,
+    y = c.y + 2;
+  let [vx, vy] = tossVel(c, a);
+  const pts = [];
+  for (let t = 0; t < 90; t++) {
+    vy += 0.15;
+    x += vx;
+    y += vy;
+    if (solid(Math.floor(x), Math.floor(y))) break;
+    if (t % 2 === 1) pts.push([x, y]);
+  }
+  return { pts, end: [x, y] };
 }
 
 // the "Schießen" button let go: dx/dy is where it was dragged (0, 0: a plain tap)
@@ -944,6 +982,8 @@ function lorryAct(c, L) {
 
 export {
   HARD,
+  canToss,
+  tossPath,
   diggable,
   digZone,
   wantsDig,
