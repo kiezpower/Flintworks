@@ -17,7 +17,8 @@ import { addFloat } from './floats.js';
 import { W, rnd, solid } from './world.js';
 
 // how much a piece takes; and the height everything of a fortress closes off
-const FORT_HP = { wall: 400, gate: 280, tower: 360, cannon: 420 };
+// (the castle only takes blows in a siege, siege.js; it never crumbles away, the level is lost)
+const FORT_HP = { wall: 600, gate: 400, tower: 360, cannon: 420, base: 1000 };
 const FORT_H = 24;
 const isFort = b => !!FORT_HP[b.type];
 const fortHp = b => b.fhp ?? FORT_HP[b.type];
@@ -40,7 +41,8 @@ function strikeFort(a, dmg, cd) {
   const b = fortAhead(a);
   if (!b) return false;
   a.atk = cd;
-  hitFort(b, dmg, a.x + (a.face > 0 ? a.w : 0), a.y + a.h / 2);
+  // (claws do less to dressed stone than to a Wühler)
+  hitFort(b, dmg * 0.5, a.x + (a.face > 0 ? a.w : 0), a.y + a.h / 2);
   return true;
 }
 function hitFort(b, dmg, x, y) {
@@ -52,6 +54,12 @@ function hitFort(b, dmg, x, y) {
   if (b.fhp <= 0) breakFort(b);
 }
 function breakFort(b) {
+  if (b.type === 'base') {
+    b.fhp = 0;
+    G.shake = Math.max(G.shake || 0, 8);
+    sfx('thud', b.x, b.gy);
+    return;
+  }
   const k = builds.indexOf(b);
   if (k >= 0) builds.splice(k, 1);
   for (let q = 0; q < 26; q++)

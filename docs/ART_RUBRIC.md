@@ -313,3 +313,7 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
   ein), Steinsturz über dem Tor, damit kein Monster darüber springt, Kanonenturm (Kugeln, die
   beim Aufschlag platzen; 1 Kohle = 3 Schuss). Festungsteile dürfen direkt aneinander stehen,
   haben Lebenspunkte mit Rissen und Balken, und ein Wühler daneben bessert sie aus (`fort.js`).
+- v1.78.0: Belagerung: Angriffswellen kommen nur über Land von den Kartenrändern und marschieren
+  auf die Burg (`siege.js`); Mauern halten sie auf, die Burg hat in der Belagerung 1000
+  Lebenspunkte. Neues Level „Belagerung“: Burg auf einem Hügel, Fels und Kohle gleich darunter,
+  drei Wellen; Ziele: 4 Mauern, ein Kanonenturm, 3 Wellen abwehren.

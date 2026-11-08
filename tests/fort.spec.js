@@ -71,7 +71,7 @@ test('a wall stops a monster, which strikes it; nobody stays stuck inside a new 
   expect(r.done).toBe(true);
   expect(r.meOut).toBe(true);
   expect(r.passed).toBe(false);
-  expect(r.hp).toBeLessThan(400);
+  expect(r.hp).toBeLessThan(600);
   expect(errors).toEqual([]);
 });
 
@@ -136,6 +136,6 @@ test('a broken wall is gone; a Wühler next to a damaged one mends it', async ({
     return { gone, hp: b.fhp };
   });
   expect(r.gone).toBe(true);
-  expect(r.hp).toBe(400);
+  expect(r.hp).toBe(600);
   expect(errors).toEqual([]);
 });
