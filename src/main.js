@@ -68,6 +68,7 @@ import { updScoreBtn } from './scoreboard.js';
 import { updWatch } from './net/watch.js';
 import { localSetup, localTick } from './local.js';
 import { updFire } from './fire.js';
+import { bossTick } from './boss.js';
 import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
@@ -538,6 +539,7 @@ function step() {
     updMissions();
     updResearch();
     if (G.frame % 30 === 0) updScenario();
+    if (G.frame % 30 === 0) bossTick();
     updEvents();
     updCombat();
     updArrows();

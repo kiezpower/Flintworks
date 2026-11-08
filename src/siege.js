@@ -77,6 +77,8 @@ function nightTick() {
     for (let k = 0; k < crowd(3 + 2 * s.n); k++) list.push('monster');
     if (s.n >= 1) list.push('spider');
     if (s.n >= 2) list.push('golem');
+    // the third night the giant worm comes up from below as well (boss.js)
+    if (s.n === 2) G.spawnWorm?.();
     list.forEach((kind, k) => s.queue.push([kind, k % 2 ? 'right' : 'left', s.n]));
     s.n++;
     announceBanner(tr('Nacht {n}: Angriff!', { n: s.n }), 'Sie kommen von {side}', { side: tr('beiden Seiten') });

@@ -295,5 +295,11 @@ const EN2 = {
   'Zu zweit an diesem Gerät': 'Two players on this device',
   'Spieler 2 spielt mit einem Gamepad (bei zwei Gamepads das zweite)': 'Player 2 plays with a gamepad (the second one if two are plugged in)',
   'oder an diesem Gerät': 'or on this device',
+  // the giant worm (boss.js)
+  Riesenwurm: 'Giant worm',
+  'Ein Riesenwurm!': 'A giant worm!',
+  'Die Erde bebt – er gräbt sich zu euch herauf': 'The ground shakes – it is digging its way up to you',
+  'Riesenwurm besiegt!': 'Giant worm beaten!',
+  'Gold und Edelsteine liegen, wo er fiel': 'Gold and gems lie where it fell',
 };
 export { EN2 };

@@ -40,6 +40,8 @@ async function start(page, id) {
 }
 
 test('every level loads in its size, on firm ground, with every goal within reach', async ({ page }) => {
+  // (eleven levels and six maps, each loaded and checked: more time than the default)
+  test.setTimeout(300000);
   const errors = await lobby(page);
   const ids = await levelIds(page);
   expect(ids.length).toBeGreaterThan(0);

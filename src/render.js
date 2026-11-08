@@ -53,6 +53,7 @@ import { drawEmotes, drawMates } from './net/emotes.js';
 import { watched } from './net/watch.js';
 import { localFocus } from './local.js';
 import { fireSpots } from './fire.js';
+import { drawBossBar, drawWorms } from './boss.js';
 import { TEAM_COLS } from './teams.js';
 import { box, drawVehicles, vehicleOf, wheel } from './vehicles/core.js';
 import { catapultAim, catapultPath } from './vehicles/ground.js';
@@ -732,7 +733,10 @@ function render() {
     ctx.fillStyle = '#ff7a2f';
     ctx.fillRect(x - 2, y - 2, 2, 2);
   }
+  // the giant worm: its whole body (boss.js)
+  drawWorms(ctx, cx, cy);
   for (const a of animals) {
+    if (a.kind === 'worm') continue;
     const x = Math.floor(a.x - cx),
       y = Math.floor(a.y - cy);
     if (x < -14 || x > G.VW || y < -10 || y > G.VH) continue;
@@ -980,6 +984,7 @@ function render() {
   drawBubbles(ctx, cx, cy);
   drawEmotes(ctx, cx, cy);
   drawMates(ctx, cx, cy);
+  drawBossBar(ctx);
   drawFloats(ctx, cx, cy);
   drawTutorial(ctx, cx, cy);
 }

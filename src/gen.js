@@ -135,6 +135,7 @@ const perArea = k => Math.max(1, Math.round((k * W * H) / (W0 * H0))),
 function gen() {
   endTeams();
   clearFire();
+  G.wormDone = false; // (the giant worm comes once per world, boss.js)
   // a hand-built level (levels/) is loaded from its map instead of being generated
   const LP = GAME_MODES[G.nextMode]?.pkg;
   // the size of the new world: a level's own, otherwise 1400 × 400 (or ?size= in the dev server)

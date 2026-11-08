@@ -14,6 +14,8 @@ import { damageCastle } from './versus.js';
 import { toast } from './ui.js';
 import { blastForts, hitFort, strikeFort } from './fort.js';
 import { atCastle, siegeMarch } from './siege.js';
+import { wormUpd } from './boss.js';
+import { announceBanner } from './announce.js';
 import { igniteNear } from './fire.js';
 import {
   ACID,
@@ -329,11 +331,14 @@ function updAnimal(a) {
   // the lava slime sets oil alight (fire.js)
   if (m === OIL && a.kind === 'slime') igniteNear(a.x + a.w / 2, a.y + a.h, 2);
   // monsters cannot swim: in water they drown (a moat is a defence), bubbles rise off them
-  if (m === WATER && FOE[a.kind]) {
+  // (a monster floats with its back out of the water: what counts is the lower part of its body)
+  if (FOE[a.kind] && (m === WATER || midMat(a, 0.75) === WATER)) {
     a.hp -= 0.12;
     if (G.frame % 14 === 0) parts.push({ x: a.x + a.w / 2, y: a.y, vx: 0, vy: -0.3, l: 20, c: '#e6f4ff', g: -0.004 });
   }
   if (a.hp <= 0) return false;
+  // the giant worm has a mind of its own (boss.js)
+  if (a.kind === 'worm') return a.seg ? wormUpd(a) : false;
   if (a.kind === 'bat') {
     // flutter around inside caves, turn at walls
     if (--a.t <= 0) {
@@ -506,6 +511,7 @@ const LOOT = {
   spider: { col: '#3a2a48', nug: 1, name: 'Giftspinne besiegt' },
   slime: { col: '#ff7a2f', nug: 2, coal: 1, name: 'Lavaschleim besiegt' },
   golem: { col: '#8a847c', nug: 4, ore: 2, gem: 0.35, name: 'Steingolem besiegt' },
+  worm: { col: '#7a4a5a', nug: 14, ore: 4, gem: 1, gems: 3, name: 'Riesenwurm besiegt!' },
 };
 function killAnimal(a) {
   const L = LOOT[a.kind];
@@ -519,7 +525,8 @@ function killAnimal(a) {
   drop('nug', L.nug);
   if (L.coal) drop('coal', L.coal);
   if (L.ore) drop('ore', L.ore);
-  if (L.gem && rnd() < L.gem) drop('gem', 1);
+  if (L.gem && rnd() < L.gem) drop('gem', L.gems || 1);
+  if (a.kind === 'worm') announceBanner('Riesenwurm besiegt!', 'Gold und Edelsteine liegen, wo er fiel');
   if (a.kind === 'golem') G.shake = Math.max(G.shake || 0, 9);
   toast(L.name);
   G.kills = (G.kills || 0) + 1;
