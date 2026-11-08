@@ -225,5 +225,15 @@ const EN2 = {
   'Die Hochebene': 'The high plateau',
   'Unter dir liegt das alte Bergwerk – bau hier einen Fahrstuhl': 'The old mine lies beneath you – build a lift here',
   'Das alte Bergwerk! Gold liegt am Boden der Halle.': 'The old mine! Gold lies on the floor of the hall.',
+  // fortress (fort.js)
+  Mauer: 'Wall',
+  Kanonenturm: 'Cannon tower',
+  'Hält Monster auf – ein Tor daneben lässt die Crew durch': 'Holds monsters off – a gate next to it lets your crew through',
+  'Schießt Kugeln auf Monster, mit Kohle aus dem Lager': 'Fires cannon balls at monsters, with coal from the store',
+  'Mauer fertig: hält Monster auf, ein Tor daneben lässt die Crew durch': 'Wall done: holds monsters off, a gate next to it lets your crew through',
+  'Kanonenturm fertig: schießt auf Monster, braucht Kohle im Lager': 'Cannon tower done: fires at monsters, needs coal in the store',
+  '{name} zerstört!': '{name} destroyed!',
+  Turm: 'Tower',
+  'Keine Kohle': 'No coal',
 };
 export { EN2 };

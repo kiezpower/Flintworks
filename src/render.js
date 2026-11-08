@@ -15,6 +15,7 @@ import { drawBuildFx, drawWindowGlow } from './bfx.js';
 import { drawBeams, drawBubbles, drawMark } from './mine.js';
 import { drawFloats } from './floats.js';
 import { drawDecor, glowSpots } from './decor.js';
+import { drawFort } from './fort.js';
 import { drawProps, drawWires, lanternSpots } from './props.js';
 import { biome } from './biomes.js';
 import {
@@ -649,6 +650,8 @@ function render() {
     ctx.fillStyle = (G.frame >> 4) & 1 ? '#c8402c' : '#d8553c';
     ctx.fillRect(x + 1, y - 7, 3, 2);
   }
+  // the fortress: lintels over gates, the cannon's barrel, damage and cannon balls (fort.js)
+  drawFort(ctx, cx, cy);
   // trees
   for (const t of trees) {
     const w = t.spr.width,

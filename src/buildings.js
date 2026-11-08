@@ -15,6 +15,7 @@ import { sfx } from './sound.js';
 import { ITEM } from './sprites.js';
 import { G, animals, builds, crew, flashes, items, lorries, parts, trees } from './state.js';
 import { banner } from './reward.js';
+import { cannonUpd, clearWall, joins } from './fort.js';
 import { closePanel, toast } from './ui.js';
 import {
   AIR,
@@ -117,6 +118,21 @@ const BT = {
     h: 16,
     cost: { plank: 2, metal: 1 },
     info: 'Öffnet nur für deine Crew',
+  },
+  // the fortress (fort.js): walls hold monsters off, the cannon tower shoots at them
+  wall: {
+    name: 'Mauer',
+    w: 8,
+    h: 24,
+    cost: { rock: 3 },
+    info: 'Hält Monster auf – ein Tor daneben lässt die Crew durch',
+  },
+  cannon: {
+    name: 'Kanonenturm',
+    w: 14,
+    h: 26,
+    cost: { rock: 3, metal: 2, plank: 2 },
+    info: 'Schießt Kugeln auf Monster, mit Kohle aus dem Lager',
   },
 };
 const PROD = {
@@ -224,11 +240,14 @@ function tryBuild(type, c = sel_()) {
     toast('Kein Platz am Rand');
     return;
   }
-  for (const b of builds)
-    if (bx < b.x + b.w + 2 && bx + T.w > b.x - 2 && gy - T.h < b.gy && gy > b.gy - b.h) {
+  for (const b of builds) {
+    // (fortress pieces may stand right against each other)
+    const gap = joins(type, b.type) ? 0 : 2;
+    if (bx < b.x + b.w + gap && bx + T.w > b.x - gap && gy - T.h < b.gy && gy > b.gy - b.h) {
       toast('Zu nah an einem Gebäude');
       return;
     }
+  }
   let ground = 0,
     liq = 0;
   for (let x = bx; x < bx + T.w; x++) {
@@ -440,6 +459,9 @@ function updBuilds() {
               g: -0.002,
             });
           if (b.type === 'flag') calcTerr();
+          clearWall(b);
+          if (b.type === 'wall') toast('Mauer fertig: hält Monster auf, ein Tor daneben lässt die Crew durch');
+          if (b.type === 'cannon') toast('Kanonenturm fertig: schießt auf Monster, braucht Kohle im Lager');
           if (b.type === 'tower') toast('Wachturm fertig: drin stehen für weite Sicht');
           if (b.type === 'lift') toast('Fahrstuhl fertig: draufstellen, Stick runter oder hoch');
           if (b.type === 'saw') toast('Sägewerk fertig: macht Bretter, sobald Holz im Lager ist');
@@ -498,6 +520,7 @@ function updBuilds() {
       if (o < 0.05 !== b.open < 0.05) sfx('lift', b.x, b.gy);
     }
     if (b.type === 'lift') liftUpd(b);
+    if (b.type === 'cannon' && !G.netClient) cannonUpd(b);
   }
   useMine();
 }

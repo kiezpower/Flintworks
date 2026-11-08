@@ -156,6 +156,41 @@ const SPR = {
     R(2, 8, 4, 1, '#9aa4ae');
     R(3, 2, 1, 14, '#7a5230');
   }),
+  // a stretch of wall: dressed stone with mortar joints, two merlons on top
+  wall: sp(8, 24, R => {
+    R(0, 0, 3, 3, '#a69e92');
+    R(5, 0, 3, 3, '#a69e92');
+    R(0, 3, 8, 21, '#b8b0a4');
+    R(0, 3, 8, 1, '#80796f');
+    for (let y = 6; y < 24; y += 4) {
+      R(0, y, 8, 1, '#80796f');
+      R(y % 8 ? 2 : 5, y - 3, 1, 3, '#80796f');
+    }
+    R(0, 4, 1, 20, '#a69e92');
+  }),
+  // the stone lintel over a gate (fort.js): closes the gap a monster could jump through
+  lintel: sp(8, 10, R => {
+    R(0, 0, 3, 2, '#a69e92');
+    R(5, 0, 3, 2, '#a69e92');
+    R(0, 2, 8, 8, '#b8b0a4');
+    R(0, 2, 8, 1, '#80796f');
+    R(0, 6, 8, 1, '#80796f');
+    R(3, 3, 1, 3, '#80796f');
+    R(5, 7, 1, 3, '#80796f');
+    R(0, 3, 1, 7, '#a69e92');
+  }),
+  // the cannon tower: a squat round tower with a gun platform on top
+  cannon: sp(14, 26, R => {
+    for (let x = 0; x < 14; x += 4) R(x, 2, 3, 3, '#a69e92');
+    R(0, 5, 14, 2, '#80796f');
+    R(1, 7, 12, 19, '#b8b0a4');
+    for (let y = 9; y < 26; y += 3) for (let x = 1 + (y % 2 ? 0 : 2); x < 13; x += 4) R(x, y, 1, 1, '#80796f');
+    R(1, 7, 1, 19, '#a69e92');
+    R(5, 12, 4, 3, '#2a1a10');
+    R(5, 20, 4, 6, '#2a1a10');
+    R(6, 20, 2, 1, '#4a3a2a');
+    R(4, 0, 6, 2, '#5a5652');
+  }),
   flag: sp(6, 18, R => {
     R(0, 0, 1, 18, '#4a3a2a');
     R(1, 1, 5, 4, '#c8402c');
