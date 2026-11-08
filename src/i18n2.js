@@ -400,5 +400,7 @@ const EN2 = {
   'Die Welt wechselt jede Runde: Wiese, Wüste oder Winter': 'The world changes every round: meadow, desert or winter',
   'Wechselt jede Runde: Wiese, Wüste oder Winter': 'Changes every round: meadow, desert or winter',
   'wechselnde Welt': 'changing world',
+  // the slow-device switch (main.js)
+  'Grafik auf „schnell“ gestellt, damit es flüssig läuft (Einstellungen)': 'Graphics set to “fast” to keep it smooth (settings)',
 };
 export { EN2 };
