@@ -269,3 +269,19 @@ Verglichen mit Clonk Rage, OpenClonk und Terraria. Behoben:
 | Gemeinsamer Bildschirm (v1.85.0) | „Zu zweit an diesem Gerät“ (Lobby → Zusammen spielen): ein zweiter Wühler (pid 1) im Spiel allein, gesteuert mit einem Gamepad (bei zwei Gamepads dem zweiten, sonst spielt Spieler 1 mit Tastatur oder Touch). Die Kamera hält beide im Bild (Mitte zwischen ihnen), wer trotzdem draußen ist, bekommt einen Randpfeil; die Ziele wachsen wie im Koop zu zweit. Seit v1.85.1 öffnet Spieler 2 Baumenü (RB) und Burg (B in der Burg) selbst; was er dort wählt, gilt für seinen Wühler, und er bedient das Menü mit seinem Gamepad. | `local.js`, `input.js`, `render.js`, `lobbyinvite.js` |
 
 Eine Liga gibt es bewusst nicht (der Server speichert keine Daten).
+
+### Last mit 8 Spielern (v1.85.1, `MPLOAD=1 npx playwright test tests/mpload.spec.js --workers 1`)
+
+Alle Spieler laufen 10 s herum, gemessen mit einem eigenen Relay auf demselben Rechner (8 Browser
+teilen sich die CPU, die Takt-Zeiten sind dadurch eher zu hoch):
+
+| | 2 Spieler | 8 Spieler |
+|---|---|---|
+| Host sendet | 21 KB/s | 24 KB/s |
+| ein Gast empfängt | 21 KB/s | 22 KB/s |
+| Bilder/s Host / Gast | 55 / 51 | 55 / 51 |
+| Spieltakt beim Host (Median / 90 %) | 2,0 / 2,7 ms | 6,7 / 11,3 ms |
+
+Der Host schickt jedes Paket einmal, der Relay verteilt es: bei 8 Spielern rund 7 × 22 KB/s ≈
+1,2 Mbit/s je Raum. Auf einem schwachen Handy als Host kann ein voller Raum knapp werden (der Takt
+liegt dann nahe an den 16,7 ms eines Bildes); dann übernimmt besser ein stärkeres Gerät den Host.
