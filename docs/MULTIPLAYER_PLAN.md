@@ -244,3 +244,16 @@ wie ein Einzelspiel zu zweit. Was sich dafür geändert hat:
 
 Fehler dabei behoben: Auf Karten bekam die zweite Burg kein Team, sodass Blau dort nichts
 verkaufen konnte.
+
+## 8. Abgleich mit den Vorbildern (v1.80.1)
+
+Verglichen mit Clonk Rage, OpenClonk und Terraria. Behoben:
+
+| Bereich | Änderung | Dateien |
+|---|---|---|
+| Levelziele | Mitspieler bekamen `G.lvl` (Orte, Tiefe, Wellen, Auslöser), `G.kills` und `G.rescued` nicht: die Zielzeile zeigte bei ihnen falsche Werte. Jetzt mit den Spielwerten übertragen. | `net/sync.js` |
+| Festung | Lebenspunkte der Festungsteile, Ausrichtung und Schuss der Kanone, die Nächte von „Festung“ (`G.fort`) werden übertragen; Kanonenkugeln fliegen bei Mitspielern als Bild mit (Ereignis `cb`), die Explosion kommt vom Host. | `net/sync.js`, `fort.js`, `net/client.js` |
+| Wellen | Wie die Bosse in Terraria wachsen Belagerungswellen mit der Spielerzahl: je weiterem Spieler die Hälfte mehr Monster. | `siege.js` |
+
+Weiter geplant: Mitspieler finden (Pfeile am Rand, Minikarte), Markierung mit Schnellsätzen,
+Punktestand während der Runde, neuer Modus (Belagerung Versus oder Flagge erobern).

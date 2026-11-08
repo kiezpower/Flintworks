@@ -6,6 +6,7 @@ import { addFloat, updFloats } from '../floats.js';
 import { inp } from '../input.js';
 import { updParts } from '../objects.js';
 import { playAnnounce } from '../announce.js';
+import { playBall, updFort } from '../fort.js';
 import { playShot, updArrows, updCombat } from '../combat.js';
 import { playBomb, updEvents } from '../events.js';
 import { diggerOf } from '../players.js';
@@ -125,7 +126,7 @@ function reconcile(c, e) {
   }
 }
 function playEvent(e) {
-  if (playAnnounce(e) || playShot(e) || playBomb(e)) return;
+  if (playAnnounce(e) || playShot(e) || playBomb(e) || playBall(e)) return;
   if (e[0] === 's') sfx(e[1], e[2], e[3], e[4], e[5]);
   else if (e[0] === 'f') addFloat(e[1], e[2], e[3], e[4], e[5]);
   else if (e[0] === 'x') {
@@ -157,6 +158,7 @@ function clientStep(paused) {
     updArrows();
     updCombat();
     updEvents();
+    updFort();
   }
   if (!paused) {
     updWeather();
