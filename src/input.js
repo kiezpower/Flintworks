@@ -6,7 +6,7 @@ import { audioInit } from './sound.js';
 import { G, crew } from './state.js';
 import { closePanel, openBag, openBuild, panelEl, toast, toggleMap, weaponsOf } from './ui.js';
 import { navBack, navMove, navOk, pad } from './gamepad.js';
-import { p1HasPad } from './local.js';
+import { p1HasPad, p2Pad } from './local.js';
 import { send } from './commands.js';
 import { hasGear } from './tools.js';
 import { vehicleOf } from './vehicles/core.js';
@@ -340,11 +340,12 @@ function hookKeyUp(fire) {
 let padStick = { ax: 0, ay: 0, dig: false };
 function readPad() {
   padStick = { ax: 0, ay: 0, dig: false };
-  // (two at one device with one pad: that pad is the second player's, local.js; menus still use it)
-  const P = p1HasPad() || G.state !== 'play' || !panelEl.hidden ? pad(0) : null;
+  // (two at one device with one pad: that pad is the second player's, local.js; menus still use it,
+  // and a panel the second player opened is moved through with his pad)
+  const menu = G.state !== 'play' || !panelEl.hidden;
+  const P = menu && G.local && G.panelPid === 1 ? pad(p2Pad()) : p1HasPad() || menu ? pad(0) : null;
   if (!P) return;
   if (P.any) G.inputKind = 'keys';
-  const menu = G.state !== 'play' || !panelEl.hidden;
   if (menu) {
     if (P.dir) navMove(P.dir);
     if (P.ok) navOk();

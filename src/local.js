@@ -37,7 +37,13 @@ const p1HasPad = () => !G.local || G.net || padCount() >= 2;
 // every tick: the second player's input from the pad
 function localTick() {
   if (!G.local || G.net || !diggerOf(P2)) return;
-  const Q = G.state === 'play' ? pad(p2Pad()) : null;
+  // (an open panel: the pad moves through it, input.js; the game stands still meanwhile)
+  const Q = G.state === 'play' && G.menuOpen?.() !== true ? pad(p2Pad()) : null;
+  if (Q && Q.build) {
+    G.panelPid = P2;
+    G.openBuildFor?.();
+    return;
+  }
   consumeEdges();
   setInput(P2, {
     ax: Q ? Q.ax : 0,
@@ -59,4 +65,4 @@ function localFocus() {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, vx: (a.vx + b.vx) / 2, vy: Math.max(a.vy, b.vy) };
 }
 
-export { localFocus, localSetup, localTick, p1HasPad, setLocal };
+export { localFocus, localSetup, localTick, p1HasPad, p2Pad, setLocal };

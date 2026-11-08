@@ -24,9 +24,11 @@ function exec(pid, name, args = {}) {
 }
 // the network replaces this while you are a client (net/client.js)
 G.sendCmd = null;
+// (G.panelPid: a panel the second player at the same device opened acts for him, local.js)
 function send(name, args = {}) {
   if (G.netClient) G.sendCmd(name, args);
-  else exec(G.myId, name, args);
+  else exec(G.panelPid ?? G.myId, name, args);
 }
+G.panelPid = null;
 
 export { exec, register, send };

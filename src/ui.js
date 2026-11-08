@@ -790,3 +790,7 @@ export {
   toastEl,
   toggleMap,
 };
+// for two at one device (local.js, which cannot import this module): is a panel open, and the
+// build menu for the second player
+G.menuOpen = () => !panelEl.hidden;
+G.openBuildFor = () => openBuild();
