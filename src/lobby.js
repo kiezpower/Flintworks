@@ -1,6 +1,6 @@
 import { GAME_MODES, mode } from './modes.js';
 import { ALL_IDS, totalStars, unlocked } from './scenarios.js';
-import { landscape, openSelect, selectOpen } from './levelselect.js';
+import { landscape, mixed, openSelect, selectOpen } from './levelselect.js';
 import { previewOf } from './levels/preview.js';
 import { lessonsPanel } from './lessons.js';
 import { canInstall, offerInstall, openInstall } from './install.js';
@@ -87,7 +87,7 @@ function checkUpdate() {
 const cv = $('lbCv'),
   g = cv.getContext('2d');
 const MODES = ['random', 'meadow', 'desert', 'winter'];
-const MODE_NAME = { random: 'Zufall', meadow: 'Wiese', desert: 'Wüste', winter: 'Winter' };
+const MODE_NAME = { random: 'wechselnde Welt', meadow: 'Wiese', desert: 'Wüste', winter: 'Winter' };
 let hooks = {};
 let t = 0,
   jumpV = 0,
@@ -205,7 +205,7 @@ function refresh() {
     pvEl.dataset.id = pvKey;
     pvEl.innerHTML = '';
     const pm = GAME_MODES[pvId],
-      pic = free ? biome && landscape(biome, true) : pm && (pm.pkg || pm.campaign) && previewOf(pvId, pm.pkg);
+      pic = free ? (biome ? landscape(biome, true) : mixed()) : pm && (pm.pkg || pm.campaign) && previewOf(pvId, pm.pkg);
     if (pic) pvEl.appendChild(pic);
     pvEl.hidden = !pic;
   }

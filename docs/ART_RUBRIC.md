@@ -352,6 +352,7 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
   Siedler, er läuft tagsüber zwischen Hütte und Burg, nachts ist er daheim, zahlt alle 30 s 2 Taler
   und isst jeden Morgen ein Brot aus dem Lager; ohne Brot zieht er nach dem zweiten hungrigen Morgen
   aus (`villagers.js`).
+- Nachtrag v1.95.0: Spielmodi haben in der Auswahl nur noch eine Karte; das Bild zeigt Wiese, Wüste und Winter nebeneinander, die Welt wechselt jede Runde.
 - v1.94.1: Lore-Fix: sie nimmt Stufen bis 4 px (Wühler: 3), lässt sich also jeden begehbaren Hang
   hochschieben; Holztreppen und Brücken tragen sie nur an den Rädern (`setPlat(3)`), so rollt sie
   unter einer Treppe durch und hinauf, statt daran hängen zu bleiben (`tests/lorry.spec.js`).

@@ -103,23 +103,42 @@ function landscape(biome, copy = false) {
   scapes[biome] = c;
   return copy ? cloneOf(c) : c;
 }
+// a free game mode plays in a world that changes every round: its picture is the three
+// landscapes side by side
+function mixed() {
+  const first = landscape(WORLDS[0]),
+    c = document.createElement('canvas'),
+    g = c.getContext('2d');
+  c.width = first.width;
+  c.height = first.height;
+  const w = Math.ceil(c.width / WORLDS.length);
+  WORLDS.forEach((b, k) => g.drawImage(landscape(b), k * w, 0, w, c.height, k * w, 0, w, c.height));
+  // (a thin line between them)
+  g.fillStyle = 'rgba(0,0,0,0.35)';
+  for (let k = 1; k < WORLDS.length; k++) g.fillRect(k * w, 0, 1, c.height);
+  return c;
+}
+const free = M => !M.campaign && !M.pkg;
 // the picture of a card: the level's preview, or the landscape of the world type, and the icon
 function picture(id, biome, big) {
   const M = GAME_MODES[id],
     box = document.createElement('div');
   box.className = 'ls-pv' + (big ? ' big' : '');
   box.style.background = `rgb(${BIOMES[biome || M.biome || 'meadow'].sky[0].join(',')})`;
-  const p = biome
-    ? landscape(biome, true)
-    : !M.pkg && M.campaign
-      ? previewOf(id)
-      : M.pkg
-        ? previewOf(id, M.pkg)
-        : null;
+  const mix = !biome && free(M),
+    p = biome
+      ? landscape(biome, true)
+      : mix
+        ? mixed()
+        : M.pkg
+          ? previewOf(id, M.pkg)
+          : M.campaign
+            ? previewOf(id)
+            : null;
   if (p) box.appendChild(p);
-  if (biome) p.className = 'ls-scape';
+  if (biome || mix) p.className = 'ls-scape';
   const ic = toolIcon(M.icon || MODE_ICON[id] || 'castle');
-  ic.className = p && !biome ? 'ls-badge' : 'ls-icon';
+  ic.className = p && !biome && !mix ? 'ls-badge' : 'ls-icon';
   box.appendChild(ic);
   return box;
 }
@@ -134,15 +153,15 @@ const nameOf = (id, M, biome) =>
   M.campaign ? `${M.n} · ${tr(M.name)}` : biome ? `${tr(M.name)} · ${tr(BIOMES[biome].name)}` : tr(M.name);
 const starRow = s => '★'.repeat(s) + '☆'.repeat(3 - s);
 const versus = M => M.pkg && M.pkg.objects.some(o => o.t === 'base' && o.team === 1);
-// is this card what the lobby has chosen? (a game mode: also the same world type)
-const isCur = (id, biome) => id === opts.current && (!biome || biome === P.mode);
+// is this card what the lobby has chosen?
+const isCur = id => id === opts.current;
 
 function card(id, { biome, next } = {}) {
   const M = GAME_MODES[id],
     open = !M.campaign || unlocked(id),
     b = document.createElement('button');
   b.className = 'ls-card' + (open ? '' : ' locked') + (id === next ? ' next' : '');
-  if (isCur(id, biome)) b.classList.add('cur');
+  if (isCur(id)) b.classList.add('cur');
   b.dataset.id = id;
   if (biome) b.dataset.biome = biome;
   b.appendChild(picture(id, biome));
@@ -152,8 +171,8 @@ function card(id, { biome, next } = {}) {
     M.campaign ? (open ? starRow(starsOf(id)) : '🔒') : M.map ? esc(tr(versus(M) ? 'Versus' : 'Koop')) : ''
   }</span>`;
   b.appendChild(t);
-  // maps: what they are about, in a line (game modes say it once above their row)
-  if (M.map) {
+  // maps and game modes: what they are about, in a line
+  if (M.map || free(M)) {
     const d = document.createElement('small');
     d.className = 'ls-d';
     d.textContent = tr(M.desc, { goal: M.goal });
@@ -248,18 +267,16 @@ function sections() {
       tr('Koop und Versus'),
       MAP_IDS.map(id => card(id)),
     );
+  // game modes: one card each, the world changes every round (Wiese, Wüste or Winter)
   if (allowed('modes'))
-    for (const id of MODE_IDS) {
-      const M = GAME_MODES[id];
-      section(
-        list,
-        id,
-        'modes',
-        esc(tr(M.name)),
-        tr(M.desc, { goal: M.goal }),
-        WORLDS.map(biome => card(id, { biome })),
-      );
-    }
+    section(
+      list,
+      'modes',
+      'modes',
+      esc(tr('Spielmodi')),
+      tr('Die Welt wechselt jede Runde: Wiese, Wüste oder Winter'),
+      MODE_IDS.map(id => card(id)),
+    );
 }
 function chips() {
   const nav = root.querySelector('nav');
@@ -319,7 +336,9 @@ function detail(id, biome) {
     ? `${tr(BIOMES[L.biome || 'meadow'].name)} · ${L.size[0]} × ${L.size[1]}`
     : biome
       ? tr(BIOMES[biome].name)
-      : '';
+      : free(M)
+        ? tr('Wechselt jede Runde: Wiese, Wüste oder Winter')
+        : '';
   // a line of the detail: a small label left, the content (already escaped) right
   const row = (label, body) => `<div class="ls-row"><small>${esc(tr(label))}</small>${body}</div>`;
   let html = `<h3>${esc(nameOf(id, M, biome))}</h3>`;
@@ -363,7 +382,9 @@ function back() {
 }
 function go(id, biome) {
   P.gmode = id;
+  // (a game mode: a different world every round)
   if (biome) P.mode = biome;
+  else if (free(GAME_MODES[id])) P.mode = 'random';
   saveProfile();
   close();
   opts.onPick && opts.onPick(id);
@@ -446,4 +467,4 @@ function openSelect(o = {}) {
 }
 const selectOpen = () => !!root && !root.hidden;
 
-export { close as closeSelect, landscape, openSelect, selectOpen };
+export { close as closeSelect, landscape, mixed, openSelect, selectOpen };
