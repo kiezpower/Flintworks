@@ -2,7 +2,7 @@
 // three daily quests, each with icon, bar and count) and the task board (pinned notes) that
 // opens from the game menu (tab "Aufgaben") and from the level chip in the lobby.
 import { missionNow } from './missions.js';
-import { P, QUESTS, claimQuest, rollQuests, saveProfile } from './profile.js';
+import { P, QUESTS, claimQuest, rollQuests } from './profile.js';
 import { sfx } from './sound.js';
 import { itemIcon, padIcon } from './sprites.js';
 import { G } from './state.js';
@@ -43,6 +43,7 @@ const hoursLeft = () => Math.max(1, Math.ceil((86400000 - (Date.now() % 86400000
 const el = document.getElementById('qTrack');
 let key = '';
 const last = {};
+// at most three rows: the round's task, then the daily quests not yet claimed
 function rows() {
   const out = [];
   const m = missionNow();
@@ -50,41 +51,30 @@ function rows() {
     out.push({ id: 'm', ico: misIcon(m.id), text: m.text, have: m.v, goal: m.goal, tip: `+${m.pay} ${tr('Taler')}` });
   for (const q of P.quests) {
     const Q = QUESTS[q.id];
-    if (!Q) continue;
-    out.push({ id: q.id, ico: QUEST_ICON[q.id](), text: tr(Q.text, { n: q.goal }), have: q.have, goal: q.goal, done: q.done, tip: `+${Q.xp} XP` });
+    if (!Q || q.done) continue;
+    out.push({ id: q.id, ico: QUEST_ICON[q.id](), text: tr(Q.text, { n: q.goal }), have: q.have, goal: q.goal, tip: `+${Q.xp} XP` });
   }
-  return out;
+  return out.slice(0, 3);
 }
 function updTracker() {
-  const show = G.state === 'play' && !G.tut;
-  if (el.hidden === show) el.hidden = !show;
-  if (!show) return;
-  const r = rows();
-  const k = (P.qtSmall ? 's' : '') + r.map(q => q.id + q.have + '/' + q.goal + (q.done ? 'd' : '') + q.text).join('|');
+  const r = G.state === 'play' && !G.tut ? rows() : [];
+  if (el.hidden === !!r.length) el.hidden = !r.length;
+  if (!r.length) return;
+  const k = r.map(q => q.id + q.have + '/' + q.goal + q.text).join('|');
   if (k === key) return;
   key = k;
-  const ready = P.quests.filter(q => !q.done && q.have >= q.goal).length;
-  el.classList.toggle('small', !!P.qtSmall);
-  el.innerHTML =
-    `<button class="qt-head" aria-expanded="${!P.qtSmall}"><span>${tr('Aufgaben')}</span>` +
-    (ready ? `<b class="qt-ready">${ready}</b>` : '') +
-    `<i>${P.qtSmall ? '▾' : '▴'}</i></button>` +
-    (P.qtSmall
-      ? ''
-      : `<div class="qt-rows">` +
-        r
-          .map(q => {
-            const full = q.have >= q.goal;
-            const up = last[q.id] != null && q.have > last[q.id];
-            return `<div class="qt-row${full ? ' full' : ''}${q.done ? ' done' : ''}${up ? ' up' : ''}${q.id === 'm' ? ' qt-mis' : ''}" title="${esc(q.text + ' · ' + q.tip)}">
-              <img src="${q.ico}" alt="">
-              <span class="qt-t">${esc(q.text)}</span>
-              <span class="qt-n">${full ? '✓' : `${q.have}/${q.goal}`}</span>
-              <span class="qt-bar"><i style="width:${Math.min(100, (q.have / q.goal) * 100)}%"></i></span>
-            </div>`;
-          })
-          .join('') +
-        `</div>`);
+  // only icon and bar; the text is in the tooltip and on the board
+  el.setAttribute('aria-label', tr('Aufgaben') + ': ' + r.map(q => `${q.text} ${Math.min(q.have, q.goal)}/${q.goal}`).join(', '));
+  el.innerHTML = r
+    .map(q => {
+      const full = q.have >= q.goal;
+      const up = last[q.id] != null && q.have > last[q.id];
+      return `<div class="qt-row${full ? ' full' : ''}${up ? ' up' : ''}" title="${esc(`${q.text} ${Math.min(q.have, q.goal)}/${q.goal} · ${q.tip}`)}">
+        <img src="${q.ico}" alt="">
+        <span class="qt-bar"><i style="width:${Math.min(100, (q.have / q.goal) * 100)}%"></i></span>
+      </div>`;
+    })
+    .join('');
   for (const q of r) last[q.id] = q.have;
 }
 let openTasks = () => {};
@@ -92,17 +82,9 @@ let openTasks = () => {};
 function onTrackerOpen(fn) {
   openTasks = fn;
 }
+el.setAttribute('role', 'button');
 el.addEventListener('pointerdown', e => e.stopPropagation());
-el.addEventListener('click', e => {
-  if (e.target.closest('.qt-head')) {
-    P.qtSmall = !P.qtSmall;
-    saveProfile();
-    sfx('click');
-    updTracker();
-    return;
-  }
-  openTasks();
-});
+el.addEventListener('click', () => openTasks());
 
 // ---- the board ----
 // parent: where it goes; reopen: draws the panel again after a reward was claimed

@@ -336,14 +336,15 @@ test('the tasks stay in view: a tracker under the money, the board in the menu a
   await page.waitForTimeout(500);
   await page.click('#pClose');
   await play(page);
-  // in the round: the round's task and the three quests in the tracker, none at the top
-  await expect(page.locator('#qTrack .qt-row')).toHaveCount(4);
-  await expect(page.locator('#qTrack .qt-row').first()).toContainText('Gib einem Helfer eine Aufgabe');
+  // in the round: at most three rows (the round's task first), icon and bar only, none at the top
+  await expect(page.locator('#qTrack .qt-row')).toHaveCount(3);
+  await expect(page.locator('#qTrack .qt-row').first()).toHaveAttribute('title', /Gib einem Helfer eine Aufgabe/);
+  await expect(page.locator('#qTrack .qt-row[title*="Goldnuggets"]')).toHaveClass(/full/);
   await expect(page.locator('#misTxt')).toBeHidden();
-  await expect(page.locator('#qTrack .qt-ready')).toHaveText('1');
+  expect((await page.locator('#qTrack').boundingBox()).width).toBeLessThan(110);
   // a tap opens the menu at the tab "Aufgaben", where the reward is claimed
   await page.waitForTimeout(500);
-  await page.click('#qTrack .qt-rows');
+  await page.click('#qTrack');
   await expect(page.locator('#pTitle')).toHaveText('Menü');
   await expect(page.locator('.pchips button.sel')).toHaveText('Aufgaben');
   await expect(page.locator('#pBody .qnote.qmis')).toContainText('Auftrag der Runde');
@@ -354,9 +355,8 @@ test('the tasks stay in view: a tracker under the money, the board in the menu a
   await page.waitForTimeout(500);
   await page.click('#pClose');
   await expect(page.locator('#panel')).toBeHidden();
-  await expect(page.locator('#qTrack .qt-ready')).toHaveCount(0);
-  // the tracker folds away to its title
-  await page.click('#qTrack .qt-head');
-  await expect(page.locator('#qTrack .qt-row')).toHaveCount(0);
+  // the claimed quest leaves the tracker, the next one moves up
+  await expect(page.locator('#qTrack .qt-row[title*="Goldnuggets"]')).toHaveCount(0);
+  await expect(page.locator('#qTrack .qt-row').nth(2)).toHaveAttribute('title', /300 Taler/);
   expect(errors).toEqual([]);
 });
