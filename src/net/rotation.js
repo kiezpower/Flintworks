@@ -13,6 +13,7 @@ const ROTATION = [
   { gmode: 'gold', versus: true },
   { gmode: 'gold', versus: true, ffa: true },
   { gmode: 'treasure', versus: true, ffa: true },
+  { gmode: 'festungssturm', versus: true },
 ];
 const HOUR = 3600 * 1000;
 

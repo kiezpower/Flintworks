@@ -31,12 +31,39 @@ function setupRound() {
   M.out = []; // teams whose castle fell
   const h = L?.objects?.find(o => o.t === 'hill'),
     hx = clamp(h ? Math.round(h.x < 0 ? W + h.x : h.x) : Math.round(W / 2), 10, W - 10);
-  // (three castles: the middle one stands where the hill would be, so there is none)
-  if (!builds.some(b => b.type === 'base' && Math.abs(b.x + b.w / 2 - hx) < 80))
+  // (three castles: the middle one stands where the hill would be, so there is none; a storm on
+  // a fortress has no hill either)
+  if (!L?.rules?.assault && !builds.some(b => b.type === 'base' && Math.abs(b.x + b.w / 2 - hx) < 80))
     M.hill = { x: hx, y: surf[hx], r: h?.r || 34, own: -1, tm: -1, cap: 0 };
   M.sup = 2 * MIN; // first supply check after two minutes
   M.mark = [0, 0]; // how far each team has been announced (¾, almost there)
+  // a storm on a fortress (rules.assault): no supplies, each side gets its kit
+  if (L?.rules?.assault) setupAssault(M, L.rules.assault);
   if (!L) centerChest();
+}
+// "Festungssturm" (rules.assault): Red holds a fortress, Blue storms it. Red starts with stone,
+// planks, metal and coal for walls, a gate and a cannon; Blue with wood and money, and after the
+// truce (peace, minutes) its explosives arrive. Red wins when the castle still stands at the end.
+//   "assault": { "peace": 2, "def": { "rock": 12, … }, "att": { "wood": 6, … }, "arms": { "flint": 8, … } }
+function giveKit(t, kit) {
+  const cur = G.curTeam;
+  useTeam(t);
+  for (const [k, n] of Object.entries(kit || {})) G.store[k] = (G.store[k] || 0) + n;
+  useTeam(cur);
+}
+function setupAssault(M, A) {
+  M.assault = { peace: Math.round((A.peace ?? 2) * MIN), armed: false, arms: A.arms || { flint: 8, tnt: 4 } };
+  giveKit(0, A.def);
+  giveKit(1, A.att);
+  announceBanner('Festungssturm', 'Rot hält die Festung, Blau stürmt sie – Blau bekommt den Sprengstoff nach der Waffenruhe');
+}
+function assaultTick() {
+  const A = G.mp.assault;
+  if (!A || A.armed || (G.playTicks || 0) < A.peace) return;
+  A.armed = true;
+  giveKit(1, A.arms);
+  announceBanner('Der Sturm beginnt!', 'Blau hat jetzt Feuersteine und Sprengladungen im Lager');
+  sfx('thunder');
 }
 // a generated world gets a chest under the hill that fills up again every two minutes
 function centerChest() {
@@ -246,7 +273,8 @@ function clockTick() {
     }
   });
   // every 90 seconds: the team that is well behind the best gets explosives dropped at its castle
-  if ((G.playTicks || 0) >= M.sup) {
+  // (not in a storm on a fortress: there the sides are meant to be different)
+  if (!M.assault && (G.playTicks || 0) >= M.sup) {
     M.sup += 1.5 * MIN;
     const ts = alive(),
       hp = G.teams.map((x, t) => castleOf(t)?.hp ?? CASTLE_HP),
@@ -284,6 +312,7 @@ function updVersus() {
   if (G.frame % 30 === 0) {
     hillTick();
     clockTick();
+    assaultTick();
   }
 }
 // any round: chests marked "re" fill up again some minutes after they were opened
@@ -313,8 +342,11 @@ function vsResult() {
     if (goalReached()) winner = t;
   }
   useTeam(cur);
+  if (winner != null && G.mp.assault) return { winner: 0, why: 'Die Festung hat gehalten!' };
   if (winner != null) return { winner, why: `${TEAM[winner]} hat das Ziel erreicht` };
   if (left() == null || left() > 0) return null;
+  // time is up in a storm on a fortress: the castle still stands, Red has held it
+  if (G.mp.assault) return { winner: 0, why: 'Die Festung hat gehalten!' };
   // time is up: the team furthest ahead, then the strongest castle
   const r = ratios(),
     hp = G.teams.map((x, t) => castleOf(t)?.hp ?? 0),

@@ -150,6 +150,17 @@ Monster können nicht schwimmen: Ein Wassergraben, tiefer als ein Monster hoch i
 Pixel), hält sie auf, und sie ertrinken darin. Ein Wühler, der direkt an einer Mauer steht,
 steigt mit der Aktionstaste hinauf und schießt von oben von selbst auf Monster in der Nähe.
 
+### Festungssturm (`rules.assault`, Versus-Karten)
+
+```json
+"assault": { "peace": 2, "def": { "rock": 12, "plank": 6 }, "att": { "wood": 6 }, "arms": { "flint": 8, "tnt": 4 } }
+```
+
+Rot (Team 0) hält eine Festung, Blau (Team 1) stürmt sie. `def` und `att` kommen zu Beginn ins
+Lager der Teams, `arms` nach `peace` Minuten Waffenruhe ins Lager von Blau. Kein Hügel, kein
+Nachschub. Ziel `{ "t": "survive", "n": 10 }` mit `vsTime: 10`: Steht die Burg am Ende, gewinnt
+Rot. Beispiel: „Festungssturm“.
+
 ### Steigende Lava (`rules.rise`)
 
 Ab Minute `start` steigt die Lava alle `every` Sekunden um eine Zellreihe, vom unteren Rand bis

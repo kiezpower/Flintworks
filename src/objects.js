@@ -12,7 +12,7 @@ import { treeSprite } from './sprites.js';
 import { INV_MAX, G, animals, builds, crew, flashes, items, lorries, parts, trees } from './state.js';
 import { damageCastle } from './versus.js';
 import { toast } from './ui.js';
-import { hitFort, strikeFort } from './fort.js';
+import { blastForts, hitFort, strikeFort } from './fort.js';
 import { atCastle, siegeMarch } from './siege.js';
 import {
   ACID,
@@ -639,6 +639,8 @@ function explode(cx, cy, r, by = null) {
       startTumble(c, (dx / d) * 2.6, -2.2 + dy / d);
     }
   }
+  // (Versus: the other team's walls, gates and towers crack too, fort.js)
+  blastForts(cx, cy, r, by);
   if (by && G.teams)
     for (const b of builds) {
       if (b.type !== 'base') continue;
