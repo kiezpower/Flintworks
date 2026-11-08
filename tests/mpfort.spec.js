@@ -171,3 +171,50 @@ test('finding each other: a call comes as a line, "Hierher!" sets a marker, an a
   for (const p of [h, g]) expect(p.errors).toEqual([]);
   for (const p of [h, g]) await p.page.close();
 });
+
+test('the score while a Versus round runs: the clock, both teams with goal and castle, every player', async ({
+  browser,
+}) => {
+  const h = await player(browser, 'Karla');
+  const g = await player(browser, 'Lutz');
+  await h.page.waitForTimeout(500);
+  await h.page.locator('#lbCreate').click();
+  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  const code = await h.page.locator('.lb-codetap b').textContent();
+  await h.page.waitForTimeout(500);
+  await h.page.locator('.opt', { hasText: 'Versus' }).first().click();
+  await expect(h.page.locator('.opt', { hasText: 'Versus' }).first()).toContainText('✓');
+  await g.page.waitForTimeout(500);
+  await g.page.locator('#lbCodeIn').fill(code);
+  await g.page.locator('#lbJoinBtn').click();
+  await expect(h.page.locator('.lb-players')).toContainText('Lutz');
+  await g.page.waitForTimeout(500);
+  await g.page.locator('.opt', { hasText: 'Bereit?' }).click();
+  await h.page.waitForTimeout(500);
+  await h.page.locator('.opt', { hasText: 'Spiel starten' }).click();
+  for (const p of [h, g])
+    await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net && window.__ww.G.teams, null, {
+      timeout: 10000,
+    });
+  // something to count: Karla sold gold, Lutz dug
+  await h.page.evaluate(async () => {
+    const { addStat } = await import('/src/stats.js');
+    const w = window.__ww,
+      lutz = w.crew.find(c => c.name === 'Lutz');
+    addStat(w.G.myId, 'sold', 120);
+    addStat(lutz.pid, 'dig', 400);
+  });
+  await expect(g.page.locator('#scoreBtn')).toBeVisible();
+  await g.page.waitForTimeout(1500);
+  await g.page.keyboard.press('KeyP');
+  await expect(g.page.locator('#pTitle')).toHaveText('Punktestand');
+  const txt = await g.page.locator('#panel').textContent();
+  expect(txt).toContain('⏱');
+  expect(await g.page.locator('#panel .score .ranking').count()).toBe(2);
+  expect(txt).toContain('Karla');
+  expect(txt).toContain('Lutz');
+  await g.page.waitForTimeout(700);
+  await g.page.screenshot({ path: test.info().outputPath('score.png') });
+  for (const p of [h, g]) expect(p.errors).toEqual([]);
+  for (const p of [h, g]) await p.page.close();
+});

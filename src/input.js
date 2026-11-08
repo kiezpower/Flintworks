@@ -63,6 +63,8 @@ addEventListener('keydown', e => {
   if (e.code === 'KeyB') openBuild();
   if (e.code === 'KeyM') toggleMap();
   if (e.code === 'KeyI') openBag();
+  // the score in a shared round (scoreboard.js; through G to keep the modules apart)
+  if (e.code === 'KeyP') G.openScore?.();
   if (e.code === 'Tab') {
     e.preventDefault();
     cycleCrew();
