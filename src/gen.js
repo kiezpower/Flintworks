@@ -410,9 +410,10 @@ function gen() {
     }
   }
   placeChests(Math.max(perWidth(6), treasureGoal() + 2));
+  // (the cave biomes first: their rock shell must not fill a shrine's or a hoard's hall)
+  placeZones(); // (a crystal cave and a mushroom cave, zones.js)
   placeShrines(perWidth(3)); // (halls with a gift deep down, free modes: shrines.js)
   placeHoards(perWidth(2)); // (great hoards, found with a treasure map: hoards.js)
-  placeZones(); // (a crystal cave and a mushroom cave, zones.js)
   placeGas(perArea(9));
   if (G.relaxed) G.gas = [];
   for (let x = 0; x < W; x++)
