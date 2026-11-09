@@ -195,7 +195,10 @@ function digZone(c, dir, slope, yMax) {
 }
 function wantsDig(c, I) {
   if (c.tumble || c.bridge || c.chop || c.dead) return false;
-  if (builds.some(b => b.cs && b.done && onCase(c, b.cs))) return false;
+  // on a lift's platform the stick up and down steers the cab (buildings.js liftUpd):
+  // only digging sideways, out into the walls of the shaft, works there
+  const onLift = builds.some(b => b.cs && b.done && onCase(c, b.cs));
+  if (onLift && Math.abs(I.ax) < Math.abs(I.ay)) return false;
   const grounded = !free(c.x, c.y + 2, 6, 10);
   const hold = grounded || c.climb || c.hangle;
   const dir = Math.abs(I.ax) > 0.3 ? Math.sign(I.ax) : c.face;
@@ -236,7 +239,8 @@ function wantsDig(c, I) {
     const push = blocked && (recent || c.pushT > (G.jumpBtn ? 18 : 8));
     // in a pit or a cave (below the surface) an earth wall too high for a jump: dig a ramp up
     // instead of a tunnel straight in (climb.js)
-    if (push && !c.digging && c.y > surf[Math.max(0, Math.min(W - 1, Math.floor(c.x + 3)))] + 12) {
+    // (not from a lift's cab: there the shaft wall goes up to the surface, and you want a tunnel)
+    if (push && !c.digging && !onLift && c.y > surf[Math.max(0, Math.min(W - 1, Math.floor(c.x + 3)))] + 12) {
       const L = rampHere(c, dir);
       if (L && digZone(c, dir, -SLOPE_UP, 4) >= 3) {
         c.ramp = { dir, top: L.top };
@@ -972,6 +976,9 @@ function context(c) {
   // at a great hoard (hoards.js)
   const hc = hoardContext(c);
   if (hc) return hc;
+  // next to a lift's shaft, the cab somewhere else: call it here
+  const lc = liftCall(c);
+  if (lc) return lc;
   const ch = chestNear(c);
   if (ch) return { label: 'Öffnen', fn: () => openChest(ch) };
   const L = lorryNear(c);
@@ -1017,6 +1024,33 @@ function context(c) {
       },
     };
   return { label: 'Bauen', ui: 'build' };
+}
+// ---- calling the lift ----
+// Standing at the top of the shaft or in a tunnel that meets it (the cab elsewhere), the action
+// button calls the cab to your feet; it can only come as deep as it has already dug.
+function liftCall(c) {
+  if (c.ride != null || c.climb || c.hangle || c.tumble) return null;
+  if (free(c.x, c.y + 2, 6, 10)) return null; // (on the ground)
+  const feet = c.y + c.h;
+  for (const b of builds) {
+    const cs = b.cs;
+    if (!cs || !b.done || onCase(c, cs)) continue;
+    // beside the shaft (or at its rim), within a few pixels
+    if (c.x + c.w < cs.x - 4 || c.x > cs.x + 16) continue;
+    if (feet < cs.home - 3 || feet > (b.deep ?? cs.home) + 3) continue;
+    // (at the rim up top: the cab's resting place)
+    const to = feet < cs.home + 4 ? cs.home : Math.min(b.deep ?? cs.home, feet);
+    if (Math.abs(to - cs.y) < 3 && b.call == null) continue; // (already here)
+    return {
+      label: 'Rufen',
+      fn: () => {
+        b.call = to;
+        toast('Der Fahrstuhl kommt');
+        sfx('lift', b.x, cs.y);
+      },
+    };
+  }
+  return null;
 }
 function startBridge(c, m) {
   if (c.climb || c.hangle || c.tumble) return;
@@ -1074,6 +1108,7 @@ export {
   lorryNear,
   nearTree,
   onCase,
+  liftCall,
   spawnFromDig,
   startBridge,
   startTumble,

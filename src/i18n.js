@@ -599,7 +599,10 @@ const EN = {
   'Fels blockiert – sprengen!': 'Rock in the way – blast it!',
   'Windrad fertig: liefert Strom, je nach Wind': 'Windmill finished: makes power depending on the wind',
   'Wachturm fertig: drin stehen für weite Sicht': 'Watchtower finished: stand inside for a wide view',
-  'Fahrstuhl fertig: draufstellen, Stick runter oder hoch': 'Elevator finished: stand on it, stick down or up',
+  'Fahrstuhl fertig: draufstellen, Stick runter oder hoch · daneben ruft ihn der Aktions-Knopf':
+    'Elevator finished: stand on it, stick down or up · next to it the action button calls it',
+  Rufen: 'Call',
+  'Der Fahrstuhl kommt': 'The elevator is coming',
   'Pumpe fertig: drin stehen, Aktion schaltet ein': 'Pump finished: stand inside, Action turns it on',
   'Lore verkauft: +{v} Taler': 'Lorry sold: +{v} coins',
   // actions

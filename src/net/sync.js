@@ -193,6 +193,7 @@ const KINDS = {
       lv: b.lvl,
       op: r2(b.open || 0),
       cs: b.cs ? r4(b.cs.y) : null,
+      dp: b.deep != null ? r4(b.deep) : undefined, // (how deep the lift's shaft goes: calling it)
       mv: b.moving,
       on: b.on ? 1 : 0,
       pp: b.pipe,
@@ -222,6 +223,7 @@ const KINDS = {
       if (d.hp != null && d.hp < (b.hp ?? 1e9)) b.hitT = G.frame; // (the bar flashes on a hit)
       b.hp = d.hp;
       if (b.cs && d.cs != null) b.cs.y = d.cs;
+      if (d.dp != null) b.deep = d.dp;
       if (b.type === 'base' && (b.team || 0) === G.myTeam) G.base = b;
     },
   },
