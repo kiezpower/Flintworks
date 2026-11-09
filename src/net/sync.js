@@ -300,6 +300,7 @@ function packGame() {
     gold: G.goldSold,
     chests: G.chests && G.chests.map(c => (c.open ? 1 : 0)),
     rainT: G.rainT,
+    dayN: G.dayN || 0, // (the days so far: the season, seasons.js)
     ticks: G.playTicks,
     rails: G.rails,
     // the round: clock, hill, team task, what every player did (versus.js, coop.js, stats.js);
@@ -329,6 +330,7 @@ function applyGame(d) {
     mis: d.mis,
     goldSold: d.gold,
     rainT: d.rainT,
+    dayN: d.dayN || 0,
     playTicks: d.ticks,
     rails: d.rails || [],
   });

@@ -357,3 +357,4 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
   hochschieben; Holztreppen und Brücken tragen sie nur an den Rädern (`setPlat(3)`), so rollt sie
   unter einer Treppe durch und hinauf, statt daran hängen zu bleiben (`tests/lorry.spec.js`).
 - Nachtrag v1.96.0: Fluffel-Begleiter (pets.js): mit Brot oder Fisch gefüttert folgt er seinem Wühler, trägt ein rotes Halsband und zeigt mit einem pulsierenden Funkeln Gold und Edelsteine in bis zu 40 px Umkreis.
+- Nachtrag v1.97.0: Jahreszeiten (seasons.js) in Wiesen-Welten der freien Modi: jeder Spieltag eine Jahreszeit; Eichen mit Blüten (Frühling), rot-gold (Herbst), kahl mit Reif (Winter), Kiefern verschneit, Regen fällt im Winter als Schnee.

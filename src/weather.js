@@ -7,6 +7,7 @@ import { guard } from './combat.js';
 import { cam } from './render.js';
 import { FX_PAL } from './effects.js';
 import { updRainFx } from './rainfx.js';
+import { cold, dayPassed } from './seasons.js';
 import { sfx } from './sound.js';
 import { G, birds, clouds, crew, meteors, parts, trees } from './state.js';
 import { toast } from './ui.js';
@@ -15,7 +16,9 @@ import { AIR, H, LIQ, SOLID, W, bg, clamp, mat, ri, rnd } from './world.js';
 // ---- Weather & day ----
 function updWeather() {
   // one day = 10 minutes (the tutorial stays at daytime)
+  const before = G.dayT;
   if (!G.tut) G.dayT = (G.dayT + 1 / 36000) % 1;
+  dayPassed(before); // (a new day: the next season, seasons.js)
   if (G.frame % 1500 === 0) G.windT = 0.25 + rnd() * 0.75;
   G.wind += ((G.rainT > 0 ? Math.min(1.2, G.windT + 0.35) : G.windT) - G.wind) * 0.002;
   for (const c of clouds) {
@@ -78,7 +81,7 @@ function updWeather() {
         if (x < 0 || x >= W) continue;
         if (mat[y * W + x] === AIR && bg[y * W + x] === 0)
           parts.push(
-            G.biome === 'winter'
+            cold()
               ? {
                   // near flakes are bigger, brighter and faster than the far ones; all sway (objects.js)
                   ...(rnd() < 0.25
@@ -104,7 +107,7 @@ function updWeather() {
     }
   } else if (!G.tut && --G.rainNext <= 0 && !G.netClient) {
     G.rainT = (1300 + rnd() * 900) * biome().rain;
-    toast(G.biome === 'winter' ? 'Es fängt an zu schneien' : 'Es fängt an zu regnen');
+    toast(cold() ? 'Es fängt an zu schneien' : 'Es fängt an zu regnen');
   }
 }
 function lightning() {

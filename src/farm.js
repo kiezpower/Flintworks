@@ -8,12 +8,14 @@ import { spawnItem } from './entities.js';
 import { addFloat } from './floats.js';
 import { track } from './profile.js';
 import { sfx } from './sound.js';
+import { growth } from './seasons.js';
 import { G, builds, crew } from './state.js';
 import { stock, takeStock } from './store.js';
 
 const GROW = 150 * 60; // ticks from sown to ripe in fair weather
 // how fast it grows here and now
-const pace = () => (G.rainT > 0 ? 2 : 1) * (G.biome === 'winter' ? 0.4 : G.biome === 'desert' ? 0.6 : 1);
+// (and with the season in the green worlds, seasons.js)
+const pace = () => (G.rainT > 0 ? 2 : 1) * (G.biome === 'winter' ? 0.4 : G.biome === 'desert' ? 0.6 : 1) * growth();
 const ripe = b => (b.grow || 0) >= 1;
 const fieldUnder = c =>
   builds.find(b => b.type === 'field' && b.done && c.x + 6 > b.x && c.x < b.x + b.w && Math.abs(c.y + 10 - b.gy) < 4) || null;

@@ -407,5 +407,13 @@ const EN2 = {
     '{name} now has a Fluffel companion. It sniffs out gold and gems.',
   Tierfreund: 'Animal friend',
   'Zähme einen Fluffel mit Brot oder Fisch': 'Tame a Fluffel with bread or a fish',
+  // the seasons (seasons.js)
+  Frühling: 'Spring',
+  Sommer: 'Summer',
+  Herbst: 'Autumn',
+  'Der Frühling beginnt – die Felder wachsen schneller.': 'Spring begins – the fields grow faster.',
+  'Der Sommer beginnt.': 'Summer begins.',
+  'Der Herbst beginnt – legt Brot auf Vorrat, bald kommt der Winter.': 'Autumn begins – store up bread, winter is coming.',
+  'Der Winter beginnt – auf den Feldern wächst kaum etwas.': 'Winter begins – hardly anything grows in the fields.',
 };
 export { EN2 };
