@@ -36,11 +36,8 @@ test('the difficulty is set in the options and sets dangers and pace', async ({ 
   await page.click('#lbOpt');
   const tile = page.locator('#pBody .opt', { hasText: 'Schwierigkeit' });
   await expect(tile).toContainText('Schwierigkeit: Abenteuer');
-  // (a panel ignores taps for a moment after it opens, against double taps)
-  await page.waitForTimeout(500);
   await tile.click();
   await expect(tile).toContainText('Schwierigkeit: Hart');
-  await page.waitForTimeout(500);
   await page.click('#pClose');
   await play(page);
   expect(await page.evaluate(() => [window.__ww.G.relaxed, window.__ww.G.speed])).toEqual([false, 1]);
@@ -66,7 +63,6 @@ test('the lobby names mode and world of the chosen card, there is no second choi
 test('a tap next to a panel closes it, in the lobby and in the game, without walking there', async ({ page }) => {
   const errors = await lobby(page);
   await page.click('#lbOpt');
-  await page.waitForTimeout(500);
   await page.mouse.click(890, 440);
   await expect(page.locator('#panel')).toBeHidden();
   await play(page);
@@ -101,7 +97,6 @@ test('the game menu shows the same grouped settings; classic controls climb, mod
     false,
     true,
   ]);
-  await page.waitForTimeout(500);
   await page.locator('#pBody .opt', { hasText: 'Steuerung: Modern' }).click();
   await expect(page.locator('#pBody .opt', { hasText: 'Steuerung: Klassisch' })).toHaveCount(1);
   expect(await page.evaluate(() => [window.__ww.G.autoDig, window.__ww.G.climbOn])).toEqual([false, true]);
@@ -146,8 +141,6 @@ test('castle tiles show their state at a glance: too dear, locked, done, running
   await expect(tile('Bogenbau')).toHaveClass(/st-busy/);
   await expect(tile('Bogenbau').locator('.pbar')).toHaveCount(1);
   await expect(tile('Metallurgie').locator('.why')).toHaveText('Es läuft schon eine Forschung');
-  // a tap on a locked tile: a shake and the reason
-  await page.waitForTimeout(500);
   await tile('Luftfahrt').click();
   await expect(tile('Luftfahrt')).toHaveClass(/nope/);
   await expect(page.locator('#toast')).toContainText('Erst erforschen');
@@ -171,7 +164,6 @@ test('castle tabs show one section at a time, a second tap shows all again, the 
   const errors = await lobby(page);
   await play(page);
   await page.evaluate(() => window.__ww.openBase());
-  await page.waitForTimeout(500);
   const research = page.locator('#pBody .psec', { hasText: 'Forschung' });
   const tools = page.locator('#pBody .psec', { hasText: 'Werkzeug' });
   await page.locator('.pchips button', { hasText: 'Forschung' }).click();
@@ -181,7 +173,6 @@ test('castle tabs show one section at a time, a second tap shows all again, the 
   // reopened (as after buying something): still the same tab
   await page.evaluate(() => window.__ww.openBase());
   await expect(tools).toBeHidden();
-  await page.waitForTimeout(500);
   await page.locator('.pchips button', { hasText: 'Forschung' }).click();
   await expect(tools).toBeVisible();
   expect(errors).toEqual([]);
@@ -225,7 +216,9 @@ test('a bigger bag with five slots and its own button, and the castle shows itse
   // a full bag of loam: the castle leaves loam in the hand (store.js KEEP)
   await page.evaluate(() => {
     const me = window.__ww.crew.find(c => c.pid === window.__ww.G.myId);
-    while (me.inv.length < 16) me.inv.push('loam');
+    // (only loam: a stone left in the bag would go to the store on this step, and the bag would
+    // no longer be full)
+    me.inv = Array(16).fill('loam');
     window.__ww.step(1);
   });
   await expect(page.locator('#bagBtn')).toHaveClass(/full/);
@@ -261,7 +254,6 @@ test('bots can be switched off in the settings: quick play then fills no castles
   await page.click('#lbOpt');
   const tile = page.locator('#pBody .opt', { hasText: 'Bots: an' });
   await expect(tile).toHaveCount(1);
-  await page.waitForTimeout(500);
   await tile.click();
   await expect(page.locator('#pBody .opt', { hasText: 'Bots: aus' })).toHaveCount(1);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')).bots)).toBe(false);
@@ -303,7 +295,6 @@ test('helpers can be switched off: you dig alone, no helper tasks, no hiring', a
   // switched on again in the game menu: hiring is back
   await page.keyboard.press('Escape');
   await page.click('#menuBtn');
-  await page.waitForTimeout(500);
   await page.locator('#pBody .opt', { hasText: 'Helfer: aus' }).click();
   await expect(page.locator('#pBody .opt', { hasText: 'Helfer: an' })).toHaveCount(1);
   expect(await page.evaluate(() => window.__ww.G.noHelpers)).toBe(false);
@@ -323,7 +314,6 @@ test('an invitation opened in a browser on Android offers to open it in the app'
   expect(decodeURIComponent(href)).toContain('web=1');
   // back from there (no app): no bar again
   await page.goto('/?friend=ABCD2345&web=1');
-  await page.waitForTimeout(500);
   await expect(page.locator('#appBar')).toHaveCount(0);
   await ctx.close();
 });
@@ -342,7 +332,6 @@ test('the tasks stay in view: a tracker under the money, the board in the menu a
   await page.click('#lbLvlBtn');
   await expect(page.locator('#pBody .qnote')).toHaveCount(3);
   await expect(page.locator('#pBody .qnote.ready button')).toHaveText('Abholen +60 XP');
-  await page.waitForTimeout(500);
   await page.click('#pClose');
   await play(page);
   // in the round: at most three rows (the round's task first), icon and bar only, none at the top
@@ -351,17 +340,13 @@ test('the tasks stay in view: a tracker under the money, the board in the menu a
   await expect(page.locator('#qTrack .qt-row[title*="Goldnuggets"]')).toHaveClass(/full/);
   await expect(page.locator('#misTxt')).toBeHidden();
   expect((await page.locator('#qTrack').boundingBox()).width).toBeLessThan(110);
-  // a tap opens the menu at the tab "Aufgaben", where the reward is claimed
-  await page.waitForTimeout(500);
   await page.click('#qTrack');
   await expect(page.locator('#pTitle')).toHaveText('Menü');
   await expect(page.locator('.pchips button.sel')).toHaveText('Aufgaben');
   await expect(page.locator('#pBody .qnote.qmis')).toContainText('Auftrag der Runde');
-  await page.waitForTimeout(500);
   await page.click('#pBody .qnote.ready button');
   await expect(page.locator('#pBody .qnote.done .stamp')).toHaveText('Erledigt');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')).quests[1].done)).toBe(true);
-  await page.waitForTimeout(500);
   await page.click('#pClose');
   await expect(page.locator('#panel')).toBeHidden();
   // the claimed quest leaves the tracker, the next one moves up
@@ -395,11 +380,30 @@ test('find patterns mark gold, ore, coal and gems apart from their colour', asyn
   await page.click('#menuBtn');
   const tile = page.locator('#pBody .opt', { hasText: 'Fundmuster' });
   await expect(tile).toContainText('Fundmuster: aus');
-  await page.waitForTimeout(500);
   await tile.click();
   await expect(page.locator('#pBody .opt', { hasText: 'Fundmuster' })).toContainText('Fundmuster: an');
   const marked = await looks();
   for (const k of ['gold', 'ore', 'coal']) expect(marked[k], k).not.toBe(plain[k]);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')).cbpat)).toBe(true);
   expect(errors).toEqual([]);
+});
+
+test('in the game a panel ignores a tap in its first moment (against double taps)', async ({ page }) => {
+  // (?guard: the tap guard as in the game; the other tests switch it off, debug.js)
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.clear();
+    localStorage.setItem('flintworks-lang', 'de');
+    localStorage.setItem('flintworks-profile', JSON.stringify({ tutorialDone: true, installAsked: 'done' }));
+  });
+  await page.goto('/?guard');
+  await page.waitForFunction(() => window.__ww);
+  expect(await page.evaluate(() => window.__ww.G.tapGuard)).toBeUndefined();
+  await page.click('#lbOpt');
+  await page.click('#pClose');
+  // still open: the tap came too early
+  await expect(page.locator('#panel')).toBeVisible();
+  await page.waitForTimeout(500);
+  await page.click('#pClose');
+  await expect(page.locator('#panel')).toBeHidden();
 });

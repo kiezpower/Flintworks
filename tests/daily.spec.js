@@ -85,7 +85,6 @@ test('the shaft starts from the lobby with today’s world, ends on the clock an
   await expect(page.locator('#lbDailyTxt')).toContainText('Neu!');
   await page.click('#lbDaily');
   await expect(page.locator('#panel')).toContainText('Tagesschacht #');
-  await page.waitForTimeout(500); // (a tap right after the panel opened is ignored)
   await page.click('#dlGo');
   await page.waitForFunction(() => window.__ww.state === 'play');
   const s = await page.evaluate(() =>

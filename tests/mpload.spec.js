@@ -32,14 +32,12 @@ for (const N of [2, 8]) test(`load ${N}`, async ({ browser }) => {
   const ps = [];
   for (let k = 0; k < N; k++) ps.push(await player(browser, 'P' + k));
   const [h, ...rest] = ps;
-  await h.waitForTimeout(500);
   await h.locator('#lbCreate').click();
   await expect(h.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
   const code = await h.locator('.lb-codetap b').textContent();
   for (const p of rest) { await p.waitForTimeout(300); await p.locator('#lbCodeIn').fill(code); await p.locator('#lbJoinBtn').click(); }
   await expect(h.locator('.lb-players')).toContainText('P' + (N - 1), { timeout: 15000 });
   for (const p of rest) { await p.waitForTimeout(300); await p.locator('.opt', { hasText: 'Bereit?' }).click(); }
-  await h.waitForTimeout(500);
   await h.locator('.opt', { hasText: 'Spiel starten' }).click();
   for (const p of ps) await p.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net, null, { timeout: 30000 });
   await h.waitForTimeout(3000);

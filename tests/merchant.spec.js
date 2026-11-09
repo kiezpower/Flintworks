@@ -46,7 +46,6 @@ test('the trader comes to the castle, sells from his stall and moves on', async 
     w.G.money = 500;
     return { m0: w.G.money, store0: { ...w.G.store }, tools0: { ...w.G.tools } };
   });
-  await page.waitForTimeout(500);
   await page.locator('#panel .opt').first().click();
   const a = await page.evaluate(() => {
     const w = window.__ww;

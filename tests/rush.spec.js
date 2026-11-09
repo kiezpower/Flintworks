@@ -64,7 +64,6 @@ test('gold fever comes after three minutes and pays double for gold for one minu
 test('the Tagesschacht has no gold fever (its scores stay comparable)', async ({ page }) => {
   const errors = await start(page);
   await page.click('#lbDaily');
-  await page.waitForTimeout(500); // (a tap right after the panel opened is ignored)
   await page.click('#dlGo');
   await page.waitForFunction(() => window.__ww.state === 'play');
   const r = await page.evaluate(() => {

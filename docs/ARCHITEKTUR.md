@@ -151,5 +151,5 @@ wählen den Modus → `gen.js` (oder `levels/loader.js`) baut die Welt → pro T
 
 `npm test` startet den Entwicklungsserver und spielt in Chromium (`tests/*.spec.js`, über
 `debug.js`). In GitHub Actions laufen sie bei jedem Pull Request (`.github/workflows/test.yml`,
-auf vier Jobs verteilt). Bildschirmfotos aus Tests gehören nach `test-results/` oder `tests/out/`,
+auf sechs Jobs verteilt). Bildschirmfotos aus Tests gehören nach `test-results/` oder `tests/out/`,
 nicht ins Root (`/*.png` steht in `.gitignore`).

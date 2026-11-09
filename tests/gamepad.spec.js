@@ -92,7 +92,6 @@ test('two at one device: the second player with the pad, the first with the keys
   // in the lobby: "Zusammen spielen" → "Zu zweit an diesem Gerät"
   await page.click('#lbSlot1');
   await expect(page.locator('#lbLocal')).toBeVisible();
-  await page.waitForTimeout(500);
   await page.click('#lbLocal');
   await expect(page.locator('#lbLocal')).toContainText('✓');
   await page.keyboard.press('Escape');
@@ -166,7 +165,6 @@ test('two at one device: the second player opens the build menu with RB and buil
   await press(page, 'RB');
   await expect(page.locator('#panel')).toBeVisible();
   expect(await page.evaluate(() => window.__ww.G.panelPid)).toBe(1);
-  await page.waitForTimeout(500);
   await page.locator('#panel [data-tut="b_hut"]').click();
   const hut = await page.evaluate(() => window.__ww.builds.find(b => b.type === 'hut'));
   expect(hut).toBeTruthy();

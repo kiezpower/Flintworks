@@ -271,7 +271,7 @@ function openDaily(hooks) {
     `<p class="hint">${tr(best != null ? 'Dein bestes Ergebnis zählt' : 'Die Uhr läuft ab dem Start')}</p>`,
   );
   go.addEventListener('click', () => {
-    if (performance.now() - G.panelT < 450) return;
+    if (performance.now() - G.panelT < (G.tapGuard ?? 450)) return;
     if (inRoom()) return toast('Den Tagesschacht spielst du allein – verlass erst den Raum');
     if (running) return hooks.play(false);
     // a game in progress would be lost: ask with a second tap
