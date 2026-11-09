@@ -1,3 +1,4 @@
+import { markTombs } from './tombs.js';
 import { known, knownAt } from './fog.js';
 import { markHoards } from './hoards.js';
 import { merchantStall } from './merchant.js';
@@ -399,6 +400,8 @@ function drawMini(full) {
     }
   // great hoards known from a treasure map: a red cross (hoards.js)
   markHoards(mctx, MK, G.tick);
+  // where a Wühler gave out and his bag lies (tombs.js)
+  markTombs(mctx, MK);
   // markers set with "Hierher!" (net/emotes.js): a blinking cross in the player's colour
   for (const p of G.pins || []) {
     mctx.fillStyle = (G.tick >> 3) & 1 ? '#ffffff' : p.col;

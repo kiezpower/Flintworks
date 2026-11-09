@@ -11,7 +11,7 @@ import { sfx } from './sound.js';
 import { G, animals, crew, parts } from './state.js';
 import { GEM, GOLD, H, W, free, mat, rnd } from './world.js';
 
-const FOOD = ['bread', 'fish'];
+const FOOD = ['bread', 'fish', 'cavefish'];
 const SNIFF = 40; // how far it smells (pixels around it)
 const petOf = c => animals.find(a => a.kind === 'fluffel' && a.pet === c.pid && a.hp > 0) || null;
 

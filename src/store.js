@@ -11,7 +11,7 @@ import { addStat } from './stats.js';
 import { G, builds } from './state.js';
 import { flyCoins } from './reward.js';
 
-const SELL = ['nug', 'gem', 'fish'];
+const SELL = ['nug', 'gem', 'fish', 'cavefish', 'goldfish'];
 const KEEP = ['flint', 'tnt', 'loam', 'bread', 'potHeal', 'potGlow', 'potDig']; // tools stay in the hand (bread: for the way, farm.js)
 const stock = t => (G.store && G.store[t]) || 0;
 function addStock(t, n = 1) {
