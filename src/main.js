@@ -78,7 +78,8 @@ import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
 import { seasonName } from './seasons.js';
-import { shrineTick } from './shrines.js';
+import { guardTick, shrineTick } from './shrines.js';
+import { zoneTick } from './zones.js';
 import { potionTick } from './potions.js';
 import { fogTick } from './fog.js';
 import { tombTick } from './tombs.js';
@@ -548,6 +549,8 @@ function step() {
     updFort();
     updFishing();
     shrineTick();
+    guardTick(); // (the shrines' guardians keep to their halls)
+    if (G.frame % 30 === 0) zoneTick(); // (the cave biomes, zones.js)
     potionTick();
     merchantMove();
     updFarm();

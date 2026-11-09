@@ -9,7 +9,8 @@ import { addFloat } from './floats.js';
 import { tr } from './i18n.js';
 import { GAME_MODES } from './modes.js';
 import { sfx } from './sound.js';
-import { G, crew, parts } from './state.js';
+import { mkAnimal } from './entities.js';
+import { G, animals, crew, parts } from './state.js';
 import { toast } from './ui.js';
 import { AIR, GRANITE, H, W, bg, mat, surf } from './world.js';
 
@@ -67,12 +68,38 @@ function placeShrines(n) {
 
 const shrineNear = c =>
   (G.shrines || []).find(s => !s.used && Math.abs(c.x + 3 - s.x) < 12 && Math.abs(c.y + 10 - s.y) < 8) || null;
+// the shrine's guardian (like Noita's): a stronger golem stands in each hall and gives the gift
+// up only when beaten; not in relaxed worlds. Placed after the creatures (gen.js)
+function spawnGuardians() {
+  if (G.relaxed) return;
+  (G.shrines || []).forEach((s, k) => {
+    const a = mkAnimal('guardian', s.x + 2, s.y - 15);
+    a.shrine = k;
+    animals.push(a);
+  });
+}
+const guardOf = s => animals.find(a => a.kind === 'guardian' && a.shrine === G.shrines.indexOf(s) && a.hp > 0) || null;
+// every tick (host): a guardian keeps to its hall
+function guardTick() {
+  if (G.netClient) return;
+  for (const a of animals) {
+    if (a.kind !== 'guardian' || a.shrine == null) continue;
+    const s = G.shrines && G.shrines[a.shrine];
+    if (!s) continue;
+    const lo = s.x - SW / 2 + 1,
+      hi = s.x + SW / 2 - 1 - a.w;
+    if (a.x < lo) Object.assign(a, { x: lo, vx: Math.max(0, a.vx) });
+    if (a.x > hi) Object.assign(a, { x: hi, vx: Math.min(0, a.vx) });
+  }
+}
 // the action button at a shrine
 function shrineContext(c) {
   if (c.pid == null) return null;
   const s = shrineNear(c);
   if (!s) return null;
   if (hasGift(c, s.gift)) return null;
+  // (its guardian first: a label only, the button does nothing)
+  if (guardOf(s)) return { label: 'Erst den Wächter besiegen' };
   return { label: 'Gabe nehmen', fn: () => takeGift(c, s) };
 }
 function takeGift(c, s) {
@@ -135,4 +162,4 @@ function drawShrines(ctx, cx, cy) {
   }
 }
 
-export { GIFTS, drawShrines, hasGift, placeShrines, shrineContext, shrineTick };
+export { GIFTS, drawShrines, guardTick, hasGift, placeShrines, shrineContext, shrineTick, spawnGuardians };

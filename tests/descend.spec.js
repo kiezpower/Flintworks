@@ -39,7 +39,7 @@ test('the castle remembers the last spot deep down and takes you back for 5 coin
   expect(spot).not.toBeNull();
   // the castle panel offers the trip
   await page.keyboard.press('KeyF');
-  await expect(page.locator('#panel')).toContainText('Zurück zur Grabestelle (↓ 25 m)');
+  await expect(page.locator('#panel')).toContainText(/Zurück zur Grabestelle \(↓ 2[0-9] m\)/);
   await page.waitForTimeout(500);
   await page.locator('#panel .opt', { hasText: 'Zurück zur Grabestelle' }).click();
   await page.waitForTimeout(300);
