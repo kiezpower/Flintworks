@@ -83,6 +83,7 @@ import { potionTick } from './potions.js';
 import { fogTick } from './fog.js';
 import { tombTick } from './tombs.js';
 import { descendTick } from './descend.js';
+import { torchTick } from './torches.js';
 import { chestTick, updVersus, vsResult } from './versus.js';
 import { updCoop } from './coop.js';
 import { statsHtml } from './stats.js';
@@ -583,6 +584,7 @@ function step() {
     updFloats();
     if (G.frame % 30 === 0) tombTick(); // (gravestones, tombs.js)
     if (G.frame % 30 === 0) descendTick(); // (the last digging spot, descend.js)
+    if (G.frame % 30 === 0) torchTick(); // (torches whose wall is gone fall off)
     // exhausted Wühler wake up again in the base after a short while
     for (const c of crew)
       if (c.dead && c.deadT > 200) {

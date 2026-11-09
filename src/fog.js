@@ -28,17 +28,18 @@ function resetFog() {
 // every few ticks: what is around each Wühler is seen
 function fogTick() {
   if (!seen || MW !== Math.ceil(W / MK) || MH !== Math.ceil(H / MK)) resetFog();
-  for (const c of crew) {
-    if (c.dead) continue;
-    const cx = Math.floor((c.x + 3) / MK),
-      cy = Math.floor((c.y + 5) / MK),
-      r = c.glowT > 0 ? R * 2 : R;
-    for (let dy = -r; dy <= r; dy++) {
-      const y = cy + dy;
-      if (y < 0 || y >= MH) continue;
-      const w = Math.floor(Math.sqrt(r * r - dy * dy));
-      for (let x = Math.max(0, cx - w); x <= Math.min(MW - 1, cx + w); x++) seen[y * MW + x] = 1;
-    }
+  // (torches keep the place around them seen, torches.js)
+  for (const [x, y] of G.torches || []) uncover(Math.floor(x / MK), Math.floor(y / MK), 6);
+  for (const c of crew)
+    if (!c.dead) uncover(Math.floor((c.x + 3) / MK), Math.floor((c.y + 5) / MK), c.glowT > 0 ? R * 2 : R);
+}
+// a disc of map cells around (cx, cy), radius r, is seen
+function uncover(cx, cy, r) {
+  for (let dy = -r; dy <= r; dy++) {
+    const y = cy + dy;
+    if (y < 0 || y >= MH) continue;
+    const w = Math.floor(Math.sqrt(r * r - dy * dy));
+    for (let x = Math.max(0, cx - w); x <= Math.min(MW - 1, cx + w); x++) seen[y * MW + x] = 1;
   }
 }
 // is this map cell known (always, where there is no fog)

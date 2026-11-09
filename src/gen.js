@@ -538,6 +538,7 @@ function finishWorld() {
   G.dayN = 0; // (spring, seasons.js)
   G.picked = []; // (mushrooms picked for potions, potions.js)
   G.tombs = []; // (gravestones, tombs.js)
+  G.torches = []; // (torches.js)
   // (the map knows only the sky and the surface, fog.js; not in campaign levels, maps, the Tagesschacht)
   const FM = GAME_MODES[G.mode];
   G.fogOn = !!FM && !FM.campaign && !FM.pkg && !FM.daily && !G.tut;

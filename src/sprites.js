@@ -172,6 +172,15 @@ const SPR = {
     R(6, 20, 4, 6, '#2a1a10');
     R(7, 13, 2, 2, '#ffd77a');
   }),
+  // the storage chest deep down (crate.js): planks, iron bands, a lock
+  crate: sp(10, 7, R => {
+    R(0, 1, 10, 6, '#8b5e34');
+    R(0, 0, 10, 2, '#a8743e');
+    R(0, 3, 10, 1, '#5a3a1e');
+    R(1, 0, 1, 7, '#6e6a64');
+    R(8, 0, 1, 7, '#6e6a64');
+    R(4, 3, 2, 2, '#c9a43a');
+  }),
   // the brewing cauldron (potions.js): a black pot on stones over a fire, green brew inside
   brew: sp(14, 12, R => {
     R(2, 9, 10, 3, '#8f8a84');
@@ -276,6 +285,7 @@ const ITEM = {
   potHeal: { name: 'Heiltrank', s: [3, 4], val: 10 },
   potGlow: { name: 'Leuchttrank', s: [3, 4], val: 10 },
   potDig: { name: 'Grabtrank', s: [3, 4], val: 10 },
+  torch: { name: 'Fackel', s: [2, 5], val: 2 }, // (torches.js)
 };
 function drawItemPx(g, t, x, y, blink) {
   const R = (a, b, w, h, c) => {
@@ -333,6 +343,9 @@ function drawItemPx(g, t, x, y, blink) {
     R(0, 1, 4, 2, '#b8742e');
     R(1, 0, 2, 1, '#d8a056');
     R(0, 1, 4, 1, '#d8a056');
+  } else if (t === 'torch') {
+    R(0, 2, 1, 3, '#8b5e34');
+    R(0, 0, 1, 2, '#ff8a2a');
   } else if (t === 'shroom') {
     R(0, 0, 3, 1, '#7fe0b8');
     R(1, 1, 1, 2, '#e8e0c8');
@@ -370,6 +383,7 @@ const ITEM_ART = {
   goldfish: [['.sss..', 'sbbbet', 'bbbbbt', '.ddd..'], { s: '#ffe8a0', b: '#f2a830', e: '#24160c', t: '#c87a18', d: '#d8901e' }],
   grain: [['y.y.y', 'gygyg', '.ggg.', '..g..'], { y: '#f2c230', g: '#c9a43a' }],
   bread: [['.lll.', 'lLLLb', 'LLLbb', '.bbb.'], { l: '#e8b870', L: '#c88a42', b: '#9a6428' }],
+  torch: [['.f.', 'fYf', '.w.', '.w.', '.w.'], { f: '#ff8a2a', Y: '#fff2a0', w: '#8b5e34' }],
   shroom: [['.ggg.', 'gGGGg', '..s..', '..s..'], { g: '#5fc8a0', G: '#9be3c8', s: '#e8e0c8' }],
   potHeal: [['.c.', '.w.', 'rRr', 'rrd', '.d.'], { c: '#8b5e34', w: '#d8e8f0', r: '#c8302a', R: '#ff7a6a', d: '#8a1e1a' }],
   potGlow: [['.c.', '.w.', 'yYy', 'yyd', '.d.'], { c: '#8b5e34', w: '#d8e8f0', y: '#e8c030', Y: '#fff2a0', d: '#a07a10' }],

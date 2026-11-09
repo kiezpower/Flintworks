@@ -61,6 +61,7 @@ import { drawShrines } from './shrines.js';
 import { drawHoardArrow, drawHoards } from './hoards.js';
 import { drawBrew } from './potions.js';
 import { drawTombArrow, drawTombs } from './tombs.js';
+import { drawTorches } from './torches.js';
 import { drawMerchant } from './merchant.js';
 import { drawVillagers } from './villagers.js';
 import { drawFarms } from './farm.js';
@@ -731,6 +732,7 @@ function render() {
   drawShrines(ctx, cx, cy); // (deep down, shrines.js)
   drawHoards(ctx, cx, cy); // (the great hoards, hoards.js)
   drawTombs(ctx, cx, cy); // (where a Wühler gave out, tombs.js)
+  drawTorches(ctx, cx, cy); // (torches on the walls, torches.js)
   for (const b of builds) if (b.type === 'brew' && b.done) drawBrew(ctx, b, cx, cy); // (potions.js)
   drawHill(ctx, cx, cy);
   drawCoop(ctx, cx, cy);
@@ -970,6 +972,8 @@ function render() {
     if (under)
       for (let k = 0; k < oreSpots.length; k += 3) lightHole(lctx, oreSpots[k], oreSpots[k + 1], 6, oreSpots[k + 2]);
     // glowing mushrooms and crystals in caves (decor.js)
+    // torches on the walls (torches.js): a hole in the dark, wherever it is
+    for (const [x, y] of G.torches || []) light(x - cx, y - 3 - cy, 46, 0.95);
     // the crystal of a shrine not yet used (shrines.js)
     if (under) for (const s of G.shrines || []) if (!s.used) lightHole(lctx, s.x - cx, s.y - 9 - cy, 16, 0.75);
     if (under) {
@@ -996,6 +1000,8 @@ function render() {
         );
     }
     for (let k = 0; k < lava.length; k += 6) warmGlow(ctx, lava[k], lava[k + 1], 12, 0.22);
+    // torches (torches.js): a flickering warm glow
+    for (const [x, y] of G.torches || []) warmGlow(ctx, x - cx, y - 3 - cy, 22, 0.42 + ((G.frame + x) % 12 < 6 ? 0.06 : 0));
     if (dark > 0.2) {
       lanternSpots(cx, cy, lanterns);
       for (let k = 0; k < lanterns.length; k += 2) warmGlow(ctx, lanterns[k], lanterns[k + 1], 10, 0.3 * dark);

@@ -1,3 +1,4 @@
+import { markTorches } from './torches.js';
 import { descendOffer } from './descend.js';
 import { markTombs } from './tombs.js';
 import { known, knownAt } from './fog.js';
@@ -485,6 +486,8 @@ function drawMini(full) {
   }
   // where a Wühler gave out and his bag lies (tombs.js)
   markTombs(mctx, MK);
+  // torches set deep down (torches.js)
+  markTorches(mctx, MK);
   // markers set with "Hierher!" (net/emotes.js): a blinking cross in the player's colour
   for (const p of G.pins || []) {
     mctx.fillStyle = (G.tick >> 3) & 1 ? '#ffffff' : p.col;
