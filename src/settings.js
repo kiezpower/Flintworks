@@ -9,6 +9,10 @@ import { isPlayer } from './players.js';
 import { addStock } from './store.js';
 import { G, crew } from './state.js';
 import { $, opt, sec } from './ui.js';
+import { ACTIONS, keyName, keyOf, listenFor, resetKeys } from './keys.js';
+
+// the action waiting for its new key (keys.js), while the panel shows it
+let listening = null;
 
 // one difficulty for dangers and pace together, chosen in the lobby: relaxed worlds have no
 // monsters, gas, lightning or meteors (gen.js); speed is the share of the original pace
@@ -90,6 +94,28 @@ function settingsSections(p, reopen, { lobby = false, game: gameSec = null } = {
       applyControls();
     },
   );
+
+  // own keys (keys.js), on a device with a keyboard: tap an action, then press its new key
+  if (G.inputKind === 'keys') {
+    const kl = sec(p, 'Tasten');
+    for (const [id, , name] of ACTIONS)
+      opt(kl, {
+        title: tr(name),
+        sub: listening === id ? tr('Drück eine Taste … (Esc: abbrechen)') : tr(keyName(keyOf(id))),
+        short: true,
+        onClick: () => {
+          if (listening) return;
+          listening = id;
+          reopen();
+          listenFor(id, () => {
+            listening = null;
+            reopen();
+          });
+        },
+      });
+    if (P.keys && Object.keys(P.keys).length)
+      item(kl, 'Tasten zurücksetzen', 'Alle Aktionen wieder auf ihren Standardtasten', resetKeys);
+  }
 
   // larger tips, task line and cards (onboarding.css)
   const view = sec(p, 'Anzeige');
