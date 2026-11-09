@@ -70,6 +70,7 @@ import {
   solid,
   surf,
   getSeed,
+  setDeepGate,
   setSeed,
 } from './world.js';
 
@@ -136,11 +137,20 @@ function topSolid(x) {
 // (or per width for things on the surface), at least one
 const perArea = k => Math.max(1, Math.round((k * W * H) / (W0 * H0))),
   perWidth = k => Math.max(1, Math.round((k * W) / W0));
+// the gate in the depth: in free play alone or in Koop, rock deeper than 45 m (180 cells) needs the
+// diamond pick (digger.js); not in levels, the campaign, the Tagesschacht or Versus. Also set when
+// a saved game is loaded (save.js).
+function applyDeepGate(mode = G.mode, versus = !!G.teams) {
+  const M = GAME_MODES[mode];
+  setDeepGate(M && !M.campaign && !M.pkg && !M.daily && !M.kit && !versus && mode !== 'tut' ? 180 : 0);
+}
 function gen() {
   endTeams();
   clearFire();
   G.wormDone = false; // (the giant worm comes once per world, boss.js)
   G.queenDone = false; // (and the lava queen, queen.js)
+  G.kingDone = false; // (and the ice king, iceking.js)
+  applyDeepGate(G.nextMode || 'gold', !!G.nextVersus);
   G.merchant = G.merchNext = null; // (the wandering trader, merchant.js)
   G.nights = null; // (the nights counted for the roaming monsters, nights.js)
   G.villagers = []; // (the settlers in the huts, villagers.js)
@@ -658,4 +668,4 @@ function mkCloud(x) {
   return { x, y: ri(10, 48), w, h, vx: 0.04 + rnd() * 0.06, spr };
 }
 
-export { blob, canPlantAt, clearFoot, finishWorld, gen, mkCloud, perArea, perWidth, plantTree, settle, topSolid };
+export { applyDeepGate, blob, canPlantAt, clearFoot, finishWorld, gen, mkCloud, perArea, perWidth, plantTree, settle, topSolid };

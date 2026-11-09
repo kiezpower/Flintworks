@@ -538,6 +538,15 @@ const EN2 = {
   'unter allen, die heute gespielt haben – ohne Namen': 'among everybody who played today – without names',
   // villagers.js
   '{name} fühlt sich wohl im Dorf und zahlt mehr Miete.': '{name} feels at home in the village and pays more rent.',
+  // the gate in the depth (digger.js)
+  'Tiefenfels: Hier kommt nur die Diamanthacke durch (Burg → Forschung „Härten“)': 'Deep rock: only the diamond pick gets through here (castle → research “Hardening”)',
+  // the ice king (iceking.js)
+  Eiskönig: 'Ice king',
+  'Der Eiskönig!': 'The ice king!',
+  'Seine Eissplitter frieren dich ein – Pfeile und Schwert helfen': 'His shards of ice freeze you – arrows and the sword help',
+  'Eiskönig besiegt!': 'Ice king beaten!',
+  Tauwetter: 'Thaw',
+  'Besiege den Eiskönig': 'Beat the ice king',
   // the lava queen (queen.js)
   Lavakönigin: 'Lava queen',
   'Die Lavakönigin!': 'The lava queen!',

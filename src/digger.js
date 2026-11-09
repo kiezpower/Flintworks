@@ -35,6 +35,7 @@ import {
   COAL,
   EARTH,
   GEM,
+  GLASS,
   GOLD,
   GRANITE,
   H,
@@ -60,6 +61,7 @@ import {
   setPlat,
   solid,
   surf,
+  getDeepGate,
 } from './world.js';
 
 // ---- Digger ----
@@ -113,7 +115,23 @@ function startTumble(c, vx, vy) {
   c.vx = vx;
   c.vy = vy;
 }
-const diggable = m =>
+// rock behind the gate in the depth (world.js getDeepGate: free play only) needs the diamond pick
+const deepRock = (x, y) => {
+  const d = getDeepGate();
+  return !!d && y - surf[Math.max(0, Math.min(W - 1, x | 0))] > d && !hasTool('dpick');
+};
+// a player pushing (or digging) into deep rock with the steel pick: now and then a word why it
+// does not give
+function gateHint(c, dir) {
+  if (c.pid == null || c.pid !== G.myId || !hasTool('pick') || (G.playTicks || 0) - (G.gateHintT ?? -9999) < 1200) return;
+  const x = Math.floor(c.x + 3 + dir * 5),
+    y = Math.floor(c.y + 5);
+  if (x < 0 || x >= W || y < 0 || y >= H || mat[y * W + x] !== ROCK || !deepRock(x, y)) return;
+  G.gateHintT = G.playTicks || 0;
+  toast('Tiefenfels: Hier kommt nur die Diamanthacke durch (Burg → Forschung „Härten“)');
+}
+// (x, y given: the gate in the depth counts too)
+const diggable = (m, x, y) =>
   m === EARTH ||
   m === SAND ||
   m === GOLD ||
@@ -121,13 +139,14 @@ const diggable = m =>
   m === ORE ||
   m === COAL ||
   m === GEM ||
-  (m === ROCK && hasTool('pick'));
-const digAtPx = (x, y) => diggable(mat[Math.floor(y) * W + Math.floor(x)]);
+  m === GLASS ||
+  (m === ROCK && hasTool('pick') && (x === undefined || !deepRock(x, y)));
+const digAtPx = (x, y) => diggable(mat[Math.floor(y) * W + Math.floor(x)], Math.floor(x), Math.floor(y));
 setDigTest(digAtPx);
 // how hard each material is to dig: the Wühler gets through sand quickest, ore and gems slowest,
 // and swings the pick more slowly in hard ground (earth = 1 keeps the old pace; rock needs the
 // steel pick, which is faster anyway)
-const HARD = { [SAND]: 0.75, [EARTH]: 1, [LOAM]: 1.2, [GOLD]: 1.15, [COAL]: 1.25, [ORE]: 1.4, [GEM]: 1.5, [ROCK]: 1.7 };
+const HARD = { [SAND]: 0.75, [EARTH]: 1, [LOAM]: 1.2, [GOLD]: 1.15, [COAL]: 1.25, [ORE]: 1.4, [GEM]: 1.5, [ROCK]: 1.7, [GLASS]: 1.1 };
 // automatic digging: walking into earth digs, stick down digs down-slanted, stick up under an
 // earth ceiling digs up-slanted. The test looks at exactly the area the next dig stroke would
 // remove (same centre and radius as in updDigger), so digging continues as long as there is
@@ -287,6 +306,7 @@ const CRUMB = {
   [GEM]: '#b6f6ff',
   [GOLD]: '#ffe066',
   [ROCK]: '#8a847c',
+  [GLASS]: '#d2f2ee',
 };
 // removes one cell of diggable earth and returns its material (0 if nothing was dug).
 // paced: a Wühler's stroke, whose pace already follows the hardness; other diggers (machines)
@@ -296,8 +316,9 @@ function digCell(x, y, paced = false, acc = G) {
   const i = y * W + x,
     m = mat[i];
   if (m === ROCK) {
+    if (deepRock(x, y)) return 0;
     if (!hasTool('pick') || (!paced && rnd() > 0.3)) return 0;
-  } else if (m !== EARTH && m !== SAND && m !== GOLD && m !== LOAM && m !== ORE && m !== COAL && m !== GEM) return 0;
+  } else if (m !== EARTH && m !== SAND && m !== GOLD && m !== LOAM && m !== ORE && m !== COAL && m !== GEM && m !== GLASS) return 0;
   // a Wühler's stroke throws its crumbs on the strike (see digHit); it only notes their colours
   if (paced) {
     if (rnd() < 0.2) crumbCols[crumbN++ & 7] = cssOf(i);
@@ -397,7 +418,7 @@ const DUST = {
   [ROCK]: { n: 3, c: ['#fff3c0', '#ffd27a', '#ffffff'], s: 1, g: 0.05, l: 7, spark: 1 },
   [GRANITE]: { n: 3, c: ['#fff3c0', '#ffd27a'], s: 1, g: 0.05, l: 7, spark: 1 },
 };
-const DIGSND = { [SAND]: 'digSand', [LOAM]: 'digLoam', [COAL]: 'digCoal', [ORE]: 'digOre', [GEM]: 'digOre', [ROCK]: 'digRock', [GRANITE]: 'digRock' };
+const DIGSND = { [SAND]: 'digSand', [LOAM]: 'digLoam', [COAL]: 'digCoal', [ORE]: 'digOre', [GEM]: 'digOre', [ROCK]: 'digRock', [GRANITE]: 'digRock', [GLASS]: 'digRock' };
 // the moment the pick strikes: sound, a shake in rock, a short buzz on the phone
 const STRIKE = 0.6;
 function digHit(c, slope) {
@@ -462,6 +483,8 @@ function updDigger(c, I) {
 function updBody(c, I) {
   if (c.ride != null && !c.dead) return; // sitting in a vehicle: the vehicle moves it
   // (automatic digging is part of a player's input; helpers dig on purpose)
+  // (pushing or digging against deep rock: why it does not give)
+  if ((I.dig || Math.abs(I.ax) > 0.35) && !c.dead) gateHint(c, Math.abs(I.ax) > 0.3 ? Math.sign(I.ax) : c.face);
   if (I.auto && !I.dig && !c.dead) {
     const d = wantsDig(c, I);
     if (d) {
@@ -532,6 +555,11 @@ function updBody(c, I) {
   if (c.poison > 0) {
     c.poison--;
     hurt(c, 0.055, true);
+  }
+  // frost from the ice king's shards (iceking.js): slower for three seconds
+  if (c.frost > 0) {
+    c.frost--;
+    if (G.frame % 8 === 0 && parts.length < 1400) parts.push({ x: c.x + rnd() * 6, y: c.y + rnd() * 8, vx: 0, vy: -0.2, l: 16, c: '#e6f6ff' });
   }
   if (headLiq) {
     c.breath -= hasGift(c, 'lung') ? 0.067 : 0.2;
@@ -699,7 +727,7 @@ function updBody(c, I) {
   const onG = !free(c.x, c.y + 1, 6, 10);
   // frames in the air, for the jump and fall poses (diggerhi.js); a step down does not count
   c.airT = onG || inLiq ? 0 : (c.airT || 0) + 1;
-  let tvx = Math.abs(I.ax) < 0.25 ? 0 : I.ax * (inLiq ? 0.6 : 1.05);
+  let tvx = Math.abs(I.ax) < 0.25 ? 0 : I.ax * (inLiq ? 0.6 : 1.05) * (c.frost > 0 ? 0.55 : 1);
   // starting off from standing, and stopping from a run, for the poses (diggerhi.js)
   if (onG && Math.abs(I.ax) > 0.25 && Math.abs(c.vx) < 0.15 && G.frame - (c.startF ?? -99) > 12) c.startF = G.frame;
   if (onG && Math.abs(I.ax) < 0.25 && Math.abs(c.vx) > 0.7 && G.frame - (c.stopF ?? -99) > 12) c.stopF = G.frame;
@@ -1100,6 +1128,7 @@ function lorryAct(c, L) {
 }
 
 export {
+  gateHint,
   HARD,
   goldStep,
   canToss,

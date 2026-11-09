@@ -60,9 +60,13 @@ Zwei Steuerungen (Optionen → Steuerung): **Modern** (Standard) gräbt, wenn ma
 
 **Hacken:** Ohne Werkzeug gräbt der Wühler Erde, Sand, Lehm, Gold, Erz, Kohle und Edelsteine. Die Stahlhacke (nach „Metallurgie“) kommt durch Fels und gräbt schneller. Die Diamanthacke (nach „Härten“, erst nach der Stahlhacke, 150 Taler, 3 Metall, 2 Kohle) gräbt Fels, Erz, Kohle und Edelsteine anderthalbmal so schnell.
 
-**Feuer, Wasser, Säure:** Öl schwimmt auf Wasser und brennt. Holz im Feuer (Brücken, Treppen, Stützbalken) verkohlt, auch bis zu drei Felder über den Flammen, und Lava setzt Holz in Brand. Wasser auf brennendem Öl löscht es mit Zischen. Säure frisst Erde, Sand, Lehm und Holz, Fels nur langsam.
+**Feuer, Wasser, Säure:** Öl schwimmt auf Wasser und brennt. Holz im Feuer (Brücken, Treppen, Stützbalken) verkohlt, auch bis zu drei Felder über den Flammen, und Lava setzt Holz in Brand. Wasser auf brennendem Öl löscht es mit Zischen. Säure frisst Erde, Sand, Lehm und Holz, Fels nur langsam. Lava schmilzt Sand neben sich zu Glas: durchscheinend, fest, grabbar, und eine Sprengung zerschlägt es.
 
 **Lavakönigin** (freies Spiel, nicht in „Gemütlich“, einmal pro Welt): Ab Minute acht steigt sie aus einem Lavasee, wenn ein Wühler tief unten in der Nähe ist. Sie bleibt über ihrem See, wirft Lavabrocken, ruft Lavaschleime und verbrennt, wer sie berührt. Lava macht ihr nichts, Pfeile, Sprengungen und das Schwert schon. Besiegt lässt sie Gold und Edelsteine liegen (Erfolg „Königinnensturz“).
+
+**Eiskönig** (Winterwelten im freien Spiel, nicht in „Gemütlich“, einmal pro Welt): Ab Minute zehn erscheint er in einer Höhle, wenn ein Wühler tief unten ist. Er schwebt durch die Höhlen, wirft Eissplitter, die einfrieren (drei Sekunden langsamer), und ruft Fledermäuse. Besiegt lässt er Edelsteine und Gold liegen (Erfolg „Tauwetter“).
+
+**Tiefenfels** (freies Spiel): Fels tiefer als 45 m ist dunkler und gibt nur der Diamanthacke nach; Erde, Gold, Erz und Edelsteine bleiben überall grabbar. In Kampagne, Leveln, Tagesschacht und Versus gibt es kein Tor in der Tiefe.
 
 **Siedler:** Wer drei Morgen in Folge Brot bekommt, fühlt sich wohl und zahlt 3 statt 2 Taler Miete; wer hungert, zahlt 1, und nach dem zweiten hungrigen Morgen zieht er aus.
 

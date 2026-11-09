@@ -145,14 +145,15 @@ function volcanoTick(v) {
     announce('Der Vulkan beruhigt sich');
   }
 }
-function throwBomb(x, y, vx, vy) {
-  bombs.push({ x, y, vx, vy });
-  if (G.netHost) G.netEvent(['p', 'l', Math.round(x), Math.round(y), vx, vy]);
+// kind: 'l' a lava bomb (volcano, lava queen), 'i' a shard of ice (the ice king, iceking.js)
+function throwBomb(x, y, vx, vy, kind = 'l') {
+  bombs.push({ x, y, vx, vy, k: kind });
+  if (G.netHost) G.netEvent(['p', kind, Math.round(x), Math.round(y), vx, vy]);
 }
 // a client shows the lava bombs of the host
 function playBomb(e) {
-  if (e[0] !== 'p' || e[1] !== 'l') return false;
-  bombs.push({ x: e[2], y: e[3], vx: e[4], vy: e[5] });
+  if (e[0] !== 'p' || (e[1] !== 'l' && e[1] !== 'i')) return false;
+  bombs.push({ x: e[2], y: e[3], vx: e[4], vy: e[5], k: e[1] });
   return true;
 }
 function updBombs() {
@@ -161,7 +162,9 @@ function updBombs() {
     b.vy += 0.12;
     b.x += b.vx;
     b.y += b.vy;
-    if (rnd() < 0.5) parts.push({ x: b.x, y: b.y, vx: 0, vy: 0, l: 14, c: rnd() < 0.5 ? '#ffcf4a' : '#ff7a2f' });
+    const ice = b.k === 'i';
+    if (rnd() < 0.5)
+      parts.push({ x: b.x, y: b.y, vx: 0, vy: 0, l: 14, c: ice ? (rnd() < 0.5 ? '#e6f6ff' : '#8fd0ee') : rnd() < 0.5 ? '#ffcf4a' : '#ff7a2f' });
     const x = Math.floor(b.x),
       y = Math.floor(b.y);
     if (x < 0 || x >= W || y >= H) {
@@ -170,7 +173,7 @@ function updBombs() {
     }
     if (y < 0 || !(SOLID[mat[y * W + x]] || LIQ[mat[y * W + x]])) continue;
     bombs.splice(k, 1);
-    if (!G.netClient) splat(x, y - 1);
+    if (!G.netClient) (ice ? shatter : splat)(x, y - 1);
   }
 }
 // a lava bomb lands: a little puddle of lava, fire around it
@@ -184,13 +187,24 @@ function splat(x, y) {
       c.burn = 90;
     }
 }
+// a shard of ice lands: it bursts, hurts a little and freezes whoever stands there (slower for a while)
+function shatter(x, y) {
+  for (let q = 0; q < 8 && parts.length < 1400; q++)
+    parts.push({ x, y, vx: (rnd() - 0.5) * 1.6, vy: -rnd() * 1.4, l: 18, c: q % 2 ? '#e6f6ff' : '#8fd0ee' });
+  for (const c of crew)
+    if (!c.dead && Math.abs(c.x + 3 - x) < 6 && Math.abs(c.y + 5 - y) < 8) {
+      hurt(c, 6);
+      c.frost = 180;
+    }
+  sfx('pick', x, y, 0.6, 1.6);
+}
 function drawEvents(ctx, cx, cy) {
   for (const b of bombs) {
     const x = Math.floor(b.x - cx),
       y = Math.floor(b.y - cy);
-    ctx.fillStyle = '#ff7a2f';
+    ctx.fillStyle = b.k === 'i' ? '#8fd0ee' : '#ff7a2f';
     ctx.fillRect(x - 1, y - 1, 3, 3);
-    ctx.fillStyle = '#ffe9a0';
+    ctx.fillStyle = b.k === 'i' ? '#ffffff' : '#ffe9a0';
     ctx.fillRect(x, y, 1, 1);
   }
 }

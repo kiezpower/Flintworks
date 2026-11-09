@@ -14,6 +14,7 @@ import { sfx } from './sound.js';
 import { G, animals, crew, parts } from './state.js';
 import { AIR, GRANITE, H, PLANK, W, activate, bg, mat, paint, rnd } from './world.js';
 import { queenOf, queenTick } from './queen.js';
+import { kingOf, kingTick } from './iceking.js';
 
 const SEGS = 14,
   GAP = 5,
@@ -43,6 +44,7 @@ G.spawnWorm = spawnWorm;
 // free play: once per world after ten minutes, now and then (checked every half second)
 function bossTick() {
   queenTick(); // (the lava queen wakes on her own terms, queen.js)
+  kingTick(); // (and the ice king in winter worlds, iceking.js)
   if (G.netClient || G.wormDone || G.relaxed || G.tut || G.state !== 'play') return;
   const M = GAME_MODES[G.mode];
   if (!M || M.campaign || M.pkg || M.daily || M.kit) return;
@@ -186,7 +188,8 @@ function drawWorms(ctx, cx, cy) {
 // the boss bar at the bottom of the screen while it lives (like Terraria's)
 function drawBossBar(ctx) {
   const q = queenOf(),
-    a = wormOf() || q;
+    k = kingOf(),
+    a = wormOf() || q || k;
   if (!a) return;
   const w = Math.round(Math.min(110, G.VW * 0.36)),
     x = Math.round((G.VW - w) / 2),
@@ -201,7 +204,7 @@ function drawBossBar(ctx) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = '#fbf3dc';
-  ctx.fillText(tr(a === q ? 'Lavakönigin' : 'Riesenwurm'), x + w / 2, y - 2);
+  ctx.fillText(tr(a === q ? 'Lavakönigin' : a === k ? 'Eiskönig' : 'Riesenwurm'), x + w / 2, y - 2);
 }
 
 export { bossTick, drawBossBar, drawWorms, spawnWorm, wormOf, wormUpd };

@@ -25,6 +25,7 @@ const ACH = [
   ['fire', 'fire', 500, '🔥', 'Feuerteufel', 'Setze Öl in Brand ({n} Felder)', 150],
   ['worm', 'worm', 1, '🐛', 'Wurmtöter', 'Besiege den Riesenwurm', 400],
   ['queen', 'queen', 1, '👑', 'Königinnensturz', 'Besiege die Lavakönigin', 400],
+  ['iceking', 'iceking', 1, '❄️', 'Tauwetter', 'Besiege den Eiskönig', 400],
   ['blood', 'blood', 1, '🌕', 'Blutmond überstanden', 'Überstehe eine Blutmond-Nacht', 200],
   ['night', 'night', 3, '🏰', 'Festungsherr', 'Halte die Burg {n} Nächte', 300],
   ['wins', P => P.wins || 0, 10, '🏆', 'Seriensieger', 'Gewinne {n} Runden', 200],
