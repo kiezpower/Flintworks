@@ -695,7 +695,7 @@ function render() {
       ctx.save();
       ctx.translate(sx, sy);
       ctx.rotate(t.ang);
-      drawHi(ctx, t.spr, -Math.floor(w / 2), -h);
+      drawHi(ctx, treeLook(t), -Math.floor(w / 2), -h);
       ctx.restore();
     }
   }

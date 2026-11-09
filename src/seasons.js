@@ -45,7 +45,7 @@ const dress = new WeakMap(),
   snowy = {};
 function treeLook(t) {
   const s = season();
-  if (s == null || s === 1 || t.fall) return t.spr;
+  if (s == null || s === 1) return t.spr;
   if (t.type === 'pine') return s === 3 ? snowy[t.stage] || (snowy[t.stage] = treeSprite('snowpine', t.stage)) : t.spr;
   if (t.type !== 'oak') return t.spr;
   let m = dress.get(t.spr);
