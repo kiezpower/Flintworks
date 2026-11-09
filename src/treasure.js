@@ -7,7 +7,7 @@ import { track } from './profile.js';
 import { announce } from './announce.js';
 import { addStat } from './stats.js';
 import { TEAM } from './versus.js';
-import { sfx } from './sound.js';
+import { buzz, sfx } from './sound.js';
 import { drawHi, sp } from './sprites.js';
 import { G } from './state.js';
 import { toast } from './ui.js';
@@ -78,6 +78,7 @@ function openChest(ch) {
   sfx('fanfare');
   celebrate(ch.x + CW / 2, ch.y, 36);
   sfx('coin', ch.x, ch.y);
+  buzz([30, 50, 60]);
   G.shake = Math.max(G.shake || 0, 2);
   addFloat(ch.x + CW / 2, ch.y - 4, '★', '#ffe066');
   toast('Schatztruhe geöffnet!');

@@ -1,4 +1,5 @@
 import { cam } from './render.js';
+import { P } from './profile.js';
 import { G } from './state.js';
 import { clamp, rnd } from './world.js';
 
@@ -13,6 +14,12 @@ function audioInit() {
     G.MG = G.AC.createGain();
     G.MG.gain.value = 0.5;
     G.MG.connect(G.AC.destination);
+    // one bus each for effects, music and background sounds, with their own volume (settings.js)
+    for (const k of ['SFX', 'MUS', 'AMB']) {
+      G[k] = G.AC.createGain();
+      G[k].connect(G.MG);
+    }
+    applyVolumes();
     G.NB = G.AC.createBuffer(1, G.AC.sampleRate, G.AC.sampleRate);
     const d = G.NB.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = rnd() * 2 - 1;
@@ -20,8 +27,28 @@ function audioInit() {
     G.AC = null;
   }
 }
-// where the voices of the current sound go: the master gain, or a stereo panner in front of it
+// the volumes of the three buses (0 … 1, kept in the profile as P.vol = { sfx, mus, amb })
+const VOL_KEYS = { sfx: 'SFX', mus: 'MUS', amb: 'AMB' };
+function volOf(k) {
+  const v = P.vol && P.vol[k];
+  return typeof v === 'number' && v >= 0 && v <= 1 ? v : 1;
+}
+function applyVolumes() {
+  if (!G.AC) return;
+  for (const k in VOL_KEYS) if (G[VOL_KEYS[k]]) G[VOL_KEYS[k]].gain.setTargetAtTime(volOf(k), G.AC.currentTime, 0.05);
+}
+// where the voices of the current sound go: the effects bus, or a stereo panner in front of it
 let OUT = null;
+// plays fn's voices on another bus (ambience.js: birds and crickets count as background sounds)
+function onBus(bus, fn) {
+  const was = OUT;
+  OUT = bus || null;
+  try {
+    fn();
+  } finally {
+    OUT = was;
+  }
+}
 function nz(t0, dur, f0, f1, vol, type = 'lowpass') {
   const s = G.AC.createBufferSource();
   s.buffer = G.NB;
@@ -32,7 +59,7 @@ function nz(t0, dur, f0, f1, vol, type = 'lowpass') {
   const g = G.AC.createGain();
   g.gain.setValueAtTime(vol, t0);
   g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
-  s.connect(f).connect(g).connect(OUT || G.MG);
+  s.connect(f).connect(g).connect(OUT || G.SFX || G.MG);
   s.start(t0, rnd() * 0.5);
   s.stop(t0 + dur + 0.02);
 }
@@ -44,7 +71,7 @@ function tn(t0, type, f0, f1, dur, vol) {
   const g = G.AC.createGain();
   g.gain.setValueAtTime(vol, t0);
   g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
-  o.connect(g).connect(OUT || G.MG);
+  o.connect(g).connect(OUT || G.SFX || G.MG);
   o.start(t0);
   o.stop(t0 + dur + 0.02);
 }
@@ -65,7 +92,7 @@ function sfx(n, x, y, k = 1, p = 1) {
   if (x !== undefined && G.AC.createStereoPanner) {
     OUT = G.AC.createStereoPanner();
     OUT.pan.value = clamp((x - (cam.x + G.VW / 2)) / (G.VW / 2), -1, 1) * 0.6;
-    OUT.connect(G.MG);
+    OUT.connect(G.SFX || G.MG);
   }
   // pick strikes never sound quite the same twice
   const r = 0.92 + rnd() * 0.16;
@@ -216,11 +243,11 @@ function sfx(n, x, y, k = 1, p = 1) {
   OUT = null;
 }
 
-// short vibration on phones for hits and blasts
+// short vibration on phones for hits, blasts and finds (ms, or a pattern [on, off, on])
 function buzz(ms) {
   if (G.muted || G.vibe === false || !navigator.vibrate) return;
   try {
     navigator.vibrate(ms);
   } catch {}
 }
-export { buzz, audioInit, nz, sfx, tn };
+export { buzz, audioInit, applyVolumes, nz, onBus, sfx, tn, volOf };

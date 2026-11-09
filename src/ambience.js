@@ -1,6 +1,6 @@
 // Background sounds: rain, wind, birds by day, crickets at night.
 import { sel_ } from './entities.js';
-import { tn } from './sound.js';
+import { onBus, tn } from './sound.js';
 import { G } from './state.js';
 import { darkness } from './weather.js';
 import { W, clamp, rnd, surf } from './world.js';
@@ -16,7 +16,7 @@ function noiseLoop(type, freq, q) {
   f.Q.value = q;
   const g = G.AC.createGain();
   g.gain.value = 0;
-  s.connect(f).connect(g).connect(G.MG);
+  s.connect(f).connect(g).connect(G.AMB || G.MG);
   s.start();
   return g;
 }
@@ -40,8 +40,8 @@ function updAmbience() {
   loops.wind.gain.setTargetAtTime(on * (outside ? 0.012 + G.wind * 0.03 : 0.004), t, 1.5);
   if (!on || !outside) return;
   const dark = darkness();
-  if (dark < 0.2 && G.rainT === 0 && rnd() < 0.05) chirp(t);
-  if (dark > 0.35 && rnd() < 0.1) cricket(t);
+  if (dark < 0.2 && G.rainT === 0 && rnd() < 0.05) onBus(G.AMB, () => chirp(t));
+  if (dark > 0.35 && rnd() < 0.1) onBus(G.AMB, () => cricket(t));
 }
 
 export { updAmbience };
