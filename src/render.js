@@ -63,6 +63,7 @@ import { drawBrew } from './potions.js';
 import { drawTombArrow, drawTombs } from './tombs.js';
 import { drawTorches } from './torches.js';
 import { drawZones } from './zones.js';
+import { drawStorm } from './storms.js';
 import { drawMerchant } from './merchant.js';
 import { drawVillagers } from './villagers.js';
 import { drawFarms } from './farm.js';
@@ -949,6 +950,11 @@ function render() {
     if (--G.bolt.l <= 0) G.bolt = null;
   }
   if (G.lightFx) duskGrade(ctx, sunAlt());
+  // a blood moon reddens the night (nights.js)
+  if (G.bloodMoon && sunAlt() < 0) {
+    ctx.fillStyle = `rgba(150,20,20,${Math.min(0.22, -sunAlt() * 0.4)})`;
+    ctx.fillRect(0, 0, G.VW, G.VH);
+  }
   // lighting: night plus a dimming that deepens below the surface; lamps, lava and buildings cut holes
   lctx.globalCompositeOperation = 'source-over';
   lctx.clearRect(0, 0, G.VW, G.VH);
@@ -1038,6 +1044,7 @@ function render() {
     endGlow(ctx);
   }
   if (G.lightFx) drawVignette(ctx);
+  drawStorm(ctx, { x: cx, y: cy }); // (the haze of a sand or snow storm, storms.js)
   drawGoal(ctx, cx, cy);
   drawCue(ctx, cx, cy);
   drawCastleCue(ctx, cx, cy);

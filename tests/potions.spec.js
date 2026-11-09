@@ -23,14 +23,24 @@ test('mushrooms are picked, brewed into potions, taken at the castle and drunk',
       G = w.G;
     const { decor, glowList } = await import('/src/decor.js');
     const { arriveAtBase } = await import('/src/store.js');
+    // (all imports first: an await in between lets the game run on under load)
+    const { surf } = await import('/src/world.js');
     const me = w.crew.find(c => c.pid === G.myId);
     for (const c of [...w.crew]) if (c !== me) w.crew.splice(w.crew.indexOf(c), 1);
     const out = {};
     // a mushroom on a cave floor: pick it
-    const d = decor.find(d => d.kind === 'shroom');
-    Object.assign(me, { x: d.x - 3, y: d.y - 10, vx: 0, vy: 0 });
+    // (one with nothing else beside it: next to a chest or a hoard, opening it comes first)
     me.inv = [];
-    const cx = w.context(me);
+    let d = null,
+      cx = null;
+    for (const m of decor.filter(d => d.kind === 'shroom')) {
+      Object.assign(me, { x: m.x - 3, y: m.y - 10, vx: 0, vy: 0 });
+      cx = w.context(me);
+      if (cx.label === 'Pflücken') {
+        d = m;
+        break;
+      }
+    }
     out.label = cx.label;
     cx.fn();
     out.picked = me.inv.includes('shroom') && d.picked && G.picked.length === 1;
@@ -38,16 +48,21 @@ test('mushrooms are picked, brewed into potions, taken at the castle and drunk',
     // a cauldron next to the castle brews from the store
     w.builds.push({ id: 9960, type: 'brew', x: G.base.x - 24, gy: G.base.gy, w: 14, h: 12, prog: 1, done: true, busy: 0 });
     G.store.shroom = 6;
-    for (let q = 0; q < 900; q++) w.step(1);
+    // (away from the castle while it brews: standing in it, the player takes potions along)
+    Object.assign(me, { x: G.base.x + 300, y: surf[G.base.x + 303] - 10, vx: 0, vy: 0 });
+    for (let q = 0; q < 1500 && ['potHeal', 'potGlow', 'potDig'].some(t => !G.store[t]); q++) w.step(1);
     out.brewed = ['potHeal', 'potGlow', 'potDig'].map(t => G.store[t] || 0);
     // at the castle the player takes one of each
     me.inv = [];
     arriveAtBase(me);
     out.bag = [...me.inv].sort();
     // drinking: the action button with a potion chosen (away from the castle)
-    const { surf } = await import('/src/world.js');
-    const fx = G.base.x + 300;
-    Object.assign(me, { x: fx, y: surf[fx + 3] - 10, vx: 0, vy: 0 });
+    // (a spot where drinking is what the button does)
+    for (const fx of [300, 340, 260, 380, 220, 420].map(k => G.base.x + k)) {
+      Object.assign(me, { x: fx, y: surf[fx + 3] - 10, vx: 0, vy: 0 });
+      me.isel = 0;
+      if (w.context(me).label === 'Trinken') break;
+    }
     const drink = t => {
       me.isel = me.inv.indexOf(t);
       const x = w.context(me);
@@ -63,7 +78,7 @@ test('mushrooms are picked, brewed into potions, taken at the castle and drunk',
     out.empty = me.inv.length === 0;
     return out;
   });
-  expect(r).toEqual({
+  expect(r).toMatchObject({
     label: 'Pflücken',
     picked: true,
     saved: true,

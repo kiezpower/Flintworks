@@ -553,7 +553,7 @@ function killAnimal(a) {
   const drop = (t, n) => {
     for (let k = 0; k < n; k++) spawnItem(t, a.x + a.w / 2 - 1 + (k - n / 2) * 2, a.y, (k - (n - 1) / 2) * 0.5, -1.5, 10);
   };
-  drop('nug', L.nug);
+  drop('nug', L.nug * (a.blood ? 2 : 1)); // (a blood moon's monster: twice the gold, nights.js)
   if (L.coal) drop('coal', L.coal);
   if (L.ore) drop('ore', L.ore);
   if (L.gem && rnd() < L.gem) drop('gem', L.gems || 1);

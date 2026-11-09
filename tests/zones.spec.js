@@ -33,8 +33,9 @@ test('a crystal cave and a mushroom cave lie deep down, with their finds and cre
       n: Z.length,
       deep: Z.every(z => z.y > surf[z.x] + 140),
       gems: gems > 10,
-      crystals: count(crystal, d => d.kind === 'crystal') >= 4,
-      shrooms: count(mush, d => d.kind === 'shroom') >= 4,
+      // (what was placed with the world: water may wash some away later)
+      crystals: (crystal.decorN || 0) >= 6,
+      shrooms: (mush.decorN || 0) >= 6,
       crawlers: w.animals.filter(a => a.kind === 'crawler').length,
       spores: w.animals.filter(a => a.kind === 'spore').length,
     };

@@ -3,6 +3,7 @@
 // fighting dig themselves in and are gone. Not in the relaxed setting, not in the tutorial, campaign
 // levels, the Tagesschacht, Versus or "Festung" (which has its own waves, siege.js). Only the host.
 import { announce } from './announce.js';
+import { track } from './profile.js';
 import { mkAnimal } from './entities.js';
 import { GAME_MODES } from './modes.js';
 import { G, animals, crew, parts } from './state.js';
@@ -19,22 +20,35 @@ function roamTick() {
   const s = G.nights || (G.nights = { n: 0, dark: false }),
     sun = sunAlt();
   // a minute before dark (from the second night on, when monsters come): a warning
+  // (from the third night on, now and then a blood moon: decided with the warning, like Terraria's)
   if (!s.dark && !s.warned && s.n >= 1 && G.dayT > 0.4 && G.dayT < 0.5) {
     s.warned = true;
-    announce('Bald wird es dunkel – nachts kommen Monster an die Oberfläche.');
+    s.bloodNext = s.n >= 2 && !G.relaxed && rnd() < 1 / 6;
+    announce(
+      s.bloodNext
+        ? 'Ein Blutmond steigt auf – heute Nacht kommen doppelt so viele Monster!'
+        : 'Bald wird es dunkel – nachts kommen Monster an die Oberfläche.',
+    );
   }
   if (!s.dark && sun < -0.05) {
     s.dark = true;
     s.n++;
+    s.blood = !!s.bloodNext;
+    s.bloodNext = false;
+    G.bloodMoon = s.blood;
     if (s.n < 2) return; // (the first night is quiet)
     const np = (G.mp && G.mp.np) || 1,
-      n = Math.min(3, s.n - 1) + Math.floor((np - 1) / 2);
+      n = (Math.min(3, s.n - 1) + Math.floor((np - 1) / 2)) * (s.blood ? 2 : 1);
     let made = 0;
-    for (let k = 0; k < n; k++) if (roamer()) made++;
-    if (made) announce('Die Nacht bricht herein – Monster streifen umher.');
+    for (let k = 0; k < n; k++) if (roamer(s.blood)) made++;
+    if (made) announce(s.blood ? 'Der Blutmond ist da – Monster überall!' : 'Die Nacht bricht herein – Monster streifen umher.');
   } else if (s.dark && sun > 0.05) {
     s.dark = false;
     s.warned = false;
+    // a blood moon lived through (an achievement, achievements.js)
+    if (s.blood && crew.some(c => c.pid != null && !c.bot && !c.dead)) track('blood');
+    s.blood = false;
+    G.bloodMoon = false;
     // dawn: the roamers nobody is near dig themselves in
     for (let k = animals.length - 1; k >= 0; k--) {
       const a = animals[k];
@@ -46,7 +60,7 @@ function roamTick() {
   }
 }
 // one monster on the surface, out of sight of a Wühler but not far off
-function roamer() {
+function roamer(blood = false) {
   const alive = crew.filter(c => !c.dead && c.pid != null);
   const c = alive[ri(0, Math.max(0, alive.length - 1))];
   if (!c) return false;
@@ -57,6 +71,11 @@ function roamer() {
   const a = mkAnimal('monster', x, 0);
   a.y = surf[x + 6] - a.h - 1;
   a.night = 1;
+  // (a blood moon's: tougher, and twice the loot, objects.js killAnimal)
+  if (blood) {
+    a.blood = 1;
+    a.hp = a.maxHp = Math.round(a.hp * 1.5);
+  }
   animals.push(a);
   return true;
 }
