@@ -454,5 +454,9 @@ const EN2 = {
   'Leuchtpilz! In der Burg einlagern – ein Braukessel braut Tränke daraus':
     'A glowing mushroom! Store it in the castle – a brewing cauldron brews potions from it',
   'Tasche voll – zur Burg, um zu verkaufen': 'Bag full – back to the castle to sell',
+  Höhlenfisch: 'Cave fish',
+  Goldfisch: 'Goldfish',
+  'Ein Höhlenfisch!': 'A cave fish!',
+  'Ein Goldfisch!': 'A goldfish!',
 };
 export { EN2 };

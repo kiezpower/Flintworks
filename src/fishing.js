@@ -11,7 +11,7 @@ import { sfx } from './sound.js';
 import { G, animals, crew } from './state.js';
 import { hasTool } from './tools.js';
 import { toast } from './ui.js';
-import { AIR, W, WATER, free, mat, ri, rnd } from './world.js';
+import { AIR, W, WATER, free, mat, ri, rnd, surf } from './world.js';
 
 const BITE = 55; // ticks to pull it out once it bites
 // the water surface in front of a Wühler, within the line's reach (or null)
@@ -45,6 +45,15 @@ function wait(s) {
   const near = animals.some(a => a.kind === 'fish' && a.hp > 0 && Math.abs(a.x - s.x) < 60 && Math.abs(a.y - s.y) < 30);
   return Math.round(ri(240, 600) * (near ? 0.45 : 1));
 }
+// what comes up at this spot: mostly a fish (like Terraria: water deep down holds pale cave fish
+// worth more; now and then a goldfish), else a nugget, a gem, a stone or coins
+function catchAt(x, y) {
+  const r = rnd();
+  const what = r < 0.72 ? 'fish' : r < 0.84 ? 'nug' : r < 0.88 ? 'gem' : r < 0.95 ? 'rock' : 'coins';
+  if (what !== 'fish') return what;
+  if (rnd() < 0.04) return 'goldfish';
+  return y > surf[Math.max(0, Math.min(W - 1, x))] + 40 && rnd() < 0.6 ? 'cavefish' : 'fish';
+}
 function reel(c) {
   const f = c.fish;
   c.fish = null;
@@ -54,8 +63,8 @@ function reel(c) {
     return;
   }
   // what comes up: mostly a fish
-  const r = rnd(),
-    what = r < 0.72 ? 'fish' : r < 0.84 ? 'nug' : r < 0.88 ? 'gem' : r < 0.95 ? 'rock' : 'coins';
+  const what = catchAt(f.x, f.y);
+  const isFish = what === 'fish' || what === 'cavefish' || what === 'goldfish';
   if (what === 'coins') {
     const n = ri(15, 40);
     G.money += n;
@@ -65,9 +74,9 @@ function reel(c) {
     const dx = c.x + 3 - f.x;
     spawnItem(what, f.x, f.y - 2, dx / 28, -2.2, 0);
   }
-  if (what === 'fish') track('fish');
-  toast(what === 'fish' ? 'Ein Fisch!' : what === 'rock' ? 'Nur ein alter Stein …' : 'Ein Schatz am Haken!');
-  sfx(what === 'fish' ? 'splash' : 'coin', f.x, f.y);
+  if (isFish) track('fish');
+  toast(what === 'goldfish' ? 'Ein Goldfisch!' : what === 'cavefish' ? 'Ein Höhlenfisch!' : what === 'fish' ? 'Ein Fisch!' : what === 'rock' ? 'Nur ein alter Stein …' : 'Ein Schatz am Haken!');
+  sfx(isFish && what !== 'goldfish' ? 'splash' : 'coin', f.x, f.y);
 }
 // every tick (host): wait, bite, get away; moving or leaving the spot ends it
 function updFishing() {
@@ -128,4 +137,4 @@ function drawFishing(ctx, cx, cy) {
   }
 }
 
-export { drawFishing, fishContext, updFishing, waterAhead };
+export { catchAt, drawFishing, fishContext, updFishing, waterAhead };

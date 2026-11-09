@@ -2,6 +2,7 @@ import { wallContext } from './fort.js';
 import { hasGift, shrineContext } from './shrines.js';
 import { hoardContext } from './hoards.js';
 import { potionContext, shroomContext } from './potions.js';
+import { addTomb } from './tombs.js';
 import { petContext } from './pets.js';
 import { fishContext } from './fishing.js';
 import { merchantContext } from './merchant.js';
@@ -79,7 +80,11 @@ function killDigger(c) {
   c.deadT = 0;
   c.tumble = false;
   c.climb = c.hangle = false;
-  for (const t of c.inv) spawnItem(t, c.x + 2, c.y + 2, (rnd() - 0.5) * 1.5, -1.2, 30);
+  const tomb = addTomb(c); // (a gravestone marks where the bag fell out, tombs.js)
+  for (const t of c.inv) {
+    const it = spawnItem(t, c.x + 2, c.y + 2, (rnd() - 0.5) * 1.5, -1.2, 30);
+    if (tomb && it) it.tomb = tomb;
+  }
   c.inv = [];
   toast('{name} ist erschöpft', { name: c.name });
   G.onKill?.(c);

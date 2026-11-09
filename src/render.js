@@ -60,6 +60,7 @@ import { treeLook } from './seasons.js';
 import { drawShrines } from './shrines.js';
 import { drawHoardArrow, drawHoards } from './hoards.js';
 import { drawBrew } from './potions.js';
+import { drawTombArrow, drawTombs } from './tombs.js';
 import { drawMerchant } from './merchant.js';
 import { drawVillagers } from './villagers.js';
 import { drawFarms } from './farm.js';
@@ -729,6 +730,7 @@ function render() {
   drawChests(ctx, cx, cy);
   drawShrines(ctx, cx, cy); // (deep down, shrines.js)
   drawHoards(ctx, cx, cy); // (the great hoards, hoards.js)
+  drawTombs(ctx, cx, cy); // (where a Wühler gave out, tombs.js)
   for (const b of builds) if (b.type === 'brew' && b.done) drawBrew(ctx, b, cx, cy); // (potions.js)
   drawHill(ctx, cx, cy);
   drawCoop(ctx, cx, cy);
@@ -1008,6 +1010,7 @@ function render() {
   drawCue(ctx, cx, cy);
   drawCastleCue(ctx, cx, cy);
   drawHoardArrow(ctx, cx, cy); // (the way to a hoard on a treasure map)
+  drawTombArrow(ctx, cx, cy); // (the way back to the own lost bag)
   drawBubbles(ctx, cx, cy);
   drawEmotes(ctx, cx, cy);
   drawMates(ctx, cx, cy);

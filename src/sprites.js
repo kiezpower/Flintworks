@@ -267,6 +267,8 @@ const ITEM = {
   metal: { name: 'Metall', s: [4, 2], val: 15 },
   gem: { name: 'Edelstein', s: [3, 3], val: 45 },
   fish: { name: 'Fisch', s: [5, 2], val: 8 }, // (from the fishing rod, fishing.js)
+  cavefish: { name: 'Höhlenfisch', s: [5, 2], val: 22 }, // (from water deep down)
+  goldfish: { name: 'Goldfisch', s: [5, 2], val: 60 }, // (rare)
   grain: { name: 'Korn', s: [3, 3], val: 3 }, // (farm.js)
   bread: { name: 'Brot', s: [4, 3], val: 12 },
   // glowing mushrooms and the potions brewed from them (potions.js)
@@ -337,6 +339,10 @@ function drawItemPx(g, t, x, y, blink) {
   } else if (t === 'potHeal' || t === 'potGlow' || t === 'potDig') {
     R(1, 0, 1, 1, '#c8b898');
     R(0, 1, 3, 3, { potHeal: '#e8483a', potGlow: '#ffe066', potDig: '#6fd0ff' }[t]);
+  } else if (t === 'cavefish' || t === 'goldfish') {
+    R(0, 0, 4, 2, t === 'goldfish' ? '#f2a830' : '#c8c0d8');
+    R(0, 0, 4, 1, t === 'goldfish' ? '#ffe08a' : '#ece8f4');
+    R(4, 0, 1, 2, t === 'goldfish' ? '#c87a18' : '#8a82a0');
   } else if (t === 'fish') {
     R(0, 0, 4, 2, '#7fa8c8');
     R(0, 0, 4, 1, '#b6d6ee');
@@ -360,6 +366,8 @@ const ITEM_ART = {
   metal: [['.hhh.', 'hmmmd', 'mmmdd'], { h: '#e4e8ec', m: '#aab0b6', d: '#6f767c' }],
   gem: [['.wc.', 'wcCc', 'cCcd', '.dd.'], { w: '#e8ffff', c: '#5ae0f0', C: '#2fa8d8', d: '#1f6fa8' }],
   fish: [['.sss..', 'sbbbet', 'bbbbbt', '.ddd..'], { s: '#c8e2f4', b: '#7fa8c8', e: '#24160c', t: '#4a7aa0', d: '#5a86aa' }],
+  cavefish: [['.sss..', 'sbbbet', 'bbbbbt', '.ddd..'], { s: '#f4f0fa', b: '#c8c0d8', e: '#c83a5a', t: '#8a82a0', d: '#9a92b0' }],
+  goldfish: [['.sss..', 'sbbbet', 'bbbbbt', '.ddd..'], { s: '#ffe8a0', b: '#f2a830', e: '#24160c', t: '#c87a18', d: '#d8901e' }],
   grain: [['y.y.y', 'gygyg', '.ggg.', '..g..'], { y: '#f2c230', g: '#c9a43a' }],
   bread: [['.lll.', 'lLLLb', 'LLLbb', '.bbb.'], { l: '#e8b870', L: '#c88a42', b: '#9a6428' }],
   shroom: [['.ggg.', 'gGGGg', '..s..', '..s..'], { g: '#5fc8a0', G: '#9be3c8', s: '#e8e0c8' }],
