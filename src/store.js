@@ -2,6 +2,7 @@
 // materials into the store; production buildings work from the store on their own.
 import { takeBread } from './farm.js';
 import { takePotions } from './potions.js';
+import { takeTorches } from './torches.js';
 import { addFloat } from './floats.js';
 import { sold } from './profile.js';
 import { sfx } from './sound.js';
@@ -12,7 +13,7 @@ import { G, builds } from './state.js';
 import { flyCoins } from './reward.js';
 
 const SELL = ['nug', 'gem', 'fish', 'cavefish', 'goldfish'];
-const KEEP = ['flint', 'tnt', 'loam', 'bread', 'potHeal', 'potGlow', 'potDig']; // tools stay in the hand (bread: for the way, farm.js)
+const KEEP = ['flint', 'tnt', 'loam', 'bread', 'potHeal', 'potGlow', 'potDig', 'torch']; // tools stay in the hand (bread: for the way, farm.js)
 const stock = t => (G.store && G.store[t]) || 0;
 function addStock(t, n = 1) {
   G.store = G.store || {};
@@ -67,6 +68,8 @@ function arriveAtBase(c) {
   takeBread(c);
   // and the potions, one of each (potions.js)
   takePotions(c);
+  // and torches, up to three (torches.js)
+  takeTorches(c);
 }
 
 // ---- automatic production ----
@@ -84,6 +87,8 @@ const AUTO = {
   shop: [
     { out: 'flint', n: 1, need: { rock: 1, wood: 1 }, time: 80, keep: { wood: 2, rock: 2 }, max: 4 },
     { out: 'tnt', n: 1, need: { flint: 1, coal: 1 }, time: 140, max: 2 },
+    // (torches for deep down, torches.js)
+    { out: 'torch', n: 3, need: { wood: 1, coal: 1 }, time: 100, keep: { wood: 2 }, max: 9 },
   ],
 };
 const canMake = r => Object.entries(r.need).every(([t, n]) => stock(t) - ((r.keep && r.keep[t]) || 0) >= n);
@@ -113,7 +118,7 @@ const AUTO_INFO = {
   furnace: 'Erz + Kohle → Metall, ganz von selbst',
   mill: 'Korn → Brot, ganz von selbst',
   brew: 'Leuchtpilze → Tränke, ganz von selbst',
-  shop: 'Macht Feuersteine und Sprengladungen aus dem Lager',
+  shop: 'Macht Feuersteine, Sprengladungen und Fackeln aus dem Lager',
 };
 
 // why a production building is idle: the first ingredient that is missing, or 'full'
@@ -133,4 +138,4 @@ const chainStatus = (team = G.myTeam || 0) =>
   builds
     .filter(b => b.done && AUTO[b.type] && (b.team || 0) === team)
     .map(b => ({ b, busy: b.busy > 0, why: idleReason(b) }));
-export { chainStatus, idleReason, AUTO, AUTO_INFO, addStock, arriveAtBase, stock, takeStock, unload, updProduction };
+export { KEEP, chainStatus, idleReason, AUTO, AUTO_INFO, addStock, arriveAtBase, stock, takeStock, unload, updProduction };

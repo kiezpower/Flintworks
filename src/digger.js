@@ -3,6 +3,8 @@ import { hasGift, shrineContext } from './shrines.js';
 import { hoardContext } from './hoards.js';
 import { potionContext, shroomContext } from './potions.js';
 import { addTomb } from './tombs.js';
+import { torchContext } from './torches.js';
+import { crateContext } from './crate.js';
 import { petContext } from './pets.js';
 import { fishContext } from './fishing.js';
 import { merchantContext } from './merchant.js';
@@ -961,6 +963,9 @@ function context(c) {
   // at a shrine deep down: take its gift (shrines.js)
   const sh = shrineContext(c);
   if (sh) return sh;
+  // at a storage chest deep down: put in or take out (crate.js)
+  const cr = crateContext(c);
+  if (cr) return cr;
   // a glowing mushroom on a cave floor: pick it (potions.js)
   const pk = shroomContext(c);
   if (pk) return pk;
@@ -977,6 +982,9 @@ function context(c) {
   // at water with a fishing rod: cast, or pull in (fishing.js; before a tree on the bank)
   const fc = fishContext(c);
   if (fc) return fc;
+  // a torch in the hand, at a wall: set it (torches.js; before climbing and felling)
+  const tc = torchContext(c);
+  if (tc) return tc;
   const t = nearTree(c);
   if (t && !free(c.x, c.y + 1, 6, 10))
     return {

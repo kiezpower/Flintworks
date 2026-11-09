@@ -109,6 +109,7 @@ function serialize() {
       shrines: G.shrines || [],
       hoards: G.hoards || [],
       picked: G.picked || [],
+      torches: G.torches || [],
       fog: fogPack() && b64(fogPack()), // (what the map knows, fog.js)
       beams: G.beams || [],
       mis: G.mis || null,
@@ -221,6 +222,7 @@ function deserialize(d) {
     G.shrines = d.shrines || [];
     G.hoards = d.hoards || [];
     G.picked = d.picked || [];
+    G.torches = d.torches || [];
     G.beams = d.beams || [];
     G.mis = d.mis || null;
     G.goldSold = d.goldSold || 0;

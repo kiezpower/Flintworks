@@ -489,5 +489,13 @@ const EN2 = {
   Werfen: 'Throw',
   Leertaste: 'Space',
   Strg: 'Ctrl',
+  Fackel: 'Torch',
+  'Fackel setzen': 'Set torch',
+  Lagertruhe: 'Storage chest',
+  'Nur unter Tage: Funde ablegen, Helfer tragen sie zur Burg': 'Underground only: store finds, helpers carry them to the castle',
+  'Nur unter Tage – tiefer als 15 m': 'Underground only – deeper than 15 m',
+  Ablegen: 'Store',
+  'Aus der Truhe': 'Take out',
+  'Macht Feuersteine, Sprengladungen und Fackeln aus dem Lager': 'Makes flints, explosives and torches from the store',
 };
 export { EN2 };

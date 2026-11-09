@@ -204,6 +204,7 @@ const KINDS = {
       gr: b.grow != null ? r2(b.grow) : undefined, // (a field's crop, farm.js)
       am: b.aim,
       ft: b.fireT != null ? G.frame - b.fireT : undefined,
+      bi: b.items && b.items.length ? b.items : undefined, // (a storage chest's things, crate.js)
     }),
     create: d => {
       const b = { id: d.id, type: d.ty, x: d.x, gy: d.gy, w: d.w, h: d.h, prog: 0, done: false, busy: 0, team: d.te };
@@ -214,6 +215,7 @@ const KINDS = {
       Object.assign(b, { prog: d.pr, done: !!d.dn, busy: d.bs, out: d.out, lvl: d.lv, open: d.op, moving: d.mv });
       Object.assign(b, { on: !!d.on, pipe: d.pp, skin: d.sk });
       b.fhp = d.fh;
+      if (b.type === 'crate') b.items = d.bi || [];
       b.grow = d.gr;
       b.aim = d.am;
       if (d.ft != null) b.fireT = G.frame - d.ft;
@@ -310,6 +312,7 @@ function packGame() {
     shrines: G.shrines && G.shrines.map(s => (s.used ? 1 : 0)), // (shrines.js)
     picked: G.picked || [], // (mushrooms picked for potions, potions.js)
     tombs: G.tombs || [], // (gravestones, tombs.js)
+    torches: G.torches || [], // (torches.js)
     hoards: G.hoards && G.hoards.map(h => (h.open ? 2 : h.known ? 1 : 0)), // (hoards.js)
     rainT: G.rainT,
     dayN: G.dayN || 0, // (the days so far: the season, seasons.js)
@@ -364,6 +367,7 @@ function applyGame(d) {
   if (G.chests && d.chests) G.chests.forEach((c, k) => (c.open = !!d.chests[k]));
   if (G.shrines && d.shrines) G.shrines.forEach((s, k) => (s.used = !!d.shrines[k]));
   G.tombs = d.tombs || [];
+  G.torches = d.torches || [];
   if ((d.picked || []).length !== (G.picked || []).length) applyPicked(d.picked);
   if (G.hoards && d.hoards)
     G.hoards.forEach((h, k) => {

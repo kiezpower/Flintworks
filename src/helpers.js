@@ -11,6 +11,7 @@
 // stay); a marker sends the miners to a chosen spot. Miners put up support beams as they dig.
 // Bots (bots.js) think for themselves and only borrow the walking: a "goto" job takes them to a
 // spot and keeps them there.
+import { crateToFetch, takeOut } from './crate.js';
 import { HARD, NOIN, digCell, diggable, nearTree, spawnFromDig } from './digger.js';
 import { midMat } from './entities.js';
 import { jobBubble, tryBeam } from './mine.js';
@@ -143,6 +144,11 @@ function pickJob(c, n) {
   }
   const it = nearestItem(c, f === 'wood' ? 'wood' : null);
   if (it) return { type: 'collect', ref: it };
+  // a storage chest deep down with things in it: fetch them home (crate.js)
+  if ((f === 'all' || f === 'ore') && cargo(c) === 0) {
+    const cr = crateToFetch(b => crew.some(o => o !== c && o.job && o.job.ref === b));
+    if (cr) return { type: 'crate', ref: cr };
+  }
   if (cargo(c) > 0) return deliverJob(c, n);
   if (f === 'wood' || (f === 'all' && stock('wood') + stock('plank') / 3 < 8)) {
     const t = nearestTree(c);
@@ -180,6 +186,7 @@ function target(c, n) {
   if (j.type === 'goto') return { x: j.x - 3, y: j.y, r: j.r || 5, ry: j.ry || 8 };
   if (j.type === 'build') return { x: j.ref.x + j.ref.w / 2 - 3, y: j.ref.gy - 10, r: j.ref.w / 2 - 5 };
   if (j.type === 'collect') return { x: j.ref.x - 2, y: j.ref.y - 6, r: 3, ry: 8 };
+  if (j.type === 'crate') return { x: j.ref.x + j.ref.w / 2 - 3, y: j.ref.gy - 10, r: 5 };
   if (j.type === 'chop') return { x: j.ref.x - 3, y: j.ref.gy - 10, r: 6 };
   return { x: j.x - 3, y: j.y - 6, r: 5, ry: 7 };
 }
@@ -428,6 +435,12 @@ function atWork(c, I) {
     c.digDir = [dx / l, dy / l];
     digCell(x, y, false, c);
     spawnFromDig(c.x + 3 + c.face * 4, c.y + 3, c);
+    return I;
+  }
+  // at the storage chest: everything that fits into the bag, then home with it (crate.js)
+  if (j.type === 'crate') {
+    takeOut(c, j.ref, INV_MAX);
+    c.job = c.path = null;
     return I;
   }
   if (j.type === 'collect') {

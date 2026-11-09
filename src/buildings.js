@@ -35,6 +35,7 @@ import {
   rnd,
   setPlat,
   solid,
+  surf,
 } from './world.js';
 
 // ---- Buildings & economy ----
@@ -134,6 +135,15 @@ const BT = {
     h: 26,
     cost: { wood: 3, rock: 2, plank: 2 },
     info: 'Korn → Brot, ganz von selbst; Brot stärkt erschöpfte Wühler',
+  },
+  // a storage chest deep down (crate.js): only more than 15 m under the surface
+  crate: {
+    name: 'Lagertruhe',
+    w: 10,
+    h: 7,
+    cost: { wood: 2 },
+    under: true,
+    info: 'Nur unter Tage: Funde ablegen, Helfer tragen sie zur Burg',
   },
   // potions (potions.js): brews the glowing mushrooms from the store into potions
   brew: {
@@ -258,6 +268,11 @@ function tryBuild(type, c = sel_()) {
     toast(
       type === 'flag' ? 'Zu weit weg von deinem Gebiet' : 'Außerhalb deines Gebiets – stell zuerst eine Flagge auf',
     );
+    return;
+  }
+  // (a storage chest stands deep down only, crate.js)
+  if (T.under && gy - surf[Math.max(0, Math.min(W - 1, bx + (T.w >> 1)))] < 60) {
+    toast('Nur unter Tage – tiefer als 15 m');
     return;
   }
   if (bx < 2 || bx + T.w > W - 2 || gy - T.h < 2) {
