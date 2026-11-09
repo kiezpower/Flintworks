@@ -55,6 +55,8 @@ import {
 } from './world.js';
 
 // ---- Digger ----
+const COYOTE = 6, // frames after leaving the ground in which a jump still counts
+  JUMP_BUF = 7; // frames a jump pressed in the air is kept for the landing
 function hurt(c, a, silent) {
   if (c.dead || c.puppet || G.netClient) return; // in multiplayer only the host deals damage
   c.energy -= a;
@@ -680,10 +682,19 @@ function updBody(c, I) {
   } else c.vy = Math.min(c.vy + 0.17, 4.5);
   let jumped = false;
   const riding = builds.some(b => b.cs && b.done && onCase(c, b.cs));
-  if (I.jumpP && !(riding && I.jumpUp)) {
-    if (onG) {
+  // forgiving jumps for the players (like Celeste and SteamWorld Dig): a few frames after running
+  // off an edge a jump still counts ("coyote time"), and a jump pressed just before landing is
+  // done on landing. Helpers and bots jump as before, so their paths and the levels stay the same
+  const player = c.pid != null && !c.bot;
+  if (onG) c.lastG = G.frame;
+  const coyote = player && !onG && !inLiq && c.vy >= 0 && G.frame - (c.lastG ?? -99) <= COYOTE;
+  if (player && I.jumpP && !onG && !inLiq && !coyote) c.jBuf = G.frame;
+  const buffered = player && onG && !riding && G.frame - (c.jBuf ?? -99) <= JUMP_BUF;
+  if ((I.jumpP && !(riding && I.jumpUp)) || buffered) {
+    if (onG || coyote) {
       c.vy = -2.55;
       jumped = true;
+      c.lastG = c.jBuf = -99;
       sfx('jump', c.x, c.y);
     } else if (inLiq) {
       c.vy = -1.8;
