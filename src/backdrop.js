@@ -1,5 +1,6 @@
 // Painted parallax background: three layers per world type (far peaks, hills with forest, near hills),
 // generated once at double resolution and tiled seamlessly.
+import { season } from './seasons.js';
 import { G } from './state.js';
 
 const TW = 1200; // tile width in canvas pixels (= 600 landscape pixels)
@@ -23,6 +24,13 @@ const LAYERS = {
     { kind: 'hills', col: '#b8c8d8', tree: 'snowpine', top: 94, h: 60, f: 0.45, amp: 10, big: true },
   ],
 };
+
+// the green world in autumn (warm hills and woods; in winter it wears the winter world's layers)
+LAYERS.autumn = [
+  LAYERS.meadow[0],
+  { kind: 'hills', col: '#b4a27a', tree: 'mixed', top: 78, h: 60, f: 0.25, amp: 12 },
+  { kind: 'hills', col: '#a48450', tree: 'mixed', top: 94, h: 60, f: 0.45, amp: 10, big: true },
+];
 
 const rgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 const css = (c, k = 1) => `rgb(${(c[0] * k) | 0},${(c[1] * k) | 0},${(c[2] * k) | 0})`;
@@ -149,10 +157,16 @@ function layersFor(name) {
   return cache[name];
 }
 
+// which painting: the world type's, in a green world the season's (seasons.js)
+function backdropName() {
+  const s = season();
+  return s === 2 ? 'autumn' : s === 3 ? 'winter' : G.biome;
+}
 // draws all layers; ctx is in landscape units (canvas transform ×2)
 function drawBackdrop(ctx, cx, cy) {
   const tw = TW / 2;
-  for (const L of layersFor(G.biome)) {
+  // (the green world changes with the season, seasons.js)
+  for (const L of layersFor(backdropName())) {
     const y = Math.round(L.top - cy * 0.85);
     if (y > G.VH) continue;
     let x = -((cx * L.f) % tw);
@@ -165,4 +179,4 @@ function drawBackdrop(ctx, cx, cy) {
   }
 }
 
-export { drawBackdrop };
+export { backdropName, drawBackdrop };

@@ -76,6 +76,37 @@ function drawFarms(ctx, cx, cy) {
       }
     }
   }
+  for (const b of builds) if (b.type === 'mill' && b.done) drawSails(ctx, b, cx, cy);
+}
+// the mill's four sails: they turn with the wind, faster while it grinds grain (only a picture,
+// every device turns its own)
+function drawSails(ctx, b, cx, cy) {
+  const grinding = stock('grain') >= 2 && stock('bread') < 20;
+  b.sailA = ((b.sailA || 0) + 0.008 + 0.02 * (G.wind || 0) + (grinding ? 0.035 : 0)) % (Math.PI * 2);
+  const hx = b.x + 8 - cx,
+    hy = b.gy - b.h + 9 - cy;
+  if (hx < -12 || hx > G.VW + 12) return;
+  ctx.save();
+  ctx.translate(hx, hy);
+  for (let k = 0; k < 4; k++) {
+    ctx.save();
+    ctx.rotate(b.sailA + (k * Math.PI) / 2);
+    // the spar, and the cloth on its lee side
+    ctx.fillStyle = '#24160c';
+    ctx.fillRect(-1, -9.5, 2, 9);
+    ctx.fillStyle = '#c08a50';
+    ctx.fillRect(-0.5, -9, 1, 8);
+    ctx.fillStyle = '#24160c';
+    ctx.fillRect(0.5, -9.5, 3.5, 6.5);
+    ctx.fillStyle = '#ece0c6';
+    ctx.fillRect(0.5, -9, 3, 5.5);
+    ctx.fillStyle = '#c8b898';
+    ctx.fillRect(0.5, -6.5, 3, 0.5);
+    ctx.restore();
+  }
+  ctx.fillStyle = '#4a3a2a';
+  ctx.fillRect(-1, -1, 2, 2);
+  ctx.restore();
 }
 
 export { drawFarms, farmContext, harvestNow, takeBread, updFarm };

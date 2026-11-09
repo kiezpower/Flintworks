@@ -162,7 +162,7 @@ const SPR = {
     for (let x = 1; x < 24; x += 3) R(x, 0, 1, 4, '#6e4a2c');
     R(0, 0, 24, 1, '#7a5230');
   }),
-  // the mill: a stone tower with a wooden cap and four sails
+  // the mill: a stone tower with a wooden cap; its four sails turn (farm.js)
   mill: sp(16, 26, R => {
     R(4, 10, 8, 16, '#b8b0a4');
     for (let y = 12; y < 26; y += 3) R(4 + (y % 2 ? 0 : 2), y, 1, 1, '#80796f');
@@ -171,11 +171,6 @@ const SPR = {
     R(5, 5, 6, 2, '#6a4526');
     R(6, 20, 4, 6, '#2a1a10');
     R(7, 13, 2, 2, '#ffd77a');
-    R(7, 1, 2, 18, '#c08a50');
-    R(0, 8, 16, 2, '#c08a50');
-    R(7, 1, 1, 18, '#e0ae74');
-    R(0, 8, 16, 1, '#e0ae74');
-    R(7, 8, 2, 2, '#4a3a2a');
   }),
   // a stretch of wall: dressed stone with mortar joints, two merlons on top
   wall: sp(8, 24, R => {

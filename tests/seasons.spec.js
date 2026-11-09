@@ -62,3 +62,47 @@ test('a day is a season: fields grow fast in spring and hardly in winter, oaks c
   expect(r).toMatchObject({ next: 1, news: true, cold: true, look: true, saved: 3 });
   expect(errors).toEqual([]);
 });
+
+test('the mill turns its sails, faster while it grinds, and the hills behind change with the season', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto('/?seed=7');
+  await page.evaluate(() => {
+    localStorage.setItem('flintworks-lang', 'de');
+    localStorage.setItem(
+      'flintworks-profile',
+      JSON.stringify({ tutorialDone: true, installAsked: 'done', games: 3, mode: 'meadow', diff: 'relaxed' }),
+    );
+  });
+  await page.reload();
+  await page.waitForFunction(() => window.__ww);
+  await page.click('#lbPlay');
+  await page.waitForFunction(() => window.__ww.state === 'play');
+  // a mill next to the castle, in view; how far the sails turn in half a second, idle and grinding
+  const turn = grain =>
+    page.evaluate(async grain => {
+      const w = window.__ww,
+        G = w.G;
+      if (!w.builds.some(b => b.id === 9950))
+        w.builds.push({ id: 9950, type: 'mill', x: G.base.x - 30, gy: G.base.gy, w: 16, h: 26, prog: 1, done: true, busy: 0 });
+      G.store.grain = grain;
+      G.store.bread = 0;
+      G.wind = 0.3;
+      const m = w.builds.find(b => b.id === 9950),
+        a = m.sailA || 0;
+      await new Promise(r => setTimeout(r, 500));
+      return ((m.sailA || 0) - a + Math.PI * 2) % (Math.PI * 2);
+    }, grain);
+  const idle = await turn(0);
+  const busy = await turn(10);
+  expect(idle).toBeGreaterThan(0);
+  expect(busy).toBeGreaterThan(idle);
+  // the painted hills behind: the season's in a green world
+  const names = await page.evaluate(async () => {
+    const { backdropName } = await import('/src/backdrop.js'),
+      G = window.__ww.G;
+    return [0, 1, 2, 3].map(n => ((G.dayN = n), backdropName()));
+  });
+  expect(names).toEqual(['meadow', 'meadow', 'autumn', 'winter']);
+  expect(errors).toEqual([]);
+});
