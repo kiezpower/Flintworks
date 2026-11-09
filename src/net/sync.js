@@ -54,6 +54,8 @@ const KINDS = {
       bot: c.bot ? 1 : 0,
       // a float on the water (fishing.js): where, and whether something bites
       fs: c.fish ? [c.fish.x, c.fish.y, c.fish.bite > 0 ? 1 : 0] : 0,
+      // the gifts of the shrines (shrines.js)
+      ...(c.gifts && c.gifts.length ? { gf: c.gifts } : {}),
     }),
     create: d => ({
       id: d.id,
@@ -80,6 +82,7 @@ const KINDS = {
     }),
     apply: (c, d) => {
       c.fish = d.fs ? { x: d.fs[0], y: d.fs[1], bite: d.fs[2] } : null;
+      c.gifts = d.gf || [];
       Object.assign(c, {
         pid: d.pid,
         bot: !!d.bot,
@@ -299,6 +302,7 @@ function packGame() {
     mis: G.mis,
     gold: G.goldSold,
     chests: G.chests && G.chests.map(c => (c.open ? 1 : 0)),
+    shrines: G.shrines && G.shrines.map(s => (s.used ? 1 : 0)), // (shrines.js)
     rainT: G.rainT,
     dayN: G.dayN || 0, // (the days so far: the season, seasons.js)
     ticks: G.playTicks,
@@ -350,6 +354,7 @@ function applyGame(d) {
     G.base = builds.find(b => b.id === own.base) || G.base;
   }
   if (G.chests && d.chests) G.chests.forEach((c, k) => (c.open = !!d.chests[k]));
+  if (G.shrines && d.shrines) G.shrines.forEach((s, k) => (s.used = !!d.shrines[k]));
 }
 
 export { KINDS, MOVING, applyGame, packGame };

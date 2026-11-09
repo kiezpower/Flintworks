@@ -18,6 +18,7 @@ import { wormUpd } from './boss.js';
 import { announceBanner } from './announce.js';
 import { igniteNear } from './fire.js';
 import { petFollow } from './pets.js';
+import { hasGift } from './shrines.js';
 import {
   ACID,
   AIR,
@@ -166,8 +167,11 @@ function updItems() {
         if (c.dead || c.tumble || c.puppet || c.inv.length >= INV_MAX) continue;
         const dx = c.x + 3 - (it.x + it.w / 2),
           dy = c.y + 5 - (it.y + it.h / 2);
-        if (Math.abs(dx) < 12 && Math.abs(dy) < 10 && !overlap(it, c, 1)) {
+        // (the "Goldmagnet" gift pulls from further off, shrines.js)
+        const mg = hasGift(c, 'magnet');
+        if (Math.abs(dx) < (mg ? 44 : 12) && Math.abs(dy) < (mg ? 28 : 10) && !overlap(it, c, 1)) {
           it.vx += Math.max(-0.25, Math.min(0.25, dx * 0.05));
+          if (mg && dy < -2) it.vy = Math.min(it.vy, -0.6);
           continue;
         }
         if (!overlap(it, c, 1)) continue;

@@ -415,5 +415,22 @@ const EN2 = {
   'Der Sommer beginnt.': 'Summer begins.',
   'Der Herbst beginnt – legt Brot auf Vorrat, bald kommt der Winter.': 'Autumn begins – store up bread, winter is coming.',
   'Der Winter beginnt – auf den Feldern wächst kaum etwas.': 'Winter begins – hardly anything grows in the fields.',
+  // the shrines deep down (shrines.js)
+  'Flinke Hacke': 'Quick pick',
+  'Gräbt 40 % schneller': 'Digs 40 % faster',
+  Federleicht: 'Featherweight',
+  'Kein Schaden mehr durch Stürze': 'No more damage from falls',
+  Goldmagnet: 'Gold magnet',
+  'Zieht Gold und Fundstücke von weiter her an': 'Pulls in gold and finds from further away',
+  'Große Lunge': 'Big lungs',
+  'Hält unter Wasser dreimal so lange die Luft an': 'Holds the breath three times as long under water',
+  Zähigkeit: 'Toughness',
+  'Nimmt ein Drittel weniger Schaden': 'Takes a third less damage',
+  Lebenskraft: 'Vitality',
+  'Erholt sich langsam von selbst': 'Slowly recovers by itself',
+  'Gabe nehmen': 'Take the gift',
+  '{name} erhält am Schrein die Gabe „{gift}“: {sub}.': '{name} receives the gift “{gift}” at the shrine: {sub}.',
+  'Schrein: {gift} – {sub}': 'Shrine: {gift} – {sub}',
+  'Schrein: {gift} – die Gabe hast du schon': 'Shrine: {gift} – you already have this gift',
 };
 export { EN2 };
