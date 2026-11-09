@@ -471,5 +471,8 @@ const EN2 = {
   'Wähle einen Trank in der Tasche und trink ihn mit der Aktion': 'Choose a potion in the bag and drink it with the action button',
   'Reiche Tiefe': 'Rich depths',
   'Je tiefer, desto ergiebiger das Gold: Die Tiefenanzeige wird golden': 'The deeper, the richer the gold: the depth readout turns gold',
+  Rückfahrt: 'Back down',
+  'Zurück zur Grabestelle (↓ {m} m)': 'Back to the digging spot (↓ {m} m)',
+  'Bringt dich dorthin, wo du zuletzt tief unten gegraben hast': 'Takes you to where you last dug deep down',
 };
 export { EN2 };

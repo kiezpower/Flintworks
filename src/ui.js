@@ -1,3 +1,4 @@
+import { descendOffer } from './descend.js';
 import { markTombs } from './tombs.js';
 import { known, knownAt } from './fog.js';
 import { markHoards } from './hoards.js';
@@ -803,6 +804,24 @@ function openBase() {
         openBase();
       },
     });
+  // back down to the last digging spot (descend.js)
+  const dn = descendOffer(c);
+  if (dn) {
+    const poor = G.money < dn.price;
+    opt(sec(p, tr('Rückfahrt')), {
+      icon: toolIcon('dig'),
+      title: tr('Zurück zur Grabestelle (↓ {m} m)', { m: dn.m }),
+      sub: tr('Bringt dich dorthin, wo du zuletzt tief unten gegraben hast'),
+      cost: tr('{p} Taler', { p: dn.price }),
+      state: poor ? 'poor' : 'ok',
+      why: poor ? lacking(c, null, dn.price) : '',
+      onClick: () => {
+        if (poor) return toast(lacking(c, null, dn.price));
+        closePanel();
+        send('descend', {});
+      },
+    });
+  }
   researchSection(p, { opt, sec, reopen: openBase });
   toolSection(p, c, { opt, sec, toast, reopen: openBase, lacking });
   const l = sec(p, tr('Kaufen · Kasse: {m} Taler', { m: G.money }));

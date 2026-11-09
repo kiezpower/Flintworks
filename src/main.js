@@ -82,6 +82,7 @@ import { shrineTick } from './shrines.js';
 import { potionTick } from './potions.js';
 import { fogTick } from './fog.js';
 import { tombTick } from './tombs.js';
+import { descendTick } from './descend.js';
 import { chestTick, updVersus, vsResult } from './versus.js';
 import { updCoop } from './coop.js';
 import { statsHtml } from './stats.js';
@@ -581,6 +582,7 @@ function step() {
     updTrees();
     updFloats();
     if (G.frame % 30 === 0) tombTick(); // (gravestones, tombs.js)
+    if (G.frame % 30 === 0) descendTick(); // (the last digging spot, descend.js)
     // exhausted Wühler wake up again in the base after a short while
     for (const c of crew)
       if (c.dead && c.deadT > 200) {
