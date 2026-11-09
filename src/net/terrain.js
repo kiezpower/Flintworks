@@ -1,5 +1,6 @@
 // The landscape over the network. Everybody builds the same world from the seed; after that
-// the host sends the 32×32 chunks that changed (dug, flooded, blasted), run-length coded.
+// the host sends the 32×32 chunks that changed (dug, flooded, blasted), run-length coded, or
+// only their changed cells when that is shorter.
 // A slow round-robin refresh of all chunks repairs anything that went missing.
 import { b64, unb64 } from '../save.js';
 import { crew } from '../state.js';
@@ -32,7 +33,49 @@ function encodeChunk(c) {
   out.push(run, prev);
   return b64(new Uint8Array(out));
 }
+// only the cells of a chunk that changed since it was last sent: 2 bytes each (offset in the
+// chunk, 10 bits; cell, 5 bits), sent as "~" + base64 when that is shorter than the whole chunk
+// (digging changes a few cells of a chunk at a time). Clients that understand it say so
+// (client.js "td"); the host sends whole chunks while one of them does not.
+function encodeDiff(c, limit) {
+  const x0 = (c % CWn) * CS,
+    y0 = ((c / CWn) | 0) * CS,
+    x1 = Math.min(x0 + CS, W),
+    y1 = Math.min(y0 + CS, H);
+  const out = [];
+  for (let y = y0; y < y1; y++)
+    for (let x = x0; x < x1; x++) {
+      const i = y * W + x,
+        v = mat[i] | (bg[i] << 4);
+      if (v === sent[i]) continue;
+      if (out.length >= limit) return null;
+      const off = (y - y0) * CS + (x - x0);
+      out.push(off & 255, (off >> 8) | (v << 2));
+    }
+  return '~' + b64(new Uint8Array(out));
+}
+function decodeDiff(c, str) {
+  const x0 = (c % CWn) * CS,
+    y0 = ((c / CWn) | 0) * CS;
+  const u = unb64(str.slice(1));
+  for (let k = 0; k + 1 < u.length; k += 2) {
+    const off = u[k] | ((u[k + 1] & 3) << 8),
+      v = u[k + 1] >> 2,
+      x = x0 + (off % CS),
+      y = y0 + ((off / CS) | 0);
+    if (x >= W || y >= H) continue;
+    const i = y * W + x,
+      m = v & 15,
+      b = (v >> 4) & 1;
+    if (mat[i] === m && bg[i] === b) continue;
+    if (m === AIR && b && SOLID[mat[i]]) markFresh(i);
+    mat[i] = m;
+    bg[i] = b;
+    paint(i);
+  }
+}
 function decodeChunk(c, str) {
+  if (str[0] === '~') return decodeDiff(c, str);
   const x0 = (c % CWn) * CS,
     y0 = ((c / CWn) | 0) * CS,
     x1 = Math.min(x0 + CS, W),
@@ -99,7 +142,7 @@ function markSent(c) {
 
 // host: changed chunks, closest to a player first; water that only sloshes around goes out
 // at most once a second per chunk; plus one chunk now and then for the slow repair
-function takeChunks(frame) {
+function takeChunks(frame, diffs = false) {
   if (!sent) resetSent();
   const list = [];
   for (let c = 0; c < netDirty.length; c++) {
@@ -126,8 +169,11 @@ function takeChunks(frame) {
   for (const c of send) {
     netDirty[c] = 0;
     liqT[c] = frame;
+    // (the repair chunk always goes out whole)
+    const full = encodeChunk(c),
+      diff = diffs && c !== refresh ? encodeDiff(c, (full.length * 3) / 4 - 2) : null;
     markSent(c);
-    out.push(c, encodeChunk(c));
+    out.push(c, diff && diff.length < full.length ? diff : full);
   }
   return out;
 }
@@ -166,8 +212,10 @@ function staleGuesses(frame, me) {
     }
   return ask;
 }
+// (a diff only says what the host changed, not that the own guesses there were right: only a
+// whole chunk confirms them)
 const confirmChunks = list => {
-  for (let k = 0; k < list.length; k += 2) guessed.delete(list[k]);
+  for (let k = 0; k < list.length; k += 2) if (list[k + 1][0] !== '~') guessed.delete(list[k]);
 };
 
 // the whole landscape (for a player who joins late or comes back)

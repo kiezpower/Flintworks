@@ -282,6 +282,22 @@ teilen sich die CPU, die Takt-Zeiten sind dadurch eher zu hoch):
 | Bilder/s Host / Gast | 55 / 51 | 55 / 51 |
 | Spieltakt beim Host (Median / 90 %) | 2,0 / 2,7 ms | 6,7 / 11,3 ms |
 
+Seit v1.114.0 (Gelände nur als geänderte Zellen, wenn alle Gäste das verstehen; Tiere fern von
+allen Spielern nur zweimal je Sekunde; ein Spieltakt mit halb so viel Simulationsarbeit):
+
+| | 2 Spieler | 8 Spieler |
+|---|---|---|
+| Host sendet | 13 KB/s | 25 KB/s |
+| ein Gast empfängt | 13 KB/s | 18 KB/s |
+| Bilder/s Host / Gast | 55 / 51 | 55 / 51 |
+| Spieltakt beim Host (Median / 90 %) | 1,4 / 1,9 ms | 2,9 / 6,6 ms |
+
+Gelände geht als ganzer Chunk (lauflängen-kodiert) oder als Liste der geänderten Zellen (2 Byte
+je Zelle, `"~"` vor dem Base64), je nachdem, was kürzer ist. Gäste melden mit `td` im Eingabe-Paket,
+dass sie die Liste verstehen; solange ein Gast das nicht tut (eine ältere App), gehen nur ganze
+Chunks raus, ebenso drei Sekunden nach jedem Beitritt und beim langsamen Reparatur-Chunk. Eine
+Liste bestätigt die eigenen Vorhersagen des Gastes nicht (nur ein ganzer Chunk tut das).
+
 Der Host schickt jedes Paket einmal, der Relay verteilt es: bei 8 Spielern rund 7 × 22 KB/s ≈
 1,2 Mbit/s je Raum. Auf einem schwachen Handy als Host kann ein voller Raum knapp werden (der Takt
 liegt dann nahe an den 16,7 ms eines Bildes); dann übernimmt besser ein stärkeres Gerät den Host.

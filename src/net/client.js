@@ -185,6 +185,8 @@ function sendInput(me) {
     ju: pend.ju ? 1 : 0,
     t: pend.t ? 1 : 0,
     a: pend.a ? 1 : 0,
+    // (now and then: this client understands landscape diffs, terrain.js)
+    ...(seq % 30 === 1 ? { td: 1 } : {}),
   });
   pend.j = pend.ju = pend.t = pend.a = false;
   if (me) {
