@@ -14,6 +14,7 @@ import { sfx } from './sound.js';
 import { G, crew, parts } from './state.js';
 import { stock, takeStock } from './store.js';
 import { toast } from './ui.js';
+import { register } from './commands.js';
 
 const POTIONS = {
   potHeal: { name: 'Heiltrank', col: '#e8483a', sub: 'Volle Kraft' },
@@ -81,6 +82,13 @@ function drink(c, t) {
   addFloat(c.x + 3, c.y - 6, P.name, P.col);
   sfx('lift', c.x, c.y);
 }
+// quick heal (like Terraria's): a key, a gamepad button or the heart button drinks the first
+// healing potion in the bag, whatever is chosen (input.js, gamepad.js)
+register('quickheal', c => {
+  if (!c || c.dead) return;
+  if (!c.inv.includes('potHeal')) return toast('Kein Heiltrank in der Tasche');
+  drink(c, 'potHeal');
+});
 // every tick (host): the effects wear off
 function potionTick() {
   if (G.netClient) return;

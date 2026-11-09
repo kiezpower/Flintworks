@@ -206,6 +206,8 @@ function hud() {
   }
   // the grappling hook's button once the team has one (always ready: it is thrown anyway)
   btnsEl.classList.toggle('hookon', hasGear(c, 'hook'));
+  // the heart button while a healing potion is in the bag (potions.js)
+  btnsEl.classList.toggle('healon', !!c && c.inv.includes('potHeal'));
   const ck = crew.map(o => `${o === c}${o.dead}${Math.round(o.energy / 5)}${o.energy < 30}${o.focus}`).join();
   if (ck !== G.crewKey) {
     G.crewKey = ck;

@@ -14,7 +14,7 @@ import { G } from './state.js';
 import { toast } from './ui.js';
 
 const DEAD = 0.28;
-const B = { A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, BACK: 8, START: 9, UP: 12, DOWN: 13, LEFT: 14, RIGHT: 15 };
+const B = { A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, BACK: 8, START: 9, RS: 11, UP: 12, DOWN: 13, LEFT: 14, RIGHT: 15 };
 // the name of each button, by the kind of pad (where the button sits is the same on all of them)
 const NAMES = {
   xbox: { A: 'A', B: 'B', X: 'X', Y: 'Y', LB: 'LB', RB: 'RB', LT: 'LT', RT: 'RT', START: 'Start', BACK: 'Select' },
@@ -79,6 +79,7 @@ function pad(n = 0) {
     next: hit('LT'),
     menu: hit('START'),
     map: hit('BACK'),
+    heal: hit('RS'), // (pressing the right stick: quick heal, potions.js)
     // for the menus: A, B and a direction (repeats while held)
     ok: hit('A'),
     back: hit('B'),

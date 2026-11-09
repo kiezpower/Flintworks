@@ -515,5 +515,9 @@ const EN2 = {
   'Überstehe eine Blutmond-Nacht': 'Survive a blood moon night',
   'Eine Schatzkarte!': 'A treasure map!',
   'Ein großes Versteck ist auf der Karte mit einem roten Kreuz markiert.': 'A great hoard is marked on the map with a red cross.',
+  'Schnell heilen': 'Quick heal',
+  'Kein Heiltrank in der Tasche': 'No healing potion in the bag',
+  'Schwach? Das Herz über den Knöpfen trinkt einen Heiltrank': 'Weak? The heart above the buttons drinks a healing potion',
+  'Schwach? H trinkt sofort einen Heiltrank': 'Weak? H drinks a healing potion at once',
 };
 export { EN2 };
