@@ -93,7 +93,8 @@ const cspMeta = {
 export default defineConfig({
   base: './',
   define: { __APP_VERSION__: JSON.stringify(VERSION) },
-  build: { rollupOptions: {} },
+  // the game and the level editor (editor.html: build levels, try them, share them as a link)
+  build: { rollupOptions: { input: { main: 'index.html', editor: 'editor.html' } } },
   plugins: [
     levelMaps,
     levelEditor,

@@ -108,7 +108,7 @@ Die Android-App lässt sich lokal mit Android Studio aus dem Ordner `android/` b
 
 ## Level bauen
 
-Vorgebaute Level (Kampagne, Kapitel 2) und Karten für Koop und Versus liegen in `src/levels/`, je ein Ordner mit `map.txt` und `level.json`. Wie das geht, steht in [docs/LEVELS.md](docs/LEVELS.md). Im Entwicklungsserver gibt es dafür einen Editor unter `/editor.html`.
+Vorgebaute Level (Kampagne, Kapitel 2) und Karten für Koop und Versus liegen in `src/levels/`, je ein Ordner mit `map.txt` und `level.json`. Wie das geht, steht in [docs/LEVELS.md](docs/LEVELS.md). Dafür gibt es einen Editor unter `/editor.html` (im Spiel: Levelauswahl → „Eigene Level“), mit dem man Level auch als Link teilt: Wer den Link öffnet, spielt das Level. Was ein Link mitbringt, wird vorher streng geprüft (`src/levels/share.js`).
 
 ## Neue Texte übersetzen
 

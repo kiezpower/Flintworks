@@ -6,8 +6,8 @@ Kapitel 2 der Kampagne. Die Reihenfolge steht in `src/levels/order.json`. Der Pl
 
 ## Der Editor
 
-`npm run dev`, dann `/editor.html` im Browser (nur im Entwicklungsserver, nicht in der
-Web-Version oder der App).
+`/editor.html` – in der Web-Version, der App (Levelauswahl → „Eigene Level“ → „Level-Editor“) und
+im Entwicklungsserver (`npm run dev`). Gedacht für Maus und Tastatur.
 
 - **Level** wählt ein vorhandenes Level, **Neu …** legt eines an (Ordnername, Größe, Zoom).
 - **Pinsel**, **Rechteck** und **Füllen** malen das gewählte Material; der Regler stellt die
@@ -17,8 +17,27 @@ Web-Version oder der App).
 - Alles andere (Ziele, Auslöser, Start, Regeln) steht im Textfeld `level.json`; **Übernehmen**
   liest es ein. Eine neue Größe schneidet die Karte ab oder setzt sie am Rand fort.
 - **Probespielen** startet das Level im Spiel (über `/?draft=1`), „← Editor“ führt zurück.
-- **Speichern** schreibt `level.json` und `map.txt` nach `src/levels/<id>/` und hängt ein neues
-  Level hinten an `order.json` an. Texte danach in `src/i18n.js` übersetzen.
+- **Link teilen** packt das ganze Level in die Adresse des Spiels (`?lvl=…`: JSON, deflate,
+  base64url, `src/levels/linkcode.js`) und teilt sie (Teilen-Menü) oder kopiert sie. Wer den Link
+  öffnet, spielt das Level; läuft bei ihm gerade eine Runde, fragt das Spiel vorher.
+- **Speichern** (nur im Entwicklungsserver) schreibt `level.json` und `map.txt` nach
+  `src/levels/<id>/` und hängt ein neues Level hinten an `order.json` an. Texte danach in
+  `src/i18n.js` übersetzen.
+
+### Geteilte Level und Entwürfe
+
+Ein Link kann von jedem kommen. `cleanLevel()` in `src/levels/share.js` prüft deshalb alles, bevor
+das Spiel es anfasst, und lehnt den Link sonst ganz ab:
+
+- nur bekannte Felder, Objekt-, Tier-, Gegenstands-, Ziel-, Auslöser- und Aktionsarten;
+- Zahlen in festen Grenzen (Größe wie `SIZE_MIN`/`SIZE_MAX`, Zoom 1–16, Startgeld bis 100 000 …);
+- die Karte nur aus Zeichen der Palette und genau in ihrer Größe;
+- Texte ohne `< > & " ' \` und Steuerzeichen, gekürzt (Name 60, Intro 400 Zeichen);
+- höchstens 60 000 Zeichen Link und 400 000 Zeichen entpacktes Level.
+
+Geteilte Level und Entwürfe spielen unter der Kennung `geteilt`: Sie werden nicht gespeichert (nach
+einem Neustart kennt das Spiel sie nicht mehr) und geben keine Kampagnensterne. Alle Level des Spiels
+bestehen die Prüfung unverändert (`tests/share.spec.js`).
 
 Karten lassen sich auch von Hand oder mit einem Skript schreiben: es sind normale Textdateien. Im
 Build werden sie lauflängenkodiert eingepackt (`vite.config.js`), im Repository bleiben sie lesbar.

@@ -1,4 +1,4 @@
-// The level editor (dev server only, /editor.html): paint, undo, rectangles, objects, and play
+// The level editor (/editor.html): paint, undo, rectangles, objects, and play
 // the draft right away: npm test
 import { expect, test } from '@playwright/test';
 
@@ -47,7 +47,8 @@ test('the level editor paints, undoes, places objects and plays the draft', asyn
     const w = window.__ww;
     return { mode: w.G.mode, lost: w.animals.filter(a => a.lost).length, rock: w.world.mat[210 * 800 + 92] };
   });
-  expect(game).toEqual({ mode: 'fluffelrettung', lost: 5, rock: 2 });
+  // (a draft plays as a level of its own, checked like a shared one: levels/share.js)
+  expect(game).toEqual({ mode: 'geteilt', lost: 5, rock: 2 });
   // and back to the editor, with the draft
   await page.click('text=← Editor');
   await page.waitForFunction(() => window.__editor && window.__editor.grid);

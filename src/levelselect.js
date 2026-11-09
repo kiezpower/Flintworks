@@ -219,6 +219,31 @@ function dailyCard() {
   return b;
 }
 
+// the level editor: build an own level, try it, share it as a link (editor.html)
+function editorCard() {
+  const b = document.createElement('button');
+  b.className = 'ls-card ls-editor';
+  b.dataset.id = 'editor';
+  const box = document.createElement('div');
+  box.className = 'ls-pv';
+  const sc = landscape('meadow', true);
+  sc.className = 'ls-scape';
+  box.appendChild(sc);
+  const ic = toolIcon('dig');
+  ic.className = 'ls-icon';
+  box.appendChild(ic);
+  b.appendChild(box);
+  const t = document.createElement('div');
+  t.className = 'ls-t';
+  t.innerHTML = `<b>${esc(tr('Level-Editor'))}</b>`;
+  b.appendChild(t);
+  const d = document.createElement('small');
+  d.className = 'ls-d';
+  d.textContent = tr('Eigenes Level bauen und als Link teilen');
+  b.appendChild(d);
+  b.onclick = () => (location.href = './editor.html');
+  return b;
+}
 // a section: a title (with a line under it) and its row of cards
 function section(list, key, group, title, sub, cards) {
   const s = document.createElement('section');
@@ -277,6 +302,9 @@ function sections() {
       tr('Die Welt wechselt jede Runde: Wiese, Wüste oder Winter'),
       MODE_IDS.map(id => card(id)),
     );
+  // own levels: the editor (alone, not while choosing for a room)
+  if (allowed('modes') && !opts.tabs)
+    section(list, 'own', 'modes', esc(tr('Eigene Level')), tr('Bauen, ausprobieren, als Link teilen'), [editorCard()]);
 }
 function chips() {
   const nav = root.querySelector('nav');
