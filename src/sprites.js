@@ -172,6 +172,18 @@ const SPR = {
     R(6, 20, 4, 6, '#2a1a10');
     R(7, 13, 2, 2, '#ffd77a');
   }),
+  // the brewing cauldron (potions.js): a black pot on stones over a fire, green brew inside
+  brew: sp(14, 12, R => {
+    R(2, 9, 10, 3, '#8f8a84');
+    R(3, 9, 2, 1, '#a8a29a');
+    R(5, 8, 4, 2, '#ff8a2a');
+    R(6, 7, 2, 1, '#ffd060');
+    R(1, 2, 12, 7, '#2a2626');
+    R(0, 1, 14, 2, '#3a3434');
+    R(2, 2, 10, 1, '#5fc8a0');
+    R(4, 2, 2, 1, '#9be3c8');
+    R(2, 4, 1, 3, '#4a4444');
+  }),
   // a stretch of wall: dressed stone with mortar joints, two merlons on top
   wall: sp(8, 24, R => {
     R(0, 0, 3, 3, '#a69e92');
@@ -257,6 +269,11 @@ const ITEM = {
   fish: { name: 'Fisch', s: [5, 2], val: 8 }, // (from the fishing rod, fishing.js)
   grain: { name: 'Korn', s: [3, 3], val: 3 }, // (farm.js)
   bread: { name: 'Brot', s: [4, 3], val: 12 },
+  // glowing mushrooms and the potions brewed from them (potions.js)
+  shroom: { name: 'Leuchtpilz', s: [3, 3], val: 3 },
+  potHeal: { name: 'Heiltrank', s: [3, 4], val: 10 },
+  potGlow: { name: 'Leuchttrank', s: [3, 4], val: 10 },
+  potDig: { name: 'Grabtrank', s: [3, 4], val: 10 },
 };
 function drawItemPx(g, t, x, y, blink) {
   const R = (a, b, w, h, c) => {
@@ -314,6 +331,12 @@ function drawItemPx(g, t, x, y, blink) {
     R(0, 1, 4, 2, '#b8742e');
     R(1, 0, 2, 1, '#d8a056');
     R(0, 1, 4, 1, '#d8a056');
+  } else if (t === 'shroom') {
+    R(0, 0, 3, 1, '#7fe0b8');
+    R(1, 1, 1, 2, '#e8e0c8');
+  } else if (t === 'potHeal' || t === 'potGlow' || t === 'potDig') {
+    R(1, 0, 1, 1, '#c8b898');
+    R(0, 1, 3, 3, { potHeal: '#e8483a', potGlow: '#ffe066', potDig: '#6fd0ff' }[t]);
   } else if (t === 'fish') {
     R(0, 0, 4, 2, '#7fa8c8');
     R(0, 0, 4, 1, '#b6d6ee');
@@ -339,6 +362,10 @@ const ITEM_ART = {
   fish: [['.sss..', 'sbbbet', 'bbbbbt', '.ddd..'], { s: '#c8e2f4', b: '#7fa8c8', e: '#24160c', t: '#4a7aa0', d: '#5a86aa' }],
   grain: [['y.y.y', 'gygyg', '.ggg.', '..g..'], { y: '#f2c230', g: '#c9a43a' }],
   bread: [['.lll.', 'lLLLb', 'LLLbb', '.bbb.'], { l: '#e8b870', L: '#c88a42', b: '#9a6428' }],
+  shroom: [['.ggg.', 'gGGGg', '..s..', '..s..'], { g: '#5fc8a0', G: '#9be3c8', s: '#e8e0c8' }],
+  potHeal: [['.c.', '.w.', 'rRr', 'rrd', '.d.'], { c: '#8b5e34', w: '#d8e8f0', r: '#c8302a', R: '#ff7a6a', d: '#8a1e1a' }],
+  potGlow: [['.c.', '.w.', 'yYy', 'yyd', '.d.'], { c: '#8b5e34', w: '#d8e8f0', y: '#e8c030', Y: '#fff2a0', d: '#a07a10' }],
+  potDig: [['.c.', '.w.', 'bBb', 'bbd', '.d.'], { c: '#8b5e34', w: '#d8e8f0', b: '#3aa0d8', B: '#a8e8ff', d: '#1f6a98' }],
 };
 const artCache = {};
 function itemArt(t, blink) {

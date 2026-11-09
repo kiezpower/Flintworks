@@ -1,6 +1,7 @@
 // Shared store at the home base. Walking into the base sells gold and gems and drops raw
 // materials into the store; production buildings work from the store on their own.
 import { takeBread } from './farm.js';
+import { takePotions } from './potions.js';
 import { addFloat } from './floats.js';
 import { sold } from './profile.js';
 import { sfx } from './sound.js';
@@ -11,7 +12,7 @@ import { G, builds } from './state.js';
 import { flyCoins } from './reward.js';
 
 const SELL = ['nug', 'gem', 'fish'];
-const KEEP = ['flint', 'tnt', 'loam', 'bread']; // tools stay in the hand (bread: for the way, farm.js)
+const KEEP = ['flint', 'tnt', 'loam', 'bread', 'potHeal', 'potGlow', 'potDig']; // tools stay in the hand (bread: for the way, farm.js)
 const stock = t => (G.store && G.store[t]) || 0;
 function addStock(t, n = 1) {
   G.store = G.store || {};
@@ -64,6 +65,8 @@ function arriveAtBase(c) {
   }
   // a loaf for the way (farm.js)
   takeBread(c);
+  // and the potions, one of each (potions.js)
+  takePotions(c);
 }
 
 // ---- automatic production ----
@@ -72,6 +75,12 @@ const AUTO = {
   saw: [{ out: 'plank', n: 3, need: { wood: 1 }, time: 90, keep: { wood: 1 }, max: 12 }],
   furnace: [{ out: 'metal', n: 1, need: { ore: 1, coal: 1 }, time: 160, max: 99 }],
   mill: [{ out: 'bread', n: 1, need: { grain: 2 }, time: 150, max: 20 }],
+  // (potions.js: two of each kind in the store)
+  brew: [
+    { out: 'potHeal', n: 1, need: { shroom: 2 }, time: 200, max: 2 },
+    { out: 'potGlow', n: 1, need: { shroom: 2 }, time: 200, max: 2 },
+    { out: 'potDig', n: 1, need: { shroom: 2 }, time: 200, max: 2 },
+  ],
   shop: [
     { out: 'flint', n: 1, need: { rock: 1, wood: 1 }, time: 80, keep: { wood: 2, rock: 2 }, max: 4 },
     { out: 'tnt', n: 1, need: { flint: 1, coal: 1 }, time: 140, max: 2 },
@@ -90,7 +99,9 @@ function updProduction(b) {
     return;
   }
   if (G.frame % 30) return;
-  const r = list.find(r => stock(r.out) < r.max && canMake(r));
+  // (the cauldron brews the kind there is least of, potions.js)
+  const order = b.type === 'brew' ? [...list].sort((x, y) => stock(x.out) - stock(y.out)) : list;
+  const r = order.find(r => stock(r.out) < r.max && canMake(r));
   if (!r) return;
   for (const [t, n] of Object.entries(r.need)) takeStock(t, n);
   b.busy = r.time;
@@ -101,6 +112,7 @@ const AUTO_INFO = {
   saw: 'Holz → 3 Bretter, ganz von selbst',
   furnace: 'Erz + Kohle → Metall, ganz von selbst',
   mill: 'Korn → Brot, ganz von selbst',
+  brew: 'Leuchtpilze → Tränke, ganz von selbst',
   shop: 'Macht Feuersteine und Sprengladungen aus dem Lager',
 };
 

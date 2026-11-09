@@ -1,3 +1,4 @@
+import { markHoards } from './hoards.js';
 import { merchantStall } from './merchant.js';
 import { chainStatus, stock, takeStock } from './store.js';
 import { arrowsOf, hasGear, hasTool, toolSection } from './tools.js';
@@ -381,6 +382,8 @@ function drawMini(full) {
         mctx.fillStyle = (G.tick >> 4) & 1 ? '#ffe066' : '#b8860b';
         mctx.fillRect(Math.floor(ch.x / MK) - 1, Math.floor(ch.y / MK) - 1, 5, 4);
       }
+  // great hoards known from a treasure map: a red cross (hoards.js)
+  markHoards(mctx, MK, G.tick);
   // markers set with "Hierher!" (net/emotes.js): a blinking cross in the player's colour
   for (const p of G.pins || []) {
     mctx.fillStyle = (G.tick >> 3) & 1 ? '#ffffff' : p.col;

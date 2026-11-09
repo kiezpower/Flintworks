@@ -1,5 +1,7 @@
 import { wallContext } from './fort.js';
 import { hasGift, shrineContext } from './shrines.js';
+import { hoardContext } from './hoards.js';
+import { potionContext, shroomContext } from './potions.js';
 import { petContext } from './pets.js';
 import { fishContext } from './fishing.js';
 import { merchantContext } from './merchant.js';
@@ -635,7 +637,7 @@ function updBody(c, I) {
     // the Wühler pushes on into the loosened earth; on average as fast as the material allows
     const ph0 = c.digPh;
     // (G.digBoost: sharper picks from the Heimatbergwerk, free play alone only)
-    c.digPh += ((G.digBoost || 1) * (hasGift(c, 'dig') ? 1.4 : 1)) / (11 * c.digH);
+    c.digPh += ((G.digBoost || 1) * (hasGift(c, 'dig') ? 1.4 : 1) * (c.digT > 0 ? 1.5 : 1)) / (11 * c.digH);
     if (c.digPh >= 1) c.digPh -= 1;
     if (ph0 < STRIKE && c.digPh >= STRIKE) digHit(c, slope);
     // gold and gems just ahead glitter in the face before the pick gets there
@@ -945,6 +947,12 @@ function context(c) {
   // at a shrine deep down: take its gift (shrines.js)
   const sh = shrineContext(c);
   if (sh) return sh;
+  // a glowing mushroom on a cave floor: pick it (potions.js)
+  const pk = shroomContext(c);
+  if (pk) return pk;
+  // at a great hoard (hoards.js)
+  const hc = hoardContext(c);
+  if (hc) return hc;
   const ch = chestNear(c);
   if (ch) return { label: 'Öffnen', fn: () => openChest(ch) };
   const L = lorryNear(c);
@@ -969,6 +977,9 @@ function context(c) {
   // stuck below a ledge too high for a jump: hook, stairs or home (climb.js)
   const up = climbContext(c);
   if (up) return up;
+  // a potion chosen in the bag: drink it (potions.js)
+  const po = potionContext(c);
+  if (po) return po;
   const it = c.inv[c.isel];
   if (it === 'loam') return { label: 'Brücke', fn: () => startBridge(c, LOAM) };
   if (it === 'plank') return { label: 'Brücke', fn: () => startBridge(c, PLANK) };

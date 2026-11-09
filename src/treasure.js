@@ -2,6 +2,7 @@
 import { celebrate } from './effects.js';
 import { spawnItem } from './entities.js';
 import { addFloat } from './floats.js';
+import { mapFromChest } from './hoards.js';
 import { track } from './profile.js';
 import { announce } from './announce.js';
 import { addStat } from './stats.js';
@@ -80,6 +81,8 @@ function openChest(ch) {
   G.shake = Math.max(G.shake || 0, 2);
   addFloat(ch.x + CW / 2, ch.y - 4, '★', '#ffe066');
   toast('Schatztruhe geöffnet!');
+  // (maybe a map to a great hoard, hoards.js)
+  mapFromChest(ch.x + CW / 2, ch.y);
   track('chest');
   // (G.cmdPid: the player whose action opened it)
   addStat(G.cmdPid, 'chests');

@@ -432,5 +432,26 @@ const EN2 = {
   '{name} erhält am Schrein die Gabe „{gift}“: {sub}.': '{name} receives the gift “{gift}” at the shrine: {sub}.',
   'Schrein: {gift} – {sub}': 'Shrine: {gift} – {sub}',
   'Schrein: {gift} – die Gabe hast du schon': 'Shrine: {gift} – you already have this gift',
+  // treasure maps (hoards.js)
+  'Eine Schatzkarte! Ein großes Versteck ist auf der Karte mit einem roten Kreuz markiert.':
+    'A treasure map! A great hoard is marked on the map with a red cross.',
+  'Das große Versteck ist gefunden!': 'The great hoard has been found!',
+  Kartenleser: 'Map reader',
+  'Finde ein großes Versteck mit einer Schatzkarte': 'Find a great hoard with a treasure map',
+  // potions (potions.js)
+  Leuchtpilz: 'Glowing mushroom',
+  Heiltrank: 'Healing potion',
+  Leuchttrank: 'Light potion',
+  Grabtrank: 'Digging potion',
+  'Volle Kraft': 'Full strength',
+  'Eine Minute lang doppelt so viel Licht': 'Twice the light for a minute',
+  'Eine Minute lang anderthalbmal so schnell graben': 'Dig half again as fast for a minute',
+  Pflücken: 'Pick',
+  Trinken: 'Drink',
+  Braukessel: 'Brewing cauldron',
+  'Leuchtpilze → Heil-, Leucht- und Grabtrank, ganz von selbst': 'Glowing mushrooms → healing, light and digging potions, all by itself',
+  'Leuchtpilze → Tränke, ganz von selbst': 'Glowing mushrooms → potions, all by itself',
+  'Leuchtpilz! In der Burg einlagern – ein Braukessel braut Tränke daraus':
+    'A glowing mushroom! Store it in the castle – a brewing cauldron brews potions from it',
 };
 export { EN2 };

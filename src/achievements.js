@@ -16,6 +16,7 @@ const ACH = [
   ['build', 'build', 25, '🏗️', 'Baumeister', 'Errichte {n} Gebäude', 150],
   ['gem', 'gem', 25, '💎', 'Edelsteinjäger', 'Finde {n} Edelsteine', 150],
   ['monster', 'monster', 50, '⚔️', 'Monsterjäger', 'Besiege {n} Monster', 200],
+  ['hoard', 'hoard', 1, '🗺️', 'Kartenleser', 'Finde ein großes Versteck mit einer Schatzkarte', 200],
   ['chest', 'chest', 10, '🗝️', 'Schatzsucher', 'Öffne {n} Schatztruhen', 150],
   ['deep', 'deep', 100, '⛏️', 'Tiefgräber', 'Grabe {n} m tief', 150],
   ['fish', 'fish', 20, '🎣', 'Angler', 'Fange {n} Fische', 150],

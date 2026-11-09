@@ -1,6 +1,7 @@
 import { placeGas } from './hazards.js';
 import { placeChests } from './treasure.js';
 import { placeShrines } from './shrines.js';
+import { placeHoards } from './hoards.js';
 import { endTeams, setupTeams } from './teams.js';
 import { scatterDecor } from './decor.js';
 import { clearFire } from './fire.js';
@@ -408,6 +409,7 @@ function gen() {
   }
   placeChests(Math.max(perWidth(6), treasureGoal() + 2));
   placeShrines(perWidth(3)); // (halls with a gift deep down, free modes: shrines.js)
+  placeHoards(perWidth(2)); // (great hoards, found with a treasure map: hoards.js)
   placeGas(perArea(9));
   if (G.relaxed) G.gas = [];
   for (let x = 0; x < W; x++)
@@ -533,6 +535,7 @@ function finishWorld() {
   for (let k = 0, n = perWidth(9); k < n; k++) clouds.push(mkCloud(rnd() * W));
   G.dayT = 0.02;
   G.dayN = 0; // (spring, seasons.js)
+  G.picked = []; // (mushrooms picked for potions, potions.js)
   G.rainT = 0;
   G.rainNext = 9000 + rnd() * 4000;
   arrows.length = 0;
