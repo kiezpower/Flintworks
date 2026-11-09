@@ -121,3 +121,86 @@ test('lava lights oil; a free world has oil pockets', async ({ page }) => {
   expect(r.lit).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test('fire chars a wooden bridge next to it, water puts burning oil out', async ({ page }) => {
+  const errors = await field(page);
+  const r = await page.evaluate(async () => {
+    const w = window.__ww,
+      { mat, W, paint, activate, OIL, PLANK, WATER, AIR } = w.world,
+      { x0, g } = window.__basin,
+      { igniteCell, isBurning } = await import('/src/fire.js');
+    const set = (x, y, m) => {
+      mat[y * W + x] = m;
+      paint(y * W + x);
+    };
+    // left half: an oil pool with a plank bridge resting on it
+    for (let x = x0; x < x0 + 18; x++) {
+      for (let y = g + 9; y < g + 12; y++) set(x, y, OIL);
+      set(x, g + 8, PLANK);
+    }
+    for (let x = x0; x < x0 + 18; x += 3) activate(x, g + 9);
+    for (let x = x0; x < x0 + 18; x++) igniteCell((g + 9) * W + x);
+    for (let k = 0; k < 400; k++) w.step(1);
+    let planks = 0;
+    for (let x = x0; x < x0 + 18; x++) if (mat[(g + 8) * W + x] === PLANK) planks++;
+    // right half: a burning oil film, then water poured onto it
+    const x1 = x0 + 24;
+    for (let x = x1; x < x1 + 14; x++) set(x, g + 11, OIL);
+    for (let x = x1; x < x1 + 14; x++) igniteCell((g + 11) * W + x);
+    for (let x = x1; x < x1 + 14; x++) set(x, g + 10, WATER);
+    for (let x = x1; x < x1 + 14; x += 3) activate(x, g + 10);
+    w.step(2);
+    let still = 0;
+    for (let x = x1; x < x1 + 14; x++) for (let y = g + 8; y < g + 12; y++) if (isBurning(y * W + x)) still++;
+    let oilLeft = 0;
+    for (let x = x1; x < x1 + 14; x++) for (let y = g + 6; y < g + 12; y++) if (mat[y * W + x] === OIL) oilLeft++;
+    return { planks, still, oilLeft, air: AIR };
+  });
+  // the bridge over the fire has (mostly) burnt away
+  expect(r.planks).toBeLessThan(9);
+  // the doused oil no longer burns and is not used up
+  expect(r.still).toBeLessThan(4);
+  expect(r.oilLeft).toBeGreaterThan(8);
+  expect(errors).toEqual([]);
+});
+
+test('acid gnaws through wood and, slowly, through rock; lava chars wood', async ({ page }) => {
+  const errors = await field(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      { mat, W, paint, activate, ACID, PLANK, ROCK, LAVA, AIR } = w.world,
+      { x0, g } = window.__basin;
+    const set = (x, y, m) => {
+      mat[y * W + x] = m;
+      paint(y * W + x);
+    };
+    // acid on a plank floor (left) and on a rock floor (right), lava on planks (far right)
+    for (let x = x0; x < x0 + 12; x++) {
+      set(x, g + 11, PLANK);
+      set(x, g + 10, ACID);
+    }
+    for (let x = x0 + 14; x < x0 + 26; x++) set(x, g + 10, ACID);
+    for (let x = x0 + 28; x < x0 + 40; x++) {
+      set(x, g + 11, PLANK);
+      set(x, g + 10, LAVA);
+    }
+    for (let x = x0; x < x0 + 40; x += 2) activate(x, g + 10);
+    const n = (xa, xb, y, m) => {
+      let k = 0;
+      for (let x = xa; x < xb; x++) if (mat[y * W + x] === m) k++;
+      return k;
+    };
+    const rock0 = n(x0 - 2, x0 + 42, g + 12, ROCK) + n(x0 - 2, x0 + 42, g + 13, ROCK);
+    for (let k = 0; k < 1500; k++) w.step(1);
+    return {
+      wood: n(x0, x0 + 12, g + 11, PLANK),
+      lavaWood: n(x0 + 28, x0 + 40, g + 11, PLANK),
+      rockEaten: rock0 - n(x0 - 2, x0 + 42, g + 12, ROCK) - n(x0 - 2, x0 + 42, g + 13, ROCK),
+      air: AIR,
+    };
+  });
+  expect(r.wood).toBeLessThan(10);
+  expect(r.lavaWood).toBeLessThan(10);
+  expect(r.rockEaten).toBeGreaterThan(0);
+  expect(errors).toEqual([]);
+});

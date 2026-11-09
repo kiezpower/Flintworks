@@ -1,0 +1,50 @@
+# Führt die Browser-Tests (npm test, Playwright) bei jedem Pull Request und jedem Push auf main aus.
+# Die Suite ist auf vier Jobs verteilt (Sharding); jeder Job lädt bei Fehlern seinen Bericht hoch.
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+      - run: npm ci
+      # die Pakete des Relays für die Mehrspieler-Tests (sonst erledigt das pretest)
+      - run: npm --prefix server ci --no-audit --no-fund
+      - name: Chromium für Playwright installieren
+        run: npx playwright install --with-deps chromium
+      - name: Tests (Teil ${{ matrix.shard }} von 4)
+        run: npx playwright test --shard=${{ matrix.shard }}/4 --trace off
+      - name: Bericht hochladen
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.shard }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

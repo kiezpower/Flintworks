@@ -16,6 +16,8 @@ const RESEARCH = {
   metal: { name: 'Metallurgie', sub: 'Stahlhacke, Schwert, Bohrwagen', money: 60, time: 40, icon: 'dig' },
   archery: { name: 'Bogenbau', sub: 'Langbogen, Pfeile, Brandpfeile und Zielscheibe', money: 40, time: 25, icon: 'bow' },
   rails: { name: 'Schienenbau', sub: 'Schienen und Grubenbahn', money: 50, time: 30, req: ['mech'], icon: 'rails' },
+  // the third pick (tools.js dpick): after the steel pick, for hard ground deep down
+  harden: { name: 'Härten', sub: 'Diamanthacke für Fels, Erz und Edelsteine', money: 80, time: 45, req: ['metal'], icon: 'dig' },
   armor: { name: 'Rüstungsschmiede', sub: 'Schild und Eisenhelm', money: 70, time: 40, req: ['metal'], icon: 'shield' },
   flight: { name: 'Luftfahrt', sub: 'Luftschiff', money: 120, time: 60, req: ['mech', 'metal'], icon: 'balloon' },
 };

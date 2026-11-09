@@ -129,7 +129,7 @@ function updMusic(song) {
   const on = !G.muted && P.music !== false;
   if (!bus) {
     bus = G.AC.createGain();
-    bus.connect(G.MG);
+    bus.connect(G.MUS || G.MG);
     // a soft feedback echo gives the synthesized notes some space
     const dl = G.AC.createDelay(1),
       fb = G.AC.createGain(),
@@ -142,7 +142,7 @@ function updMusic(song) {
     wet.gain.value = 0.35;
     bus.connect(dl);
     dl.connect(lp).connect(fb).connect(dl);
-    lp.connect(wet).connect(G.MG);
+    lp.connect(wet).connect(G.MUS || G.MG);
   }
   // the surface tune follows the world type and the time of day
   if (song === 'game') {

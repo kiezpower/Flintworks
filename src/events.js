@@ -8,6 +8,7 @@ import { spawnItem } from './entities.js';
 import { startCaveIn } from './hazards.js';
 import { beamNear } from './mine.js';
 import { ignite } from './objects.js';
+import { resetRush, updRush } from './rush.js';
 import { sfx } from './sound.js';
 import { G, builds, crew, parts, trees } from './state.js';
 import {
@@ -34,6 +35,7 @@ const nextGap = () => Math.round((9000 + rnd() * 7000) / (G.evRate || 1));
 
 function updEvents() {
   updBombs();
+  updRush();
   if (G.netClient) return;
   if (G.quakeT > 0) shakeTick();
   if (G.volc) volcanoTick(G.volc);
@@ -197,6 +199,7 @@ function resetEvents() {
   G.quakeT = 0;
   G.volc = null;
   G.evNext = null;
+  resetRush();
 }
 
 export { drawEvents, playBomb, resetEvents, startQuake, startVolcano, updEvents };

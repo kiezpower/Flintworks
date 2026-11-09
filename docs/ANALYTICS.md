@@ -56,7 +56,22 @@
 | `onb_resume` | `step` | Gespeichertes Tutorial geht weiter | `tutorial.js` |
 | `core_round_start` | `mode`, `after_onb` | Eine neue echte Runde beginnt; `after_onb` = direkt nach dem Tutorial | `main.js` |
 | `round_cue` | `gold` | Der Hinweis zu Rundenbeginn wurde gezeigt; `gold` = es gab eine Goldader für den Pfeil | `startcue.js` |
+| `round_end` | `mode`, `won`, `sec`, `earned`, `games`, `net` | Eine Runde endet (Sieg oder Niederlage); `sec` gespielte Sekunden, `games` Runden bisher, `net` Mehrspieler | `main.js` |
+| `round_quit` | `mode`, `sec`, `earned` | Eine laufende Runde wird für die Lobby verlassen | `main.js` |
+| `digger_down` | `mode`, `depth`, `sec`, `night` | Der eigene Wühler ist erschöpft; `depth` Meter unter der Oberfläche | `digger.js` |
 | `session_end` | `sec`, `state` | Seite wird verlassen (Sitzungslänge) | `analytics.js` |
+
+## Runden-Funnel (nach dem Tutorial)
+
+```
+core_round_start → (digger_down …) → round_end(won) | round_quit
+```
+
+| Frage | Rechnung |
+|---|---|
+| Wer bleibt dabei? | Anteil mit `round_end.games` ≥ 3 bzw. ≥ 10 |
+| Wo hören Runden auf? | `round_quit.sec` (früh = Langeweile oder Verirren) gegen `round_end` |
+| Woran scheitern Spieler? | `digger_down.depth`, `digger_down.night`, `digger_down.sec` je Modus |
 
 ## Onboarding-Funnel
 
@@ -91,7 +106,8 @@ kommt, sind `onb_hint`, `onb_rescue` und `onb_recover`.
 | Onboarding (Start, Schritte, Hinweise, Rettungen, Erfolg, Abschluss, Überspringen, Menü, Karte, Abbruch, Fortsetzen) | umgesetzt, getestet (`tests/tutorial.spec.js`, `tests/onboarding.spec.js`) |
 | Erste echte Runde (`core_round_start`) | umgesetzt, getestet |
 | Sitzung, Rückkehr (`app_open`, `session_end`) | umgesetzt; `app_open` getestet, `session_end` nur von Hand geprüft (`?ev`) |
-| Lektionen und Aufträge nach dem Tutorial, Rundenende, Kampagne, Tagesschacht, Mehrspieler | aufgeschoben – noch keine Ereignisse |
+| Rundenende, Rundenabbruch, erschöpfter Wühler (`round_end`, `round_quit`, `digger_down`) | umgesetzt, getestet (`tests/rounds.spec.js`) |
+| Lektionen und Aufträge nach dem Tutorial, Kampagne, Tagesschacht im Einzelnen | aufgeschoben – noch keine Ereignisse |
 | Anbieter, Einwilligung, Versand | aufgeschoben – kein Anbieter gewählt |
 
 ## Prüfen

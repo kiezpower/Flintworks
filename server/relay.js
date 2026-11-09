@@ -37,6 +37,9 @@
 //                                            score of the same day, or null); asks: who
 //                                            has me in their list but is not in mine [{fid, name}]
 //   {t:'finvite', from, name, room}          a friend invites me into their room
+//   {t:'rank', day, pos, of}                 my place in today's Tagesschacht among everybody the
+//                                            relay knows (anonymous: no names, only the place and
+//                                            how many played), after every hello with a score
 // Friends are kept in memory only (nothing on disk): every client sends its whole list on each
 // connect, so after a restart the index rebuilds itself. Users without a connection for 30 days
 // are dropped.
@@ -159,9 +162,26 @@ function hello(ws, m) {
   ws.user = u;
   send(ws, { t: 'hi', fid });
   send(ws, friendsMsg(u));
+  const rk = rankOf(u);
+  if (rk) send(ws, rk);
   touch(u);
   // someone I just removed should hear about it too
   if (old) for (const f of old) if (!u.friends.has(f) && users.get(f)?.ws) dirty.add(users.get(f));
+}
+// the place of a user in the Tagesschacht of their day, among all users of that day; a score
+// above what a round can bring is not believed and not ranked (the clients count their own score)
+const DAILY_MAX = num(process.env.DAILY_MAX, 20000);
+const rankable = d => d && d.score != null && d.score <= DAILY_MAX;
+function rankOf(u) {
+  if (!rankable(u.daily)) return null;
+  let pos = 1,
+    of = 0;
+  for (const f of users.values()) {
+    if (!f.daily || f.daily.day !== u.daily.day || !rankable(f.daily)) continue;
+    of++;
+    if (f.daily.score > u.daily.score) pos++;
+  }
+  return { t: 'rank', day: u.daily.day, pos, of };
 }
 function finvite(ws, m) {
   const u = ws.user,

@@ -23,7 +23,7 @@ async function start(lang, viewport) {
     localStorage.setItem('flintworks-lang', l);
     localStorage.setItem('flintworks-profile', JSON.stringify({ installAsked: 'done', tutorialDone: true, mode: 'meadow' }));
   }, lang);
-  await page.goto(`${base}?seed=7`);
+  await page.goto(`${base}?seed=7&draw`);
   await page.waitForFunction(() => window.__ww);
   await page.click('#lbPlay');
   await page.waitForTimeout(1200);

@@ -36,7 +36,7 @@ async function setup(page) {
     w.G.store = { wood: 50, plank: 50, metal: 50, rock: 50, coal: 50 };
     // everything researched
     const t = { ...(w.G.tools || {}) };
-    for (const id of ['mech', 'metal', 'archery', 'rails', 'armor', 'flight']) t['r_' + id] = true;
+    for (const id of ['mech', 'metal', 'archery', 'rails', 'armor', 'flight', 'harden']) t['r_' + id] = true;
     w.G.tools = t;
     if (w.G.base) w.G.base.lvl = 3;
     w.step(5);
@@ -535,6 +535,49 @@ test('steel pick digs through rock; the lamp is bought', async ({ page }) => {
   expect(r.without).toBe(0);
   expect(r.withPick).toBeGreaterThan(20);
   expect(r.lamp).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('the diamond pick comes after the steel pick and digs rock half as fast again', async ({ page }) => {
+  const errors = await setup(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      c = w.crew[0],
+      { mat, W, ROCK, paint } = w.world;
+    const wall = () => {
+      for (let x = 406; x < 640; x++)
+        for (let y = 170; y < 200; y++) {
+          mat[y * W + x] = ROCK;
+          paint(y * W + x);
+        }
+    };
+    const dig = () => {
+      Object.assign(c, { x: 400, y: 190, vx: 0, vy: 0, face: 1, inv: [], energy: 100, digging: false, digPh: 0, digH: 1 });
+      wall();
+      w.step(2);
+      let n = 0;
+      for (let x = 406; x < 640; x++) for (let y = 170; y < 200; y++) n += mat[y * W + x] === ROCK;
+      w.keys.dig = 1;
+      w.keys.r = 1;
+      w.step(160);
+      w.keys.dig = 0;
+      w.keys.r = 0;
+      for (let x = 406; x < 640; x++) for (let y = 170; y < 200; y++) n -= mat[y * W + x] === ROCK;
+      return n;
+    };
+    // not without the steel pick
+    w.send('tool', { id: 'dpick' });
+    const early = !!w.G.tools.dpick;
+    w.send('tool', { id: 'pick' });
+    const steel = dig();
+    const money = w.G.money;
+    w.send('tool', { id: 'dpick' });
+    return { early, steel, diamond: dig(), paid: money - w.G.money, has: !!w.G.tools.dpick };
+  });
+  expect(r.early).toBe(false);
+  expect(r).toMatchObject({ paid: 150, has: true });
+  expect(r.steel).toBeGreaterThan(20);
+  expect(r.diamond).toBeGreaterThan(r.steel * 1.25);
   expect(errors).toEqual([]);
 });
 

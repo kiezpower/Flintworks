@@ -20,7 +20,7 @@ import { endTutorial, resumeTutorial, setTutHooks, startTutorial, tutHud, updTut
 import { applyStatic, tr } from './i18n.js';
 import { chips, openPanel, opt, sec, setTab } from './ui.js';
 import { onTrackerOpen, questBoard } from './questui.js';
-import { DIFF, applyControls, applyHelpers, diffOf, settingsSections } from './settings.js';
+import { DIFF, applyControls, applyHelpers, applyPatterns, diffOf, settingsSections } from './settings.js';
 import { goHome } from './climb.js';
 import '@fontsource/pixelify-sans/500.css';
 import '@fontsource/pixelify-sans/700.css';
@@ -245,6 +245,9 @@ function discard() {
 const lobbyHooks = { play, discard, hasRun, keysHtml };
 setTutHooks({ play, menu, discard, save: saveGame });
 function menu() {
+  // leaving a running real round for the lobby (analytics: where rounds are given up)
+  if (G.state === 'play' && G.inRun && !G.tut)
+    ev('round_quit', { mode: String(G.mode), sec: Math.round((G.playTicks || 0) / 60), earned: G.earned || 0 });
   // (a new version waited for the round to end: the game is saved, load it now)
   if (G.updateReady) return G.updateReady();
   showLobby(lobbyHooks);
@@ -273,6 +276,7 @@ function startGame(withTutorial = false) {
   applyControls();
   G.lightFx = P.lightfx !== false;
   G.vibe = P.vibe !== false;
+  applyPatterns();
   G.speed = DIFF[diffOf(P.diff)].speed;
   const res = P.gfx === 'low' || new URLSearchParams(location.search).get('res') === '1' ? 1 : 2;
   if (res !== G.res) {
@@ -338,6 +342,7 @@ function endScreen(won, why, winner = null) {
   if (won) recordCampaign(stars, s);
   if (won && stars === 3 && !G.net) track('stars3');
   const tro = finishGame(won, G.earned || 0, stars);
+  ev('round_end', { mode: String(G.mode), won: !!won, sec: s, earned: G.earned || 0, games: P.games || 0, net: !!G.net });
   // crystals for the Heimatbergwerk: in every mode (Tagesschacht: the medal counts, not the win)
   const kri = addCrystals(roundCrystals(G.earned, D ? false : won, D ? D.stars : 0));
   const time = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -662,6 +667,29 @@ function perfGuard(dt) {
     toast('Grafik auf „schnell“ gestellt, damit es flüssig läuft (Einstellungen)');
   }
 }
+// what a frame costs, averaged over half a second: frames per second, the time of one game step
+// and of drawing (G.perf; ?fps shows it in a corner, the browser tests and the profile read it)
+let perfLast = performance.now(),
+  pm = { n: 0, frame: 0, step: 0, draw: 0 };
+G.perf = { fps: 0, step: 0, draw: 0, frame: 0 };
+const fpsEl = new URLSearchParams(location.search).has('fps') ? document.createElement('div') : null;
+if (fpsEl) {
+  fpsEl.style.cssText =
+    'position:fixed;left:4px;bottom:4px;z-index:99;font:11px monospace;color:#fff;background:#0009;padding:2px 5px;pointer-events:none';
+  document.body.appendChild(fpsEl);
+}
+function perfMeter(frame, step, draw) {
+  if (frame > 250) return;
+  pm.n++;
+  pm.frame += frame;
+  pm.step += step;
+  pm.draw += draw;
+  if (pm.frame < 500) return;
+  const r = v => Math.round((v / pm.n) * 10) / 10;
+  G.perf = { fps: Math.round((1000 * pm.n) / pm.frame), frame: r(pm.frame), step: r(pm.step), draw: r(pm.draw) };
+  pm = { n: 0, frame: 0, step: 0, draw: 0 };
+  if (fpsEl) fpsEl.textContent = `${G.perf.fps} fps · Schritt ${G.perf.step} ms · Bild ${G.perf.draw} ms`;
+}
 function loop(t) {
   perfGuard(t - G.last);
   const t0 = performance.now();
@@ -676,8 +704,15 @@ function loop(t) {
     n++;
   }
   if (n === 4) G.acc = 0;
-  if (lobbyOpen()) lobbyFrame();
+  const t1 = performance.now();
+  // (G.drawEvery: the browser tests draw only every few frames, debug.js – the game itself
+  // still runs at full pace)
+  if (G.drawEvery > 1 && G.tick % G.drawEvery) {
+    // skip this picture
+  } else if (lobbyOpen()) lobbyFrame();
   else render();
+  perfMeter(t - perfLast, (t1 - t0) / Math.max(1, n), performance.now() - t1);
+  perfLast = t;
   {
     const s = sel_();
     updMusic(

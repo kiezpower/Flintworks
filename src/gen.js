@@ -523,7 +523,14 @@ function settle() {
   resetSim();
   paintAll();
   activateAll();
-  for (let k = 0; k < 60; k++) simulate();
+  // (G.settling: the reactions added later – acid on wood and rock, lava on wood – wait, so
+  // every seed gives the world it always gave)
+  G.settling = true;
+  try {
+    for (let k = 0; k < 60; k++) simulate();
+  } finally {
+    G.settling = false;
+  }
   flush();
   parts.length = 0;
 }

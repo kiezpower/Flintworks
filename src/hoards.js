@@ -10,7 +10,7 @@ import { spawnItem } from './entities.js';
 import { addFloat } from './floats.js';
 import { GAME_MODES } from './modes.js';
 import { track } from './profile.js';
-import { sfx } from './sound.js';
+import { buzz, sfx } from './sound.js';
 import { sp, drawHi } from './sprites.js';
 import { G } from './state.js';
 import { AIR, GRANITE, H, ROCK, W, bg, mat, rnd, surf } from './world.js';
@@ -110,6 +110,7 @@ function openHoard(h) {
   celebrate(h.x, h.y - HH, 60);
   sfx('fanfare');
   sfx('coin', h.x, h.y);
+  buzz([40, 60, 90]);
   G.shake = Math.max(G.shake || 0, 3);
   announce('Das große Versteck ist gefunden!');
   track('hoard');

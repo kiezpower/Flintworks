@@ -58,4 +58,6 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- short vibrations on hits, blasts and finds (navigator.vibrate in the WebView, sound.js buzz) -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>

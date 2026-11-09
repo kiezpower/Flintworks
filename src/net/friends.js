@@ -23,6 +23,7 @@ const FR = {
   invite: null, // {from, name, room, at}: a friend invites me into their room
   known: false, // the relay answered since the line opened
   watching: false, // the friends panel is open (connect to learn the own code)
+  rank: null, // {day, pos, of}: my place in today's Tagesschacht among everybody (anonymous)
 };
 if (!Array.isArray(P.friends)) P.friends = [];
 if (!Array.isArray(P.fignored)) P.fignored = [];
@@ -106,6 +107,12 @@ on('friends', m => {
     }
   }
   if (dirty) saveProfile();
+  changed();
+});
+// my place in today's Tagesschacht among everybody the relay knows (anonymous, server/relay.js)
+on('rank', m => {
+  if (!Number.isInteger(m.day) || !Number.isInteger(m.pos) || !Number.isInteger(m.of)) return;
+  FR.rank = { day: m.day, pos: m.pos, of: m.of };
   changed();
 });
 on('finvite', m => {

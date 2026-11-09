@@ -156,12 +156,16 @@ test('after a won level the end screen offers the next one', async ({ page }) =>
   await page.evaluate(() => {
     const w = window.__ww,
       c = w.crew[0];
-    for (const a of w.animals.filter(a => a.lost)) {
-      c.x = a.x;
-      c.y = a.y - 6;
-      c.vx = c.vy = 0;
-      w.step(35);
-    }
+    // the Wühler is held at each lost fluffel until the level's check (every half second) has
+    // seen him there; a second pass for any still lost
+    for (let pass = 0; pass < 3 && w.animals.some(a => a.lost); pass++)
+      for (const a of w.animals.filter(a => a.lost))
+        for (let k = 0; k < 40 && a.lost; k++) {
+          c.x = a.x;
+          c.y = a.y - 6;
+          c.vx = c.vy = 0;
+          w.step(1);
+        }
     w.step(5);
   });
   await page.waitForFunction(() => window.__ww.state === 'won');

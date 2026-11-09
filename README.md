@@ -48,13 +48,23 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 
 **Gamepad** (Xbox-Namen; es zählt, wo der Knopf sitzt, also springt überall der untere): Linker Stick / Steuerkreuz laufen und zielen · A springen · X oder rechter Trigger graben (halten) · B Aktion · Y werfen bzw. benutzen · rechter Stick zielt mit Wurf, Bogen und Katapult (gepunktete Flugbahn), Y schießt dann in diese Richtung, LB wirft den Enterhaken dorthin · LT nächste Waffe bzw. nächstes Teil aus der Tasche (wie Q) · RB Bauen · LB Enterhaken (halten, loslassen wirft) · Start Menü · Select Karte. In Menüs, Lobby und Levelauswahl bewegt das Steuerkreuz die Auswahl, A wählt, B geht zurück. Hinweise nennen die Knöpfe so, wie sie auf dem Gamepad stehen: PlayStation ✕ ○ □ △, L1/R1/L2/R2; Nintendo (Pro Controller, Joy-Con) B A Y X, L/R/ZL/ZR, +/−. Wo der Browser es kann, rüttelt das Gamepad statt des Handys (Optionen → Vibration).
 
-**Anzeige** (Optionen → Anzeige): „Große Texte“ vergrößert Aufgabe, Tipps und Karten. Bei „Bewegung reduzieren“ im Betriebssystem bleiben Pfeil und Startknopf ruhig.
+**Ton** (Optionen → Ton): Ton und Musik an oder aus, dazu je eine eigene Lautstärke für Effekte, Musik und Umgebung (Regen, Wind, Vögel, Grillen) in Schritten von 25 %. Vibration bei Treffern, Sprengungen und Schatzfunden, auch in der Android-App.
+
+**Anzeige** (Optionen → Anzeige): „Große Texte“ vergrößert Aufgabe, Tipps und Karten. „Fundmuster“ gibt Gold (Punkte), Erz (Streifen), Kohle (Säulen) und Edelsteinen (Rauten) eigene Muster, damit man sie nicht nur an der Farbe erkennt (bei Farbenblindheit). Bei „Bewegung reduzieren“ im Betriebssystem bleiben Pfeil und Startknopf ruhig.
 
 Zwei Steuerungen (Optionen → Steuerung): **Modern** (Standard) gräbt, wenn man gegen Erde läuft, und hat einen eigenen Sprung-Knopf. **Klassisch** gräbt mit dem Graben-Knopf und lässt an Wänden klettern und an Decken hängen, wie im Original.
 
 **Levelauswahl** (Lobby → Modus): ein Screen zum Durchscrollen, jede Reihe zum Wischen. Oben „Empfohlen“ (das nächste Kampagnen-Level und der Tagesschacht), dann Goldrausch, Siedler und Schatzsucher mit je einer Karte für Wiese, Wüste und Winter, die beiden Kapitel der Kampagne und die Karten für Koop und Versus. Die Chips oben springen zu den Abschnitten.
 
 **Monster** (unter der Erde, nicht in „Gemütlich“): Höhlenmonster (beißt kräftig), Giftspinne (schnell, springt dich an, ihr Gift kostet noch ein paar Sekunden Energie), Lavaschleim (hüpft aus den Lavaseen, Lava macht ihm nichts, setzt dich in Brand) und der Steingolem in der tiefsten Höhle (langsam, haut sehr hart zu, Pfeile prallen halb ab – das Schwert hilft; dafür lässt er Gold, Erz und manchmal einen Edelstein fallen). Verletzte Monster zeigen einen Lebensbalken, der Schild halbiert ihren Schaden. Die Kampagne hat nur Höhlenmonster.
+
+**Hacken:** Ohne Werkzeug gräbt der Wühler Erde, Sand, Lehm, Gold, Erz, Kohle und Edelsteine. Die Stahlhacke (nach „Metallurgie“) kommt durch Fels und gräbt schneller. Die Diamanthacke (nach „Härten“, erst nach der Stahlhacke, 150 Taler, 3 Metall, 2 Kohle) gräbt Fels, Erz, Kohle und Edelsteine anderthalbmal so schnell.
+
+**Feuer, Wasser, Säure:** Öl schwimmt auf Wasser und brennt. Holz im Feuer (Brücken, Treppen, Stützbalken) verkohlt, auch bis zu drei Felder über den Flammen, und Lava setzt Holz in Brand. Wasser auf brennendem Öl löscht es mit Zischen. Säure frisst Erde, Sand, Lehm und Holz, Fels nur langsam.
+
+**Goldfieber** (freies Spiel, nicht in Kampagne und Tagesschacht): nach drei Minuten und dann alle fünf bis sieben Minuten zahlt die Burg eine Minute lang doppelt für Goldklumpen.
+
+**Tagesschacht unter allen:** Im Freunde-Fenster steht unter „Tagesschacht heute“ dein Platz unter allen, die heute gespielt haben – nur Platz und Anzahl, ohne Namen. Ergebnisse über dem Möglichen zählt das Relay nicht.
 
 **Schwierigkeit** (Optionen → Spiel, gilt fürs freie Spiel; Kampagne und Tagesschacht haben ihre eigene): Gemütlich (keine Monster, kein Gas, keine Blitze und Meteore, ruhiges Tempo), Abenteuer (alle Gefahren) oder Hart (alle Gefahren, volles Tempo). Baugebiete (bauen nur im eigenen Gebiet, Flaggen erweitern es) gelten im Modus Siedler, für alle Spieler gleich.
 
@@ -80,9 +90,11 @@ npm run previews   # Vorschaubilder der Level für die Levelauswahl neu erzeugen
 npm run store-shots # erzeugt Store-Bilder (Screenshots, Cover, Feature-Grafik) in docs/itch/ und docs/play/
 ```
 
-Für die Tests einmalig `npx playwright install chromium` ausführen oder einen vorhandenen Chromium mit `PW_CHROMIUM=/pfad/zu/chrome npm test` angeben.
+Für die Tests einmalig `npx playwright install chromium` ausführen oder einen vorhandenen Chromium mit `PW_CHROMIUM=/pfad/zu/chrome npm test` angeben. Auf GitHub laufen die Tests bei jedem Pull Request und jedem Push auf `main` von selbst, auf vier Jobs verteilt (`.github/workflows/test.yml`); bei Fehlern hängt der Bericht am Lauf.
 
-Mit `?seed=7` in der Adresse entsteht immer dieselbe Welt. Nur im Entwicklungsserver: `?size=700x300` gibt dem freien Spiel eine andere Weltgröße (300–2800 × 150–700), auch für alle Mitspieler einer Runde.
+Welches Modul wofür zuständig ist und wie die Teile zusammenhängen: [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
+
+Mit `?seed=7` in der Adresse entsteht immer dieselbe Welt. Nur im Entwicklungsserver: `?size=700x300` gibt dem freien Spiel eine andere Weltgröße (300–2800 × 150–700), auch für alle Mitspieler einer Runde. `?fps` zeigt Bilder pro Sekunde und die Kosten eines Schritts und eines Bildes. Unter Testautomatisierung zeichnet das Spiel im Entwicklungsserver nur jedes dritte Bild (die Simulation läuft im vollen Tempo); `?draw` zeichnet wieder jedes Bild.
 
 Der Bildtest (`npm run test:visual`) startet Vite selbst und versteht ebenfalls `PW_CHROMIUM=/pfad/zu/chrome`.
 

@@ -70,6 +70,9 @@ test('a friend request, accepted, shows each other online and leads into the roo
   // today's Tagesschacht: Bert played, Anna not yet
   await expect(anna.page.locator('#frDaily')).toContainText('512 Taler');
   await expect(anna.page.locator('#frDaily')).toContainText('noch nicht gespielt');
+  // Bert's place among everybody who played today, without names (only Bert has a score)
+  await expect(bert.page.locator('#frRank')).toContainText('Platz 1 von 1', { timeout: 8000 });
+  await expect(anna.page.locator('#frRank')).toHaveCount(0);
 
   // the lobby chip counts the friend online
   await closePanel(anna.page);

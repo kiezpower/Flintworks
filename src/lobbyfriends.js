@@ -213,7 +213,22 @@ function openFriends(from, redraw = false) {
       }),
     );
   }
-  p.insertAdjacentHTML('beforeend', `<p class="hint fr-note">${tr('Ohne Konto: Dein Code und deine Liste gehören zu diesem Gerät. Was andere sehen: dein Name, ob du online bist und dein Tagesschacht – nur Freunde, die dich auch hinzugefügt haben.')}</p>`);
+  // and my place among everybody (anonymous: only the place, server/relay.js)
+  const rk = FR.rank && FR.rank.day === dayNo() && mine != null ? FR.rank : null;
+  if (rk) {
+    let d = p.querySelector('#frDaily');
+    if (!d) {
+      d = sec(p, 'Tagesschacht heute');
+      d.id = 'frDaily';
+    }
+    const r = row(d, {
+      dot: 'rank',
+      name: tr('Platz {pos} von {of}', { pos: rk.pos, of: rk.of }),
+      sub: tr('unter allen, die heute gespielt haben – ohne Namen'),
+    });
+    if (r) r.id = 'frRank';
+  }
+  p.insertAdjacentHTML('beforeend', `<p class="hint fr-note">${tr('Ohne Konto: Dein Code und deine Liste gehören zu diesem Gerät. Was andere sehen: dein Name, ob du online bist und dein Tagesschacht – nur Freunde, die dich auch hinzugefügt haben. Für deinen Platz unter allen zählt nur dein Ergebnis, ohne Namen.')}</p>`);
   if (back) {
     const b = document.createElement('button');
     b.className = 'lb-way fr-panel-back';

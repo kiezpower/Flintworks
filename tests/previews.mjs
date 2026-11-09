@@ -52,7 +52,7 @@ const browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM 
 const page = await browser.newPage();
 const errors = [];
 page.on('pageerror', e => errors.push(e.message));
-await page.goto(server.resolvedUrls.local[0]);
+await page.goto(server.resolvedUrls.local[0] + '?draw');
 await page.waitForFunction(() => window.__ww);
 const ids = await page.evaluate(async () => {
   const { CHAPTER1 } = await import('/src/scenarios.js'),

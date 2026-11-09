@@ -10,6 +10,15 @@ import { addStock } from './store.js';
 import { G, crew } from './state.js';
 import { $, opt, sec } from './ui.js';
 import { ACTIONS, keyName, keyOf, listenFor, resetKeys } from './keys.js';
+import { applyVolumes, volOf } from './sound.js';
+import { paintAll, setPatterns } from './world.js';
+
+// the three volumes (sound.js buses): key in P.vol, name, explanation
+const VOLS = [
+  ['sfx', 'Effekte', 'Lautstärke von Graben, Treffern, Verkauf und Sprengungen'],
+  ['mus', 'Musik', 'Lautstärke der Musik'],
+  ['amb', 'Umgebung', 'Lautstärke von Regen, Wind, Vögeln und Grillen'],
+];
 
 // the action waiting for its new key (keys.js), while the panel shows it
 let listening = null;
@@ -74,6 +83,15 @@ function settingsSections(p, reopen, { lobby = false, game: gameSec = null } = {
   const snd = sec(p, 'Ton');
   item(snd, G.muted ? 'Ton aus' : 'Ton an', 'Ton', () => $('sndBtn').click());
   item(snd, P.music === false ? 'Musik aus' : 'Musik an', 'Musik', () => (P.music = P.music === false));
+  // own volumes for effects, music and background sounds (sound.js): a tap turns each one down a
+  // step, from 25 % back up to full
+  for (const [k, name, sub] of VOLS)
+    item(snd, tr('{name}: {pct} %', { name: tr(name), pct: Math.round(volOf(k) * 100) }), sub, () => {
+      const steps = [1, 0.75, 0.5, 0.25, 0];
+      const i = steps.findIndex(v => Math.abs(v - volOf(k)) < 0.01);
+      P.vol = { ...(P.vol || {}), [k]: steps[(i + 1) % steps.length] };
+      applyVolumes();
+    });
   item(snd, P.vibe === false ? 'Vibration: aus' : 'Vibration: an', 'Kurzes Rütteln beim Graben, bei Treffern und Sprengungen', () => {
     P.vibe = P.vibe === false;
     G.vibe = P.vibe;
@@ -123,6 +141,16 @@ function settingsSections(p, reopen, { lobby = false, game: gameSec = null } = {
     P.bigtext = !P.bigtext;
     applyText();
   });
+  // patterns on gold, ore, coal and gems (world.js), for players who tell colours apart badly
+  item(
+    view,
+    P.cbpat ? 'Fundmuster: an' : 'Fundmuster: aus',
+    'Gold, Erz, Kohle und Edelsteine tragen eigene Muster, nicht nur Farben (bei Farbenblindheit)',
+    () => {
+      P.cbpat = !P.cbpat;
+      applyPatterns();
+    },
+  );
 
   const gfx = sec(p, 'Grafik');
   // (a slow device may have switched to fast graphics on its own during the round, main.js)
@@ -141,6 +169,10 @@ function settingsSections(p, reopen, { lobby = false, game: gameSec = null } = {
 }
 
 // the text size from the profile (also right at the start)
+// the find patterns follow the profile; the world is repainted when they change
+function applyPatterns() {
+  if (setPatterns(!!P.cbpat)) paintAll();
+}
 function applyText() {
   document.documentElement.classList.toggle('bigtext', !!P.bigtext);
 }
@@ -169,4 +201,4 @@ function applyHelpers() {
   G.crewKey = '';
 }
 
-export { DIFF, applyControls, applyHelpers, applyText, diffOf, settingsSections };
+export { DIFF, applyControls, applyHelpers, applyPatterns, applyText, diffOf, settingsSections };

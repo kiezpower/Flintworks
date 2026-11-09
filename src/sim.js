@@ -1,5 +1,5 @@
 import { sfx } from './sound.js';
-import { igniteCell } from './fire.js';
+import { burnPlank, igniteCell } from './fire.js';
 import { G, parts } from './state.js';
 import {
   ACID,
@@ -13,12 +13,15 @@ import {
   LIQ,
   LOAM,
   OIL,
+  PLANK,
   ROCK,
   SAND,
   W,
   WATER,
   acidChunk,
+  beginPaint,
   bg,
+  endPaint,
   markActive,
   mat,
   paint,
@@ -84,6 +87,11 @@ function lavaReact(i, x, y) {
     if (j < 0 || j >= W * H) continue;
     // (oil next to lava catches fire, fire.js)
     if (mat[j] === OIL) igniteCell(j);
+    // wood next to lava (a bridge, stairs, a support beam) chars away
+    if (!G.settling && mat[j] === PLANK && rnd() < 0.04) {
+      burnPlank(j);
+      continue;
+    }
     if (mat[j] === WATER) {
       mat[j] = AIR;
       paint(j);
@@ -115,7 +123,16 @@ function lavaReact(i, x, y) {
   }
   return false;
 }
+// (painting is gathered during the step and done once per cell at its end, world.js beginPaint)
 function simulate() {
+  beginPaint();
+  try {
+    simStep();
+  } finally {
+    endPaint();
+  }
+}
+function simStep() {
   G.frame++;
   if (G.hissT > 0) G.hissT--;
   const act = swapActive();
@@ -172,7 +189,9 @@ function simulate() {
                 j = r === 0 ? i - W : r === 1 ? i + W : r === 2 ? (x > 0 ? i - 1 : -1) : x < W - 1 ? i + 1 : -1;
               if (j >= 0 && j < W * H) {
                 const mj = mat[j];
-                if (mj === EARTH || mj === SAND || mj === LOAM) {
+                // (soft ground and wood at once, rock only now and then: acid gnaws slowly through it; not
+                // while a new world settles, gen.js, so the worlds of a seed stay as they were)
+                if (mj === EARTH || mj === SAND || mj === LOAM || (!G.settling && (mj === PLANK || (mj === ROCK && rnd() < 0.25)))) {
                   mat[j] = AIR;
                   bg[j] = 1;
                   paint(j);
