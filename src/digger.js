@@ -966,12 +966,12 @@ function context(c) {
   // at a storage chest deep down: put in or take out (crate.js)
   const cr = crateContext(c);
   if (cr) return cr;
+  // at a great hoard (hoards.js; before a mushroom beside it)
+  const hc = hoardContext(c);
+  if (hc) return hc;
   // a glowing mushroom on a cave floor: pick it (potions.js)
   const pk = shroomContext(c);
   if (pk) return pk;
-  // at a great hoard (hoards.js)
-  const hc = hoardContext(c);
-  if (hc) return hc;
   const ch = chestNear(c);
   if (ch) return { label: 'Öffnen', fn: () => openChest(ch) };
   const L = lorryNear(c);
@@ -982,6 +982,9 @@ function context(c) {
   // at water with a fishing rod: cast, or pull in (fishing.js; before a tree on the bank)
   const fc = fishContext(c);
   if (fc) return fc;
+  // a potion chosen in the bag: drink it (potions.js; before climbing and felling)
+  const po = potionContext(c);
+  if (po) return po;
   // a torch in the hand, at a wall: set it (torches.js; before climbing and felling)
   const tc = torchContext(c);
   if (tc) return tc;
@@ -999,9 +1002,6 @@ function context(c) {
   // stuck below a ledge too high for a jump: hook, stairs or home (climb.js)
   const up = climbContext(c);
   if (up) return up;
-  // a potion chosen in the bag: drink it (potions.js)
-  const po = potionContext(c);
-  if (po) return po;
   const it = c.inv[c.isel];
   if (it === 'loam') return { label: 'Brücke', fn: () => startBridge(c, LOAM) };
   if (it === 'plank') return { label: 'Brücke', fn: () => startBridge(c, PLANK) };

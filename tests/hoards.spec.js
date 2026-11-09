@@ -37,9 +37,10 @@ test('the first chest holds a treasure map; the hoard it shows opens into gold a
     // the first chest: a map
     const ch = G.chests.find(c => !c.open);
     openChest(ch);
+    // (a banner of its own)
+    out.news = [...document.querySelectorAll('.banner')].some(b => b.textContent.includes('Schatzkarte'));
     const known = H.filter(h => h.known);
     out.known = known.length;
-    out.news = document.body.textContent.includes('Schatzkarte');
     // to the hoard
     const h = known[0];
     Object.assign(me, { x: h.x - 3, y: h.y - 10, vx: 0, vy: 0 });

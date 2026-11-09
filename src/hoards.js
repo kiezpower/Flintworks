@@ -4,7 +4,7 @@
 // the map and a red arrow at the screen edge points the way. Digging down to it, the action button
 // opens it: a heap of gold and gems. Made with the world (on every device, from the seed, with its
 // own random numbers); which are known and opened goes with the game.
-import { announce } from './announce.js';
+import { announce, announceBanner } from './announce.js';
 import { celebrate } from './effects.js';
 import { spawnItem } from './entities.js';
 import { addFloat } from './floats.js';
@@ -88,7 +88,8 @@ function mapFromChest(x, y) {
   const h = left.reduce((a, b) => (Math.abs(b.x - x) < Math.abs(a.x - x) ? b : a));
   h.known = true;
   addFloat(x, y - 10, '🗺️', '#ffe066');
-  announce('Eine Schatzkarte! Ein großes Versteck ist auf der Karte mit einem roten Kreuz markiert.');
+  // (a banner of its own: the line for short notes is often taken at once by a finished task)
+  announceBanner('Eine Schatzkarte!', 'Ein großes Versteck ist auf der Karte mit einem roten Kreuz markiert.');
   return true;
 }
 

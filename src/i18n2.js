@@ -513,5 +513,7 @@ const EN2 = {
   'Der Blutmond ist da – Monster überall!': 'The blood moon is here – monsters everywhere!',
   'Blutmond überstanden': 'Blood moon survived',
   'Überstehe eine Blutmond-Nacht': 'Survive a blood moon night',
+  'Eine Schatzkarte!': 'A treasure map!',
+  'Ein großes Versteck ist auf der Karte mit einem roten Kreuz markiert.': 'A great hoard is marked on the map with a red cross.',
 };
 export { EN2 };
