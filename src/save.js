@@ -118,6 +118,7 @@ function serialize() {
       gas: G.gas,
       gasClouds: G.gasClouds,
       dayT: G.dayT,
+      dayN: G.dayN || 0,
       frame: G.frame,
       hints: [...G.hintsSeen],
       t: Date.now(),
@@ -204,6 +205,7 @@ function deserialize(d) {
     G.money = d.money;
     G.earned = d.earned || 0;
     G.dayT = d.dayT;
+    G.dayN = d.dayN || 0;
     // (saves from before v1.69.0 use older names for the Fluffel and the Wühler)
     G.mode = d.mode === 'wipfrettung' ? 'fluffelrettung' : d.mode || 'gold';
     G.tut = d.tut || null;

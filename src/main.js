@@ -77,6 +77,7 @@ import { villageMove, villageTick } from './villagers.js';
 import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
+import { seasonName } from './seasons.js';
 import { chestTick, updVersus, vsResult } from './versus.js';
 import { updCoop } from './coop.js';
 import { statsHtml } from './stats.js';
@@ -282,7 +283,7 @@ function startGame(withTutorial = false) {
     G.startT = performance.now();
     G.playTicks = 0;
   }
-  if (!G.tut && withTutorial !== 'resume') toast('Welt: {name}', { name: tr(biome().name) });
+  if (!G.tut && withTutorial !== 'resume') toast('Welt: {name}', { name: tr(biome().name) + (seasonName() ? ' · ' + tr(seasonName()) : '') });
 }
 // a client hears from the host that the round is over (Versus: which team won, -2 a draw)
 G.onNetEnd = (won, winner, why, stats) => {

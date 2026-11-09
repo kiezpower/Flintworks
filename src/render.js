@@ -56,6 +56,7 @@ import { fireSpots } from './fire.js';
 import { drawBossBar, drawWorms } from './boss.js';
 import { drawFishing } from './fishing.js';
 import { drawPets } from './pets.js';
+import { treeLook } from './seasons.js';
 import { drawMerchant } from './merchant.js';
 import { drawVillagers } from './villagers.js';
 import { drawFarms } from './farm.js';
@@ -682,7 +683,8 @@ function render() {
       ctx.save();
       ctx.translate(sx, sy);
       ctx.rotate(Math.sin(G.frame * 0.025 + t.x * 0.13) * 0.025 * (0.4 + G.wind));
-      drawHi(ctx, t.spr, -Math.floor(w / 2), -h);
+      // (blossom, autumn leaves, bare or snowy in winter: seasons.js)
+      drawHi(ctx, treeLook(t), -Math.floor(w / 2), -h);
       if (t.char) {
         ctx.globalAlpha = clamp(1 - t.burn / 700, 0, 1);
         ctx.drawImage(t.char, -Math.floor(w / 2), -h);

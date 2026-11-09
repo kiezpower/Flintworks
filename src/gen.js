@@ -530,6 +530,7 @@ function finishWorld() {
   }
   for (let k = 0, n = perWidth(9); k < n; k++) clouds.push(mkCloud(rnd() * W));
   G.dayT = 0.02;
+  G.dayN = 0; // (spring, seasons.js)
   G.rainT = 0;
   G.rainNext = 9000 + rnd() * 4000;
   arrows.length = 0;

@@ -4,6 +4,7 @@
 import { roofTops } from './bfx.js';
 import { FX_PAL, pixelLine, px } from './effects.js';
 import { surfTops } from './light.js';
+import { cold } from './seasons.js';
 import { G, builds, parts } from './state.js';
 import { AIR, W, WATER, bg, clamp, mat, rnd } from './world.js';
 
@@ -11,12 +12,12 @@ G.wet = 0; // 0 dry … 1 soaked; the ground darkens and glints while it rains
 G.snowAcc = 0; // how thick the snow lies on the roofs, in landscape pixels
 
 const raining = () => G.rainT > 0 && G.biome !== 'winter',
-  snowing = () => G.rainT > 0 && G.biome === 'winter';
+  snowing = () => G.rainT > 0 && cold();
 
 // every simulation step
 function updRainFx() {
   G.wet = clamp(G.wet + (raining() ? 1 / 600 : -1 / 2400), 0, 1);
-  G.snowAcc = clamp(G.snowAcc + (snowing() ? 1 / 700 : G.biome === 'winter' ? -1 / 9000 : -1 / 600), 0, 2);
+  G.snowAcc = clamp(G.snowAcc + (snowing() ? 1 / 700 : cold() ? -1 / 9000 : -1 / 600), 0, 2);
   if (!raining() || parts.length > 1700) return;
   // water runs off the roofs and drips from the eaves
   for (const b of builds) {
@@ -96,7 +97,7 @@ function drawRoofWeather(ctx, b, sx, sy) {
     for (let x = 0; x < t.length; x++) if (t[x] < b.h) ctx.fillRect(sx + x, sy + t[x], 1, u);
   }
   const d = Math.round(G.snowAcc / u) * u;
-  if (d > 0 && G.biome === 'winter') {
+  if (d > 0 && (cold() || G.snowAcc > 0)) {
     for (let x = 0; x < t.length; x++) {
       if (t[x] >= b.h) continue;
       ctx.fillStyle = '#f4f8fc';
