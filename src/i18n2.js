@@ -461,5 +461,15 @@ const EN2 = {
   Tiefe: 'Depth',
   'Bald wird es dunkel – nachts kommen Monster an die Oberfläche.': 'Night is coming soon – monsters come to the surface at night.',
   Tag: 'Day',
+  'Leuchtpilze': 'Glowing mushrooms',
+  'Leuchtpilze kannst du pflücken. In der Burg braut ein Braukessel Tränke daraus':
+    'You can pick glowing mushrooms. In the castle a brewing cauldron brews potions from them',
+  'Fluffel zähmen': 'Taming a Fluffel',
+  'Füttere einen Fluffel mit Brot oder Fisch: Er begleitet dich und erschnüffelt Gold':
+    'Feed a Fluffel bread or a fish: it comes along and sniffs out gold',
+  Tränke: 'Potions',
+  'Wähle einen Trank in der Tasche und trink ihn mit der Aktion': 'Choose a potion in the bag and drink it with the action button',
+  'Reiche Tiefe': 'Rich depths',
+  'Je tiefer, desto ergiebiger das Gold: Die Tiefenanzeige wird golden': 'The deeper, the richer the gold: the depth readout turns gold',
 };
 export { EN2 };
