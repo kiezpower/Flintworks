@@ -298,7 +298,8 @@ function digCell(x, y, paced = false, acc = G) {
   if (m === GOLD) {
     acc.goldDust = (acc.goldDust || 0) + 1;
     // the last bit of a vein: what is left over makes a nugget if it is at least half of one
-    if (acc.goldDust % 16 >= 8 && !goldNear(x, y)) acc.veinEnd = true;
+    const gs = goldStep(x, y);
+    if (acc.goldDust % gs >= gs / 2 && !goldNear(x, y)) acc.veinEnd = true;
     if (!paced && rnd() < 0.25) parts.push({ x, y, vx: (rnd() - 0.5) * 1.2, vy: -rnd() * 1.4, l: 25, c: '#ffe066', b: 1 });
   } else if (m === EARTH) acc.earthDug = (acc.earthDug || 0) + 1;
   else if (m === LOAM) acc.loamDug = (acc.loamDug || 0) + 1;
@@ -320,14 +321,22 @@ function goldNear(x, y) {
       if (mat[yy * W + xx] === GOLD && (xx !== x || yy !== y)) return true;
   return false;
 }
+// how many dug gold pixels make a nugget: in free play the deeper the richer (like SteamWorld
+// Dig: going deep pays): 16 near the surface, 14 from 20 m, 12 from 40 m, 10 from 60 m down
+function goldStep(x, y) {
+  if (!G.richDeep) return 16;
+  const d = y - surf[Math.max(0, Math.min(W - 1, Math.round(x)))];
+  return d >= 240 ? 10 : d >= 160 ? 12 : d >= 80 ? 14 : 16;
+}
 function spawnFromDig(cx, cy, acc = G) {
+  const step = goldStep(cx, cy);
   if (acc.veinEnd) {
     acc.veinEnd = false;
-    if (acc.goldDust % 16 >= 8) acc.goldDust += 16 - (acc.goldDust % 16);
-    else acc.goldDust -= acc.goldDust % 16;
+    if (acc.goldDust % step >= step / 2) acc.goldDust += step - (acc.goldDust % step);
+    else acc.goldDust -= acc.goldDust % step;
   }
-  while (acc.goldDust >= 16) {
-    acc.goldDust -= 16;
+  while (acc.goldDust >= step) {
+    acc.goldDust -= step;
     spawnItem('nug', cx - 1, cy - 1, (rnd() - 0.5) * 1.5, -1.4, 10);
     // the nugget pops out with a flash; nuggets in quick succession climb up the scale
     flashes.push({ x: cx, y: cy, r: 5, l: 6 });
@@ -1038,6 +1047,7 @@ function lorryAct(c, L) {
 
 export {
   HARD,
+  goldStep,
   canToss,
   tossPath,
   diggable,

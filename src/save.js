@@ -276,7 +276,7 @@ function deserialize(d) {
     arrows.length = 0;
     // (older saves have no glow list: the caves are looked for again)
     scatterDecor(d.glow || null);
-    G.fogOn = !!d.fog;
+    G.fogOn = G.richDeep = !!d.fog;
     fogUnpack(d.fog ? unb64(d.fog) : null);
     calcTerr();
     G.startT = performance.now() - (d.play || 0);

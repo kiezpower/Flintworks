@@ -541,6 +541,7 @@ function finishWorld() {
   // (the map knows only the sky and the surface, fog.js; not in campaign levels, maps, the Tagesschacht)
   const FM = GAME_MODES[G.mode];
   G.fogOn = !!FM && !FM.campaign && !FM.pkg && !FM.daily && !G.tut;
+  G.richDeep = G.fogOn; // (deeper gold gives more nuggets, digger.js goldStep)
   resetFog();
   G.rainT = 0;
   G.rainNext = 9000 + rnd() * 4000;

@@ -31,13 +31,15 @@ import { isPlayer } from './players.js';
 import { missionText } from './missions.js';
 import { updTracker } from './questui.js';
 import { G, INV_MAX, INV_SHOWN, animals, builds, crew, lorries, safeCap } from './state.js';
-import { AIR, GOLD, H, MINI, W, bg, hex, mat, onResize } from './world.js';
+import { AIR, GOLD, H, MINI, W, bg, hex, mat, onResize, surf } from './world.js';
 
 // ---- HUD, panels, minimap ----
 const $ = id => document.getElementById(id);
 const moneyTxt = $('moneyTxt'),
   statusBox = $('statusBox'),
   netTxt = $('netTxt'),
+  depthTxt = $('depthTxt'),
+  itemName = $('itemName'),
   airWrap = $('airWrap'),
   airBar = $('airBar'),
   invEl = $('inv'),
@@ -53,6 +55,9 @@ const mapView = $('mapView'),
 // the map shows the world at a quarter of its size
 const MK = 4;
 let mimg;
+// the thing chosen in the bag last time, for its name (null: not yet known)
+let lastSel = null,
+  itemNameT = 0;
 function sizeMini() {
   mini.width = Math.ceil(W / MK);
   mini.height = Math.ceil(H / MK);
@@ -112,8 +117,28 @@ function hud() {
     airWrap.hidden = c.breath >= 100;
     airBar.style.width = c.breath + '%';
   }
-  // air and the connection share one small chip that only shows when one of them does
-  const st = airWrap.hidden && netTxt.hidden;
+  // a newly chosen thing in the bag: its name for a moment under the slots (like Terraria)
+  const selKey = c && !c.dead ? c.inv[c.isel] || '' : '';
+  if (selKey !== lastSel) {
+    if (lastSel !== null && selKey && ITEM[selKey]) {
+      itemName.textContent = tr(ITEM[selKey].name);
+      itemName.hidden = false;
+      clearTimeout(itemNameT);
+      itemNameT = setTimeout(() => (itemName.hidden = true), 1600);
+    }
+    lastSel = selKey;
+  }
+  // how deep you are, below the surface (like SteamWorld Dig); gold from where the gold is richer
+  const dm = c && !c.dead ? Math.round((c.y + 10 - surf[Math.max(0, Math.min(W - 1, Math.round(c.x + 3)))]) / 4) : 0;
+  const dh = dm < 5;
+  if (depthTxt.hidden !== dh) depthTxt.hidden = dh;
+  if (!dh) {
+    const t = `↓ ${dm} m`;
+    if (depthTxt.textContent !== t) depthTxt.textContent = t;
+    depthTxt.classList.toggle('rich', !!G.richDeep && dm >= 20);
+  }
+  // air, depth and the connection share one small chip that only shows when one of them does
+  const st = airWrap.hidden && netTxt.hidden && depthTxt.hidden;
   if (statusBox.hidden !== st) statusBox.hidden = st;
   const cx = context(c);
   actBtn.textContent = tr(cx.label);
