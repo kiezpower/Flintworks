@@ -119,7 +119,7 @@ function serialize() {
       lvl: G.lvl || null,
       fort: G.fort || null,
       daily: G.daily || null,
-      ev: { kills: G.kills, rescued: G.rescued, rate: G.evRate, kinds: G.evKinds, next: G.evNext, worm: !!G.wormDone, nights: G.nights || null, village: G.villagers || [] },
+      ev: { kills: G.kills, rescued: G.rescued, rate: G.evRate, kinds: G.evKinds, next: G.evNext, worm: !!G.wormDone, queen: !!G.queenDone, nights: G.nights || null, village: G.villagers || [] },
       mineMark: G.mineMark || null,
       chestsFound: G.chestsFound,
       gas: G.gas,
@@ -240,6 +240,7 @@ function deserialize(d) {
     });
     G.evNext = ev.next ?? null;
     G.wormDone = !!ev.worm;
+    G.queenDone = !!ev.queen;
     G.nights = ev.nights || null;
     G.villagers = ev.village || [];
     G.mineMark = d.mineMark || null;

@@ -536,6 +536,16 @@ const EN2 = {
   // anonymous place in the Tagesschacht (lobbyfriends.js)
   'Platz {pos} von {of}': 'Place {pos} of {of}',
   'unter allen, die heute gespielt haben – ohne Namen': 'among everybody who played today – without names',
+  // villagers.js
+  '{name} fühlt sich wohl im Dorf und zahlt mehr Miete.': '{name} feels at home in the village and pays more rent.',
+  // the lava queen (queen.js)
+  Lavakönigin: 'Lava queen',
+  'Die Lavakönigin!': 'The lava queen!',
+  'Sie steigt aus dem Lavasee – Pfeile und Schwert helfen, Lava nicht': 'She rises from the lava lake – arrows and the sword help, lava does not',
+  'Lavakönigin besiegt!': 'Lava queen beaten!',
+  'Gold und Edelsteine liegen, wo sie fiel': 'Gold and gems lie where she fell',
+  Königinnensturz: 'Queen toppled',
+  'Besiege die Lavakönigin': 'Beat the lava queen',
   // scoreboard.js
   Team: 'Team',
   // separate volumes (settings.js)

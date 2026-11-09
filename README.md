@@ -62,6 +62,10 @@ Zwei Steuerungen (Optionen → Steuerung): **Modern** (Standard) gräbt, wenn ma
 
 **Feuer, Wasser, Säure:** Öl schwimmt auf Wasser und brennt. Holz im Feuer (Brücken, Treppen, Stützbalken) verkohlt, auch bis zu drei Felder über den Flammen, und Lava setzt Holz in Brand. Wasser auf brennendem Öl löscht es mit Zischen. Säure frisst Erde, Sand, Lehm und Holz, Fels nur langsam.
 
+**Lavakönigin** (freies Spiel, nicht in „Gemütlich“, einmal pro Welt): Ab Minute acht steigt sie aus einem Lavasee, wenn ein Wühler tief unten in der Nähe ist. Sie bleibt über ihrem See, wirft Lavabrocken, ruft Lavaschleime und verbrennt, wer sie berührt. Lava macht ihr nichts, Pfeile, Sprengungen und das Schwert schon. Besiegt lässt sie Gold und Edelsteine liegen (Erfolg „Königinnensturz“).
+
+**Siedler:** Wer drei Morgen in Folge Brot bekommt, fühlt sich wohl und zahlt 3 statt 2 Taler Miete; wer hungert, zahlt 1, und nach dem zweiten hungrigen Morgen zieht er aus.
+
 **Goldfieber** (freies Spiel, nicht in Kampagne und Tagesschacht): nach drei Minuten und dann alle fünf bis sieben Minuten zahlt die Burg eine Minute lang doppelt für Goldklumpen.
 
 **Tagesschacht unter allen:** Im Freunde-Fenster steht unter „Tagesschacht heute“ dein Platz unter allen, die heute gespielt haben – nur Platz und Anzahl, ohne Namen. Ergebnisse über dem Möglichen zählt das Relay nicht.
