@@ -3,8 +3,8 @@
 // plus sounds, floating texts and messages for single players.
 import { exec } from '../commands.js';
 import { diggerOf, consumeEdges, setInput } from '../players.js';
-import { G } from '../state.js';
-import { onGameMsg, sendTo } from './room.js';
+import { G, crew } from '../state.js';
+import { NET, onGameMsg, sendTo } from './room.js';
 import { KINDS, packGame } from './sync.js';
 import { allChunks, chunksOf, resetSent, takeChunks } from './terrain.js';
 
@@ -17,6 +17,8 @@ function startHost() {
   for (const k in KINDS) last[k] = new Map();
   lastGame = null;
   events = [];
+  tdOK.clear();
+  wholeUntil = 0;
   resetSent();
 }
 function stopHost() {
@@ -47,7 +49,13 @@ onGameMsg('in', (d, from) => {
   });
   const c = diggerOf(from);
   if (c) c.netSeq = d.sq;
+  if (d.td) tdOK.add(from);
 });
+// the players whose client understands landscape diffs (terrain.js); diffs only when all do
+const tdOK = new Set();
+let wholeUntil = 0;
+const allDiffs = () =>
+  G.frame > wholeUntil && NET.players.every(p => !p.online || p.pid === NET.pid || tdOK.has(p.pid));
 // a client is unsure about some ground: send it again
 onGameMsg('rq', (d, from) => {
   if (G.netHost && Array.isArray(d.c)) sendTo(from, { k: 'ter', c: chunksOf(d.c) });
@@ -61,7 +69,7 @@ function hostTick() {
   if (!G.netHost) return;
   consumeEdges();
   if (G.frame % 3 === 0) {
-    const c = takeChunks(G.frame);
+    const c = takeChunks(G.frame, allDiffs());
     if (c.length) sendTo('all', { k: 'ter', c });
   }
   if (G.frame % 4 === 0) {
@@ -82,6 +90,11 @@ function delta(d, prev, full) {
     }
   return out;
 }
+// (further than a wide screen from every player's Wühler)
+const farFromAll = e => {
+  for (const c of crew) if (c.pid != null && !c.dead && Math.abs(c.x - e.x) < 420 && Math.abs(c.y - e.y) < 260) return false;
+  return true;
+};
 function sendSnapshot(full) {
   const snap = { k: 'snap', day: Math.round(G.dayT * 10000) / 10000, ev: events };
   events = [];
@@ -95,6 +108,11 @@ function sendSnapshot(full) {
       ch = [];
     for (const e of K.list) {
       if (e.id == null) continue;
+      // an animal far from every player (off everybody's screen) goes out twice a second only
+      if (kind === 'animals' && !full && G.frame % 32 && farFromAll(e)) {
+        seen.add(e.id);
+        continue;
+      }
       const d = K.pack(e),
         x = delta(d, m.get(e.id), full);
       seen.add(e.id);
@@ -125,12 +143,16 @@ function welcome(pid, start) {
   sendTo(pid, { ...start, k: 'start', late: true });
   sendTo(pid, { k: 'ter', c: allChunks() });
   G.netKey = true;
+  // (the newcomer has the ground as it is now, also in chunks not yet sent to the others: for
+  // a while only whole chunks, until every changed chunk has gone out once)
+  wholeUntil = G.frame + 180;
 }
 
 // a new host sends its landscape to everybody once, so all start from the same ground
 function sendWorld() {
   sendTo('all', { k: 'ter', c: allChunks() });
   G.netKey = true;
+  wholeUntil = G.frame + 180;
 }
 
 export { hostEnd, hostTick, sendWorld, startHost, stopHost, welcome };

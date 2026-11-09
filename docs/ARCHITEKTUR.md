@@ -147,6 +147,21 @@ wählen den Modus → `gen.js` (oder `levels/loader.js`) baut die Welt → pro T
 | `friends.js`, `emotes.js`, `deeplink.js` | Freunde ohne Login, Zurufe, Einladungen in die App |
 | `server/relay.js` | Relay: Räume und Weiterleitung, rechnet selbst kein Spiel |
 
+## Leistung
+
+- **Simulation:** Die Welt ist in Chunks von 32 × 32 Zellen geteilt; nur Chunks, in denen sich
+  etwas bewegt hat, werden im nächsten Bild durchlaufen. Ein Tausch weckt Nachbar-Chunks nur, wenn
+  er nah an ihrem Rand liegt (`activate` in `world.js`). Zellen, die sich ändern, werden pro Schritt
+  einmal gemalt (`beginPaint`/`endPaint`), und nur geänderte Chunks gehen auf die Leinwand.
+- **Messen:** `G.perf` und `?fps` zeigen Bilder pro Sekunde und die Kosten eines Schritts und
+  eines Bildes; `MPLOAD=1 npx playwright test tests/mpload.spec.js --workers 1` misst den
+  Netzverkehr (Zahlen in [MULTIPLAYER_PLAN.md](MULTIPLAYER_PLAN.md)).
+- **Kein Web Worker für die Simulation (bewusst, v1.114.0):** Ein Spielschritt kostet in einer
+  ruhigen Runde rund 1 ms, die Sandsimulation davon etwa ein Fünftel. Graben, Zeichnen und Netz
+  greifen synchron auf dasselbe Zellraster zu; ein Worker bräuchte dafür `SharedArrayBuffer`, und der
+  verlangt die Header COOP/COEP, die GitHub Pages nicht setzen kann. Erst wenn Messungen auf
+  schwachen Geräten zeigen, dass die Simulation das Bild bremst, lohnt sich der Umbau.
+
 ## Tests
 
 `npm test` startet den Entwicklungsserver und spielt in Chromium (`tests/*.spec.js`, über
