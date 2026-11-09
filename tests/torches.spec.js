@@ -58,11 +58,12 @@ test('the workshop makes torches, a player takes three, sets one at a wall: it l
     const label = cx.label;
     cx.fn();
     const [tx, ty] = G.torches[0];
+    const bag = me.inv.filter(t => t === 'torch').length;
     // far away the map gets to know the torch's place
     Object.assign(me, { x: G.base.x + 10, y: G.base.gy - 10 });
     const { fogTick } = await import('/src/fog.js');
     fogTick();
-    return { made: made >= 3, took, label, set: G.torches.length, wall: tx > x + 15, seen: knownAt(tx, ty), bag: me.inv.filter(t => t === 'torch').length };
+    return { made: made >= 3, took, label, set: G.torches.length, wall: tx > x + 15, seen: knownAt(tx, ty), bag };
   }, ROOM.toString());
   expect(r).toEqual({ made: true, took: 3, label: 'Fackel setzen', set: 1, wall: true, seen: true, bag: 2 });
   expect(errors).toEqual([]);
