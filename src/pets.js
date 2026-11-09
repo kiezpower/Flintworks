@@ -51,11 +51,15 @@ function petFollow(a, onG) {
   const dx = c.x + 3 - (a.x + a.w / 2),
     dy = c.y + 10 - (a.y + a.h);
   // far behind (a cave, the hook, a ride): it turns up next to him
-  if (!c.dead && (Math.abs(dx) > 220 || Math.abs(dy) > 90) && free(c.x - 6, c.y + 10 - a.h, a.w, a.h)) {
-    puff(a);
-    Object.assign(a, { x: c.x - 6, y: c.y + 10 - a.h, vx: 0, vy: 0 });
-    puff(a);
-    return true;
+  if (!c.dead && (Math.abs(dx) > 220 || Math.abs(dy) > 90)) {
+    // (beside him, behind or in front, a little higher on a slope)
+    const spot = spotBeside(c, a);
+    if (spot) {
+      puff(a);
+      Object.assign(a, { x: spot[0], y: spot[1], vx: 0, vy: 0 });
+      puff(a);
+      return true;
+    }
   }
   const s = Math.sign(dx),
     tvx = c.dead || Math.abs(dx) < 12 ? 0 : s * Math.min(1.4, 0.4 + Math.abs(dx) / 24);
@@ -65,6 +69,15 @@ function petFollow(a, onG) {
   if (onG && tvx && (!free(a.x + s * 2, a.y - 1, a.w, a.h) || dy < -14) && rnd() < 0.2) a.vy = -2.4;
   if (G.frame % 45 === 0) sniff(a);
   return true;
+}
+function spotBeside(c, a) {
+  for (let dy = 0; dy <= 8; dy++)
+    for (const ox of [-6, 6, -2, 2]) {
+      const x = c.x + ox,
+        y = c.y + 10 - a.h - dy;
+      if (free(x, y, a.w, a.h)) return [x, y];
+    }
+  return null;
 }
 function puff(a) {
   for (let q = 0; q < 8; q++)
