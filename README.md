@@ -68,6 +68,8 @@ Zwei Steuerungen (Optionen → Steuerung): **Modern** (Standard) gräbt, wenn ma
 
 **Goldfieber** (freies Spiel, nicht in Kampagne und Tagesschacht): nach drei Minuten und dann alle fünf bis sieben Minuten zahlt die Burg eine Minute lang doppelt für Goldklumpen.
 
+**Saison** (Versus und „Jeder gegen jeden“, mit Menschen oder Bots): Jeder Monat ist eine Saison. Ein Sieg bringt 25 Punkte, ein Unentschieden 10, eine Niederlage 5. Ab 100 Punkten ist man Silber, ab 250 Gold, ab 500 Diamant. Die Abschlusskarte zeigt Punkte und Rang. Beginnt ein neuer Monat, zahlt der erreichte Rang Kristalle (Silber 30, Gold 80, Diamant 150) und die Punkte starten neu. Die Saison gehört zum Gerät; der Server speichert nichts, deshalb gibt es keine Liste aller Spieler.
+
 **Tagesschacht unter allen:** Im Freunde-Fenster steht unter „Tagesschacht heute“ dein Platz unter allen, die heute gespielt haben – nur Platz und Anzahl, ohne Namen. Ergebnisse über dem Möglichen zählt das Relay nicht.
 
 **Schwierigkeit** (Optionen → Spiel, gilt fürs freie Spiel; Kampagne und Tagesschacht haben ihre eigene): Gemütlich (keine Monster, kein Gas, keine Blitze und Meteore, ruhiges Tempo), Abenteuer (alle Gefahren) oder Hart (alle Gefahren, volles Tempo). Baugebiete (bauen nur im eigenen Gebiet, Flaggen erweitern es) gelten im Modus Siedler, für alle Spieler gleich.

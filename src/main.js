@@ -29,6 +29,7 @@ import './style.css';
 import './onboarding.css';
 import './panels.css';
 import { ev } from './analytics.js';
+import { seasonLine, seasonResult, seasonRoll } from './season.js';
 import { closeVeil, openVeil, veilOpen } from './veil.js';
 import { startCue, updCue } from './startcue.js';
 import { updBuilds, updLorry } from './buildings.js';
@@ -352,6 +353,8 @@ function endScreen(won, why, winner = null) {
     const draw = winner === -2;
     card.innerHTML = `<h1>${tr(draw ? 'Unentschieden' : won ? 'Sieg!' : 'Niederlage')}</h1>
       <p>${esc(tr(why || ''))}</p><p class="hint">${tr(M.name)} · ${tr('Zeit {time}', { time })}</p>`;
+    // the season of the month: points and rank (season.js; with bots or with people alike)
+    if (G.teams) card.innerHTML += `<p class="season-gain">${esc(seasonLine(seasonResult(draw ? 'draw' : won ? 'win' : 'loss')))}</p>`;
   } else
     card.innerHTML = won
       ? `<h1>${tr('Geschafft')}</h1><p class="stars">${'★'.repeat(stars)}<span>${'★'.repeat(3 - stars)}</span></p>
@@ -736,6 +739,11 @@ function loop(t) {
 }
 G.openMenu = openMenu;
 applyStatic();
+// a new month: the last season's rank pays crystals (season.js)
+{
+  const paid = seasonRoll();
+  if (paid) setTimeout(() => toast('Saison vorbei: {rank} – +{n} Kristalle', { rank: tr(paid.rank), n: paid.kri }), 1500);
+}
 gen();
 resize();
 resetCam();

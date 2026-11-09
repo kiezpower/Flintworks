@@ -105,6 +105,7 @@ wählen den Modus → `gen.js` (oder `levels/loader.js`) baut die Welt → pro T
 | `missions.js`, `questui.js`, `coop.js` | Aufträge in der Runde, Tracker, Team-Aufgaben im Koop |
 | `achievements.js` | Erfolge |
 | `teams.js`, `versus.js`, `bots.js` | Teams, Versus-Regeln, Bots |
+| `season.js` | Monatliche Saison für Versus: Punkte, Rang, Kristalle zum Monatswechsel |
 | `stats.js`, `scoreboard.js` | Statistik und Punktetafel im Mehrspieler |
 | `reward.js` | Sichtbare Belohnungen (fliegende Münzen) |
 

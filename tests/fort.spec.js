@@ -149,7 +149,15 @@ test('a Wühler at a wall climbs onto it and shoots at monsters from there', asy
       x = window.__fx;
     window.__put('wall', x);
     const wall = w.builds.find(b => b.type === 'wall');
-    // stand right left of it: the action button offers the way up
+    // stand right left of it, on ground level with its foot: the action button offers the way up
+    // (helpers dig about the castle in the first seconds, so the ground there may have sunk)
+    const { mat, W, paint, EARTH, AIR, SOLID } = w.world;
+    for (let xx = wall.x - 9; xx < wall.x; xx++) {
+      for (let yy = wall.gy - 12; yy < wall.gy; yy++) if (SOLID[mat[yy * W + xx]]) (mat[yy * W + xx] = AIR), paint(yy * W + xx);
+      for (let yy = wall.gy; yy < wall.gy + 4; yy++) if (!SOLID[mat[yy * W + xx]]) (mat[yy * W + xx] = EARTH), paint(yy * W + xx);
+    }
+    // (and no tree there: felling comes before climbing)
+    for (const t of [...w.trees]) if (Math.abs(t.x - wall.x) < 16) w.trees.splice(w.trees.indexOf(t), 1);
     Object.assign(me, { x: wall.x - 6, y: wall.gy - 10, vx: 0, vy: 0 });
     w.step(2);
     const { context } = await import('/src/digger.js');

@@ -124,5 +124,8 @@ test('Versus: a stormed castle ends the round', async ({ page }) => {
     return { hp: blue.hp, state: G.state, center: G.chests.some(c => c.re === 2) };
   });
   expect(r).toEqual({ hp: 0, state: 'won', center: true });
+  // the season of the month: a won round brings 25 points (season.js)
+  await expect(page.locator('#card')).toContainText('Saison: +25 · 25 Punkte · Bronze (Silber in 75)');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')).season.pts)).toBe(25);
   expect(errors).toEqual([]);
 });

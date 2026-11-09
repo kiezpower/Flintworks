@@ -546,6 +546,14 @@ const EN2 = {
   'Gold und Edelsteine liegen, wo sie fiel': 'Gold and gems lie where she fell',
   Königinnensturz: 'Queen toppled',
   'Besiege die Lavakönigin': 'Beat the lava queen',
+  // seasons (season.js)
+  'Saison: +{gain} · {pts} Punkte · {rank}': 'Season: +{gain} · {pts} points · {rank}',
+  '({name} in {n})': '({name} in {n})',
+  '– aufgestiegen!': '– promoted!',
+  'Saison vorbei: {rank} – +{n} Kristalle': 'Season over: {rank} – +{n} crystals',
+  Bronze: 'Bronze',
+  Silber: 'Silver',
+  Diamant: 'Diamond',
   // scoreboard.js
   Team: 'Team',
   // separate volumes (settings.js)

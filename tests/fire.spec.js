@@ -104,8 +104,6 @@ test('lava lights oil; a free world has oil pockets', async ({ page }) => {
       { mat, W, H, paint, activate, OIL, LAVA } = w.world,
       { x0, g } = window.__basin,
       { isBurning } = await import('/src/fire.js');
-    let oil = 0;
-    for (let i = 0; i < W * H; i++) if (mat[i] === OIL) oil++;
     for (let x = x0; x < x0 + 20; x++) (mat[(g + 11) * W + x] = OIL), paint((g + 11) * W + x);
     mat[(g + 11) * W + x0 + 20] = LAVA;
     paint((g + 11) * W + x0 + 20);
@@ -115,7 +113,18 @@ test('lava lights oil; a free world has oil pockets', async ({ page }) => {
       w.step(1);
       for (let x = x0; x < x0 + 20; x++) if (isBurning((g + 11) * W + x)) lit = true;
     }
-    return { oil, lit };
+    // free worlds have oil pockets: three worlds of fixed seeds (the world of this round comes
+    // from wherever the random numbers stood when "play" was pressed, and may have few)
+    const oil = [];
+    for (const seed of [1, 2, 3]) {
+      Object.assign(w.G, { nextMode: 'gold', nextSeed: seed, nextBiome: 'meadow', nextDiff: 'adventure' });
+      w.gen();
+      w.G.nextSeed = null;
+      let n = 0;
+      for (let i = 0; i < w.world.W * w.world.H; i++) if (w.world.mat[i] === OIL) n++;
+      oil.push(n);
+    }
+    return { oil: Math.min(...oil), lit };
   });
   expect(r.oil).toBeGreaterThan(50);
   expect(r.lit).toBe(true);
