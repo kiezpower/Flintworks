@@ -74,6 +74,8 @@ addEventListener('keydown', e => {
   if (code === 'KeyB') openBuild();
   if (code === 'KeyM') toggleMap();
   if (code === 'KeyI') openBag();
+  // quick heal: the first healing potion in the bag (potions.js)
+  if (code === 'KeyH') send('quickheal', {});
   // the score in a shared round (scoreboard.js; through G to keep the modules apart)
   if (code === 'KeyP') G.openScore?.();
   if (code === 'Tab') {
@@ -261,6 +263,9 @@ for (const b of document.querySelectorAll('.pad')) {
     if (name === 'hook') {
       send('hook', aim());
       b.classList.add('on');
+    } else if (name === 'heal') {
+      send('quickheal', {});
+      buzz(10);
     } else if (name === 'dig') {
       if (G.digLatch) {
         G.digLatch = false;
@@ -412,6 +417,7 @@ function readPad() {
   if (P.hookUp) hookKeyUp(true);
   if (P.menu) G.openMenu?.();
   if (P.map) toggleMap();
+  if (P.heal) send('quickheal', {});
 }
 function readInput() {
   readPad();

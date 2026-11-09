@@ -18,6 +18,7 @@ const ACTIONS = [
   ['build', 'KeyB', 'Baumenü'],
   ['map', 'KeyM', 'Karte öffnen'],
   ['bag', 'KeyI', 'Tasche öffnen'],
+  ['heal', 'KeyH', 'Schnell heilen'],
 ];
 let remap = {};
 // the chosen keys as a table: pressed code → the standard key it stands for

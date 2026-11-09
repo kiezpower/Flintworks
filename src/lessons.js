@@ -255,6 +255,13 @@ const LESSONS = [
     tip: 'Wähle einen Trank in der Tasche und trink ihn mit der Aktion',
   },
   {
+    id: 'quickheal',
+    name: 'Schnell heilen',
+    when: c => c.energy < 45 && c.inv.includes('potHeal'),
+    urgent: true,
+    tip: { touch: 'Schwach? Das Herz über den Knöpfen trinkt einen Heiltrank', keys: 'Schwach? H trinkt sofort einen Heiltrank' },
+  },
+  {
     id: 'richdeep',
     name: 'Reiche Tiefe',
     when: c => !!G.richDeep && below(c) > 80,

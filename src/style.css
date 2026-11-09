@@ -1230,6 +1230,21 @@ button:focus-visible {
 #btns.hookon .pad.hook {
   display: grid;
 }
+/* quick heal: a small heart button above the others while a healing potion is in the bag */
+.pad.heal {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: -52px;
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  color: #ff6a5a;
+}
+#btns.healon .pad.heal {
+  display: grid;
+  place-items: center;
+}
 #btns.auto .pad.hook {
   grid-column: 1;
   grid-row: 1;
