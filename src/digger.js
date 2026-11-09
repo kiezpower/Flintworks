@@ -1,4 +1,5 @@
 import { wallContext } from './fort.js';
+import { hasGift, shrineContext } from './shrines.js';
 import { petContext } from './pets.js';
 import { fishContext } from './fishing.js';
 import { merchantContext } from './merchant.js';
@@ -59,6 +60,7 @@ const COYOTE = 6, // frames after leaving the ground in which a jump still count
   JUMP_BUF = 7; // frames a jump pressed in the air is kept for the landing
 function hurt(c, a, silent) {
   if (c.dead || c.puppet || G.netClient) return; // in multiplayer only the host deals damage
+  if (hasGift(c, 'tough')) a *= 0.67; // (a gift of the shrines, shrines.js)
   c.energy -= a;
   if (G.tut && c.energy < 20) c.energy = 20; // nobody gets exhausted in the tutorial
   if (a >= 5) {
@@ -500,7 +502,7 @@ function updBody(c, I) {
     hurt(c, 0.055, true);
   }
   if (headLiq) {
-    c.breath -= 0.2;
+    c.breath -= hasGift(c, 'lung') ? 0.067 : 0.2;
     if (c.breath <= 0) {
       c.breath = 0;
       hurt(c, 0.35, true);
@@ -521,7 +523,7 @@ function updBody(c, I) {
     const [bx, by] = moveBody(c, c.vx, c.vy, 0);
     if (bx) c.vx = -vx0 * 0.4;
     if (by) {
-      if (vy0 > 4.4) hurt(c, (vy0 - 4.4) * 15);
+      if (vy0 > 4.4 && !hasGift(c, 'feather')) hurt(c, (vy0 - 4.4) * 15);
       c.vy = vy0 > 1 ? -vy0 * 0.3 : 0;
       c.vx *= 0.8;
     }
@@ -633,7 +635,7 @@ function updBody(c, I) {
     // the Wühler pushes on into the loosened earth; on average as fast as the material allows
     const ph0 = c.digPh;
     // (G.digBoost: sharper picks from the Heimatbergwerk, free play alone only)
-    c.digPh += (G.digBoost || 1) / (11 * c.digH);
+    c.digPh += ((G.digBoost || 1) * (hasGift(c, 'dig') ? 1.4 : 1)) / (11 * c.digH);
     if (c.digPh >= 1) c.digPh -= 1;
     if (ph0 < STRIKE && c.digPh >= STRIKE) digHit(c, slope);
     // gold and gems just ahead glitter in the face before the pick gets there
@@ -725,7 +727,7 @@ function updBody(c, I) {
   // every landing puffs a little dust, a hard one a lot
   if (by && fallV > 1.2) dust(c.x, c.y + 9, Math.max(2, Math.round(fallV * 2)), '#b89a76');
   if (by) {
-    if (fallV > 3.9) {
+    if (fallV > 3.9 && !hasGift(c, 'feather')) {
       const d = (fallV - 3.9) * 22;
       hurt(c, d);
       if (fallV > 4.4) startTumble(c, c.vx, -0.8);
@@ -940,6 +942,9 @@ function context(c) {
   const hv = farmContext(c);
   if (hv) return hv;
   if (vc) return vc;
+  // at a shrine deep down: take its gift (shrines.js)
+  const sh = shrineContext(c);
+  if (sh) return sh;
   const ch = chestNear(c);
   if (ch) return { label: 'Öffnen', fn: () => openChest(ch) };
   const L = lorryNear(c);

@@ -57,6 +57,7 @@ import { drawBossBar, drawWorms } from './boss.js';
 import { drawFishing } from './fishing.js';
 import { drawPets } from './pets.js';
 import { treeLook } from './seasons.js';
+import { drawShrines } from './shrines.js';
 import { drawMerchant } from './merchant.js';
 import { drawVillagers } from './villagers.js';
 import { drawFarms } from './farm.js';
@@ -724,6 +725,7 @@ function render() {
     for (const wx of [x + 2.5, x + 9.5]) wheel(ctx, wx, y + 5.5, 1.5, L.x / 1.5, '#2a2a2a');
   }
   drawChests(ctx, cx, cy);
+  drawShrines(ctx, cx, cy); // (deep down, shrines.js)
   drawHill(ctx, cx, cy);
   drawCoop(ctx, cx, cy);
   drawHazards(ctx, cx, cy);
@@ -960,6 +962,8 @@ function render() {
     if (under)
       for (let k = 0; k < oreSpots.length; k += 3) lightHole(lctx, oreSpots[k], oreSpots[k + 1], 6, oreSpots[k + 2]);
     // glowing mushrooms and crystals in caves (decor.js)
+    // the crystal of a shrine not yet used (shrines.js)
+    if (under) for (const s of G.shrines || []) if (!s.used) lightHole(lctx, s.x - cx, s.y - 9 - cy, 16, 0.75);
     if (under) {
       glowSpots(cx, cy, glows);
       for (let k = 0; k < glows.length; k += 2) lightHole(lctx, glows[k], glows[k + 1], 9, 0.55);

@@ -78,6 +78,7 @@ import './net/deeplink.js';
 import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
 import { seasonName } from './seasons.js';
+import { shrineTick } from './shrines.js';
 import { chestTick, updVersus, vsResult } from './versus.js';
 import { updCoop } from './coop.js';
 import { statsHtml } from './stats.js';
@@ -541,6 +542,7 @@ function step() {
     updBuilds();
     updFort();
     updFishing();
+    shrineTick();
     merchantMove();
     updFarm();
     villageMove();
