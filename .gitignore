@@ -4,3 +4,6 @@ dev-dist/
 test-results/
 playwright-report/
 tests/out/
+
+# Screenshots aus Testläufen und zum Ausprobieren gehören nicht ins Root
+/*.png

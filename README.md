@@ -80,7 +80,9 @@ npm run previews   # Vorschaubilder der Level für die Levelauswahl neu erzeugen
 npm run store-shots # erzeugt Store-Bilder (Screenshots, Cover, Feature-Grafik) in docs/itch/ und docs/play/
 ```
 
-Für die Tests einmalig `npx playwright install chromium` ausführen oder einen vorhandenen Chromium mit `PW_CHROMIUM=/pfad/zu/chrome npm test` angeben.
+Für die Tests einmalig `npx playwright install chromium` ausführen oder einen vorhandenen Chromium mit `PW_CHROMIUM=/pfad/zu/chrome npm test` angeben. Auf GitHub laufen die Tests bei jedem Pull Request und jedem Push auf `main` von selbst, auf vier Jobs verteilt (`.github/workflows/test.yml`); bei Fehlern hängt der Bericht am Lauf.
+
+Welches Modul wofür zuständig ist und wie die Teile zusammenhängen: [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
 
 Mit `?seed=7` in der Adresse entsteht immer dieselbe Welt. Nur im Entwicklungsserver: `?size=700x300` gibt dem freien Spiel eine andere Weltgröße (300–2800 × 150–700), auch für alle Mitspieler einer Runde.
 
