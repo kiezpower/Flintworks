@@ -135,6 +135,14 @@ const BT = {
     cost: { wood: 3, rock: 2, plank: 2 },
     info: 'Korn → Brot, ganz von selbst; Brot stärkt erschöpfte Wühler',
   },
+  // potions (potions.js): brews the glowing mushrooms from the store into potions
+  brew: {
+    name: 'Braukessel',
+    w: 14,
+    h: 12,
+    cost: { rock: 2, plank: 1, coal: 1 },
+    info: 'Leuchtpilze → Heil-, Leucht- und Grabtrank, ganz von selbst',
+  },
   // the fortress (fort.js): walls hold monsters off, the cannon tower shoots at them
   wall: {
     name: 'Mauer',

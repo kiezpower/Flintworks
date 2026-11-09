@@ -78,12 +78,13 @@ function drip(x, y) {
   if (parts.length < 1200) parts.push({ x, y, vx: 0, vy: 0.2, l: 80, c: '#b4d2f0', g: 0.06, drop: 1 });
 }
 // the cave glows, for the save (x, y, 1 = mushroom, height)
-const glowList = () => decor.filter(d => d.glow).map(d => [d.x, d.y, d.kind === 'shroom' ? 1 : 0, d.h]);
+// (mushrooms picked for potions are gone, potions.js)
+const glowList = () => decor.filter(d => d.glow && !d.picked).map(d => [d.x, d.y, d.kind === 'shroom' ? 1 : 0, d.h]);
 // the glowing details in view, as screen positions for the light layer
 function glowSpots(cx, cy, out) {
   out.length = 0;
   for (const d of decor)
-    if (d.glow && d.x >= cx - 4 && d.x <= cx + G.VW + 4 && d.y >= cy - 4 && d.y <= cy + G.VH + 4)
+    if (d.glow && !d.picked && d.x >= cx - 4 && d.x <= cx + G.VW + 4 && d.y >= cy - 4 && d.y <= cy + G.VH + 4)
       out.push(d.x - cx, d.y - cy - 2);
   return out;
 }
@@ -98,6 +99,7 @@ function updDecor() {
 }
 function drawDecor(ctx, cx, cy) {
   for (const d of decor) {
+    if (d.picked) continue;
     const x = d.x - cx,
       y = d.y - cy;
     if (x < -2 || x > G.VW + 2 || y < -8 || y > G.VH + 4) continue;

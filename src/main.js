@@ -79,6 +79,7 @@ import { inputOf, isPlayer } from './players.js';
 import { updWeather } from './weather.js';
 import { seasonName } from './seasons.js';
 import { shrineTick } from './shrines.js';
+import { potionTick } from './potions.js';
 import { chestTick, updVersus, vsResult } from './versus.js';
 import { updCoop } from './coop.js';
 import { statsHtml } from './stats.js';
@@ -543,6 +544,7 @@ function step() {
     updFort();
     updFishing();
     shrineTick();
+    potionTick();
     merchantMove();
     updFarm();
     villageMove();

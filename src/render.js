@@ -59,6 +59,7 @@ import { drawPets } from './pets.js';
 import { treeLook } from './seasons.js';
 import { drawShrines } from './shrines.js';
 import { drawHoardArrow, drawHoards } from './hoards.js';
+import { drawBrew } from './potions.js';
 import { drawMerchant } from './merchant.js';
 import { drawVillagers } from './villagers.js';
 import { drawFarms } from './farm.js';
@@ -728,6 +729,7 @@ function render() {
   drawChests(ctx, cx, cy);
   drawShrines(ctx, cx, cy); // (deep down, shrines.js)
   drawHoards(ctx, cx, cy); // (the great hoards, hoards.js)
+  for (const b of builds) if (b.type === 'brew' && b.done) drawBrew(ctx, b, cx, cy); // (potions.js)
   drawHill(ctx, cx, cy);
   drawCoop(ctx, cx, cy);
   drawHazards(ctx, cx, cy);
@@ -940,9 +942,11 @@ function render() {
         light(
           c.x + 3 - cx,
           c.y + 4 - cy,
-          (isPlayer(c) ? 44 : 30) * (c.hat === 'helm' ? 1.5 : 1) * (hasGear(c, 'lamp') ? 1.4 : 1),
-          isPlayer(c) ? 0.95 : 0.7,
+          (isPlayer(c) ? 44 : 30) * (c.hat === 'helm' ? 1.5 : 1) * (hasGear(c, 'lamp') ? 1.4 : 1) * (c.glowT > 0 ? 2 : 1),
+          isPlayer(c) || c.glowT > 0 ? (c.glowT > 0 ? 1 : 0.95) : 0.7,
         );
+      // (a light potion: a second, wide hole, potions.js)
+      if (!c.dead && c.glowT > 0) light(c.x + 3 - cx, c.y + 4 - cy, 70, 0.8);
     });
     for (const b of builds)
       if (b.done) light(b.x + b.w / 2 - cx, b.gy - b.h / 2 - cy, b.type === 'base' ? 40 : 24, 0.8);
@@ -985,8 +989,8 @@ function render() {
           ctx,
           c.x + 3 - cx,
           c.y + 4 - cy,
-          isPlayer(c) ? 26 : 14,
-          d * 0.32 * flicker(n0(c)),
+          (isPlayer(c) ? 26 : 14) * (c.glowT > 0 ? 2.2 : 1),
+          d * (c.glowT > 0 ? 0.5 : 0.32) * flicker(n0(c)),
         );
     }
     for (let k = 0; k < lava.length; k += 6) warmGlow(ctx, lava[k], lava[k + 1], 12, 0.22);

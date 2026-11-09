@@ -7,6 +7,7 @@ import { mkAnimal } from '../entities.js';
 import { ITEM, treeSprite } from '../sprites.js';
 import { mode } from '../modes.js';
 import { CAPS, G, NAMES, safeCap, animals, builds, crew, items, lorries, trees, vehicles } from '../state.js';
+import { applyPicked } from '../potions.js';
 import { VK } from '../vehicles/core.js';
 import { syncTeams, useMine, useTeam } from '../teams.js';
 
@@ -56,6 +57,7 @@ const KINDS = {
       fs: c.fish ? [c.fish.x, c.fish.y, c.fish.bite > 0 ? 1 : 0] : 0,
       // the gifts of the shrines (shrines.js)
       ...(c.gifts && c.gifts.length ? { gf: c.gifts } : {}),
+      ...(c.glowT > 0 ? { gl: 1 } : {}), // (a light potion, potions.js)
     }),
     create: d => ({
       id: d.id,
@@ -83,6 +85,7 @@ const KINDS = {
     apply: (c, d) => {
       c.fish = d.fs ? { x: d.fs[0], y: d.fs[1], bite: d.fs[2] } : null;
       c.gifts = d.gf || [];
+      c.glowT = d.gl ? 1 : 0;
       Object.assign(c, {
         pid: d.pid,
         bot: !!d.bot,
@@ -303,6 +306,7 @@ function packGame() {
     gold: G.goldSold,
     chests: G.chests && G.chests.map(c => (c.open ? 1 : 0)),
     shrines: G.shrines && G.shrines.map(s => (s.used ? 1 : 0)), // (shrines.js)
+    picked: G.picked || [], // (mushrooms picked for potions, potions.js)
     hoards: G.hoards && G.hoards.map(h => (h.open ? 2 : h.known ? 1 : 0)), // (hoards.js)
     rainT: G.rainT,
     dayN: G.dayN || 0, // (the days so far: the season, seasons.js)
@@ -356,6 +360,7 @@ function applyGame(d) {
   }
   if (G.chests && d.chests) G.chests.forEach((c, k) => (c.open = !!d.chests[k]));
   if (G.shrines && d.shrines) G.shrines.forEach((s, k) => (s.used = !!d.shrines[k]));
+  if ((d.picked || []).length !== (G.picked || []).length) applyPicked(d.picked);
   if (G.hoards && d.hoards)
     G.hoards.forEach((h, k) => {
       h.open = d.hoards[k] === 2;
