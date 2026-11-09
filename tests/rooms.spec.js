@@ -43,12 +43,10 @@ test('quick play brings two strangers into one room, friends rooms stay hidden',
   await expect(a.page.locator('#lbRooms')).toContainText('kein Raum offen');
 
   // a room for friends does not show up in the list
-  await c.page.waitForTimeout(500);
   await c.page.locator('#lbCreate').click();
   await expect(c.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
 
   // Anna plays quick: nothing open, so she opens a room
-  await a.page.waitForTimeout(500);
   await a.page.locator('#lbQuick').click();
   await expect(a.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
   const code = await a.page.locator('.lb-codetap b').textContent();
@@ -62,7 +60,6 @@ test('quick play brings two strangers into one room, friends rooms stay hidden',
   await expect(a.page.locator('.lb-players')).toContainText('Bert');
 
   // the host closes the room: it leaves the list, quick play opens a new one
-  await a.page.waitForTimeout(500);
   await a.page.locator('.opt', { hasText: 'Offener Raum' }).click();
   await expect(a.page.locator('.opt', { hasText: 'Offener Raum' })).toContainText('Nur mit Code');
   const d = await player(browser, 'Dora');
@@ -79,19 +76,16 @@ test('quick play brings two strangers into one room, friends rooms stay hidden',
 test('a quick play room counts down and starts the mode of the hour by itself', async ({ browser }) => {
   const e = await player(browser, 'Emil');
   const f = await player(browser, 'Fine');
-  await e.page.waitForTimeout(500);
   await e.page.locator('#lbQuick').click();
   await expect(e.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
   // alone: the longer countdown (then it starts anyway), the mode of the hour is shown
   await expect(e.page.locator('#mpCountdown')).toContainText('Noch allein');
-  await f.page.waitForTimeout(500);
   await f.page.locator('#lbQuick').click();
   await expect(f.page.locator('.lb-codetap b')).toHaveText(await e.page.locator('.lb-codetap b').textContent());
   // two players: the countdown runs for both
   await expect(e.page.locator('#mpCountdown')).toContainText('Nächste Runde in');
   await expect(f.page.locator('#mpCountdown')).toContainText('Nächste Runde in');
   // the guest is ready: it starts within a few seconds, nobody pressed "Spielen"
-  await f.page.waitForTimeout(500);
   await f.page.locator('.opt', { hasText: 'Bereit?' }).click();
   for (const p of [e, f])
     await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net, null, { timeout: 8000 });
@@ -107,10 +101,8 @@ test('skins travel with the player: the others see the outfit, the castle and ne
 }) => {
   const g = await player(browser, 'Gero', { outfit: 'royal', bstyle: 'gold', owned: ['o:royal', 'b:gold'] });
   const h = await player(browser, 'Hanna');
-  await g.page.waitForTimeout(500);
   await g.page.locator('#lbQuick').click();
   await expect(g.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
-  await h.page.waitForTimeout(500);
   await h.page.locator('#lbQuick').click();
   await expect(h.page.locator('.lb-codetap b')).toHaveText(await g.page.locator('.lb-codetap b').textContent());
   // the relay passes the skin on: Hanna's lobby knows Gero's look
@@ -118,7 +110,6 @@ test('skins travel with the player: the others see the outfit, the castle and ne
     import('/src/net/room.js').then(({ NET }) => NET.players.find(p => p.name === 'Gero')?.skin),
   );
   expect(seen).toBe('royal.gold');
-  await h.page.waitForTimeout(500);
   await h.page.locator('.opt', { hasText: 'Bereit?' }).click();
   for (const p of [g, h])
     await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net, null, { timeout: 8000 });
@@ -138,7 +129,8 @@ test('alone in a quick play room: after 30 s a Versus round against a bot, a lat
   browser,
 }) => {
   const s = await player(browser, 'Solo');
-  await s.page.waitForTimeout(500);
+  // (the 30 s of waiting alone shortened to 6 s: the rules stay, the test waits less)
+  await s.page.evaluate(() => (window.__ww.G.cdScale = 0.2));
   await s.page.locator('#lbQuick').click();
   await expect(s.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
   // (whatever the mode of the hour is: this room plays Versus)
@@ -146,7 +138,7 @@ test('alone in a quick play room: after 30 s a Versus round against a bot, a lat
     Object.assign(window.__ww.room.NET, { auto: { gmode: 'gold', versus: true, ffa: false }, versus: true, ffa: false }),
   );
   await expect(s.page.locator('#mpCountdown')).toContainText('gegen Bots');
-  await s.page.waitForFunction(() => window.__ww.G.state === 'play', null, { timeout: 40000 });
+  await s.page.waitForFunction(() => window.__ww.G.state === 'play', null, { timeout: 20000 });
   const bot = await s.page.evaluate(() => {
     const c = window.__ww.crew.find(o => o.bot);
     return c && { team: c.team, name: c.name, pid: c.pid };
@@ -155,7 +147,6 @@ test('alone in a quick play room: after 30 s a Versus round against a bot, a lat
   expect(bot.name).toContain('(Bot)');
   // somebody comes along: quick play takes them into the running round, onto the bot's castle
   const l = await player(browser, 'Lea');
-  await l.page.waitForTimeout(500);
   await l.page.locator('#lbQuick').click();
   await l.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net, null, { timeout: 20000 });
   await s.page.waitForFunction(() => !window.__ww.crew.some(o => o.bot), null, { timeout: 10000 });
@@ -170,7 +161,6 @@ test('Jeder gegen jeden over the network: three players, three castles, each the
   const g = await player(browser, 'Gero');
   const h = await player(browser, 'Hanna');
   const i = await player(browser, 'Ida');
-  await g.page.waitForTimeout(500);
   await g.page.locator('#lbCreate').click();
   await expect(g.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
   const code = await g.page.locator('.lb-codetap b').textContent();
@@ -180,11 +170,9 @@ test('Jeder gegen jeden over the network: three players, three castles, each the
     await expect(p.page.locator('.lb-codetap b')).toHaveText(code);
   }
   await expect(g.page.locator('.lb-players .opt')).toHaveCount(3);
-  await g.page.waitForTimeout(500);
   await g.page.locator('.opt', { hasText: 'Jeder gegen jeden' }).click();
   // the guests see the host's choice
   await expect(i.page.locator('.opt', { hasText: 'Jeder gegen jeden' })).toContainText('✓');
-  await g.page.waitForTimeout(500);
   await g.page.locator('.opt', { hasText: 'Spiel starten' }).click();
   for (const p of [g, h, i])
     await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.teams?.length === 3, null, {
@@ -203,7 +191,6 @@ test('Jeder gegen jeden over the network: three players, three castles, each the
 test('only the host decides: a player cannot send host messages (settings, round end) to the others', async ({ browser }) => {
   const a = await player(browser, 'Alma');
   const b = await player(browser, 'Boris');
-  await a.page.waitForTimeout(500);
   await a.page.locator('#lbCreate').click();
   await expect(a.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
   const code = await a.page.locator('.lb-codetap b').textContent();

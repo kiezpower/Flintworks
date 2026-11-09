@@ -28,7 +28,6 @@ test('the home crew mines crystals while away, capped by the vault, collected in
   await expect(page.locator('#lbCamp')).toHaveClass(/alert/);
   await page.click('#lbCamp');
   await expect(page.locator('#panel')).toContainText('Deine Crew hat 18 Kristalle geschürft');
-  await page.waitForTimeout(500); // (a tap right after the panel opened is ignored)
   await page.locator('#panel .opt', { hasText: 'Kassieren' }).click();
   await expect(page.locator('#panel')).toContainText('Deine Kristalle: 23');
   const r = await page.evaluate(() =>
@@ -134,7 +133,6 @@ test('the castle panel shows what each production building waits for and sends a
   await page.evaluate(() => window.__ww.openBase());
   const row = page.locator('#panel .opt', { hasText: 'wartet auf Holz' });
   await expect(row).toBeVisible();
-  await page.waitForTimeout(500);
   await row.click();
   await page.evaluate(() => window.__ww.step(2));
   const focus = await page.evaluate(() => window.__ww.crew.filter(c => c.focus === 'wood').length);
@@ -149,7 +147,6 @@ test('gear bought for good in the lobby: the grappling hook is there in every ga
   await page.click('#lbCamp');
   const row = page.locator('#panel .opt[data-gear="hook"]');
   await expect(row).toContainText('Enterhaken');
-  await page.waitForTimeout(500);
   await row.click();
   await expect(page.locator('#panel .opt[data-gear="hook"] .cost')).toHaveText('✓');
   const prof = await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')));

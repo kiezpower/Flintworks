@@ -22,7 +22,7 @@ function openName(back) {
   );
   const inp = $('lbNameIn');
   inp.value = P.name;
-  const fresh = () => performance.now() - G.panelT >= 450;
+  const fresh = () => performance.now() - G.panelT >= (G.tapGuard ?? 450);
   $('lbDice').addEventListener('click', () => {
     if (!fresh()) return;
     inp.value = randomName();

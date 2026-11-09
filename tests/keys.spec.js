@@ -21,7 +21,6 @@ test('jump on J: set in the settings, used in the game, and reset again', async 
   // the game menu: the keys section, "Springen" on J
   await page.keyboard.press('Escape');
   await expect(page.locator('#panel')).toContainText('Tasten');
-  await page.waitForTimeout(500);
   const jump = page.locator('#panel .opt', { hasText: 'Springen' });
   await expect(jump).toContainText('Leertaste');
   await jump.click();
@@ -42,7 +41,6 @@ test('jump on J: set in the settings, used in the game, and reset again', async 
   expect(vy).toBe(true);
   // reset
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(500);
   await page.locator('#panel .opt', { hasText: 'Tasten zurücksetzen' }).click();
   await expect(page.locator('#panel .opt', { hasText: 'Springen' })).toContainText('Leertaste');
   expect(errors).toEqual([]);

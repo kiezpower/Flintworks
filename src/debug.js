@@ -38,8 +38,11 @@ import { endTutorial } from './tutorial.js';
 
 // Under test automation (Playwright sets navigator.webdriver) the game draws only every third
 // frame: drawing is half of what a frame costs, and dozens of test pages share a few cores. The
-// simulation keeps its pace. ?draw=1 in the address draws every frame again (for screenshots).
+// simulation keeps its pace. ?draw in the address draws every frame again (for screenshots).
 if (navigator.webdriver && !new URLSearchParams(location.search).has('draw')) G.drawEvery = 3;
+// and a panel takes a tap at once (in the game it ignores taps for 450 ms after it opens,
+// against double taps): the tests need not wait before each click. ?guard keeps the 450 ms.
+if (navigator.webdriver && !new URLSearchParams(location.search).has('guard')) G.tapGuard = 0;
 
 window.__ww = {
   climb,

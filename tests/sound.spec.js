@@ -17,11 +17,8 @@ test('effects, music and ambience each have their own volume, kept in the profil
   await expect(fx).toContainText('Effekte: 100 %');
   await expect(page.locator('#pBody .opt', { hasText: 'Musik:' })).toContainText('Musik: 100 %');
   await expect(page.locator('#pBody .opt', { hasText: 'Umgebung:' })).toContainText('Umgebung: 100 %');
-  // (a panel ignores taps for a moment after it opens, against double taps)
-  await page.waitForTimeout(500);
   await fx.click();
   await expect(page.locator('#pBody .opt', { hasText: 'Effekte:' })).toContainText('Effekte: 75 %');
-  await page.waitForTimeout(500);
   await page.locator('#pBody .opt', { hasText: 'Umgebung:' }).click();
   await expect(page.locator('#pBody .opt', { hasText: 'Umgebung:' })).toContainText('Umgebung: 75 %');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')).vol)).toEqual({
@@ -38,7 +35,6 @@ test('effects, music and ambience each have their own volume, kept in the profil
   if (gains) expect(gains).toEqual([0.75, 1, 0.75]);
   // four steps down, then back to full
   for (const want of ['50', '25', '0', '100']) {
-    await page.waitForTimeout(500);
     await page.locator('#pBody .opt', { hasText: 'Effekte:' }).click();
     await expect(page.locator('#pBody .opt', { hasText: 'Effekte:' })).toContainText(`Effekte: ${want} %`);
   }

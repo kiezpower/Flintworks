@@ -1,5 +1,5 @@
 # Führt die Browser-Tests (npm test, Playwright) bei jedem Pull Request und jedem Push auf main aus.
-# Die Suite ist auf vier Jobs verteilt (Sharding); jeder Job lädt bei Fehlern seinen Bericht hoch.
+# Die Suite ist auf sechs Jobs verteilt (Sharding); jeder Job lädt bei Fehlern seinen Bericht hoch.
 name: Tests
 
 on:
@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5, 6]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,8 +37,8 @@ jobs:
       - run: npm --prefix server ci --no-audit --no-fund
       - name: Chromium für Playwright installieren
         run: npx playwright install --with-deps chromium
-      - name: Tests (Teil ${{ matrix.shard }} von 4)
-        run: npx playwright test --shard=${{ matrix.shard }}/4 --trace off
+      - name: Tests (Teil ${{ matrix.shard }} von 6)
+        run: npx playwright test --shard=${{ matrix.shard }}/6 --trace off
       - name: Bericht hochladen
         if: failure()
         uses: actions/upload-artifact@v4

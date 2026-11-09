@@ -90,7 +90,7 @@ npm run previews   # Vorschaubilder der Level für die Levelauswahl neu erzeugen
 npm run store-shots # erzeugt Store-Bilder (Screenshots, Cover, Feature-Grafik) in docs/itch/ und docs/play/
 ```
 
-Für die Tests einmalig `npx playwright install chromium` ausführen oder einen vorhandenen Chromium mit `PW_CHROMIUM=/pfad/zu/chrome npm test` angeben. Auf GitHub laufen die Tests bei jedem Pull Request und jedem Push auf `main` von selbst, auf vier Jobs verteilt (`.github/workflows/test.yml`); bei Fehlern hängt der Bericht am Lauf.
+Für die Tests einmalig `npx playwright install chromium` ausführen oder einen vorhandenen Chromium mit `PW_CHROMIUM=/pfad/zu/chrome npm test` angeben. Auf GitHub laufen die Tests bei jedem Pull Request und jedem Push auf `main` von selbst, auf sechs Jobs verteilt (`.github/workflows/test.yml`); bei Fehlern hängt der Bericht am Lauf.
 
 Welches Modul wofür zuständig ist und wie die Teile zusammenhängen: [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
 

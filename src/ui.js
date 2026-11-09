@@ -541,6 +541,8 @@ function toast(key, params) {
   toastEl.hidden = false;
   G.toastT = 170;
 }
+// a panel ignores taps for its first 450 ms (against a double tap going through to what it
+// shows); G.tapGuard sets another time (debug.js: 0 for the browser tests)
 G.panelT = 0;
 function openPanel(title) {
   G.panelT = performance.now();
@@ -560,7 +562,7 @@ function closePanel() {
   panelEl.hidden = panelBg.hidden = true;
 }
 $('pClose').addEventListener('click', () => {
-  if (performance.now() - G.panelT < 450) return;
+  if (performance.now() - G.panelT < (G.tapGuard ?? 450)) return;
   closePanel();
 });
 panelEl.addEventListener('pointerdown', e => e.stopPropagation());
@@ -568,7 +570,7 @@ panelEl.addEventListener('pointerdown', e => e.stopPropagation());
 panelBg.addEventListener('pointerdown', e => {
   e.stopPropagation();
   e.preventDefault();
-  if (performance.now() - G.panelT < 450) return;
+  if (performance.now() - G.panelT < (G.tapGuard ?? 450)) return;
   closePanel();
 });
 // what is missing for a cost, as a short line ("Fehlt: 2× Holz"), or '' when it is all there
@@ -615,7 +617,7 @@ function opt(parent, { icon, title, sub, cost, short, disabled, onClick, state, 
       (state === 'busy' && pct != null ? `<span class="pbar"><i style="width:${pct}%"></i></span>` : ''),
   );
   b.addEventListener('click', e => {
-    if (performance.now() - G.panelT < 450) return;
+    if (performance.now() - G.panelT < (G.tapGuard ?? 450)) return;
     if (state === 'poor' || state === 'locked') {
       sfx('thud');
       b.classList.remove('nope');
@@ -661,7 +663,7 @@ function chips(p) {
     b.textContent = name;
     b.setAttribute('role', 'tab');
     b.addEventListener('click', () => {
-      if (performance.now() - G.panelT < 450) return;
+      if (performance.now() - G.panelT < (G.tapGuard ?? 450)) return;
       show(tabOf[key] === name ? null : name); // (the click sound comes for every button, main.js)
     });
     row.appendChild(b);

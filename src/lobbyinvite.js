@@ -326,7 +326,7 @@ function shareRow() {
   return wrap;
 }
 // ignore the tap that opened the panel landing on the button beneath it (like opt() does)
-const fresh = () => performance.now() - G.panelT >= 450;
+const fresh = () => performance.now() - G.panelT >= (G.tapGuard ?? 450);
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
 
 // the two "+" slots beside the hero show the other players (with up to eight in a room, the second

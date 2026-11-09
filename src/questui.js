@@ -126,7 +126,7 @@ function questBoard(parent, reopen, onClaim) {
       btn.className = 'go';
       btn.textContent = tr('Abholen +{n} XP', { n: Q.xp });
       btn.onclick = () => {
-        if (performance.now() - G.panelT < 450) return;
+        if (performance.now() - G.panelT < (G.tapGuard ?? 450)) return;
         if (claimQuest(q)) {
           sfx('done');
           onClaim?.();

@@ -39,7 +39,7 @@ const ADD_TOAST = {
 let open = false,
   back = null, // the panel to return to
   armed = ''; // a friend whose ✕ was tapped once (tap again to remove)
-const fresh = () => performance.now() - G.panelT >= 450;
+const fresh = () => performance.now() - G.panelT >= (G.tapGuard ?? 450);
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
 
 function qrSvg(url) {

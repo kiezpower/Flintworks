@@ -35,10 +35,12 @@ function hostTick() {
     return;
   }
   const guests = online().filter(p => p.pid !== NET.pid);
-  if (!end) end = now + (guests.length ? WAIT : SOLO);
+  // (G.cdScale: a browser test may shorten the waits; unset, as in the game, it is 1)
+  const k = G.cdScale > 0 ? G.cdScale : 1;
+  if (!end) end = now + (guests.length ? WAIT : SOLO) * k;
   // somebody came: the usual wait at most
-  if (guests.length) end = Math.min(end, now + WAIT);
-  if (guests.length && guests.every(p => p.ready)) end = Math.min(end, now + READY);
+  if (guests.length) end = Math.min(end, now + WAIT * k);
+  if (guests.length && guests.every(p => p.ready)) end = Math.min(end, now + READY * k);
   NET.cdEnd = end;
   if (now >= end) {
     end = NET.cdEnd = 0;
