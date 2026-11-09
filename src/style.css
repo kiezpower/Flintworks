@@ -212,6 +212,21 @@ button:focus-visible {
 .net {
   color: #c9bba0;
 }
+/* the time of day: the sun or the moon over the horizon, and the season (ui.js drawClock) */
+.clock {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.clock canvas {
+  width: 33px;
+  height: 18px;
+  image-rendering: pixelated;
+}
+.clock span {
+  font-size: 12px;
+  line-height: 1;
+}
 /* the depth below the surface; gold where deeper gold is richer (digger.js goldStep) */
 .depth {
   color: #d8cbb0;

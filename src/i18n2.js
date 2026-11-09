@@ -459,5 +459,7 @@ const EN2 = {
   'Ein Höhlenfisch!': 'A cave fish!',
   'Ein Goldfisch!': 'A goldfish!',
   Tiefe: 'Depth',
+  'Bald wird es dunkel – nachts kommen Monster an die Oberfläche.': 'Night is coming soon – monsters come to the surface at night.',
+  Tag: 'Day',
 };
 export { EN2 };

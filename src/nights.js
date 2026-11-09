@@ -18,6 +18,11 @@ function roamTick() {
   if (G.netClient || G.state !== 'play' || !freePlay()) return;
   const s = G.nights || (G.nights = { n: 0, dark: false }),
     sun = sunAlt();
+  // a minute before dark (from the second night on, when monsters come): a warning
+  if (!s.dark && !s.warned && s.n >= 1 && G.dayT > 0.4 && G.dayT < 0.5) {
+    s.warned = true;
+    announce('Bald wird es dunkel – nachts kommen Monster an die Oberfläche.');
+  }
   if (!s.dark && sun < -0.05) {
     s.dark = true;
     s.n++;
@@ -29,6 +34,7 @@ function roamTick() {
     if (made) announce('Die Nacht bricht herein – Monster streifen umher.');
   } else if (s.dark && sun > 0.05) {
     s.dark = false;
+    s.warned = false;
     // dawn: the roamers nobody is near dig themselves in
     for (let k = animals.length - 1; k >= 0; k--) {
       const a = animals[k];
