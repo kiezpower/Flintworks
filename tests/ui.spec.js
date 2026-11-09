@@ -93,8 +93,9 @@ test('the game menu shows the same grouped settings; classic controls climb, mod
   const errors = await lobby(page);
   await play(page);
   await page.click('#menuBtn');
-  await expect(page.locator('#panel .psec')).toHaveText([/Spiel · v/, 'Aufgaben', 'Ton', 'Steuerung', 'Anzeige', 'Grafik']);
-  await expect(page.locator('#pBody .opt', { hasText: 'Karte' })).toHaveCount(0);
+  await expect(page.locator('#panel .psec')).toHaveText([/Spiel · v/, 'Aufgaben', 'Ton', 'Steuerung', 'Tasten', 'Anzeige', 'Grafik']);
+  // (no setting for the map any more; the key that opens it is in the keys section)
+  await expect(page.locator('#pBody .opt', { hasText: /Karte(?! öffnen)/ })).toHaveCount(0);
   expect(await page.evaluate(() => [window.__ww.G.autoDig, window.__ww.G.climbOn, window.__ww.G.jumpBtn])).toEqual([
     true,
     false,

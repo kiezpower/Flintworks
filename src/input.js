@@ -9,6 +9,7 @@ import { navBack, navMove, navOk, pad, rumble } from './gamepad.js';
 import { p1HasPad, p2Pad } from './local.js';
 import { send } from './commands.js';
 import { hasGear } from './tools.js';
+import { mapKey } from './keys.js';
 import { vehicleOf } from './vehicles/core.js';
 
 // ---- Input ----
@@ -55,36 +56,38 @@ addEventListener('keydown', e => {
     return;
   }
   if (!panelEl.hidden) return;
-  if (e.code in KEYMAP) {
-    keys[KEYMAP[e.code]] = 1;
+  // (own keys from the settings stand in for the standard ones, keys.js)
+  const code = mapKey(e.code);
+  if (code in KEYMAP) {
+    keys[KEYMAP[code]] = 1;
     e.preventDefault();
   }
   if (e.repeat) return;
-  if (e.code === 'Space') {
+  if (code === 'Space') {
     edge.jump = true;
     e.preventDefault();
   }
-  if (e.code === 'ArrowUp' || e.code === 'KeyW') edge.jumpUp = true;
-  if (e.code === 'KeyC' || e.code === 'KeyE' || e.code === 'KeyK') edge.throw = true;
-  if (e.code === 'KeyF') edge.act = true;
-  if (e.code === 'KeyG') hookKeyDown();
-  if (e.code === 'KeyB') openBuild();
-  if (e.code === 'KeyM') toggleMap();
-  if (e.code === 'KeyI') openBag();
+  if (code === 'ArrowUp' || code === 'KeyW') edge.jumpUp = true;
+  if (code === 'KeyC' || code === 'KeyE' || code === 'KeyK') edge.throw = true;
+  if (code === 'KeyF') edge.act = true;
+  if (code === 'KeyG') hookKeyDown();
+  if (code === 'KeyB') openBuild();
+  if (code === 'KeyM') toggleMap();
+  if (code === 'KeyI') openBag();
   // the score in a shared round (scoreboard.js; through G to keep the modules apart)
-  if (e.code === 'KeyP') G.openScore?.();
-  if (e.code === 'Tab') {
+  if (code === 'KeyP') G.openScore?.();
+  if (code === 'Tab') {
     e.preventDefault();
     cycleCrew();
   }
   const c = sel_();
   // (sent like a tap on a slot, so it also works as a guest in multiplayer)
   // the hotbar: the weapons first, then the things in the bag (Q goes round all of them)
-  if (c && (e.code === 'KeyQ' || /^Digit[1-9]$/.test(e.code)))
-    pickSlot(c, e.code === 'KeyQ' ? 'next' : +e.code.slice(5) - 1);
+  if (c && (code === 'KeyQ' || /^Digit[1-9]$/.test(code)))
+    pickSlot(c, code === 'KeyQ' ? 'next' : +code.slice(5) - 1);
   // Enter: a focused button on a card presses itself; otherwise the main button of the screen
   const onCard = document.activeElement?.tagName === 'BUTTON' && document.activeElement.closest('#overlay');
-  if (e.code === 'Enter' && G.state !== 'play' && !onCard)
+  if (code === 'Enter' && G.state !== 'play' && !onCard)
     document.getElementById(G.state === 'menu' ? 'lbPlay' : 'goBtn')?.click();
 });
 // a slot of the hotbar: n counted from 0, or 'next' (Q, the pad's LT) for the one after the current
@@ -97,8 +100,9 @@ function pickSlot(c, n) {
   else if (n >= wps.length && n < all) send('isel', { i: n - wps.length });
 }
 addEventListener('keyup', e => {
-  if (e.code in KEYMAP) keys[KEYMAP[e.code]] = 0;
-  if (e.code === 'KeyG') hookKeyUp(true);
+  const code = mapKey(e.code);
+  if (code in KEYMAP) keys[KEYMAP[code]] = 0;
+  if (code === 'KeyG') hookKeyUp(true);
 });
 addEventListener('blur', () => {
   for (const k in keys) keys[k] = 0;
