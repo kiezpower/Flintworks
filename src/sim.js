@@ -18,7 +18,9 @@ import {
   W,
   WATER,
   acidChunk,
+  beginPaint,
   bg,
+  endPaint,
   markActive,
   mat,
   paint,
@@ -115,7 +117,16 @@ function lavaReact(i, x, y) {
   }
   return false;
 }
+// (painting is gathered during the step and done once per cell at its end, world.js beginPaint)
 function simulate() {
+  beginPaint();
+  try {
+    simStep();
+  } finally {
+    endPaint();
+  }
+}
+function simStep() {
   G.frame++;
   if (G.hissT > 0) G.hissT--;
   const act = swapActive();

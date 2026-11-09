@@ -167,7 +167,36 @@ function texel(i, sx, sy) {
   if (sx === 1 && i % W < W - 1 && mat[i + 1] === AIR) return tint(c, 0.82);
   return c;
 }
+// While the sand simulation runs (sim.js), cells are not painted at once but noted, and every
+// noted cell is painted once at the end of the step (endPaint): where much flows, a cell and its
+// neighbours were otherwise painted again for every swap next to them.
+let deferN = -1,
+  deferList = new Int32Array(1 << 15),
+  deferMark = new Uint8Array(W * H);
+function beginPaint() {
+  deferN = 0;
+}
+function endPaint() {
+  const n = deferN;
+  deferN = -1;
+  for (let k = 0; k < n; k++) {
+    const i = deferList[k];
+    deferMark[i] = 0;
+    paintNow(i);
+  }
+}
 function paintCell(i) {
+  if (deferN >= 0) {
+    if (deferMark[i]) return;
+    if (deferN < deferList.length) {
+      deferMark[i] = 1;
+      deferList[deferN++] = i;
+      return;
+    }
+  }
+  paintNow(i);
+}
+function paintNow(i) {
   const x = (i % W) * 2,
     y = ((i / W) | 0) * 2,
     o = y * PW + x;
@@ -386,6 +415,8 @@ function resizeWorld(w = W0, h = H0) {
   stamp = new Uint32Array(W * H);
   fresh = new Uint8Array(W * H);
   freshN = dryK = 0;
+  deferMark = new Uint8Array(W * H);
+  deferN = -1;
   surf = new Int16Array(W);
   setGround(surf, W, H);
   PW = W * RES;
@@ -483,6 +514,8 @@ const rnd = seeded,
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
 export {
+  beginPaint,
+  endPaint,
   resetSim,
   W0,
   H0,
