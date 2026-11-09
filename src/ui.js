@@ -40,6 +40,9 @@ const moneyTxt = $('moneyTxt'),
   netTxt = $('netTxt'),
   depthTxt = $('depthTxt'),
   itemName = $('itemName'),
+  clockBox = $('clockBox'),
+  clockCv = $('clockCv'),
+  seasonTxt = $('seasonTxt'),
   airWrap = $('airWrap'),
   airBar = $('airBar'),
   invEl = $('inv'),
@@ -57,7 +60,8 @@ const MK = 4;
 let mimg;
 // the thing chosen in the bag last time, for its name (null: not yet known)
 let lastSel = null,
-  itemNameT = 0;
+  itemNameT = 0,
+  clockAt = 0;
 function sizeMini() {
   mini.width = Math.ceil(W / MK);
   mini.height = Math.ceil(H / MK);
@@ -116,6 +120,12 @@ function hud() {
   if (c) {
     airWrap.hidden = c.breath >= 100;
     airBar.style.width = c.breath + '%';
+  }
+  // the clock, twice a second
+  const now = performance.now();
+  if (now - clockAt > 500) {
+    clockAt = now;
+    drawClock();
   }
   // a newly chosen thing in the bag: its name for a moment under the slots (like Terraria)
   const selKey = c && !c.dead ? c.inv[c.isel] || '' : '';
@@ -357,6 +367,44 @@ const iconUrls = {};
 const iconUrl = t => (iconUrls[t] ||= itemIcon(t).toDataURL());
 const thumb = $('miniThumb'),
   tctx = thumb.getContext('2d');
+// the time of day (like Terraria's watch): a half disc of sky over the horizon, the sun crossing it
+// by day and the moon by night; beside it the season in a green world (seasons.js)
+const SEASON_ICON = ['🌸', '☀️', '🍂', '❄️'],
+  SEASON_NAME = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
+function drawClock() {
+  const show = G.state === 'play' && !G.tut;
+  if (clockBox.hidden === show) clockBox.hidden = !show;
+  if (!show) return;
+  const g = clockCv.getContext('2d'),
+    day = G.dayT < 0.5,
+    f = day ? G.dayT / 0.5 : (G.dayT - 0.5) / 0.5,
+    a = Math.PI * (1 - f);
+  g.clearRect(0, 0, 22, 12);
+  g.fillStyle = '#24160c';
+  g.beginPath();
+  g.arc(11, 11.5, 11, Math.PI, 0);
+  g.fill();
+  g.fillStyle = day ? '#8fc3ea' : '#1e2a52';
+  g.beginPath();
+  g.arc(11, 11.5, 10, Math.PI, 0);
+  g.fill();
+  g.fillStyle = '#5a8a3a';
+  g.fillRect(0, 10, 22, 2);
+  const x = Math.round(11 + Math.cos(a) * 7),
+    y = Math.round(10.5 - Math.sin(a) * 7);
+  g.fillStyle = day ? '#ffe066' : '#e8eef4';
+  g.fillRect(x - 1, y - 1, 3, 3);
+  if (!day) {
+    g.fillStyle = '#1e2a52';
+    g.fillRect(x + 1, y - 1, 1, 2);
+  }
+  // (G.season: set with the weather, seasons.js; null where there are none)
+  const s = G.season;
+  const t = s == null ? '' : SEASON_ICON[s];
+  if (seasonTxt.textContent !== t) seasonTxt.textContent = t;
+  const tip = tr(day ? 'Tag' : 'Nacht') + (s == null ? '' : ' · ' + tr(SEASON_NAME[s]));
+  if (clockBox.title !== tip) clockBox.title = tip;
+}
 function drawMini(full) {
   if (G.state !== 'play') return;
   if (full) {
@@ -425,6 +473,15 @@ function drawMini(full) {
     }
   // great hoards known from a treasure map: a red cross (hoards.js)
   markHoards(mctx, MK, G.tick);
+  // the wandering trader while he is about (merchant.js): a purple stall
+  if (G.merchant) {
+    const px = Math.floor(G.merchant.x / MK),
+      py = Math.floor((surf[Math.max(0, Math.min(W - 1, Math.round(G.merchant.x)))] - 6) / MK);
+    mctx.fillStyle = '#24160c';
+    mctx.fillRect(px - 2, py - 2, 5, 5);
+    mctx.fillStyle = (G.tick >> 4) & 1 ? '#c070e0' : '#ffe066';
+    mctx.fillRect(px - 1, py - 1, 3, 3);
+  }
   // where a Wühler gave out and his bag lies (tombs.js)
   markTombs(mctx, MK);
   // markers set with "Hierher!" (net/emotes.js): a blinking cross in the player's colour
