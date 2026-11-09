@@ -36,6 +36,11 @@ import * as analytics from './analytics.js';
 import { STEPS } from './tutsteps.js';
 import { endTutorial } from './tutorial.js';
 
+// Under test automation (Playwright sets navigator.webdriver) the game draws only every third
+// frame: drawing is half of what a frame costs, and dozens of test pages share a few cores. The
+// simulation keeps its pace. ?draw=1 in the address draws every frame again (for screenshots).
+if (navigator.webdriver && !new URLSearchParams(location.search).has('draw')) G.drawEvery = 3;
+
 window.__ww = {
   climb,
   context,

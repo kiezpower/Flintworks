@@ -11,7 +11,7 @@ import { merchantContext } from './merchant.js';
 import { farmContext } from './farm.js';
 import { igniteNear } from './fire.js';
 import { canShoot, hasBow, shoot, swing, swordContext } from './combat.js';
-import { hasTool } from './tools.js';
+import { hasTool, pickTier } from './tools.js';
 import { register } from './commands.js';
 import { onDig } from './hazards.js';
 import { buzz } from './sound.js';
@@ -21,6 +21,8 @@ import { track } from './profile.js';
 import { addStat } from './stats.js';
 import { FX_PAL, dust, glint, splash } from './effects.js';
 import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './entities.js';
+import { ev } from './analytics.js';
+import { darkness } from './weather.js';
 import { inputOf } from './players.js';
 import { vehicleContext } from './vehicles/index.js';
 import { climbContext, rampHere, setDigTest, updHook } from './climb.js';
@@ -83,6 +85,14 @@ function killDigger(c) {
   c.tumble = false;
   c.climb = c.hangle = false;
   const tomb = addTomb(c); // (a gravestone marks where the bag fell out, tombs.js)
+  // the own Wühler gave out: how deep, how far into the round, by night or day (analytics.js)
+  if (c === sel_() && !G.tut)
+    ev('digger_down', {
+      mode: String(G.mode),
+      depth: Math.max(0, Math.round(c.y - surf[Math.max(0, Math.min(W - 1, Math.floor(c.x)))])),
+      sec: Math.round((G.playTicks || 0) / 60),
+      night: darkness() > 0.3,
+    });
   for (const t of c.inv) {
     const it = spawnItem(t, c.x + 2, c.y + 2, (rnd() - 0.5) * 1.5, -1.2, 30);
     if (tomb && it) it.tomb = tomb;
@@ -657,7 +667,9 @@ function updBody(c, I) {
     // the Wühler pushes on into the loosened earth; on average as fast as the material allows
     const ph0 = c.digPh;
     // (G.digBoost: sharper picks from the Heimatbergwerk, free play alone only)
-    c.digPh += ((G.digBoost || 1) * (hasGift(c, 'dig') ? 1.4 : 1) * (c.digT > 0 ? 1.5 : 1)) / (11 * c.digH);
+    // (the diamond pick: hard ground – rock, ore, coal, gems – half as fast again, tools.js)
+    const tier = pickTier() === 2 && c.digH > 1.1 ? 1.5 : 1;
+    c.digPh += ((G.digBoost || 1) * tier * (hasGift(c, 'dig') ? 1.4 : 1) * (c.digT > 0 ? 1.5 : 1)) / (11 * c.digH);
     if (c.digPh >= 1) c.digPh -= 1;
     if (ph0 < STRIKE && c.digPh >= STRIKE) digHit(c, slope);
     // gold and gems just ahead glitter in the face before the pick gets there
@@ -668,7 +680,7 @@ function updBody(c, I) {
       if (gm === GOLD || gm === GEM) parts.push({ x: gx, y: gy, vx: 0, vy: 0, l: 10, c: '#fffbe0', g: 0 });
     }
     const surge = c.digPh >= STRIKE && c.digPh < STRIKE + 0.25 ? 1.9 : 0.7;
-    const sp = ((hasTool('pick') ? 0.8 : 0.55) / c.digH) * surge * (G.digBoost || 1);
+    const sp = (((hasTool('pick') ? 0.8 : 0.55) * tier) / c.digH) * surge * (G.digBoost || 1);
     moveBody(c, (c.face * sp) / len, (slope * sp) / len, 3);
     c.anim += 0.3;
     return;

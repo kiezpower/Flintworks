@@ -126,6 +126,22 @@ const RES = 2;
 let PW = W * RES;
 let WSH = worldShade(W, H);
 const solidAt = j => j >= 0 && j < W * H && SOLID[mat[j]] === 1;
+// Patterns on the finds (settings.js „Fundmuster“, for colour blindness): gold, ore, coal and gems
+// are told apart by a mark of their own, not only by colour – gold dots, ore stripes, coal
+// columns, gem diagonals – drawn on the world texels (x, y at double resolution)
+let patterns = false;
+function setPatterns(on) {
+  if (patterns === !!on) return false;
+  patterns = !!on;
+  return true;
+}
+function patternTint(c, m, x, y) {
+  if (m === GOLD) return (x & 3) === 1 && (y & 3) === 1 ? tint(c, 1.7) : c;
+  if (m === ORE) return (y & 3) === 0 ? tint(c, 0.55) : c;
+  if (m === COAL) return (x & 3) === 0 ? tint(c, 2.2) : c;
+  if (m === GEM) return ((x + y) & 3) === 0 ? tint(c, 1.6) : ((x - y) & 3) === 0 ? tint(c, 0.7) : c;
+  return c;
+}
 function texel(i, sx, sy) {
   const m = mat[i];
   const x = (i % W) * 2 + sx,
@@ -152,6 +168,7 @@ function texel(i, sx, sy) {
   if (tex) c = tint(c, WSH[i]);
   if ((m === EARTH && !(shade[i] & 4)) || m === LOAM || m === ROCK) c = layerTint(c, ((i / W) | 0) - surf[i % W], i % W);
   c = underTexel(c, m, i, x, y, sx, sy, ((i / W) | 0) - surf[i % W], mat, SOLID, m === EARTH && shade[i] & 4);
+  if (patterns && m >= GOLD) c = patternTint(c, m, x, y);
   if (LIQ[m]) {
     // a bright line on open liquid surfaces
     if (sy === 0 && i >= W && mat[i - W] === AIR) c = tint(c, 1.35);
@@ -514,6 +531,8 @@ const rnd = seeded,
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
 export {
+  setPatterns,
+  texel,
   beginPaint,
   endPaint,
   resetSim,

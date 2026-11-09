@@ -1,11 +1,13 @@
 // Oil and fire (like Noita and Clonk): oil is a liquid that floats on water and burns. Lava, an
 // explosion, a fire arrow or a burning Wühler set it alight; a burning cell spreads to the oil next
 // to it, throws flames and smoke, sets alight what stands in it (Wühler, trees) and hurts monsters,
-// then burns away. Only the host (or a single game) runs the fire; the others get the burning cells
+// then burns away. Wood next to the fire (bridges, stairs, beams) chars away, and water poured
+// onto burning oil puts it out with a hiss. Only the host (or a single game) runs the fire; the others get the burning cells
 // with the game values (net/sync.js) and show the flames.
 import { G, animals, crew, parts, trees } from './state.js';
 import { track } from './profile.js';
-import { AIR, OIL, W, H, activate, mat, paint, rnd } from './world.js';
+import { AIR, OIL, PLANK, WATER, W, H, activate, mat, paint, rnd } from './world.js';
+import { sfx } from './sound.js';
 
 const burning = new Map(); // cell → ticks left to burn
 const MAX = 1500; // (a whole lake can burn, but not more cells than this at once)
@@ -29,6 +31,15 @@ function igniteNear(x, y, r = 2) {
     }
 }
 const isBurning = i => burning.has(i);
+// a plank cell burns away with a flame (fire next to it, or lava: sim.js)
+function burnPlank(j) {
+  if (G.netClient || mat[j] !== PLANK) return;
+  mat[j] = AIR;
+  paint(j);
+  activate(j % W, (j / W) | 0);
+  if (parts.length < 1400) flame(j % W, (j / W) | 0);
+}
+let hissT = 0;
 // a burning cell somewhere in a box (for what stands in the fire)
 function fireIn(x, y, w, h) {
   if (!burning.size) return false;
@@ -43,6 +54,7 @@ function flame(x, y) {
   parts.push({ x: x + rnd(), y, vx: (rnd() - 0.5) * 0.3 + G.wind * 0.2, vy: -0.4 - rnd() * 0.6, l, l0: l, pal: FLAME, g: -0.01, s: 1.5, grow: 1 });
 }
 const FLAME = ['#fff6c0', '#ffcf4a', '#ff7a2a', '#b8361e'];
+const STEAMC = ['#ffffff', '#eef3f6', '#d6dee4', '#b9c3cb'];
 const SMOKE = ['#7a5a48', '#5e5450', '#4a4846', '#3c3e46'];
 
 // every tick (host or single game): spread, flames, what stands in it, and the oil burns away
@@ -52,6 +64,7 @@ function updFire() {
     track('fire', lit);
     lit = 0;
   }
+  if (hissT > 0) hissT--;
   if (!burning.size) return;
   const room = parts.length < 1400;
   for (const [i, t] of burning) {
@@ -61,8 +74,29 @@ function updFire() {
     }
     const x = i % W,
       y = (i / W) | 0;
+    // water on top puts the fire out
+    if (i >= W && mat[i - W] === WATER) {
+      burning.delete(i);
+      if (room && rnd() < 0.5) {
+        const l = 40 + rnd() * 30;
+        parts.push({ x, y: y - 2, vx: G.wind * 0.2, vy: -0.4, l, l0: l, pal: STEAMC, g: -0.003, s: 1.5, grow: 2.5 });
+      }
+      if (hissT <= 0) {
+        sfx('hiss', x, y);
+        hissT = 20;
+      }
+      continue;
+    }
     if (rnd() < 0.2)
       for (const j of [i - 1, i + 1, i - W, i + W, i - W - 1, i - W + 1]) if (mat[j] === OIL && rnd() < 0.6) igniteCell(j);
+    // wood in the flames chars away within a second or two: beside the fire, or up to three
+    // cells above it (flames rise; a bridge over a burning pool burns)
+    if (rnd() < 0.1) {
+      const up = 1 + ((rnd() * 3) | 0),
+        dx = ((rnd() * 3) | 0) - 1,
+        j = rnd() < 0.25 ? i + (rnd() < 0.5 ? -1 : 1) : i - up * W + dx;
+      if (j >= 0 && mat[j] === PLANK) burnPlank(j);
+    }
     if (room && mat[i - W] !== OIL) {
       if (rnd() < 0.3) flame(x, y);
       if (rnd() < 0.03) {
@@ -120,4 +154,4 @@ function fireSpots(cx, cy, out) {
 }
 const clearFire = () => burning.clear();
 
-export { clearFire, fireCells, fireIn, fireSpots, igniteCell, igniteNear, isBurning, setFireCells, updFire };
+export { burnPlank, clearFire, fireCells, fireIn, fireSpots, igniteCell, igniteNear, isBurning, setFireCells, updFire };

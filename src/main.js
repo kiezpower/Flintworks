@@ -20,7 +20,7 @@ import { endTutorial, resumeTutorial, setTutHooks, startTutorial, tutHud, updTut
 import { applyStatic, tr } from './i18n.js';
 import { chips, openPanel, opt, sec, setTab } from './ui.js';
 import { onTrackerOpen, questBoard } from './questui.js';
-import { DIFF, applyControls, applyHelpers, diffOf, settingsSections } from './settings.js';
+import { DIFF, applyControls, applyHelpers, applyPatterns, diffOf, settingsSections } from './settings.js';
 import { goHome } from './climb.js';
 import '@fontsource/pixelify-sans/500.css';
 import '@fontsource/pixelify-sans/700.css';
@@ -245,6 +245,9 @@ function discard() {
 const lobbyHooks = { play, discard, hasRun, keysHtml };
 setTutHooks({ play, menu, discard, save: saveGame });
 function menu() {
+  // leaving a running real round for the lobby (analytics: where rounds are given up)
+  if (G.state === 'play' && G.inRun && !G.tut)
+    ev('round_quit', { mode: String(G.mode), sec: Math.round((G.playTicks || 0) / 60), earned: G.earned || 0 });
   // (a new version waited for the round to end: the game is saved, load it now)
   if (G.updateReady) return G.updateReady();
   showLobby(lobbyHooks);
@@ -273,6 +276,7 @@ function startGame(withTutorial = false) {
   applyControls();
   G.lightFx = P.lightfx !== false;
   G.vibe = P.vibe !== false;
+  applyPatterns();
   G.speed = DIFF[diffOf(P.diff)].speed;
   const res = P.gfx === 'low' || new URLSearchParams(location.search).get('res') === '1' ? 1 : 2;
   if (res !== G.res) {
@@ -338,6 +342,7 @@ function endScreen(won, why, winner = null) {
   if (won) recordCampaign(stars, s);
   if (won && stars === 3 && !G.net) track('stars3');
   const tro = finishGame(won, G.earned || 0, stars);
+  ev('round_end', { mode: String(G.mode), won: !!won, sec: s, earned: G.earned || 0, games: P.games || 0, net: !!G.net });
   // crystals for the Heimatbergwerk: in every mode (Tagesschacht: the medal counts, not the win)
   const kri = addCrystals(roundCrystals(G.earned, D ? false : won, D ? D.stars : 0));
   const time = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -700,7 +705,11 @@ function loop(t) {
   }
   if (n === 4) G.acc = 0;
   const t1 = performance.now();
-  if (lobbyOpen()) lobbyFrame();
+  // (G.drawEvery: the browser tests draw only every few frames, debug.js – the game itself
+  // still runs at full pace)
+  if (G.drawEvery > 1 && G.tick % G.drawEvery) {
+    // skip this picture
+  } else if (lobbyOpen()) lobbyFrame();
   else render();
   perfMeter(t - perfLast, (t1 - t0) / Math.max(1, n), performance.now() - t1);
   perfLast = t;

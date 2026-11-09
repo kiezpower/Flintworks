@@ -369,3 +369,37 @@ test('the tasks stay in view: a tracker under the money, the board in the menu a
   await expect(page.locator('#qTrack .qt-row').nth(2)).toHaveAttribute('title', /300 Taler/);
   expect(errors).toEqual([]);
 });
+
+test('find patterns mark gold, ore, coal and gems apart from their colour', async ({ page }) => {
+  const errors = await lobby(page);
+  await play(page);
+  // all texels of a 2 × 2 block of cells of each find (the patterns repeat every 4 texels)
+  const looks = () =>
+    page.evaluate(async () => {
+      const w = await import('/src/world.js');
+      const out = {};
+      for (const [name, m] of [
+        ['gold', w.GOLD],
+        ['ore', w.ORE],
+        ['coal', w.COAL],
+      ]) {
+        let i = 0;
+        while (i < w.W * w.H && !(w.mat[i] === m && w.mat[i + 1] === m && w.mat[i + w.W] === m && w.mat[i + w.W + 1] === m)) i++;
+        const t = [];
+        for (const j of [i, i + 1, i + w.W, i + w.W + 1]) for (const [sx, sy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) t.push(w.texel(j, sx, sy));
+        out[name] = t.join();
+      }
+      return out;
+    });
+  const plain = await looks();
+  await page.click('#menuBtn');
+  const tile = page.locator('#pBody .opt', { hasText: 'Fundmuster' });
+  await expect(tile).toContainText('Fundmuster: aus');
+  await page.waitForTimeout(500);
+  await tile.click();
+  await expect(page.locator('#pBody .opt', { hasText: 'Fundmuster' })).toContainText('Fundmuster: an');
+  const marked = await looks();
+  for (const k of ['gold', 'ore', 'coal']) expect(marked[k], k).not.toBe(plain[k]);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')).cbpat)).toBe(true);
+  expect(errors).toEqual([]);
+});

@@ -19,6 +19,16 @@ const TOOLS = {
     need: { metal: 2 },
     res: ['metal'],
   },
+  // the third pick (digger.js): only after the steel pick; hard ground goes half as fast again
+  dpick: {
+    name: 'Diamanthacke',
+    icon: 'dig',
+    sub: 'Gräbt Fels, Erz, Kohle und Edelsteine anderthalbmal so schnell',
+    money: 150,
+    need: { metal: 3, coal: 2 },
+    res: ['harden'],
+    after: 'pick',
+  },
   lamp: {
     name: 'Grubenlampe',
     icon: 'lamp',
@@ -87,6 +97,8 @@ const ARROWS = {
   farrow: { name: '3 Brandpfeile', n: 3, need: { wood: 1, coal: 1 } },
 };
 const hasTool = id => !!(G.tools && G.tools[id]);
+// the pick a team digs with: 0 bare hands' pick, 1 steel pick, 2 diamond pick
+const pickTier = () => (hasTool('dpick') ? 2 : hasTool('pick') ? 1 : 0);
 // a tool of the team, or gear this Wühler brought from the lobby (Heimatbergwerk, camp.js)
 const hasGear = (c, id) => hasTool(id) || brought(c, id);
 // arrows in the quiver (kept with the tools: per team, saved and sent along)
@@ -105,7 +117,9 @@ function teamHas(team, id) {
 function toolSection(p, c, { opt, sec, toast, reopen, lacking }) {
   for (const gear of [false, true]) {
     // (gear brought from the lobby is not offered again)
-    const open = Object.keys(TOOLS).filter(id => !hasGear(c, id) && !!TOOLS[id].gear === gear);
+    const open = Object.keys(TOOLS).filter(
+      id => !hasGear(c, id) && !!TOOLS[id].gear === gear && (!TOOLS[id].after || hasTool(TOOLS[id].after)),
+    );
     const l = sec(p, gear ? 'Ausrüstung' : 'Werkzeug');
     for (const id of open) {
       const T = TOOLS[id],
@@ -155,7 +169,8 @@ function toolSection(p, c, { opt, sec, toast, reopen, lacking }) {
 // buying a tool (run for the player who sent it)
 register('tool', (c, { id }) => {
   const T = TOOLS[id];
-  if (!T || hasTool(id) || !knowsAll(T.res) || G.money < T.money || !hasRes(c, T.need)) return;
+  if (!T || hasTool(id) || (T.after && !hasTool(T.after)) || !knowsAll(T.res) || G.money < T.money || !hasRes(c, T.need))
+    return;
   G.money -= T.money;
   payRes(c, T.need);
   G.tools = { ...(G.tools || {}), [id]: true };
@@ -181,4 +196,4 @@ register('arrows', (c, { id }) => {
   sfx('hammer', c.x, c.y);
 });
 
-export { TOOLS, addArrows, arrowsOf, hasGear, hasTool, teamHas, toolSection };
+export { TOOLS, addArrows, pickTier, arrowsOf, hasGear, hasTool, teamHas, toolSection };

@@ -11,6 +11,7 @@ import { G, crew } from './state.js';
 import { $, opt, sec } from './ui.js';
 import { ACTIONS, keyName, keyOf, listenFor, resetKeys } from './keys.js';
 import { applyVolumes, volOf } from './sound.js';
+import { paintAll, setPatterns } from './world.js';
 
 // the three volumes (sound.js buses): key in P.vol, name, explanation
 const VOLS = [
@@ -140,6 +141,16 @@ function settingsSections(p, reopen, { lobby = false, game: gameSec = null } = {
     P.bigtext = !P.bigtext;
     applyText();
   });
+  // patterns on gold, ore, coal and gems (world.js), for players who tell colours apart badly
+  item(
+    view,
+    P.cbpat ? 'Fundmuster: an' : 'Fundmuster: aus',
+    'Gold, Erz, Kohle und Edelsteine tragen eigene Muster, nicht nur Farben (bei Farbenblindheit)',
+    () => {
+      P.cbpat = !P.cbpat;
+      applyPatterns();
+    },
+  );
 
   const gfx = sec(p, 'Grafik');
   // (a slow device may have switched to fast graphics on its own during the round, main.js)
@@ -158,6 +169,10 @@ function settingsSections(p, reopen, { lobby = false, game: gameSec = null } = {
 }
 
 // the text size from the profile (also right at the start)
+// the find patterns follow the profile; the world is repainted when they change
+function applyPatterns() {
+  if (setPatterns(!!P.cbpat)) paintAll();
+}
 function applyText() {
   document.documentElement.classList.toggle('bigtext', !!P.bigtext);
 }
@@ -186,4 +201,4 @@ function applyHelpers() {
   G.crewKey = '';
 }
 
-export { DIFF, applyControls, applyHelpers, applyText, diffOf, settingsSections };
+export { DIFF, applyControls, applyHelpers, applyPatterns, applyText, diffOf, settingsSections };

@@ -34,6 +34,10 @@ const EVENTS = {
   onb_resume: { f: { step: 's' } },
   core_round_start: { f: { mode: 's', after_onb: 'b' } },
   round_cue: { f: { gold: 'b' } },
+  // after the tutorial: how rounds end and where the own Wühler gives out (docs/ANALYTICS.md)
+  round_end: { f: { mode: 's', won: 'b', sec: 'n', earned: 'n', games: 'n', net: 'b' } },
+  round_quit: { f: { mode: 's', sec: 'n', earned: 'n' } },
+  digger_down: { f: { mode: 's', depth: 'n', sec: 'n', night: 'b' } },
   session_end: { f: { sec: 'n', state: 's' }, once: true },
 };
 const TYPES = { n: 'number', s: 'string', b: 'boolean' };

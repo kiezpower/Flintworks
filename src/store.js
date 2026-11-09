@@ -11,6 +11,7 @@ import { isPlayer } from './players.js';
 import { addStat } from './stats.js';
 import { G, builds } from './state.js';
 import { flyCoins } from './reward.js';
+import { rushK } from './rush.js';
 
 const SELL = ['nug', 'gem', 'fish', 'cavefish', 'goldfish'];
 const KEEP = ['flint', 'tnt', 'loam', 'bread', 'potHeal', 'potGlow', 'potDig', 'torch']; // tools stay in the hand (bread: for the way, farm.js)
@@ -44,7 +45,8 @@ function unload(list, x, y, all = false) {
   }
   if (sell.length) {
     const lv = (G.base && G.base.lvl) || 1;
-    money = Math.round(sell.reduce((s, t) => s + ITEM[t].val, 0) * [1, 1, 1.2, 1.4][lv]);
+    // (a gold rush pays double for nuggets, rush.js)
+    money = Math.round(sell.reduce((s, t) => s + ITEM[t].val * rushK(t), 0) * [1, 1, 1.2, 1.4][lv]);
     G.money += money;
     flyCoins(x, y, money);
     sold(sell, money);

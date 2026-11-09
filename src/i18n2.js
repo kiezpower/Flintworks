@@ -149,8 +149,8 @@ const EN2 = {
     'No friends yet. Share your code or tap “+” next to a player in a room.',
   'Tagesschacht heute': "Today's Daily Shaft",
   'noch nicht gespielt': 'not played yet',
-  'Ohne Konto: Dein Code und deine Liste gehören zu diesem Gerät. Was andere sehen: dein Name, ob du online bist und dein Tagesschacht – nur Freunde, die dich auch hinzugefügt haben.':
-    'No account: your code and your list belong to this device. Others see your name, whether you are online and your Daily Shaft – only friends who added you too.',
+  'Ohne Konto: Dein Code und deine Liste gehören zu diesem Gerät. Was andere sehen: dein Name, ob du online bist und dein Tagesschacht – nur Freunde, die dich auch hinzugefügt haben. Für deinen Platz unter allen zählt nur dein Ergebnis, ohne Namen.':
+    'No account: your code and your list belong to this device. Others see your name, whether you are online and your Daily Shaft – only friends who added you too. For your place among everybody only your score counts, without a name.',
   'Anfrage an {name} geschickt': 'Request sent to {name}',
   '{name} ist jetzt dein Freund': '{name} is your friend now',
   'Ein Freundescode hat 8 Zeichen': 'A friend code has 8 characters',
@@ -519,6 +519,23 @@ const EN2 = {
   'Kein Heiltrank in der Tasche': 'No healing potion in the bag',
   'Schwach? Das Herz über den Knöpfen trinkt einen Heiltrank': 'Weak? The heart above the buttons drinks a healing potion',
   'Schwach? H trinkt sofort einen Heiltrank': 'Weak? H drinks a healing potion at once',
+  // the diamond pick (tools.js, research.js)
+  Härten: 'Hardening',
+  'Diamanthacke für Fels, Erz und Edelsteine': 'Diamond pick for rock, ore and gems',
+  Diamanthacke: 'Diamond pick',
+  'Gräbt Fels, Erz, Kohle und Edelsteine anderthalbmal so schnell': 'Digs rock, ore, coal and gems one and a half times as fast',
+  // find patterns (settings.js, world.js)
+  'Fundmuster: an': 'Find patterns: on',
+  'Fundmuster: aus': 'Find patterns: off',
+  'Gold, Erz, Kohle und Edelsteine tragen eigene Muster, nicht nur Farben (bei Farbenblindheit)':
+    'Gold, ore, coal and gems carry their own patterns, not only colours (for colour blindness)',
+  // gold rush (rush.js)
+  'Goldfieber!': 'Gold fever!',
+  'Eine Minute lang zahlt die Burg doppelt für Gold': 'For one minute the castle pays double for gold',
+  'Das Goldfieber ist vorbei': 'The gold fever is over',
+  // anonymous place in the Tagesschacht (lobbyfriends.js)
+  'Platz {pos} von {of}': 'Place {pos} of {of}',
+  'unter allen, die heute gespielt haben – ohne Namen': 'among everybody who played today – without names',
   // scoreboard.js
   Team: 'Team',
   // separate volumes (settings.js)

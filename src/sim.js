@@ -1,5 +1,5 @@
 import { sfx } from './sound.js';
-import { igniteCell } from './fire.js';
+import { burnPlank, igniteCell } from './fire.js';
 import { G, parts } from './state.js';
 import {
   ACID,
@@ -13,6 +13,7 @@ import {
   LIQ,
   LOAM,
   OIL,
+  PLANK,
   ROCK,
   SAND,
   W,
@@ -86,6 +87,11 @@ function lavaReact(i, x, y) {
     if (j < 0 || j >= W * H) continue;
     // (oil next to lava catches fire, fire.js)
     if (mat[j] === OIL) igniteCell(j);
+    // wood next to lava (a bridge, stairs, a support beam) chars away
+    if (mat[j] === PLANK && rnd() < 0.04) {
+      burnPlank(j);
+      continue;
+    }
     if (mat[j] === WATER) {
       mat[j] = AIR;
       paint(j);
@@ -183,7 +189,8 @@ function simStep() {
                 j = r === 0 ? i - W : r === 1 ? i + W : r === 2 ? (x > 0 ? i - 1 : -1) : x < W - 1 ? i + 1 : -1;
               if (j >= 0 && j < W * H) {
                 const mj = mat[j];
-                if (mj === EARTH || mj === SAND || mj === LOAM) {
+                // (soft ground and wood at once, rock only now and then: acid gnaws slowly through it)
+                if (mj === EARTH || mj === SAND || mj === LOAM || mj === PLANK || (mj === ROCK && rnd() < 0.25)) {
                   mat[j] = AIR;
                   bg[j] = 1;
                   paint(j);
