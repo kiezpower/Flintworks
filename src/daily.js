@@ -10,7 +10,7 @@ import { LIVE, isNative, ownWeb } from './platform.js';
 import { P, saveProfile, track } from './profile.js';
 import { G } from './state.js';
 import { copyText, inRoom } from './net/room.js';
-import { openPanel, opt, sec, toast } from './ui.js';
+import { closePanel, openPanel, opt, sec, toast } from './ui.js';
 import { Share } from '@capacitor/share';
 
 const LEN = 8 * 60 * 60; // play ticks (60 a second; a slower tempo does not cost time)
@@ -112,7 +112,8 @@ GAME_MODES.daily = {
     return cur().twist.money;
   },
   setup() {
-    G.daily = { n: dayNo() };
+    // (a playback plays the day it was recorded on, replay.js)
+    G.daily = { n: G.replayDay ?? dayNo() };
     const T = cur().twist;
     if (T.evNext) G.evNext = T.evNext;
   },
@@ -289,6 +290,16 @@ function openDaily(hooks) {
       title: tr('Ergebnis teilen'),
       sub: tr('Fordere deine Freunde heraus'),
       onClick: () => shareAndTell(n),
+    });
+  // the last run of today, to watch it again (replay.js)
+  if (G.hasReplay?.(n) && !running)
+    opt(sec(p, ''), {
+      title: tr('Letzte Runde ansehen'),
+      sub: tr('Als Wiederholung, genau wie gespielt'),
+      onClick: () => {
+        closePanel();
+        G.watchReplay();
+      },
     });
 }
 let armed = -Infinity;

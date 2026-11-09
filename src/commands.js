@@ -26,9 +26,14 @@ function exec(pid, name, args = {}) {
 G.sendCmd = null;
 // (G.panelPid: a panel the second player at the same device opened acts for him, local.js)
 function send(name, args = {}) {
+  // (a run being played back takes no orders; one being recorded writes them down: replay.js
+  // hooks in through G, so this module needs nothing of it)
+  if (G.replayHook?.playing()) return;
+  G.replayHook?.recCmd(name, args);
   if (G.netClient) G.sendCmd(name, args);
   else exec(G.panelPid ?? G.myId, name, args);
 }
 G.panelPid = null;
 
+G.execCmd = exec;
 export { exec, register, send };

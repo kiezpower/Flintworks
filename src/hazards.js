@@ -6,7 +6,7 @@ import { hurt } from './digger.js';
 import { spawnItem } from './entities.js';
 import { explode } from './objects.js';
 import { sfx } from './sound.js';
-import { G, crew, flashes, items, parts, trees } from './state.js';
+import { G, crew, flashes, items, onNewWorld, parts, trees } from './state.js';
 import { toast } from './ui.js';
 import { beamNear } from './mine.js';
 import { AIR, EARTH, H, LAVA, ROCK, SAND, W, activate, mat, paint, ri, rnd, surf } from './world.js';
@@ -14,6 +14,10 @@ import { AIR, EARTH, H, LAVA, ROCK, SAND, W, activate, mat, paint, ri, rnd, surf
 const DEEP = 45; // pixels below the surface where trouble starts
 let caveT = -9999,
   pending = null;
+onNewWorld.push(() => {
+  caveT = -9999;
+  pending = null;
+});
 
 // gas pockets are invisible until dug into; placed once per world
 function placeGas(n = 9) {

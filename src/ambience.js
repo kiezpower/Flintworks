@@ -3,7 +3,9 @@ import { sel_ } from './entities.js';
 import { onBus, tn } from './sound.js';
 import { G } from './state.js';
 import { darkness } from './weather.js';
-import { W, clamp, rnd, surf } from './world.js';
+import { W, clamp, surf } from './world.js';
+// (sounds take their own random numbers, see sound.js)
+const rnd = Math.random;
 
 let loops = null;
 function noiseLoop(type, freq, q) {

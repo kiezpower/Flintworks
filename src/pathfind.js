@@ -147,12 +147,15 @@ function mkNav(o) {
     let n = 0,
       best = k0,
       bestH = heur(...start);
-    return { step };
-    function step(budget) {
-      // a time budget per slice, so a long search never makes the game stutter
-      const t0 = performance.now();
+    return { step, used: () => n };
+    // budget: milliseconds per slice, so a long search never makes the game stutter; or, with
+    // nodes set, a number of nodes (the same on every device: a recorded run plays back alike)
+    function step(budget, nodes = false) {
+      const t0 = performance.now(),
+        n0 = n;
       while (open.length && n < maxNodes) {
-        if ((++n & 15) === 0 && performance.now() - t0 > budget) return undefined;
+        if (nodes ? n - n0 >= budget : (++n & 15) === 0 && performance.now() - t0 > budget) return undefined;
+        if (nodes) n++;
         const r = expand();
         if (r) return r;
       }

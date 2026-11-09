@@ -759,9 +759,10 @@ function explode(cx, cy, r, by = null) {
     if (Math.hypot(c.x + 3 - cx, c.y + 5 - cy) < r + 5 && rnd() < 0.5) c.burn = 150;
   }
 }
-function updParts() {
-  for (let k = parts.length - 1; k >= 0; k--) {
-    const p = parts[k];
+// list: the game's particles, or (visual) those made while drawing, which change nothing in the world
+function updParts(list = parts, visual = false) {
+  for (let k = list.length - 1; k >= 0; k--) {
+    const p = list[k];
     p.vy += p.g !== undefined ? p.g : 0.12;
     if (p.m !== undefined || p.rain || p.drop) {
       if (p.vy > 3.5) p.vy = 3.5;
@@ -772,7 +773,7 @@ function updParts() {
         tx = Math.floor(nx),
         ty = Math.floor(ny);
       if (tx < 0 || tx >= W || ty >= H) {
-        parts.splice(k, 1);
+        list.splice(k, 1);
         continue;
       }
       if (ty >= 0 && mat[ty * W + tx] !== AIR) {
@@ -783,17 +784,17 @@ function updParts() {
           // flakes just melt away
         } else if (p.rain || p.drop) {
           // (a drop from a stalactite only splashes: it adds no water)
-          if (p.rain && ok && rnd() < 0.07) setMat(cx, cy, WATER);
+          if (p.rain && ok && !visual && rnd() < 0.07) setMat(cx, cy, WATER);
           else if (mat[ty * W + tx] === WATER) {
             if (rnd() < 0.6) ripple(p.x, ty);
           } else if (rnd() < 0.6) rainSplash(p.x, ty);
-        } else if (ok) setMat(cx, cy, p.m);
-        parts.splice(k, 1);
+        } else if (ok && !visual) setMat(cx, cy, p.m);
+        list.splice(k, 1);
         continue;
       }
       p.x = nx;
       p.y = ny;
-      if (--p.l <= 0) parts.splice(k, 1);
+      if (--p.l <= 0) list.splice(k, 1);
       continue;
     }
     if (p.b) {
@@ -816,13 +817,14 @@ function updParts() {
         p.vx *= 0.6;
         if (p.leaf) p.rest = 1;
       } else p.y = ny;
-      if (--p.l <= 0) parts.splice(k, 1);
+      if (--p.l <= 0) list.splice(k, 1);
       continue;
     }
     p.x += p.vx;
     p.y += p.vy;
-    if (--p.l <= 0) parts.splice(k, 1);
+    if (--p.l <= 0) list.splice(k, 1);
   }
+  if (visual) return;
   for (let k = flashes.length - 1; k >= 0; k--) if (--flashes[k].l <= 0) flashes.splice(k, 1);
 }
 

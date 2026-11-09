@@ -20,7 +20,7 @@ import { diggerOf, isPlayer } from './players.js';
 import { DIG, JUMP, mkNav } from './pathfind.js';
 import { ITEM } from './sprites.js';
 import { stock } from './store.js';
-import { G, INV_MAX, builds, crew, items, parts, trees } from './state.js';
+import { G, INV_MAX, builds, crew, items, onNewWorld, parts, trees } from './state.js';
 import { COAL, GEM, GOLD, H, LIQ, ORE, PLANK, SOLID, W, WATER, free, mat, rnd, surf } from './world.js';
 
 const TOOLS = ['flint', 'tnt', 'loam'];
@@ -60,6 +60,7 @@ const navDig = mkNav({
 // blacklist for things a helper could not reach (item, tree or ore spot → frame)
 const noWay = new WeakMap();
 const tooHard = new Map();
+onNewWorld.push(() => tooHard.clear());
 const blocked = ref => (typeof ref === 'object' ? noWay.get(ref) : tooHard.get(ref)) > G.frame;
 function block(ref) {
   if (ref == null) return;
@@ -214,8 +215,12 @@ function planStages(c, n) {
   }
   return st;
 }
-// run the planning a slice at a time; all helpers share a few milliseconds per frame
+// run the planning a slice at a time; all helpers share a few milliseconds per frame. In a
+// recorded run (replay.js, G.detPlan) the share is a number of search nodes instead, the same on
+// every device, so the run plays back exactly
+const DET_NODES = 380; // (about 5 ms on a desktop computer)
 function plan(c, n) {
+  if (G.detPlan) return planNodes(c, n);
   if (G.pfFrame !== G.frame) {
     G.pfFrame = G.frame;
     G.pfLeft = 5;
@@ -244,6 +249,34 @@ function plan(c, n) {
   return r;
 }
 
+function planNodes(c, n) {
+  if (G.pfFrame !== G.frame) {
+    G.pfFrame = G.frame;
+    G.pfLeft = DET_NODES;
+  }
+  if (G.pfLeft <= 0) return undefined;
+  if (!c.plan) c.plan = { stages: planStages(c, n), cur: null };
+  const P = c.plan;
+  let r;
+  while (G.pfLeft > 0) {
+    if (!P.cur) {
+      if (!P.stages.length) {
+        r = null;
+        break;
+      }
+      P.cur = P.stages.shift()();
+    }
+    const u0 = P.cur.used ? P.cur.used() : 0;
+    r = P.cur.step(G.pfLeft, true);
+    G.pfLeft -= P.cur.used ? Math.max(1, P.cur.used() - u0) : G.pfLeft;
+    if (r === undefined) break;
+    if (r && (r.length || c.job.type !== 'mine' || !c.job.approach)) break;
+    P.cur = null;
+    r = undefined;
+  }
+  if (r !== undefined) c.plan = null;
+  return r;
+}
 function warpHome(c, n) {
   const puff = (x, y) => {
     for (let k = 0; k < 10; k++)

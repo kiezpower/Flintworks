@@ -30,6 +30,7 @@ import './onboarding.css';
 import './panels.css';
 import { ev } from './analytics.js';
 import { seasonLine, seasonResult, seasonRoll } from './season.js';
+import { playStart, playStop, playing, recStart, recStop, replayAfter, replayTick, savedReplay, worldHash } from './replay.js';
 import { closeVeil, openVeil, veilOpen } from './veil.js';
 import { startCue, updCue } from './startcue.js';
 import { updBuilds, updLorry } from './buildings.js';
@@ -52,7 +53,7 @@ import { clearSave, hasSave, loadGame, saveGame, savedTut } from './save.js';
 import { simulate } from './sim.js';
 import { audioInit, sfx } from './sound.js';
 import { initUiArt } from './uiart.js';
-import { G, animals, builds, crew, lorries, esc } from './state.js';
+import { G, animals, builds, crew, lorries, esc, parts, vparts } from './state.js';
 import { $, closePanel, drawMini, hud, openBase, openBuild, openUi, panelEl, toast, toastEl, toggleMap } from './ui.js';
 import { register, send } from './commands.js';
 import { NET, inRoom, onGameMsg, sendTo } from './net/room.js';
@@ -92,7 +93,7 @@ import { updCoop } from './coop.js';
 import { statsHtml } from './stats.js';
 import { addButtonsHtml, wireAddButtons } from './lobbyfriends.js';
 import { dayNo, endCard, shareAndTell } from './daily.js';
-import { H, H0, W, W0, clamp, dryFresh, surf } from './world.js';
+import { H, H0, W, W0, clamp, dryFresh, getSeed, setSeed, surf } from './world.js';
 
 // ---- Screens & loop ----
 const overlay = $('overlay'),
@@ -265,6 +266,9 @@ function startGame(withTutorial = false) {
     // the goal as a banner, an arrow to the nearest gold (startcue.js)
     G.cueNext = true;
     G.castleSeen = false;
+    // the Tagesschacht is written down to watch it again (replay.js); a playback is not
+    if (G.mode === 'daily' && !G.net && !playing()) recStart(G.daily?.n ?? dayNo());
+    if (playing()) toast('Wiederholung – deine Eingaben zählen hier nicht');
   }
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
@@ -326,7 +330,39 @@ function checkGoal() {
   }
 }
 // winner: in Versus the team that won (-2: a draw)
+// the end of a playback (replay.js): nothing counts, the card says how it ended
+function replayEnd() {
+  const p = playStop(),
+    same = !!p && (G.earned || 0) === p.earned && worldHash() === p.hash;
+  G.state = 'won';
+  closePanel();
+  clearSave();
+  G.inRun = false;
+  card.innerHTML = `<h1>${tr('Wiederholung zu Ende')}</h1>
+    <p class="dl-big">${tr('{n} Taler', { n: G.earned || 0 })}</p>
+    <p class="hint">${tr(same ? 'Genau wie in deiner Runde' : 'Diese Wiederholung weicht von deiner Runde ab')}</p>
+    <button class="go" id="replayAgain">${tr('Nochmal ansehen')}</button>`;
+  overlay.hidden = false;
+  card.dataset.replay = same ? 'same' : 'differs';
+  $('replayAgain').onclick = () => watchReplay();
+}
+// watch the kept run of the Tagesschacht (end card, daily panel)
+function watchReplay() {
+  const d = savedReplay();
+  if (!d) return toast('Keine Wiederholung gespeichert');
+  discard();
+  overlay.hidden = true;
+  playStart(d);
+  G.daily = { n: d.day };
+  play(false, 'daily');
+}
+G.watchReplay = watchReplay;
+G.hasReplay = n => {
+  const d = savedReplay();
+  return !!d && (n == null || d.day === n);
+};
 function endScreen(won, why, winner = null) {
+  if (G.replaying) return replayEnd();
   if (!G.teams) hostEnd(won, null, why, G.mp && G.mp.stats);
   if (G.netHost) clearNetSave();
   G.state = won ? 'won' : 'lost';
@@ -337,8 +373,10 @@ function endScreen(won, why, winner = null) {
   // counted in game ticks: a slower tempo or a pause does not cost stars
   const s = Math.round((G.playTicks || 0) / 60);
   const M = mode();
-  // the Tagesschacht: medals instead of stars, the result kept for today (daily.js)
+  // the Tagesschacht: medals instead of stars, the result kept for today (daily.js); the run is
+  // kept to watch it again (replay.js)
   const D = M.daily ? endCard() : null;
+  const kept = M.daily && recStop();
   const stars = D ? D.stars : won ? starsFor(s) : 0;
   if (won) recordCampaign(stars, s);
   if (won && stars === 3 && !G.net) track('stars3');
@@ -368,6 +406,7 @@ function endScreen(won, why, winner = null) {
   card.innerHTML += `<p class="trophy-gain">${tr('{n} Trophäen', { n: (tro >= 0 ? '+' : '') + tro })}</p>`;
   if (kri) card.innerHTML += `<p class="crystal-gain">${tr('+{n} Kristalle', { n: kri })}</p>`;
   if (D) card.innerHTML += `<button class="go" id="shareBtn">${tr('Ergebnis teilen')}</button>`;
+  if (kept) card.innerHTML += `<button class="go" id="watchBtn">${tr('Wiederholung ansehen')}</button>`;
   if (next) card.innerHTML += `<button class="go" id="nextBtn">${tr('Nächstes Level: {name}', { name: tr(GAME_MODES[next].name) })}</button>`;
   // multiplayer: the host starts the next round for everybody with the same settings
   const again = G.net && inRoom();
@@ -393,6 +432,7 @@ function endScreen(won, why, winner = null) {
       play(false);
     };
   if (D) $('shareBtn').onclick = () => shareAndTell(G.daily?.n ?? dayNo());
+  if (kept) $('watchBtn').onclick = () => watchReplay();
   if (next)
     $('nextBtn').onclick = () => {
       overlay.hidden = true;
@@ -527,6 +567,8 @@ function step() {
   if (G.state === 'play' && !paused) {
     G.playTicks = (G.playTicks || 0) + 1;
     tapGotoInput(sel_());
+    // a Tagesschacht run is written down, or played back (replay.js)
+    replayTick();
     // players are steered by their input (yours from this device), bots by their own mind,
     // helpers by their AI
     crew.forEach((c, n) => {
@@ -626,6 +668,7 @@ function step() {
     updFire();
     hostTick();
   }
+  replayAfter();
   stepTail();
 }
 function stepTail() {
@@ -708,6 +751,12 @@ function loop(t) {
   }
   if (n === 4) G.acc = 0;
   const t1 = performance.now();
+  // Drawing and the HUD come after the ticks and must not change the game: the random numbers
+  // they draw are given back afterwards, and the particles they make go to their own list,
+  // moved once per picture (vparts). So a device that draws more or fewer pictures still plays
+  // the same game (replay.js).
+  const seed0 = getSeed(),
+    nParts = parts.length;
   // (G.drawEvery: the browser tests draw only every few frames, debug.js – the game itself
   // still runs at full pace)
   if (G.drawEvery > 1 && G.tick % G.drawEvery) {
@@ -734,6 +783,10 @@ function loop(t) {
     if (G.state === 'play') fogTick(); // (what the map knows, fog.js)
     drawMini(G.tick % 60 === 0);
   }
+  if (parts.length > nParts) vparts.push(...parts.splice(nParts));
+  if (vparts.length > 1500) vparts.splice(0, vparts.length - 1500);
+  updParts(vparts, true);
+  setSeed(seed0);
   workMs = performance.now() - t0;
   requestAnimationFrame(loop);
 }

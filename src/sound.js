@@ -1,7 +1,10 @@
 import { cam } from './render.js';
 import { P } from './profile.js';
 import { G } from './state.js';
-import { clamp, rnd } from './world.js';
+import { clamp } from './world.js';
+// (sounds take their own random numbers: whether a sound plays depends on the device, and the
+// game's must not depend on it, replay.js)
+const rnd = Math.random;
 
 // ---- Sound (WebAudio, synthesized) ----
 G.AC = null;
