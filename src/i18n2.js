@@ -554,6 +554,18 @@ const EN2 = {
   Bronze: 'Bronze',
   Silber: 'Silver',
   Diamant: 'Diamond',
+  // shared levels and the editor (levels/draft.js, levelselect.js)
+  'Level-Editor': 'Level editor',
+  'Eigenes Level bauen und als Link teilen': 'Build your own level and share it as a link',
+  'Eigene Level': 'Own levels',
+  'Bauen, ausprobieren, als Link teilen': 'Build, try, share as a link',
+  'Geteiltes Level': 'Shared level',
+  'Jetzt spielen': 'Play now',
+  'Deine laufende Runde endet dafür': 'Your current round ends for it',
+  'Zurück zur laufenden Runde': 'Back to the current round',
+  'Kein Entwurf aus dem Editor gefunden': 'No draft from the editor found',
+  'Dieser Level-Link ist ungültig': 'This level link is not valid',
+  Editor: 'Editor',
   // scoreboard.js
   Team: 'Team',
   // separate volumes (settings.js)

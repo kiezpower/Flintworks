@@ -751,7 +751,7 @@ hud();
 overlay.hidden = true;
 // a brand-new player starts in the tutorial world, not in the lobby (veil.js); links to the
 // Tagesschacht, a room or a level draft, and players who already played, get the lobby
-const linked = ['daily', 'room', 'draft'].some(k => new URLSearchParams(location.search).has(k));
+const linked = ['daily', 'room', 'draft', 'lvl'].some(k => new URLSearchParams(location.search).has(k));
 // (a tutorial saved before v1.52.0 has another world and other steps: it starts afresh)
 const oldTut = savedTut();
 if (oldTut && !oldTut.run) clearSave();
@@ -795,9 +795,13 @@ if (ownWeb() && 'serviceWorker' in navigator && !import.meta.env.DEV) {
   });
 }
 if (import.meta.env.DEV) import('./debug.js');
-// the level editor's "play" button opens /?draft=1 (dev server only)
-if (import.meta.env.DEV && new URLSearchParams(location.search).has('draft'))
-  import('./levels/draft.js').then(m => m.playDraft(play));
+// a level from the editor (its "Probespielen" button opens ?draft=1) or from a link (?lvl=…),
+// checked before it is played (levels/share.js)
+{
+  const q = new URLSearchParams(location.search);
+  if (q.has('draft')) import('./levels/draft.js').then(m => m.playDraft(lobbyHooks));
+  else if (q.get('lvl')) import('./levels/draft.js').then(m => m.playShared(q.get('lvl'), lobbyHooks));
+}
 
 export { card, endScreen, loop, menu, overlay, resetCam, startGame, step };
 

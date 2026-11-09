@@ -6,7 +6,8 @@
     <title>Flintworks · Level-Editor</title>
     <link rel="icon" type="image/png" href="icons/favicon.png" />
   </head>
-  <!-- Level editor for the dev server only (npm run dev, then /editor.html); not part of the build. -->
+  <!-- Level editor (editor.html): paint a level, try it, share it as a link. "Speichern" into
+       src/levels/ only on the dev server (npm run dev). -->
   <body>
     <div id="ed">
       <aside id="side">
@@ -16,6 +17,7 @@
           <button id="newBtn">Neu …</button>
           <button id="saveBtn" class="go">Speichern</button>
           <button id="playBtn" class="go">Probespielen</button>
+          <button id="shareBtn" class="go">Link teilen</button>
         </div>
         <h2>Werkzeug</h2>
         <div class="tools" id="tools"></div>
@@ -32,6 +34,7 @@
         <textarea id="json" spellcheck="false"></textarea>
         <div class="row"><button id="applyBtn">Übernehmen</button><button id="dlBtn">Herunterladen</button></div>
         <p id="msg"></p>
+        <p class="hint"><a href="./">← Zum Spiel</a></p>
       </aside>
       <main id="view"><canvas id="cv"></canvas><div id="pos"></div></main>
     </div>

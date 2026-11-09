@@ -1,8 +1,10 @@
-// Level editor (dev server only, /editor.html): paint the map of a level (map.txt) character by
-// character, place objects and areas, edit the rest of level.json, save it to src/levels/<id>/
-// and play it right away. Like painting a map and an object list by hand.
+// Level editor (/editor.html): paint the map of a level (map.txt) character by character, place
+// objects and areas, edit the rest of level.json, play it right away and share it as a link
+// (?lvl=…, levels/share.js). On the dev server it also saves to src/levels/<id>/. Like painting a
+// map and an object list by hand.
 import { CHARS, unpackMap } from '../levels/palette.js';
 import ORDER from '../levels/order.json';
+import { MAX_LINK, packLevel } from '../levels/linkcode.js';
 import './editor.css';
 
 const PACKS = import.meta.glob('../levels/*/level.json', { eager: true, import: 'default' });
@@ -403,6 +405,23 @@ $('playBtn').onclick = () => {
   localStorage.setItem(DRAFT, JSON.stringify(pkg()));
   location.href = './?draft=1';
 };
+// sharing: the whole level packed into the address of the game (levels/share.js)
+$('shareBtn').onclick = async () => {
+  try {
+    const url = new URL('./', location.href);
+    url.search = '?lvl=' + (await packLevel(pkg()));
+    const link = url.href;
+    if (link.length > MAX_LINK) return msg('Das Level ist zu groß für einen Link – verkleinere Karte oder Zoom.');
+    if (navigator.share) await navigator.share({ title: L.name || 'Flintworks-Level', url: link }).catch(() => {});
+    else await navigator.clipboard.writeText(link);
+    window.__shared = link;
+    msg(`Link ${navigator.share ? 'geteilt' : 'kopiert'} (${link.length} Zeichen).`);
+  } catch (e) {
+    msg('Teilen ging nicht: ' + e.message);
+  }
+};
+// saving into the source (src/levels/) only works on the dev server
+if (!import.meta.env.DEV) $('saveBtn').hidden = true;
 $('saveBtn').onclick = async () => {
   const r = await fetch('/__levels/save', {
     method: 'POST',
@@ -426,13 +445,15 @@ $('dlBtn').onclick = () => {
 
 setTool('brush');
 showPal();
-// ?level=<id> (the way back from playing) opens that level; a draft of it wins over the saved one
+// ?level=<id> (the way back from playing) opens that level; a draft of it wins over the saved one;
+// ?draft=1 (the way back from trying a level out) opens the draft whatever its id
 {
-  const want = new URLSearchParams(location.search).get('level');
+  const q = new URLSearchParams(location.search);
   let draft = null;
   try {
     draft = JSON.parse(localStorage.getItem(DRAFT));
   } catch {}
+  const want = q.has('draft') && draft ? draft.id : q.get('level');
   if (want && draft && draft.id === want) {
     const { map, ...rest } = draft;
     L = rest;

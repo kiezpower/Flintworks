@@ -101,6 +101,8 @@ wählen den Modus → `gen.js` (oder `levels/loader.js`) baut die Welt → pro T
 |---|---|
 | `modes.js` | Spielmodi mit Siegbedingung |
 | `scenarios.js`, `levels/` | Kampagne und handgebaute Level |
+| `levels/share.js`, `levels/linkcode.js`, `levels/draft.js` | Level als Link (`?lvl=`) und Entwürfe aus dem Editor: packen, streng prüfen, spielen |
+| `editor/editor.js` (`editor.html`) | Level-Editor: malen, Objekte, probespielen, als Link teilen |
 | `daily.js` | Tagesschacht |
 | `missions.js`, `questui.js`, `coop.js` | Aufträge in der Runde, Tracker, Team-Aufgaben im Koop |
 | `achievements.js` | Erfolge |
