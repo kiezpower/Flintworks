@@ -61,7 +61,7 @@ function placeShrines(n) {
       }
     for (let yy = y; yy < y + 3; yy++) for (let xx = x - SW / 2 - 1; xx <= x + SW / 2 + 1; xx++) mat[yy * W + xx] = GRANITE;
     const gift = gifts.splice(Math.floor(r() * gifts.length), 1)[0];
-    G.shrines.push({ x, y, gift, used: false });
+    G.shrines.push({ x, y, gift, used: false, col: GIFTS[gift].col });
   }
 }
 

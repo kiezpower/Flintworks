@@ -1,3 +1,4 @@
+import { known, knownAt } from './fog.js';
 import { markHoards } from './hoards.js';
 import { merchantStall } from './merchant.js';
 import { chainStatus, stock, takeStock } from './store.js';
@@ -115,6 +116,9 @@ function hud() {
   if (statusBox.hidden !== st) statusBox.hidden = st;
   const cx = context(c);
   actBtn.textContent = tr(cx.label);
+  // the bag shakes while a find does not fit in (objects.js)
+  const bagB = document.getElementById('bagBtn');
+  if (bagB) bagB.classList.toggle('nope', !!c && G.frame - (c.fullT ?? -1e9) < 40);
   // in the castle: the action button glows (it opens the shop), and the first times you walk back
   // in (not at the start, where everybody stands in the castle) a short hint
   const inCastle = cx.ui === 'base';
@@ -345,7 +349,10 @@ function drawMini(full) {
           if (best < 0 || m !== AIR) best = i;
         }
         const m = mat[best];
-        d[my * MW + mx] = gold
+        // (not seen yet: dark, fog.js)
+        d[my * MW + mx] = !known(mx, my)
+          ? hex('#1a120c')
+          : gold
           ? hex('#f2c230')
           : m === AIR
             ? bg[best]
@@ -365,7 +372,7 @@ function drawMini(full) {
     mctx.fillRect(Math.floor(b.x / MK), Math.floor((b.gy - b.h) / MK), Math.ceil(b.w / MK), Math.ceil(b.h / MK));
   }
   for (const a of animals)
-    if (isFoe(a) && a.kind !== 'bat') {
+    if (isFoe(a) && a.kind !== 'bat' && knownAt(a.x, a.y)) {
       mctx.fillStyle = '#ff4040';
       mctx.fillRect(Math.floor(a.x / MK) - 1, Math.floor(a.y / MK) - 1, 4, 4);
     }
@@ -382,6 +389,14 @@ function drawMini(full) {
         mctx.fillStyle = (G.tick >> 4) & 1 ? '#ffe066' : '#b8860b';
         mctx.fillRect(Math.floor(ch.x / MK) - 1, Math.floor(ch.y / MK) - 1, 5, 4);
       }
+  // shrines once seen: a small light in the gift's colour, grey when taken (shrines.js)
+  for (const s of G.shrines || [])
+    if (knownAt(s.x, s.y - 8)) {
+      mctx.fillStyle = '#24160c';
+      mctx.fillRect(Math.floor(s.x / MK) - 2, Math.floor(s.y / MK) - 4, 5, 5);
+      mctx.fillStyle = s.used ? '#8a847c' : s.col || '#ffe066';
+      mctx.fillRect(Math.floor(s.x / MK) - 1, Math.floor(s.y / MK) - 3, 3, 3);
+    }
   // great hoards known from a treasure map: a red cross (hoards.js)
   markHoards(mctx, MK, G.tick);
   // markers set with "Hierher!" (net/emotes.js): a blinking cross in the player's colour

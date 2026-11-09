@@ -164,7 +164,22 @@ function updItems() {
     // pickup: items roll towards a Wühler standing close by, then get collected
     if (it.pd <= 0 && sp < 1.5 && it.fuse < 0) {
       for (const c of crew) {
-        if (c.dead || c.tumble || c.puppet || c.inv.length >= INV_MAX) continue;
+        if (c.dead || c.tumble || c.puppet) continue;
+        if (c.inv.length >= INV_MAX) {
+          // a player walking over a find with a full bag hears about it now and then (and the bag
+          // button blinks, ui.js)
+          if (c.pid != null && !c.bot && overlap(it, c, 1)) {
+            c.fullT = G.frame;
+            if (G.frame - (c.fullTip ?? -1e9) > 900) {
+              c.fullTip = G.frame;
+              const was = G.cmdPid;
+              G.cmdPid = c.pid;
+              toast('Tasche voll – zur Burg, um zu verkaufen');
+              G.cmdPid = was;
+            }
+          }
+          continue;
+        }
         const dx = c.x + 3 - (it.x + it.w / 2),
           dy = c.y + 5 - (it.y + it.h / 2);
         // (the "Goldmagnet" gift pulls from further off, shrines.js)

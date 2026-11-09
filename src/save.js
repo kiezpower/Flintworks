@@ -1,3 +1,4 @@
+import { fogPack, fogUnpack } from './fog.js';
 import { glowList, scatterDecor } from './decor.js';
 import { setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
@@ -108,6 +109,7 @@ function serialize() {
       shrines: G.shrines || [],
       hoards: G.hoards || [],
       picked: G.picked || [],
+      fog: fogPack() && b64(fogPack()), // (what the map knows, fog.js)
       beams: G.beams || [],
       mis: G.mis || null,
       goldSold: G.goldSold || 0,
@@ -274,6 +276,8 @@ function deserialize(d) {
     arrows.length = 0;
     // (older saves have no glow list: the caves are looked for again)
     scatterDecor(d.glow || null);
+    G.fogOn = !!d.fog;
+    fogUnpack(d.fog ? unb64(d.fog) : null);
     calcTerr();
     G.startT = performance.now() - (d.play || 0);
     G.playTicks = d.playTicks || 0;

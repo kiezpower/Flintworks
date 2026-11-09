@@ -2,6 +2,7 @@ import { placeGas } from './hazards.js';
 import { placeChests } from './treasure.js';
 import { placeShrines } from './shrines.js';
 import { placeHoards } from './hoards.js';
+import { resetFog } from './fog.js';
 import { endTeams, setupTeams } from './teams.js';
 import { scatterDecor } from './decor.js';
 import { clearFire } from './fire.js';
@@ -536,6 +537,10 @@ function finishWorld() {
   G.dayT = 0.02;
   G.dayN = 0; // (spring, seasons.js)
   G.picked = []; // (mushrooms picked for potions, potions.js)
+  // (the map knows only the sky and the surface, fog.js; not in campaign levels, maps, the Tagesschacht)
+  const FM = GAME_MODES[G.mode];
+  G.fogOn = !!FM && !FM.campaign && !FM.pkg && !FM.daily && !G.tut;
+  resetFog();
   G.rainT = 0;
   G.rainNext = 9000 + rnd() * 4000;
   arrows.length = 0;

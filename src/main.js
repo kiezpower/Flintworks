@@ -80,6 +80,7 @@ import { updWeather } from './weather.js';
 import { seasonName } from './seasons.js';
 import { shrineTick } from './shrines.js';
 import { potionTick } from './potions.js';
+import { fogTick } from './fog.js';
 import { chestTick, updVersus, vsResult } from './versus.js';
 import { updCoop } from './coop.js';
 import { statsHtml } from './stats.js';
@@ -680,7 +681,10 @@ function loop(t) {
     updScoreBtn();
     updWatch();
   }
-  if (G.tick % 10 === 0) drawMini(G.tick % 60 === 0);
+  if (G.tick % 10 === 0) {
+    if (G.state === 'play') fogTick(); // (what the map knows, fog.js)
+    drawMini(G.tick % 60 === 0);
+  }
   workMs = performance.now() - t0;
   requestAnimationFrame(loop);
 }
