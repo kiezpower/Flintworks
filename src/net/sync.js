@@ -303,6 +303,7 @@ function packGame() {
     gold: G.goldSold,
     chests: G.chests && G.chests.map(c => (c.open ? 1 : 0)),
     shrines: G.shrines && G.shrines.map(s => (s.used ? 1 : 0)), // (shrines.js)
+    hoards: G.hoards && G.hoards.map(h => (h.open ? 2 : h.known ? 1 : 0)), // (hoards.js)
     rainT: G.rainT,
     dayN: G.dayN || 0, // (the days so far: the season, seasons.js)
     ticks: G.playTicks,
@@ -355,6 +356,11 @@ function applyGame(d) {
   }
   if (G.chests && d.chests) G.chests.forEach((c, k) => (c.open = !!d.chests[k]));
   if (G.shrines && d.shrines) G.shrines.forEach((s, k) => (s.used = !!d.shrines[k]));
+  if (G.hoards && d.hoards)
+    G.hoards.forEach((h, k) => {
+      h.open = d.hoards[k] === 2;
+      h.known = d.hoards[k] > 0;
+    });
 }
 
 export { KINDS, MOVING, applyGame, packGame };

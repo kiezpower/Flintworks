@@ -432,5 +432,11 @@ const EN2 = {
   '{name} erhält am Schrein die Gabe „{gift}“: {sub}.': '{name} receives the gift “{gift}” at the shrine: {sub}.',
   'Schrein: {gift} – {sub}': 'Shrine: {gift} – {sub}',
   'Schrein: {gift} – die Gabe hast du schon': 'Shrine: {gift} – you already have this gift',
+  // treasure maps (hoards.js)
+  'Eine Schatzkarte! Ein großes Versteck ist auf der Karte mit einem roten Kreuz markiert.':
+    'A treasure map! A great hoard is marked on the map with a red cross.',
+  'Das große Versteck ist gefunden!': 'The great hoard has been found!',
+  Kartenleser: 'Map reader',
+  'Finde ein großes Versteck mit einer Schatzkarte': 'Find a great hoard with a treasure map',
 };
 export { EN2 };

@@ -1,5 +1,6 @@
 import { wallContext } from './fort.js';
 import { hasGift, shrineContext } from './shrines.js';
+import { hoardContext } from './hoards.js';
 import { petContext } from './pets.js';
 import { fishContext } from './fishing.js';
 import { merchantContext } from './merchant.js';
@@ -945,6 +946,9 @@ function context(c) {
   // at a shrine deep down: take its gift (shrines.js)
   const sh = shrineContext(c);
   if (sh) return sh;
+  // at a great hoard (hoards.js)
+  const hc = hoardContext(c);
+  if (hc) return hc;
   const ch = chestNear(c);
   if (ch) return { label: 'Öffnen', fn: () => openChest(ch) };
   const L = lorryNear(c);

@@ -106,6 +106,7 @@ function serialize() {
       tools: G.tools || {},
       chests: G.chests,
       shrines: G.shrines || [],
+      hoards: G.hoards || [],
       beams: G.beams || [],
       mis: G.mis || null,
       goldSold: G.goldSold || 0,
@@ -215,6 +216,7 @@ function deserialize(d) {
     G.tools = d.tools || {};
     G.chests = d.chests || [];
     G.shrines = d.shrines || [];
+    G.hoards = d.hoards || [];
     G.beams = d.beams || [];
     G.mis = d.mis || null;
     G.goldSold = d.goldSold || 0;

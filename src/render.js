@@ -58,6 +58,7 @@ import { drawFishing } from './fishing.js';
 import { drawPets } from './pets.js';
 import { treeLook } from './seasons.js';
 import { drawShrines } from './shrines.js';
+import { drawHoardArrow, drawHoards } from './hoards.js';
 import { drawMerchant } from './merchant.js';
 import { drawVillagers } from './villagers.js';
 import { drawFarms } from './farm.js';
@@ -726,6 +727,7 @@ function render() {
   }
   drawChests(ctx, cx, cy);
   drawShrines(ctx, cx, cy); // (deep down, shrines.js)
+  drawHoards(ctx, cx, cy); // (the great hoards, hoards.js)
   drawHill(ctx, cx, cy);
   drawCoop(ctx, cx, cy);
   drawHazards(ctx, cx, cy);
@@ -1001,6 +1003,7 @@ function render() {
   drawGoal(ctx, cx, cy);
   drawCue(ctx, cx, cy);
   drawCastleCue(ctx, cx, cy);
+  drawHoardArrow(ctx, cx, cy); // (the way to a hoard on a treasure map)
   drawBubbles(ctx, cx, cy);
   drawEmotes(ctx, cx, cy);
   drawMates(ctx, cx, cy);
