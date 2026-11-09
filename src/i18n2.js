@@ -519,6 +519,8 @@ const EN2 = {
   'Kein Heiltrank in der Tasche': 'No healing potion in the bag',
   'Schwach? Das Herz über den Knöpfen trinkt einen Heiltrank': 'Weak? The heart above the buttons drinks a healing potion',
   'Schwach? H trinkt sofort einen Heiltrank': 'Weak? H drinks a healing potion at once',
+  // scoreboard.js
+  Team: 'Team',
   // separate volumes (settings.js)
   '{name}: {pct} %': '{name}: {pct} %',
   Effekte: 'Effects',
