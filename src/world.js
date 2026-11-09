@@ -1,4 +1,4 @@
-import { builds } from './state.js';
+import { G, builds } from './state.js';
 import { T, TEX, setTopSoil, topTex, worldShade } from './tex.js';
 import { prepareUnder, setGround, underTexel, wallTexel } from './under.js';
 
@@ -361,12 +361,23 @@ function markDirty(x, y, r) {
       }
     }
 }
+// wakes the chunk of (x, y) for the next frame, and a neighbour chunk only when (x, y) lies close
+// enough to it for a change here to matter there: liquids reach 4 cells sideways, what lies above
+// falls in. (Waking all eight neighbours made every ripple on a lake scan nine chunks a frame.)
+// While a new world settles (gen.js) all eight are woken as before, so every seed keeps its world.
 function activate(x, y) {
   const cx = x >> 5,
-    cy = y >> 5;
-  for (let j = cy - 1; j <= cy + 1; j++) {
+    cy = y >> 5,
+    wide = G.settling,
+    lx = x & 31,
+    ly = y & 31;
+  const k0 = wide || lx < 5 ? cx - 1 : cx,
+    k1 = wide || lx > 26 ? cx + 1 : cx,
+    j0 = wide || ly < 3 ? cy - 1 : cy,
+    j1 = wide || ly > 28 ? cy + 1 : cy;
+  for (let j = j0; j <= j1; j++) {
     if (j < 0 || j >= CHn) continue;
-    for (let k = cx - 1; k <= cx + 1; k++) {
+    for (let k = k0; k <= k1; k++) {
       if (k < 0 || k >= CWn) continue;
       actNext[j * CWn + k] = 1;
     }
