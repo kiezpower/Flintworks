@@ -458,5 +458,6 @@ const EN2 = {
   Goldfisch: 'Goldfish',
   'Ein Höhlenfisch!': 'A cave fish!',
   'Ein Goldfisch!': 'A goldfish!',
+  Tiefe: 'Depth',
 };
 export { EN2 };

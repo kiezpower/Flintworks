@@ -115,6 +115,7 @@ button:focus-visible {
   justify-items: start;
 }
 .colr {
+  position: relative;
   display: grid;
   gap: 5px;
   justify-items: end;
@@ -211,6 +212,13 @@ button:focus-visible {
 .net {
   color: #c9bba0;
 }
+/* the depth below the surface; gold where deeper gold is richer (digger.js goldStep) */
+.depth {
+  color: #d8cbb0;
+}
+.depth.rich {
+  color: var(--gold);
+}
 .mis {
   align-self: flex-start;
   min-width: 0;
@@ -306,6 +314,21 @@ button:focus-visible {
   gap: 4px;
   padding: 4px;
   align-items: stretch;
+}
+/* the name of a newly chosen thing in the bag (ui.js), left of the slots */
+.itemname {
+  position: absolute;
+  top: 12px;
+  right: 100%;
+  margin-right: 6px;
+  white-space: nowrap;
+  padding: 1px 8px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  color: #ffe9a8;
+  background: rgba(26, 18, 12, 0.85);
+  border-radius: 3px;
+  pointer-events: none;
 }
 .slot {
   position: relative;
