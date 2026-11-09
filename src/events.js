@@ -202,4 +202,4 @@ function resetEvents() {
   resetRush();
 }
 
-export { drawEvents, playBomb, resetEvents, startQuake, startVolcano, updEvents };
+export { drawEvents, playBomb, resetEvents, startQuake, startVolcano, throwBomb, updEvents };

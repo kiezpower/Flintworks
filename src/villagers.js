@@ -1,8 +1,9 @@
 // Villagers (like Terraria's town folk and a Clonk settlement): every finished hut draws a settler
 // who moves in, now and then. By day they stroll between their hut and the castle, at night they
-// are at home. Each one pays 2 coins every half minute. Every morning each eats a loaf of bread from
-// the store (farm.js: field and mill); without bread a settler goes hungry, and after a second hungry
-// morning moves out again. Only the host keeps them; the others get them with the game values.
+// are at home. Every morning each eats a loaf of bread from the store (farm.js: field and mill);
+// without bread a settler goes hungry, and after a second hungry morning moves out again. The rent,
+// every half minute, follows how they are doing: 2 coins, 3 from a settler fed three mornings in a
+// row (content), 1 from a hungry one. Only the host keeps them; the others get them with the game values.
 import { announce } from './announce.js';
 import { addFloat } from './floats.js';
 import { tr } from './i18n.js';
@@ -21,6 +22,9 @@ function allowed() {
   return !!M && !(M.pkg && !M.map) && !G.tut && !G.teams;
 }
 const huts = () => builds.filter(b => b.type === 'hut' && b.done);
+// three mornings with bread in a row make a settler content
+const CONTENT = 3;
+const rentOf = v => (v.hungry > 0 ? 1 : (v.fed || 0) >= CONTENT ? 3 : 2);
 const at = x => surf[Math.max(0, Math.min(W - 1, Math.round(x)))];
 
 // every half second (host): moving in and out, rent, breakfast
@@ -40,15 +44,16 @@ function villageTick() {
       x: free.x + free.w / 2,
       tx: null,
       hungry: 0,
+      fed: 0, // mornings with bread in a row
       wait: 0,
     };
     V.push(v);
     announce('{name} zieht in eine Hütte ein.', { name: v.name });
     track('villagers', V.length, true); // (the size of the village, for an achievement)
   }
-  // rent every half minute
+  // rent every half minute, by how each settler is doing
   if (G.frame % 1800 < 30 && V.length) {
-    const n = V.length * 2;
+    const n = V.reduce((s, v) => s + rentOf(v), 0);
     G.money += n;
     G.earned = (G.earned || 0) + n;
     if (G.base) addFloat(G.base.x + G.base.w / 2, G.base.gy - G.base.h - 8, `+${n} ${tr('Taler')} · ${tr('Dorf')}`, '#ffe066');
@@ -62,7 +67,9 @@ function villageTick() {
       if (stock('bread') > 0) {
         takeStock('bread', 1);
         v.hungry = 0;
-      } else if (++v.hungry >= 2) {
+        v.fed = (v.fed || 0) + 1;
+        if (v.fed === CONTENT) announce('{name} fühlt sich wohl im Dorf und zahlt mehr Miete.', { name: v.name });
+      } else if ((v.fed = 0), ++v.hungry >= 2) {
         announce('{name} hatte kein Brot und zieht wieder aus.', { name: v.name });
         V.splice(k, 1);
       } else hungry++;
@@ -119,4 +126,4 @@ function drawVillagers(ctx, cx, cy) {
   }
 }
 
-export { drawVillagers, villageMove, villageTick };
+export { drawVillagers, rentOf, villageMove, villageTick };

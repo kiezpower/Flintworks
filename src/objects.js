@@ -15,6 +15,7 @@ import { toast } from './ui.js';
 import { blastForts, hitFort, strikeFort } from './fort.js';
 import { atCastle, siegeMarch } from './siege.js';
 import { wormUpd } from './boss.js';
+import { queenUpd } from './queen.js';
 import { announceBanner } from './announce.js';
 import { igniteNear } from './fire.js';
 import { petFollow } from './pets.js';
@@ -352,7 +353,7 @@ function updAnimal(a) {
   const m = midMat(a, 0.5),
     inL = LIQ[m];
   // (the lava slime lives in lava)
-  if ((m === LAVA && a.kind !== 'slime') || m === ACID) a.hp -= m === LAVA ? 2 : 0.3;
+  if ((m === LAVA && a.kind !== 'slime' && a.kind !== 'queen') || m === ACID) a.hp -= m === LAVA ? 2 : 0.3;
   // the lava slime sets oil alight (fire.js)
   if (m === OIL && a.kind === 'slime') igniteNear(a.x + a.w / 2, a.y + a.h, 2);
   // monsters cannot swim: in water they drown (a moat is a defence), bubbles rise off them
@@ -364,6 +365,8 @@ function updAnimal(a) {
   if (a.hp <= 0) return false;
   // the giant worm has a mind of its own (boss.js)
   if (a.kind === 'worm') return a.seg ? wormUpd(a) : false;
+  // the lava queen too (queen.js)
+  if (a.kind === 'queen') return queenUpd(a);
   if (a.kind === 'bat') {
     // flutter around inside caves, turn at walls
     if (--a.t <= 0) {
@@ -543,6 +546,7 @@ const LOOT = {
   crawler: { col: '#7fd8ff', nug: 1, gem: 0.6, name: 'Kristallkäfer besiegt' },
   spore: { col: '#9be3c8', nug: 1, name: 'Sporenpilz besiegt' },
   guardian: { col: '#5a4a6a', nug: 5, gem: 1, gems: 2, name: 'Höhlenwächter besiegt!' },
+  queen: { col: '#ff7a2f', nug: 12, gem: 1, gems: 4, name: 'Lavakönigin besiegt!' },
 };
 function killAnimal(a) {
   const L = LOOT[a.kind];
@@ -561,7 +565,11 @@ function killAnimal(a) {
     announceBanner('Riesenwurm besiegt!', 'Gold und Edelsteine liegen, wo er fiel');
     track('worm');
   }
-  if (a.kind === 'golem' || a.kind === 'guardian') G.shake = Math.max(G.shake || 0, 9);
+  if (a.kind === 'queen') {
+    announceBanner('Lavakönigin besiegt!', 'Gold und Edelsteine liegen, wo sie fiel');
+    track('queen');
+  }
+  if (a.kind === 'golem' || a.kind === 'guardian' || a.kind === 'queen') G.shake = Math.max(G.shake || 0, 9);
   toast(L.name);
   G.kills = (G.kills || 0) + 1;
   track('monster');

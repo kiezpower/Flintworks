@@ -54,6 +54,7 @@ import { watched } from './net/watch.js';
 import { localFocus } from './local.js';
 import { fireSpots } from './fire.js';
 import { drawBossBar, drawWorms } from './boss.js';
+import { drawQueen } from './queen.js';
 import { drawFishing } from './fishing.js';
 import { drawPets } from './pets.js';
 import { treeLook } from './seasons.js';
@@ -242,6 +243,7 @@ function variantSprite(a, ph, hurtF, glow) {
 }
 // Animals: shaded pixel sprites with the same dark outline as the Wühler
 function drawAnimal(a, sx, sy) {
+  if (a.kind === 'queen') return drawQueen(ctx, a, sx, sy);
   const f = a.face || 1,
     hurtF = a.hurt > 0 && a.hurt & 2;
   const ph = Math.sin(a.anim) > 0;

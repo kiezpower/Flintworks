@@ -140,6 +140,7 @@ function gen() {
   endTeams();
   clearFire();
   G.wormDone = false; // (the giant worm comes once per world, boss.js)
+  G.queenDone = false; // (and the lava queen, queen.js)
   G.merchant = G.merchNext = null; // (the wandering trader, merchant.js)
   G.nights = null; // (the nights counted for the roaming monsters, nights.js)
   G.villagers = []; // (the settlers in the huts, villagers.js)
