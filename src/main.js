@@ -83,6 +83,7 @@ import { zoneTick } from './zones.js';
 import { potionTick } from './potions.js';
 import { fogTick } from './fog.js';
 import { tombTick } from './tombs.js';
+import { stormTick } from './storms.js';
 import { descendTick } from './descend.js';
 import { torchTick } from './torches.js';
 import { chestTick, updVersus, vsResult } from './versus.js';
@@ -610,6 +611,7 @@ function step() {
   }
   if (!paused) {
     updWeather();
+    stormTick(cam); // (sand and snow storms, storms.js)
     updParts();
     dryFresh();
     simulate();

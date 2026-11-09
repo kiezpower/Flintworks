@@ -505,5 +505,13 @@ const EN2 = {
   'Sporenpilz besiegt': 'Spore toadstool beaten',
   'Höhlenwächter besiegt!': 'Cave guardian beaten!',
   'Erst den Wächter besiegen': 'Beat the guardian first',
+  'Ein Sandsturm zieht auf!': 'A sandstorm is coming!',
+  'Ein Schneesturm zieht auf!': 'A snowstorm is coming!',
+  'Der Sandsturm legt sich.': 'The sandstorm dies down.',
+  'Der Schneesturm legt sich.': 'The snowstorm dies down.',
+  'Ein Blutmond steigt auf – heute Nacht kommen doppelt so viele Monster!': 'A blood moon is rising – twice as many monsters tonight!',
+  'Der Blutmond ist da – Monster überall!': 'The blood moon is here – monsters everywhere!',
+  'Blutmond überstanden': 'Blood moon survived',
+  'Überstehe eine Blutmond-Nacht': 'Survive a blood moon night',
 };
 export { EN2 };

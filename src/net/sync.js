@@ -313,6 +313,8 @@ function packGame() {
     picked: G.picked || [], // (mushrooms picked for potions, potions.js)
     tombs: G.tombs || [], // (gravestones, tombs.js)
     torches: G.torches || [], // (torches.js)
+    storm: G.storm || null, // (storms.js)
+    blood: !!G.bloodMoon, // (a blood moon, nights.js)
     zones: (G.zones || []).map(z => (z.seen ? 1 : 0)), // (cave biomes seen, zones.js)
     hoards: G.hoards && G.hoards.map(h => (h.open ? 2 : h.known ? 1 : 0)), // (hoards.js)
     rainT: G.rainT,
@@ -369,6 +371,8 @@ function applyGame(d) {
   if (G.shrines && d.shrines) G.shrines.forEach((s, k) => (s.used = !!d.shrines[k]));
   G.tombs = d.tombs || [];
   G.torches = d.torches || [];
+  G.storm = d.storm || null;
+  G.bloodMoon = !!d.blood;
   if (G.zones && d.zones) G.zones.forEach((z, k) => (z.seen = !!d.zones[k]));
   if ((d.picked || []).length !== (G.picked || []).length) applyPicked(d.picked);
   if (G.hoards && d.hoards)

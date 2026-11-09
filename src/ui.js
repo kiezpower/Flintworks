@@ -394,7 +394,7 @@ function drawClock() {
   g.fillRect(0, 10, 22, 2);
   const x = Math.round(11 + Math.cos(a) * 7),
     y = Math.round(10.5 - Math.sin(a) * 7);
-  g.fillStyle = day ? '#ffe066' : '#e8eef4';
+  g.fillStyle = day ? '#ffe066' : G.bloodMoon ? '#e8483a' : '#e8eef4';
   g.fillRect(x - 1, y - 1, 3, 3);
   if (!day) {
     g.fillStyle = '#1e2a52';
