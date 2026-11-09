@@ -50,13 +50,16 @@ function petFollow(a, onG) {
   }
   const dx = c.x + 3 - (a.x + a.w / 2),
     dy = c.y + 10 - (a.y + a.h);
-  // far behind (a cave, the hook, a ride): it turns up next to him
-  if (!c.dead && (Math.abs(dx) > 220 || Math.abs(dy) > 90)) {
+  // stuck behind a wall while he is a little way off: counted, and after a second and a half it
+  // catches up like from far behind
+  a.stuck = !c.dead && Math.abs(dx) > 40 && Math.abs(a.vx) < 0.15 ? (a.stuck || 0) + 1 : 0;
+  // far behind (a cave, the hook, a ride), or stuck: it turns up next to him
+  if (!c.dead && (Math.abs(dx) > 220 || Math.abs(dy) > 90 || a.stuck > 90)) {
     // (beside him, behind or in front, a little higher on a slope)
     const spot = spotBeside(c, a);
     if (spot) {
       puff(a);
-      Object.assign(a, { x: spot[0], y: spot[1], vx: 0, vy: 0 });
+      Object.assign(a, { x: spot[0], y: spot[1], vx: 0, vy: 0, stuck: 0 });
       puff(a);
       return true;
     }
