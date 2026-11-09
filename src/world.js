@@ -347,6 +347,8 @@ function swapActive() {
 const activateAll = () => actNext.fill(1);
 // a new world: nothing of the old one's simulation may carry over (chunks with acid are woken
 // every 30 frames and use random numbers, which would change the new world)
+// the frame stamps of moved cells, cleared (a recorded run starts from clean ones: replay.js)
+const clearStamps = () => stamp.fill(0);
 function resetSim() {
   act.fill(0);
   actNext.fill(0);
@@ -555,6 +557,7 @@ const rnd = seeded,
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
 export {
+  clearStamps,
   getDeepGate,
   setDeepGate,
   setPatterns,

@@ -28,6 +28,7 @@ import {
   items,
   lorries,
   meteors,
+  onNewWorld,
   parts,
   trees,
   vehicles,
@@ -145,6 +146,7 @@ function applyDeepGate(mode = G.mode, versus = !!G.teams) {
   setDeepGate(M && !M.campaign && !M.pkg && !M.daily && !M.kit && !versus && mode !== 'tut' ? 180 : 0);
 }
 function gen() {
+  for (const fn of onNewWorld) fn();
   endTeams();
   clearFire();
   G.wormDone = false; // (the giant worm comes once per world, boss.js)

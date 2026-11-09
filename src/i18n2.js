@@ -540,6 +540,16 @@ const EN2 = {
   '{name} fühlt sich wohl im Dorf und zahlt mehr Miete.': '{name} feels at home in the village and pays more rent.',
   // the gate in the depth (digger.js)
   'Tiefenfels: Hier kommt nur die Diamanthacke durch (Burg → Forschung „Härten“)': 'Deep rock: only the diamond pick gets through here (castle → research “Hardening”)',
+  // replays (replay.js)
+  'Wiederholung – deine Eingaben zählen hier nicht': 'Replay – your input does not count here',
+  'Wiederholung zu Ende': 'Replay over',
+  'Genau wie in deiner Runde': 'Exactly as in your run',
+  'Diese Wiederholung weicht von deiner Runde ab': 'This replay differs from your run',
+  'Nochmal ansehen': 'Watch again',
+  'Keine Wiederholung gespeichert': 'No replay saved',
+  'Wiederholung ansehen': 'Watch the replay',
+  'Letzte Runde ansehen': 'Watch the last run',
+  'Als Wiederholung, genau wie gespielt': 'As a replay, exactly as played',
   // the ice king (iceking.js)
   Eiskönig: 'Ice king',
   'Der Eiskönig!': 'The ice king!',

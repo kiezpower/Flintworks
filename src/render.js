@@ -77,7 +77,7 @@ import { topSolid } from './gen.js';
 import { game, joyHome } from './input.js';
 import { ICOL, SPR, drawHi, drawItemBig } from './sprites.js';
 import { drawCrafted } from './bldart.js';
-import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees } from './state.js';
+import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees, vparts } from './state.js';
 import { darkness, skyCols, sunAlt } from './weather.js';
 import { H, W, clamp, drawWorld, flush, onResize, rnd } from './world.js';
 
@@ -926,12 +926,13 @@ function render() {
       }
     }
   });
-  for (const p of parts) {
-    const x = Math.floor(p.x - cx),
-      y = Math.floor(p.y - cy);
-    if (x < -2 || y < 0 || x >= G.VW + 2 || y >= G.VH + 2) continue;
-    drawPart(ctx, p, x, y);
-  }
+  for (const list of [parts, vparts])
+    for (const p of list) {
+      const x = Math.floor(p.x - cx),
+        y = Math.floor(p.y - cy);
+      if (x < -2 || y < 0 || x >= G.VW + 2 || y >= G.VH + 2) continue;
+      drawPart(ctx, p, x, y);
+    }
   // explosions: a pixel disc with a brighter core instead of a smooth circle
   for (const f of flashes) {
     const r = f.r * (1.2 - f.l / 14);

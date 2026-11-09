@@ -11,7 +11,7 @@ import { addFloat } from './floats.js';
 import { tr } from './i18n.js';
 import { damageCastle } from './versus.js';
 import { sfx } from './sound.js';
-import { G, animals, builds, crew, flashes, parts, trees, vehicles } from './state.js';
+import { G, animals, builds, crew, flashes, onNewWorld, parts, trees, vehicles } from './state.js';
 import { addArrows, arrowsOf, hasTool, teamHas } from './tools.js';
 import { ignite } from './objects.js';
 import { igniteNear } from './fire.js';
@@ -586,6 +586,7 @@ function drawArrow(ctx, a, x, y, alpha = 1) {
 }
 // arrows that hit a wall stay stuck in it for a few seconds (only for the looks)
 const stuckArrows = [];
+onNewWorld.push(() => (stuckArrows.length = 0));
 function drawArrows(ctx, cx, cy) {
   for (const s of stuckArrows) {
     drawArrow(ctx, s, s.x - cx, s.y - cy, Math.min(1, s.l / 60));

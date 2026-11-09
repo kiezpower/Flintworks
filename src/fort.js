@@ -9,7 +9,7 @@ import { tr } from './i18n.js';
 import { SPR } from './sprites.js';
 import { explode } from './objects.js';
 import { sfx } from './sound.js';
-import { G, animals, builds, crew, parts } from './state.js';
+import { G, animals, builds, crew, onNewWorld, parts } from './state.js';
 import { stock, takeStock } from './store.js';
 import { toast } from './ui.js';
 import { isFoe } from './entities.js';
@@ -166,6 +166,7 @@ function postShoot(c) {
 // every frame: damaged pieces are mended by a Wühler nearby, cannon balls fly, Wühler on the
 // walls shoot
 const balls = [];
+onNewWorld.push(() => (balls.length = 0));
 function updFort() {
   if (!G.netClient) for (const c of crew) postShoot(c);
   if (G.frame % 20 === 0 && !G.netClient)

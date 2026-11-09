@@ -108,6 +108,7 @@ wählen den Modus → `gen.js` (oder `levels/loader.js`) baut die Welt → pro T
 | `achievements.js` | Erfolge |
 | `teams.js`, `versus.js`, `bots.js` | Teams, Versus-Regeln, Bots |
 | `season.js` | Monatliche Saison für Versus: Punkte, Rang, Kristalle zum Monatswechsel |
+| `replay.js` | Tagesschacht aufzeichnen und als Wiederholung abspielen |
 | `stats.js`, `scoreboard.js` | Statistik und Punktetafel im Mehrspieler |
 | `reward.js` | Sichtbare Belohnungen (fliegende Münzen) |
 
@@ -164,6 +165,25 @@ wählen den Modus → `gen.js` (oder `levels/loader.js`) baut die Welt → pro T
   greifen synchron auf dasselbe Zellraster zu; ein Worker bräuchte dafür `SharedArrayBuffer`, und der
   verlangt die Header COOP/COEP, die GitHub Pages nicht setzen kann. Erst wenn Messungen auf
   schwachen Geräten zeigen, dass die Simulation das Bild bremst, lohnt sich der Umbau.
+
+## Gleicher Ablauf (Wiederholungen)
+
+Eine aufgezeichnete Runde läuft beim Abspielen genau gleich, wenn der Spielschritt nur von dem
+abhängt, was die Aufnahme festhält (`replay.js`). Dafür gilt:
+
+- **Zufall:** Alles im Spielschritt nutzt `rnd()` (`world.js`); vor jedem Schritt setzt die
+  Wiedergabe dessen Zustand. Klänge nehmen `Math.random` (ob ein Klang spielt, hängt vom Gerät ab).
+- **Zeichnen ändert nichts:** Die Hauptschleife gibt nach dem Zeichnen den Zufallszustand zurück,
+  und Partikel aus dem Zeichnen landen in `vparts` (nur fürs Bild, `main.js`, `objects.js`).
+- **Kamera und Sicht** werden pro Schritt mitgeschrieben (Blitze, Meteore und ferne Steine hängen
+  von ihnen ab).
+- **Helfer** planen in aufgezeichneten Runden mit einem festen Knotenbudget statt einer Zeitgrenze
+  (`G.detPlan`, `helpers.js`, `pathfind.js`).
+- **Nichts aus der letzten Welt:** Module mit eigenem Zustand tragen sich in `onNewWorld`
+  (`state.js`) ein; `gen()` leert ihn. Zum Start werden die Zellstempel geleert und alle Chunks
+  geweckt.
+- **Fehlersuche:** Mit `?replaydbg` (Entwicklungsserver) schreibt die Aufnahme pro Schritt eine
+  Prüfsumme mit, und die Wiedergabe meldet in `G.replayDiverge` den ersten abweichenden Schritt.
 
 ## Tests
 

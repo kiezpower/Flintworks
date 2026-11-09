@@ -1,9 +1,15 @@
 export const G = {};
+// what modules keep for a world of their own, cleared when a new world is made (gen.js): so
+// nothing of one round reaches into the next (and a recorded run plays back alike, replay.js)
+export const onNewWorld = [];
 
 // ---- State ----
 const meteors = [],
   items = [],
   parts = [],
+  // particles made while drawing (not by the game's tick): kept apart, so how often a device
+  // draws never changes the game (replay.js)
+  vparts = [],
   flashes = [],
   builds = [],
   trees = [],
@@ -61,5 +67,6 @@ export {
   meteors,
   parts,
   trees,
+  vparts,
   vehicles,
 };

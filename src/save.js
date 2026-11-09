@@ -154,6 +154,8 @@ function saveGame() {
   if (G.state !== 'play' || G.net) return; // network rounds are not saved (yet)
   // a level from a link or the editor is not kept: after a restart the game would not know it
   if (G.mode === 'geteilt') return;
+  // a playback (replay.js) is no game of one's own
+  if (G.replaying) return;
   try {
     localStorage.setItem(SAVEKEY, JSON.stringify(serialize()));
   } catch {}
