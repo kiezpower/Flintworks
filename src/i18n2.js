@@ -453,5 +453,6 @@ const EN2 = {
   'Leuchtpilze → Tränke, ganz von selbst': 'Glowing mushrooms → potions, all by itself',
   'Leuchtpilz! In der Burg einlagern – ein Braukessel braut Tränke daraus':
     'A glowing mushroom! Store it in the castle – a brewing cauldron brews potions from it',
+  'Tasche voll – zur Burg, um zu verkaufen': 'Bag full – back to the castle to sell',
 };
 export { EN2 };

@@ -404,6 +404,9 @@ button:focus-visible {
   color: var(--ember);
 }
 @media (prefers-reduced-motion: no-preference) {
+  .slot.bag.nope {
+    animation: bag-nope 0.4s steps(4) infinite;
+  }
   .slot.bag.grew {
     animation: bag-grew 0.6s steps(6);
   }
@@ -1288,4 +1291,18 @@ body.watching #buildBtn,
 body.watching #inv,
 body.watching .pad {
   display: none !important;
+}
+
+/* a find that does not fit into the full bag (objects.js) */
+@keyframes bag-nope {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
 }
