@@ -9,7 +9,7 @@ import { announce } from './announce.js';
 import { mkAnimal } from './entities.js';
 import { GAME_MODES } from './modes.js';
 import { G, animals, crew } from './state.js';
-import { AIR, GEM, GRANITE, H, ROCK, W, bg, mat, surf } from './world.js';
+import { AIR, GEM, GRANITE, H, LIQ, ROCK, W, bg, mat, surf } from './world.js';
 
 const KIND = {
   crystal: { name: 'Kristallhöhle', news: 'Eine Kristallhöhle! Edelsteine in den Wänden – Vorsicht vor den Kristallkäfern.', foe: 'crawler', tint: 'rgba(110,200,255,0.10)', col: '#7fd8ff' },
@@ -53,6 +53,13 @@ function placeZones() {
           mat[i] = AIR;
           bg[i] = 1;
         } else if (inZone(z, xx, yy, 1.12) && yy >= y + RY * 0.4) mat[i] = ROCK;
+      }
+    // (a closed shell of rock around it, so neighbouring caves' water or lava cannot flood it)
+    for (let yy = y - RY - 4; yy <= y + RY + 4; yy++)
+      for (let xx = x - RX - 4; xx <= x + RX + 4; xx++) {
+        if (xx < 2 || xx >= W - 2 || yy < 2 || yy >= H - 2) continue;
+        const i = yy * W + xx;
+        if (inZone(z, xx, yy, 1.15) && !(inZone(z, xx, yy) && yy < y + RY * 0.6) && (mat[i] === AIR || LIQ[mat[i]])) mat[i] = ROCK;
       }
     // (a firm, even floor all along the hall, even where another cave runs underneath)
     const fy = y + Math.round(RY * 0.6);

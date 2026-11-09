@@ -10,6 +10,8 @@ import { W, free, rnd, surf } from './world.js';
 
 const SURF = 16; // within this many pixels of the surface the storm is felt
 const depthOf = c => c.y + 10 - surf[Math.max(0, Math.min(W - 1, Math.round(c.x + 3)))];
+// (is this Wühler out in the storm)
+const felt = c => depthOf(c) < SURF;
 const kindHere = () => (G.biome === 'desert' ? 'sand' : cold() ? 'snow' : null);
 
 // every tick
@@ -34,7 +36,7 @@ function stormTick(cam) {
     // the wind pushes the Wühler on the surface
     // (over small steps too, like walking)
     for (const c of crew) {
-      if (c.dead || c.ride != null || c.climb || depthOf(c) >= SURF) continue;
+      if (c.dead || c.ride != null || c.climb || !felt(c)) continue;
       const nx = c.x + s.dir * 0.15;
       for (let up = 0; up <= 3; up++)
         if (free(nx, c.y - up, 6, 10)) {
@@ -74,4 +76,4 @@ function drawStorm(ctx, cam) {
   ctx.fillRect(0, 0, G.VW, G.VH);
 }
 
-export { drawStorm, stormTick };
+export { drawStorm, felt, stormTick };

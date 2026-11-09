@@ -34,9 +34,10 @@ test('a gravestone marks the lost bag until it is picked up again', async ({ pag
     out.stays = G.tombs.length === 1 && !me.dead;
     // he walks back and picks them up: the stone is gone
     Object.assign(me, { x: G.tombs[0].x - 3, y: surf[G.tombs[0].x] - 10, vx: 0, vy: 0 });
-    for (let q = 0; q < 120 && w.items.some(i => Math.abs(i.x - me.x) < 40); q++) {
-      const it = w.items.find(i => Math.abs(i.x - me.x) < 40);
-      Object.assign(me, { x: it.x - 2, y: it.y - 6 });
+    for (let q = 0; q < 60; q++) {
+      const it = w.items.find(i => i.tomb);
+      if (!it) break;
+      Object.assign(me, { x: it.x - 2, y: it.y - 6, vx: 0, vy: 0 });
       w.step(2);
     }
     for (let q = 0; q < 40; q++) w.step(1);

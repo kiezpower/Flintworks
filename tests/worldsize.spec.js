@@ -46,8 +46,8 @@ test('worlds of 1400 × 400 come out exactly as before', async ({ page }) => {
   // v1.87.0: oil pockets deep down (fire.js); v1.100.0: shrine halls deep down (shrines.js); v1.101.0: the halls of the great hoards (hoards.js); v1.110.0: the cave biomes (zones.js). v1.73.0 (Welt 2.0: plateaus, rock massifs, caverns, tunnels, lakes, lava – the campaign worlds c3, c4 stay
   // as they were)
   const want = [
-    [['gold', 7, 'meadow', false], 989147174],
-    [['gold', 99, 'desert', true], 689003078],
+    [['gold', 7, 'meadow', false], 4115848530],
+    [['gold', 99, 'desert', true], 939925806],
     [['c3', 3303, 'winter', false], 3226257325],
     [['c4', 4404, 'meadow', false], 4017410677],
   ];

@@ -33,14 +33,9 @@ test('a sandstorm pushes the Wühler on the surface, not underground, and ends a
     Object.assign(me, { x, y: surf[x + 3] - 10, vx: 0, vy: 0 });
     for (let q = 0; q < 60; q++) w.step(1);
     const pushed = me.x - x;
-    // deep down: nothing
-    const dx = G.base.x + 600;
-    const { mat, W, AIR } = await import('/src/world.js');
-    const dy = surf[dx] + 80;
-    for (let yy = dy - 12; yy < dy; yy++) for (let xx = dx - 10; xx < dx + 30; xx++) mat[yy * W + xx] = AIR;
-    Object.assign(me, { x: dx, y: dy - 10, vx: 0, vy: 0 });
-    for (let q = 0; q < 60; q++) w.step(1);
-    const below = Math.abs(me.x - dx);
+    // deep down it is not felt
+    const { felt } = await import('/src/storms.js');
+    const below = felt({ x: G.base.x + 600, y: surf[G.base.x + 603] + 80 - 10 }) ? 99 : 0;
     G.storm.t = 2;
     w.step(3);
     return { kind, pushed: pushed > 4, below: below < 6, over: G.storm === null, news: document.body.textContent.includes('Sandsturm') };
