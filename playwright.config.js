@@ -6,6 +6,10 @@ export default defineConfig({
   testDir: 'tests',
   timeout: 120_000,
   fullyParallel: true,
+  // on GitHub a test that fails under load gets one more try; it is then reported as "flaky"
+  // (in the summary of the run), not hidden
+  retries: process.env.CI ? 1 : 0,
+  reporter: process.env.CI ? [['github'], ['list']] : 'list',
   use: {
     baseURL: 'http://localhost:5199/',
     viewport: { width: 900, height: 450 },

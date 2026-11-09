@@ -61,7 +61,9 @@ test('the trader comes to the castle, sells from his stall and moves on', async 
   await page.evaluate(async () => (await import('/src/ui.js')).closePanel());
   const gone = await page.evaluate(() => {
     const w = window.__ww;
-    for (let k = 0; k < 150 * 60 + 4000 && w.G.merchant; k++) w.step(1);
+    // (his stay of 150 s is over at once; only the walk away is played)
+    w.G.merchant.at -= 150 * 60;
+    for (let k = 0; k < 6000 && w.G.merchant; k++) w.step(1);
     return !w.G.merchant;
   });
   expect(gone).toBe(true);

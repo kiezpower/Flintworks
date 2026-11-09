@@ -7,6 +7,10 @@ import { readFileSync } from 'node:fs';
 // one star on every level of chapter 2, so all of them are open in the campaign list
 const ORDER = JSON.parse(readFileSync(new URL('../src/levels/order.json', import.meta.url), 'utf8'));
 const OPEN = Object.fromEntries(ORDER.map(id => [id, 1]));
+// chapter 2 and the maps (maps.json), read here so that every level gets a test of its own and
+// the levels are checked side by side
+const MAP_ORDER = JSON.parse(readFileSync(new URL('../src/levels/maps.json', import.meta.url), 'utf8'));
+const ALL = [...ORDER, ...MAP_ORDER];
 
 async function lobby(page) {
   const errors = [];
@@ -39,16 +43,14 @@ async function start(page, id) {
   await page.waitForFunction(() => window.__ww.state === 'play');
 }
 
-test('every level loads in its size, on firm ground, with every goal within reach', async ({ page }) => {
-  // (eleven levels and six maps, each loaded and checked: more time than the default)
-  test.setTimeout(300000);
-  const errors = await lobby(page);
-  const ids = await levelIds(page);
-  expect(ids.length).toBeGreaterThan(0);
+test('the level list of the tests is the one of the game', async ({ page }) => {
+  await lobby(page);
+  expect(await levelIds(page)).toEqual(ALL);
+});
 
-  for (const id of ids) {
-    // a fresh profile for each level (otherwise "play" goes on with the round before)
-    errors.push(...(await lobby(page)));
+for (const id of ALL)
+  test(`level ${id} loads in its size, on firm ground, with every goal within reach`, async ({ page }) => {
+    const errors = await lobby(page);
     await start(page, id);
     await page.waitForFunction(() => document.getElementById('goalTxt').textContent !== '');
     const r = await page.evaluate(() => {
@@ -100,34 +102,35 @@ test('every level loads in its size, on firm ground, with every goal within reac
     expect(r.lostInAir, id).toBe(true);
     expect(r.unreached, id).toEqual([]);
     expect(r.goalText, id).not.toBe('');
-  }
-  expect(errors).toEqual([]);
-});
+    expect(errors).toEqual([]);
+  });
 
-test('a level comes out the same every time, whatever ran before', async ({ page }) => {
-  const errors = await lobby(page);
-  const ids = await levelIds(page);
-  for (const id of ids) {
-    const hashes = await page.evaluate(async id => {
-      const w = window.__ww,
-        G = w.G,
-        M = (await import('/src/modes.js')).GAME_MODES[id];
-      const once = extra => {
-        G.frame += extra;
-        Object.assign(G, { nextMode: id, nextSeed: M.seed, nextBiome: M.biome, nextDiff: M.diff || 'adventure' });
-        w.gen();
-        G.nextSeed = null;
-        const { mat, bg, W, H } = w.world;
-        let h = 0;
-        for (let i = 0; i < W * H; i++) h = (Math.imul(h, 31) + (mat[i] | (bg[i] << 4))) >>> 0;
-        return h;
-      };
-      return [once(0), once(1), once(14)];
-    }, id);
-    expect(new Set(hashes).size, id).toBe(1);
-  }
-  expect(errors).toEqual([]);
-});
+// (in three groups side by side; within a group each level follows the ones before it)
+const GROUPS = [0, 1, 2].map(k => ALL.filter((_, i) => i % 3 === k));
+for (const [k, ids] of GROUPS.entries())
+  test(`a level comes out the same every time, whatever ran before (group ${k + 1})`, async ({ page }) => {
+    const errors = await lobby(page);
+    for (const id of ids) {
+      const hashes = await page.evaluate(async id => {
+        const w = window.__ww,
+          G = w.G,
+          M = (await import('/src/modes.js')).GAME_MODES[id];
+        const once = extra => {
+          G.frame += extra;
+          Object.assign(G, { nextMode: id, nextSeed: M.seed, nextBiome: M.biome, nextDiff: M.diff || 'adventure' });
+          w.gen();
+          G.nextSeed = null;
+          const { mat, bg, W, H } = w.world;
+          let h = 0;
+          for (let i = 0; i < W * H; i++) h = (Math.imul(h, 31) + (mat[i] | (bg[i] << 4))) >>> 0;
+          return h;
+        };
+        return [once(0), once(1), once(14)];
+      }, id);
+      expect(new Set(hashes).size, id).toBe(1);
+    }
+    expect(errors).toEqual([]);
+  });
 
 test('Fluffelrettung: reaching the fluffels frees them, the hints come, the level is won', async ({ page }) => {
   const errors = await lobby(page);

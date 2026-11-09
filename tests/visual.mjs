@@ -22,7 +22,7 @@ async function run(name, viewport, query = '') {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.addInitScript(() => localStorage.setItem('flintworks-profile', JSON.stringify({ installAsked: 'done' })));
-  await page.goto(`${base}?seed=7${query}`);
+  await page.goto(`${base}?seed=7&draw${query}`);
   await page.waitForTimeout(1200);
   // a new player starts at the start screen over the tutorial world (no lobby)
   await page.screenshot({ path: `${OUT}${name}-start.png` });
@@ -93,7 +93,7 @@ async function selection(name, viewport, lang) {
     const camp = { fluffelrettung: 3, altemine: 1 };
     localStorage.setItem('flintworks-profile', JSON.stringify({ installAsked: 'done', tutorialDone: true, campaign: camp }));
   }, lang);
-  await page.goto(base);
+  await page.goto(base + '?draw');
   await page.waitForFunction(() => window.__ww);
   await page.click('#lbGMode');
   await page.click('.ls-tab[data-t="k2"]');
