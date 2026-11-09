@@ -60,6 +60,8 @@ Zwei Steuerungen (Optionen → Steuerung): **Modern** (Standard) gräbt, wenn ma
 
 **Festgesessen?** Ist eine Kante zu hoch zum Springen, gräbt sich der Wühler in einer Grube oder Höhle von selbst schräg nach oben, sobald man gegen die Erdwand läuft (moderne Steuerung). Geht das nicht (Fels), zeigt der Aktions-Knopf den Ausweg: „Treppe“ (1 Brett oder 1 Holz aus Gepäck oder Lager, bis zur Kante) und ohne Holz „Heim“ (zurück zur Basis). Der **Enterhaken** (in der Basis zu kaufen, 30 Taler, 2 Holz, 1 Stein) bekommt einen eigenen Knopf „Haken“ (Taste G). Er wird immer geworfen: Zieh den Knopf in eine Richtung und lass los (eine gestrichelte Linie zeigt das Seil, grün, wenn er greift; am Desktop hält man G und zielt mit dem Mauszeiger, loslassen wirft – oder man hält eine Pfeiltaste und drückt G), ohne Richtung (Zeiger auf dem Wühler) fliegt er an die nächste Kante über dir, sonst schräg nach oben. Der Lauf-Stick bleibt dabei frei. Was er trifft, daran zieht dich das Seil hin (gibt es dort einen Platz zum Stehen, landest du darauf); trifft er nichts, rollt sich das Seil wieder ein.
 
+**Fahrstuhl:** Wer auf der Kabine steht, fährt mit dem Stick nach unten (die Kabine gräbt den Schacht) oder nach oben. Seitlich gegen die Schachtwand laufen gräbt von der Kabine aus einen waagerechten Stollen (Graben nach unten oder oben steuert dort die Kabine). Steht man oben am Schacht oder in einem Stollen, der auf ihn trifft, und die Kabine ist woanders, ruft der Aktions-Knopf („Rufen“) sie herbei – so tief, wie der Schacht schon gegraben ist.
+
 Holztreppen und Holzbrücken tragen nur von oben: Man läuft von der Seite unter ihnen durch, springt von unten hindurch und steigt auf, wo sie die Füße erreichen. Lehmbrücken bleiben feste Wände.
 
 ## Entwickeln

@@ -339,28 +339,41 @@ register('build', (c, { type }) => tryBuild(type, c));
 function liftUpd(b) {
   const c = b.cs;
   let dir = 0;
-  // any player standing on the platform steers it with the stick
+  // any player standing on the platform steers it with the stick (digging sideways out of
+  // the shaft does not move it: only a stick pushed clearly up or down does)
   for (const s of crew) {
     if (!isPlayer(s) || s.dead || !onCase(s, c)) continue;
     const I = inputOf(s.pid);
-    if (I.dig) continue;
+    if (Math.abs(I.ax) > Math.abs(I.ay)) continue;
     if (I.ay > 0.4) dir = 1;
     else if (I.ay < -0.4) dir = -1;
+  }
+  // the deepest the cab has been: down to there the shaft is open, a call can fetch it
+  b.deep = Math.max(b.deep ?? c.home, c.y);
+  // steering from the platform cancels a call; otherwise the cab drives to the caller
+  if (dir) b.call = null;
+  else if (b.call != null) {
+    if (Math.abs(b.call - c.y) < 0.7) {
+      c.y = b.call;
+      b.call = null;
+    } else dir = b.call > c.y ? 1 : -1;
   }
   b.moving = 0;
   b.want = !!dir;
   if (!dir) return;
   const spd = 0.6;
   const riders = [...crew.filter(e => !e.dead), ...lorries, ...items, ...animals].filter(e => onCase(e, c));
+  // (a called cab stops right at the caller's feet)
+  const lim = b.call != null ? Math.abs(b.call - c.y) : spd;
   if (dir > 0) {
-    if (c.y + 2 >= H - 10) return;
-    const ny = c.y + spd;
+    if (c.y + 2 >= H - 10) return (b.call = null);
+    const ny = c.y + Math.min(spd, lim);
     for (let y = Math.floor(c.y) + 2; y <= Math.floor(ny) + 1; y++)
       for (let x = c.x; x < c.x + 12; x++) {
         const m = matAt(x, y);
         if (m === ROCK || m === GRANITE) {
           if (!G.toastT) toast('Fels blockiert – sprengen!');
-          return;
+          return (b.call = null);
         }
       }
     for (let y = Math.floor(c.y) + 2; y <= Math.floor(ny) + 1; y++) for (let x = c.x; x < c.x + 12; x++) digCell(x, y);
@@ -368,9 +381,9 @@ function liftUpd(b) {
     c.y = ny;
     for (const e of riders) e.y = c.y - e.h;
   } else {
-    if (c.y <= c.home) return;
-    const ny = Math.max(c.home, c.y - spd);
-    for (const e of riders) if (!boxFree(e.x, ny - e.h, e.w, e.h)) return;
+    if (c.y <= c.home) return (b.call = null);
+    const ny = Math.max(c.home, c.y - Math.min(spd, lim));
+    for (const e of riders) if (!boxFree(e.x, ny - e.h, e.w, e.h)) return (b.call = null);
     c.y = ny;
     for (const e of riders) e.y = c.y - e.h;
   }
@@ -502,7 +515,7 @@ function updBuilds() {
           if (b.type === 'wall') toast('Mauer fertig: hält Monster auf, ein Tor daneben lässt die Crew durch');
           if (b.type === 'cannon') toast('Kanonenturm fertig: schießt auf Monster, braucht Kohle im Lager');
           if (b.type === 'tower') toast('Wachturm fertig: drin stehen für weite Sicht');
-          if (b.type === 'lift') toast('Fahrstuhl fertig: draufstellen, Stick runter oder hoch');
+          if (b.type === 'lift') toast('Fahrstuhl fertig: draufstellen, Stick runter oder hoch · daneben ruft ihn der Aktions-Knopf');
           if (b.type === 'saw') toast('Sägewerk fertig: macht Bretter, sobald Holz im Lager ist');
           if (b.type === 'furnace') toast('Hochofen fertig: macht Metall aus Erz und Kohle im Lager');
           if (b.type === 'shop') toast('Werkstatt fertig: macht Feuersteine und Sprengladungen aus dem Lager');

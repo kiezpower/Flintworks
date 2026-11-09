@@ -341,6 +341,7 @@ const ACT_ICONS = {
   Treppe: 'stairs',
   Heim: 'castle',
   Haken: 'hook',
+  Rufen: 'act',
 };
 const actIconCache = {};
 function actIcon(label) {
