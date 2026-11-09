@@ -88,7 +88,7 @@ function lavaReact(i, x, y) {
     // (oil next to lava catches fire, fire.js)
     if (mat[j] === OIL) igniteCell(j);
     // wood next to lava (a bridge, stairs, a support beam) chars away
-    if (mat[j] === PLANK && rnd() < 0.04) {
+    if (!G.settling && mat[j] === PLANK && rnd() < 0.04) {
       burnPlank(j);
       continue;
     }
@@ -189,8 +189,9 @@ function simStep() {
                 j = r === 0 ? i - W : r === 1 ? i + W : r === 2 ? (x > 0 ? i - 1 : -1) : x < W - 1 ? i + 1 : -1;
               if (j >= 0 && j < W * H) {
                 const mj = mat[j];
-                // (soft ground and wood at once, rock only now and then: acid gnaws slowly through it)
-                if (mj === EARTH || mj === SAND || mj === LOAM || mj === PLANK || (mj === ROCK && rnd() < 0.25)) {
+                // (soft ground and wood at once, rock only now and then: acid gnaws slowly through it; not
+                // while a new world settles, gen.js, so the worlds of a seed stay as they were)
+                if (mj === EARTH || mj === SAND || mj === LOAM || (!G.settling && (mj === PLANK || (mj === ROCK && rnd() < 0.25)))) {
                   mat[j] = AIR;
                   bg[j] = 1;
                   paint(j);
