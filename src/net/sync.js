@@ -58,6 +58,7 @@ const KINDS = {
       // the gifts of the shrines (shrines.js)
       ...(c.gifts && c.gifts.length ? { gf: c.gifts } : {}),
       ...(c.glowT > 0 ? { gl: 1 } : {}), // (a light potion, potions.js)
+      ...(c.lastDeep ? { ld: c.lastDeep } : {}), // (the last digging spot, descend.js)
     }),
     create: d => ({
       id: d.id,
@@ -86,6 +87,7 @@ const KINDS = {
       c.fish = d.fs ? { x: d.fs[0], y: d.fs[1], bite: d.fs[2] } : null;
       c.gifts = d.gf || [];
       c.glowT = d.gl ? 1 : 0;
+      c.lastDeep = d.ld || null;
       Object.assign(c, {
         pid: d.pid,
         bot: !!d.bot,
