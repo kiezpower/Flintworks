@@ -341,6 +341,11 @@ const FOE = {
   spider: { speed: 0.9, accel: 0.15, sense: 130, warnAt: 30, dmg: 6, touch: 0.06, cd: 55, knock: 1.4, reach: 0, step: 3, climb: -2.4, leap: true, poison: 180 },
   slime: { speed: 0, accel: 0, sense: 120, warnAt: 22, dmg: 12, touch: 0.1, cd: 60, knock: 1.8, reach: 0, step: 2, climb: -2, hop: true, burn: 90 },
   golem: { speed: 0.26, accel: 0.05, sense: 100, warnAt: 28, dmg: 20, touch: 0.15, cd: 110, knock: 3.4, reach: 2, step: 3, climb: -2.0, stomp: true },
+  // the cave biomes' own (zones.js): a crystal beetle that leaps like the spider, a spore toadstool
+  // that hops like the slime and poisons; the shrines' guardian, a stronger golem (shrines.js)
+  crawler: { speed: 0.7, accel: 0.12, sense: 110, warnAt: 28, dmg: 9, touch: 0.08, cd: 60, knock: 1.8, reach: 0, step: 3, climb: -2.4, leap: true },
+  spore: { speed: 0, accel: 0, sense: 110, warnAt: 22, dmg: 7, touch: 0.1, cd: 70, knock: 1.4, reach: 0, step: 2, climb: -2, hop: true, poison: 240 },
+  guardian: { speed: 0.32, accel: 0.06, sense: 70, warnAt: 28, dmg: 24, touch: 0.15, cd: 100, knock: 3.6, reach: 2, step: 3, climb: -2.0, stomp: true },
 };
 function updAnimal(a) {
   if (a.hurt > 0) a.hurt--;
@@ -535,11 +540,14 @@ const LOOT = {
   slime: { col: '#ff7a2f', nug: 2, coal: 1, name: 'Lavaschleim besiegt' },
   golem: { col: '#8a847c', nug: 4, ore: 2, gem: 0.35, name: 'Steingolem besiegt' },
   worm: { col: '#7a4a5a', nug: 14, ore: 4, gem: 1, gems: 3, name: 'Riesenwurm besiegt!' },
+  crawler: { col: '#7fd8ff', nug: 1, gem: 0.6, name: 'Kristallkäfer besiegt' },
+  spore: { col: '#9be3c8', nug: 1, name: 'Sporenpilz besiegt' },
+  guardian: { col: '#5a4a6a', nug: 5, gem: 1, gems: 2, name: 'Höhlenwächter besiegt!' },
 };
 function killAnimal(a) {
   const L = LOOT[a.kind];
   const col = L ? L.col : { fluffel: '#f2e6d0', bat: '#3a2f45' }[a.kind] || '#e0a13a';
-  for (let q = 0; q < (a.kind === 'golem' ? 26 : 14); q++)
+  for (let q = 0; q < (a.kind === 'golem' || a.kind === 'guardian' ? 26 : 14); q++)
     parts.push({ x: a.x + a.w / 2, y: a.y + a.h / 2, vx: (rnd() - 0.5) * 2, vy: -rnd() * 2, l: 30, c: col });
   if (!L) return;
   const drop = (t, n) => {
@@ -553,11 +561,11 @@ function killAnimal(a) {
     announceBanner('Riesenwurm besiegt!', 'Gold und Edelsteine liegen, wo er fiel');
     track('worm');
   }
-  if (a.kind === 'golem') G.shake = Math.max(G.shake || 0, 9);
+  if (a.kind === 'golem' || a.kind === 'guardian') G.shake = Math.max(G.shake || 0, 9);
   toast(L.name);
   G.kills = (G.kills || 0) + 1;
   track('monster');
-  sfx(a.kind === 'golem' ? 'thud' : 'growl', a.x, a.y);
+  sfx(a.kind === 'golem' || a.kind === 'guardian' ? 'thud' : 'growl', a.x, a.y);
 }
 const DEBRIS = { [EARTH]: EARTH, [ROCK]: ROCK, [SAND]: SAND, [LOAM]: LOAM, [ORE]: ORE, [COAL]: COAL, [PLANK]: PLANK };
 const DEBCOL = {

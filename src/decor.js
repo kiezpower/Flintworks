@@ -38,7 +38,10 @@ function scatterDecor(saved = null) {
       const i = y * W + x;
       if (!FLOOR[mat[i]] || mat[i - W] !== AIR || mat[i - 2 * W] !== AIR) continue;
       const h = (Math.imul(x, 73856093) ^ Math.imul(y, 19349663)) >>> 0;
-      if (h % 100 < 7) decor.push({ x, y, kind: h & 128 ? 'shroom' : 'crystal', h: 2 + (h & 1), glow: 1 });
+      // (in a cave biome many more, all of its kind: zones.js)
+      const z = (G.zones || []).find(z => ((x - z.x) / (z.rx * 1.2)) ** 2 + ((y - z.y) / (z.ry * 1.3)) ** 2 <= 1);
+      if (z && h % 100 < 55) decor.push({ x, y, kind: z.kind === 'crystal' ? 'crystal' : 'shroom', h: 2 + (h & 1), glow: 1 });
+      else if (!z && h % 100 < 7) decor.push({ x, y, kind: h & 128 ? 'shroom' : 'crystal', h: 2 + (h & 1), glow: 1 });
       y += 6;
     }
 }

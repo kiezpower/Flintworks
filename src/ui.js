@@ -486,6 +486,14 @@ function drawMini(full) {
   }
   // where a Wühler gave out and his bag lies (tombs.js)
   markTombs(mctx, MK);
+  // cave biomes once seen (zones.js): a mark in their colour
+  for (const z of G.zones || [])
+    if (z.seen) {
+      mctx.fillStyle = '#24160c';
+      mctx.fillRect(Math.floor(z.x / MK) - 2, Math.floor(z.y / MK) - 2, 5, 5);
+      mctx.fillStyle = z.col;
+      mctx.fillRect(Math.floor(z.x / MK) - 1, Math.floor(z.y / MK) - 1, 3, 3);
+    }
   // torches set deep down (torches.js)
   markTorches(mctx, MK);
   // markers set with "Hierher!" (net/emotes.js): a blinking cross in the player's colour

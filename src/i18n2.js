@@ -497,5 +497,13 @@ const EN2 = {
   Ablegen: 'Store',
   'Aus der Truhe': 'Take out',
   'Macht Feuersteine, Sprengladungen und Fackeln aus dem Lager': 'Makes flints, explosives and torches from the store',
+  Kristallhöhle: 'Crystal cave',
+  Pilzhöhle: 'Mushroom cave',
+  'Eine Kristallhöhle! Edelsteine in den Wänden – Vorsicht vor den Kristallkäfern.': 'A crystal cave! Gems in the walls – beware of the crystal beetles.',
+  'Eine Pilzhöhle! Viele Leuchtpilze – Vorsicht vor den Sporenpilzen.': 'A mushroom cave! Lots of glowing mushrooms – beware of the spore toadstools.',
+  'Kristallkäfer besiegt': 'Crystal beetle beaten',
+  'Sporenpilz besiegt': 'Spore toadstool beaten',
+  'Höhlenwächter besiegt!': 'Cave guardian beaten!',
+  'Erst den Wächter besiegen': 'Beat the guardian first',
 };
 export { EN2 };

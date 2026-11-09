@@ -62,6 +62,7 @@ import { drawHoardArrow, drawHoards } from './hoards.js';
 import { drawBrew } from './potions.js';
 import { drawTombArrow, drawTombs } from './tombs.js';
 import { drawTorches } from './torches.js';
+import { drawZones } from './zones.js';
 import { drawMerchant } from './merchant.js';
 import { drawVillagers } from './villagers.js';
 import { drawFarms } from './farm.js';
@@ -215,6 +216,29 @@ function shade(hex, k) {
   const ch = s => Math.max(0, Math.min(255, Math.round(((n >> s) & 255) * k)));
   return (shadeCache[key] = `rgb(${ch(16)},${ch(8)},${ch(0)})`);
 }
+// the newer creatures wear an older one's shape in their own colours: the crystal beetle the
+// spider's, the spore toadstool the slime's, the shrine guardian the golem's (zones.js, shrines.js)
+const VARIANT = {
+  crawler: ['spider', (r, g, b) => [r * 0.6 + 70, g * 0.9 + 130, b * 0.8 + 170]],
+  spore: ['slime', (r, g, b) => [g * 0.6, r * 0.75, b * 0.8 + 20]],
+  guardian: ['golem', (r, g, b) => [r * 0.75 + 20, g * 0.6, b * 0.9 + 40]],
+};
+function variantSprite(a, ph, hurtF, glow) {
+  const [base, f] = VARIANT[a.kind],
+    c = animalSprite({ ...a, kind: base }, ph, hurtF, glow),
+    g = c.getContext('2d'),
+    img = g.getImageData(0, 0, c.width, c.height),
+    d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    if (!d[i + 3] || (d[i] < 50 && d[i + 1] < 40 && d[i + 2] < 30)) continue; // (the dark outline stays)
+    const [r, gg, b] = f(d[i], d[i + 1], d[i + 2]);
+    d[i] = Math.min(255, r);
+    d[i + 1] = Math.min(255, gg);
+    d[i + 2] = Math.min(255, b);
+  }
+  g.putImageData(img, 0, 0);
+  return c;
+}
 // Animals: shaded pixel sprites with the same dark outline as the Wühler
 function drawAnimal(a, sx, sy) {
   const f = a.face || 1,
@@ -222,15 +246,16 @@ function drawAnimal(a, sx, sy) {
   const ph = Math.sin(a.anim) > 0;
   // glowing: the monster's eye blinks, the spider's eyes, the slime pulses, the golem's
   // cracks light up when it is about to strike
+  const kind = VARIANT[a.kind] ? VARIANT[a.kind][0] : a.kind;
   const glow =
-    a.kind === 'golem'
+    kind === 'golem'
       ? a.warn > 0
-      : (a.kind === 'monster' || a.kind === 'spider' || a.kind === 'slime') && Math.sin(G.frame * 0.15) > 0;
-  a.air = a.kind === 'slime' && Math.abs(a.vy || 0) > 0.6;
+      : (kind === 'monster' || kind === 'spider' || kind === 'slime') && Math.sin(G.frame * 0.15) > 0;
+  a.air = kind === 'slime' && Math.abs(a.vy || 0) > 0.6;
   const key = `${a.kind}${ph}${hurtF}${glow}${a.air ? 1 : 0}`;
   let spr = animalCache[key];
   if (!spr) {
-    spr = animalCache[key] = animalSprite(a, ph, hurtF, glow);
+    spr = animalCache[key] = VARIANT[a.kind] ? variantSprite(a, ph, hurtF, glow) : animalSprite(a, ph, hurtF, glow);
   }
   // a monster about to strike: a blinking "!" over its head
   if (a.warn > 0 && G.frame % 10 < 7) {
@@ -254,7 +279,7 @@ function drawAnimal(a, sx, sy) {
   if (a.maxHp > 12 && a.hp < a.maxHp && a.hp > 0 && a.kind !== 'fluffel') {
     const bw = Math.max(8, a.w),
       bx = Math.round(sx + a.w / 2 - bw / 2),
-      by = Math.round(sy - (a.kind === 'golem' ? 5 : 4));
+      by = Math.round(sy - (kind === 'golem' ? 5 : 4));
     ctx.fillStyle = 'rgba(26,18,12,0.85)';
     ctx.fillRect(bx - 0.5, by - 0.5, bw + 1, 2);
     ctx.fillStyle = a.hp / a.maxHp > 0.35 ? '#e8503a' : '#ffb03a';
@@ -729,6 +754,7 @@ function render() {
     for (const wx of [x + 2.5, x + 9.5]) wheel(ctx, wx, y + 5.5, 1.5, L.x / 1.5, '#2a2a2a');
   }
   drawChests(ctx, cx, cy);
+  drawZones(ctx, cx, cy); // (the cave biomes' tint, zones.js)
   drawShrines(ctx, cx, cy); // (deep down, shrines.js)
   drawHoards(ctx, cx, cy); // (the great hoards, hoards.js)
   drawTombs(ctx, cx, cy); // (where a Wühler gave out, tombs.js)

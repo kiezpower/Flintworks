@@ -1,7 +1,8 @@
 import { placeGas } from './hazards.js';
 import { placeChests } from './treasure.js';
-import { placeShrines } from './shrines.js';
+import { placeShrines, spawnGuardians } from './shrines.js';
 import { placeHoards } from './hoards.js';
+import { placeZones, zoneCreatures } from './zones.js';
 import { resetFog } from './fog.js';
 import { endTeams, setupTeams } from './teams.js';
 import { scatterDecor } from './decor.js';
@@ -411,6 +412,7 @@ function gen() {
   placeChests(Math.max(perWidth(6), treasureGoal() + 2));
   placeShrines(perWidth(3)); // (halls with a gift deep down, free modes: shrines.js)
   placeHoards(perWidth(2)); // (great hoards, found with a treasure map: hoards.js)
+  placeZones(); // (a crystal cave and a mushroom cave, zones.js)
   placeGas(perArea(9));
   if (G.relaxed) G.gas = [];
   for (let x = 0; x < W; x++)
@@ -552,6 +554,9 @@ function finishWorld() {
   applyModeSetup();
   setupRound();
   calcTerr();
+  // the cave biomes' creatures and the shrines' guardians (zones.js, shrines.js)
+  zoneCreatures();
+  spawnGuardians();
   scatterDecor();
 }
 // where the castles stand (their middle): one; Versus a second at the right edge; "Jeder gegen
