@@ -12,7 +12,8 @@ import { sel_ } from './entities.js';
 import { tr } from './i18n.js';
 import { isPlayer } from './players.js';
 import { P, saveProfile } from './profile.js';
-import { G, builds, crew } from './state.js';
+import { decor } from './decor.js';
+import { G, animals, builds, crew } from './state.js';
 import { stock } from './store.js';
 import { hasGear, hasTool } from './tools.js';
 import { say } from './tutorial.js';
@@ -230,6 +231,34 @@ const LESSONS = [
     when: c => Math.abs(c.y - H + 60) < 40,
     urgent: true,
     tip: 'Vorsicht: In der Tiefe gibt es Lava und Säure',
+  },
+  // the newer things, when you first come across them (like Terraria's guide)
+  {
+    id: 'shroom',
+    name: 'Leuchtpilze',
+    when: c => decor.some(d => d.kind === 'shroom' && !d.picked && Math.abs(d.x - c.x) < 40 && Math.abs(d.y - c.y) < 24),
+    tip: 'Leuchtpilze kannst du pflücken. In der Burg braut ein Braukessel Tränke daraus',
+  },
+  {
+    id: 'fluffel',
+    name: 'Fluffel zähmen',
+    when: c =>
+      ['bread', 'fish', 'cavefish'].some(t => c.inv.includes(t)) &&
+      !animals.some(a => a.pet === c.pid) &&
+      animals.some(a => a.kind === 'fluffel' && a.pet == null && !a.lost && Math.abs(a.x - c.x) < 50 && Math.abs(a.y - c.y) < 20),
+    tip: 'Füttere einen Fluffel mit Brot oder Fisch: Er begleitet dich und erschnüffelt Gold',
+  },
+  {
+    id: 'potion',
+    name: 'Tränke',
+    when: c => c.inv.some(t => t === 'potHeal' || t === 'potGlow' || t === 'potDig'),
+    tip: 'Wähle einen Trank in der Tasche und trink ihn mit der Aktion',
+  },
+  {
+    id: 'richdeep',
+    name: 'Reiche Tiefe',
+    when: c => !!G.richDeep && below(c) > 80,
+    tip: 'Je tiefer, desto ergiebiger das Gold: Die Tiefenanzeige wird golden',
   },
 ];
 const MISSIONS = LESSONS.filter(l => l.task).map(l => ({ ...l.task, id: l.id, crew: !!l.crew }));
