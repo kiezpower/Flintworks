@@ -21,7 +21,7 @@ test('shrines lie deep down, give their gift once, and the gifts work', async ({
   const r = await page.evaluate(async () => {
     const w = window.__ww,
       G = w.G;
-    const { mat, W, GRANITE, AIR, surf } = await import('/src/world.js');
+    const { mat, W, GRANITE, EARTH, ROCK, surf } = await import('/src/world.js');
     const { hurt } = await import('/src/digger.js');
     const me = w.crew.find(c => c.pid === G.myId);
     for (const c of [...w.crew]) if (c !== me) w.crew.splice(w.crew.indexOf(c), 1);
@@ -30,7 +30,8 @@ test('shrines lie deep down, give their gift once, and the gifts work', async ({
       n: S.length,
       gifts: new Set(S.map(s => s.gift)).size,
       deep: S.every(s => s.y > surf[s.x] + 100),
-      hall: S.every(s => mat[s.y * W + s.x] === GRANITE && mat[(s.y - 5) * W + s.x] === AIR),
+      // (the hall: a granite floor, open above it – water or sand may have trickled in meanwhile)
+      hall: S.every(s => mat[s.y * W + s.x] === GRANITE && ![EARTH, ROCK, GRANITE].includes(mat[(s.y - 5) * W + s.x])),
     };
     // at the first shrine: its gift
     const s = S[0];

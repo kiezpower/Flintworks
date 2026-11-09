@@ -21,7 +21,7 @@ test('the first chest holds a treasure map; the hoard it shows opens into gold a
   const r = await page.evaluate(async () => {
     const w = window.__ww,
       G = w.G;
-    const { mat, W, AIR, surf } = await import('/src/world.js');
+    const { mat, W, EARTH, ROCK, GRANITE, surf } = await import('/src/world.js');
     const { openChest } = await import('/src/treasure.js');
     const { P } = await import('/src/profile.js');
     const me = w.crew.find(c => c.pid === G.myId);
@@ -30,7 +30,8 @@ test('the first chest holds a treasure map; the hoard it shows opens into gold a
     const out = {
       n: H.length,
       deep: H.every(h => h.y > surf[h.x] + 140),
-      hall: H.every(h => mat[(h.y - 4) * W + h.x] === AIR),
+      // (open above the floor – water or sand may have trickled in meanwhile)
+      hall: H.every(h => ![EARTH, ROCK, GRANITE].includes(mat[(h.y - 4) * W + h.x])),
       unknown: H.every(h => !h.known),
     };
     // the first chest: a map
