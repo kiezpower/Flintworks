@@ -43,7 +43,7 @@ const nearBuild = (x, y) =>
     b => x > b.x - 24 && x < b.x + b.w + 24 && y > b.gy - b.h - 4 && y < b.gy + (b.type === 'base' ? 30 : 18),
   );
 // (the cost of a cell follows its hardness, so helpers prefer sand and earth to ore and rock)
-const digOk = (x, y) => (y < H - 4 && diggable(mat[y * W + x]) && !nearBuild(x, y) ? HARD[mat[y * W + x]] : 0);
+const digOk = (x, y) => (y < H - 4 && diggable(mat[y * W + x], x, y) && !nearBuild(x, y) ? HARD[mat[y * W + x]] : 0);
 const nav = mkNav({ solid, plat, bad, maxDrop: 36, jumpH: 15, maxNodes: 2500, budget: 5 });
 const navDig = mkNav({
   solid,

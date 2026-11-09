@@ -24,10 +24,11 @@ const AIR = 0,
   COAL = 11,
   PLANK = 12,
   GEM = 13,
-  OIL = 14; // (a liquid that floats on water and burns, fire.js; the network sends 4 bits per cell)
-const SOLID = [0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0];
-const LIQ = [0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1];
-const BLAST = [0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0];
+  OIL = 14, // (a liquid that floats on water and burns, fire.js; the network sends 4 bits per cell)
+  GLASS = 15; // (lava melts sand into it, sim.js; the last id that fits the network's 4 bits)
+const SOLID = [0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1];
+const LIQ = [0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0];
+const BLAST = [0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1];
 let mat = new Uint8Array(W * H),
   bg = new Uint8Array(W * H),
   shade = new Uint8Array(W * H),
@@ -54,6 +55,8 @@ const PAL = [
   ['#3fb5d6', '#5fd3e8', '#2f8fb0', '#b6f6ff'].map(c => hex(c)),
   // oil: nearly black with a brown sheen
   ['#2b2118', '#33271c', '#241b14', '#3d2f22'].map(c => hex(c, 235)),
+  // glass: pale and see-through, with a green-blue cast
+  ['#bfe8e4', '#a8dcd8', '#d2f2ee', '#9ccfcb'].map(c => hex(c, 170)),
 ];
 const TUN = ['#3a2416', '#33200f', '#402a1a', '#2e1c10'].map(c => hex(c));
 const MINI = [
@@ -72,6 +75,7 @@ const MINI = [
   '#a0703f',
   '#5fd3e8',
   '#3d2f22',
+  '#bfe8e4',
 ];
 // brighter / darker copies of a packed colour (alpha kept)
 // (written out without helpers: this runs for every texel of the world)
@@ -130,6 +134,11 @@ const solidAt = j => j >= 0 && j < W * H && SOLID[mat[j]] === 1;
 // are told apart by a mark of their own, not only by colour – gold dots, ore stripes, coal
 // columns, gem diagonals – drawn on the world texels (x, y at double resolution)
 let patterns = false;
+// The gate in the depth (free play): rock deeper than this many cells below the surface gives only
+// to the diamond pick (digger.js) and looks darker; 0: no gate (levels, campaign, Tagesschacht …)
+let deepGate = 0;
+const setDeepGate = d => (deepGate = d);
+const getDeepGate = () => deepGate;
 function setPatterns(on) {
   if (patterns === !!on) return false;
   patterns = !!on;
@@ -167,8 +176,12 @@ function texel(i, sx, sy) {
   let c = tex ? tex[ti] : PAL[m][shade[i] & 3];
   if (tex) c = tint(c, WSH[i]);
   if ((m === EARTH && !(shade[i] & 4)) || m === LOAM || m === ROCK) c = layerTint(c, ((i / W) | 0) - surf[i % W], i % W);
+  // deep rock behind the gate: darker, with a cold cast
+  if (m === ROCK && deepGate && ((i / W) | 0) - surf[i % W] > deepGate) c = tint(c, 0.62) | 0x00200000;
   c = underTexel(c, m, i, x, y, sx, sy, ((i / W) | 0) - surf[i % W], mat, SOLID, m === EARTH && shade[i] & 4);
   if (patterns && m >= GOLD) c = patternTint(c, m, x, y);
+  // glass: a gleam along the diagonals
+  if (m === GLASS && (x + y) % 9 < 2) c = tint(c, 1.25);
   if (LIQ[m]) {
     // a bright line on open liquid surfaces
     if (sy === 0 && i >= W && mat[i - W] === AIR) c = tint(c, 1.35);
@@ -542,6 +555,8 @@ const rnd = seeded,
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
 export {
+  getDeepGate,
+  setDeepGate,
   setPatterns,
   texel,
   beginPaint,
@@ -561,6 +576,7 @@ export {
   RES,
   paintAll,
   GEM,
+  GLASS,
   OIL,
   setGroundTop,
   activateAll,

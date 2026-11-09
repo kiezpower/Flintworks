@@ -42,8 +42,8 @@ test('the first nugget sold: an achievement with a banner and XP; the board list
   await page.goto('/');
   await page.waitForFunction(() => window.__ww);
   await page.click('#lbLvlBtn');
-  await expect(page.locator('#panel')).toContainText('Erfolge 1/25');
-  expect(await page.locator('#achList .ach').count()).toBe(25);
+  await expect(page.locator('#panel')).toContainText('Erfolge 1/26');
+  expect(await page.locator('#achList .ach').count()).toBe(26);
   expect(await page.locator('#achList .ach').first().getAttribute('class')).toContain('done');
   await expect(page.locator('#achList .ach').nth(1)).toContainText('/');
   await page.locator('#achList').scrollIntoViewIfNeeded();

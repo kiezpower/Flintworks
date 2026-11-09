@@ -8,6 +8,7 @@ import {
   CS,
   CWn,
   EARTH,
+  GLASS,
   H,
   LAVA,
   LIQ,
@@ -81,15 +82,26 @@ function flow(i, x, y, spread) {
   }
   if (tgt >= 0) swap(i, tgt);
 }
+// lava next to something it acts on (sand, wood, oil) keeps its chunk waking up now and then,
+// like acid, so the change goes on after the lava has come to rest (not while a world settles)
+let hot = false;
 function lavaReact(i, x, y) {
   const nb = [i - W, i + W, x > 0 ? i - 1 : -1, x < W - 1 ? i + 1 : -1];
   for (const j of nb) {
     if (j < 0 || j >= W * H) continue;
+    if (!G.settling && (mat[j] === SAND || mat[j] === PLANK || mat[j] === OIL)) hot = true;
     // (oil next to lava catches fire, fire.js)
     if (mat[j] === OIL) igniteCell(j);
     // wood next to lava (a bridge, stairs, a support beam) chars away
     if (!G.settling && mat[j] === PLANK && rnd() < 0.04) {
       burnPlank(j);
+      continue;
+    }
+    // sand next to lava melts into glass
+    if (!G.settling && mat[j] === SAND && rnd() < 0.08) {
+      mat[j] = GLASS;
+      paint(j);
+      if (parts.length < 1800) parts.push({ x: j % W, y: (j / W) | 0, vx: 0, vy: -0.3, l: 14, c: '#ffb03a', g: -0.002 });
       continue;
     }
     if (mat[j] === WATER) {
@@ -177,7 +189,10 @@ function simStep() {
             continue;
           }
           if (m === LAVA) {
-            if (lavaReact(i, x, y)) continue;
+            hot = false;
+            const reacted = lavaReact(i, x, y);
+            if (hot) hasAcid = true;
+            if (reacted) continue;
             if ((frame + x) % 3) continue;
             flow(i, x, y, 2);
             continue;

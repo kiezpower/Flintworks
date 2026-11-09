@@ -16,6 +16,7 @@ import { blastForts, hitFort, strikeFort } from './fort.js';
 import { atCastle, siegeMarch } from './siege.js';
 import { wormUpd } from './boss.js';
 import { queenUpd } from './queen.js';
+import { kingUpd } from './iceking.js';
 import { announceBanner } from './announce.js';
 import { igniteNear } from './fire.js';
 import { petFollow } from './pets.js';
@@ -26,6 +27,7 @@ import {
   BLAST,
   COAL,
   EARTH,
+  GLASS,
   GOLD,
   H,
   LAVA,
@@ -367,6 +369,7 @@ function updAnimal(a) {
   if (a.kind === 'worm') return a.seg ? wormUpd(a) : false;
   // the lava queen too (queen.js)
   if (a.kind === 'queen') return queenUpd(a);
+  if (a.kind === 'iceking') return kingUpd(a);
   if (a.kind === 'bat') {
     // flutter around inside caves, turn at walls
     if (--a.t <= 0) {
@@ -547,6 +550,7 @@ const LOOT = {
   spore: { col: '#9be3c8', nug: 1, name: 'Sporenpilz besiegt' },
   guardian: { col: '#5a4a6a', nug: 5, gem: 1, gems: 2, name: 'Höhlenwächter besiegt!' },
   queen: { col: '#ff7a2f', nug: 12, gem: 1, gems: 4, name: 'Lavakönigin besiegt!' },
+  iceking: { col: '#8fd0ee', nug: 8, gem: 1, gems: 5, name: 'Eiskönig besiegt!' },
 };
 function killAnimal(a) {
   const L = LOOT[a.kind];
@@ -569,7 +573,11 @@ function killAnimal(a) {
     announceBanner('Lavakönigin besiegt!', 'Gold und Edelsteine liegen, wo sie fiel');
     track('queen');
   }
-  if (a.kind === 'golem' || a.kind === 'guardian' || a.kind === 'queen') G.shake = Math.max(G.shake || 0, 9);
+  if (a.kind === 'iceking') {
+    announceBanner('Eiskönig besiegt!', 'Gold und Edelsteine liegen, wo er fiel');
+    track('iceking');
+  }
+  if (a.kind === 'golem' || a.kind === 'guardian' || a.kind === 'queen' || a.kind === 'iceking') G.shake = Math.max(G.shake || 0, 9);
   toast(L.name);
   G.kills = (G.kills || 0) + 1;
   track('monster');
@@ -584,6 +592,7 @@ const DEBCOL = {
   [ORE]: '#9a5a46',
   [COAL]: '#2a2626',
   [PLANK]: '#a0703f',
+  [GLASS]: '#d2f2ee', // (glass shatters: its shards do not land as material)
 };
 // by: the Wühler that threw or lit it (Versus: it hurts the other team's castle, and a
 // knocked-out Wühler counts for the thrower)

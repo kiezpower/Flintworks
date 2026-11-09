@@ -2,7 +2,7 @@ import { fogPack, fogUnpack } from './fog.js';
 import { glowList, scatterDecor } from './decor.js';
 import { setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
-import { mkCloud } from './gen.js';
+import { applyDeepGate, mkCloud } from './gen.js';
 import { calcTerr } from './render.js';
 import { treeSprite } from './sprites.js';
 import { useTeam } from './teams.js';
@@ -119,7 +119,7 @@ function serialize() {
       lvl: G.lvl || null,
       fort: G.fort || null,
       daily: G.daily || null,
-      ev: { kills: G.kills, rescued: G.rescued, rate: G.evRate, kinds: G.evKinds, next: G.evNext, worm: !!G.wormDone, queen: !!G.queenDone, nights: G.nights || null, village: G.villagers || [] },
+      ev: { kills: G.kills, rescued: G.rescued, rate: G.evRate, kinds: G.evKinds, next: G.evNext, worm: !!G.wormDone, queen: !!G.queenDone, king: !!G.kingDone, nights: G.nights || null, village: G.villagers || [] },
       mineMark: G.mineMark || null,
       chestsFound: G.chestsFound,
       gas: G.gas,
@@ -209,6 +209,8 @@ function deserialize(d) {
     for (const a of [meteors, items, parts, flashes, builds, trees, crew, animals, lorries, birds, clouds])
       a.length = 0;
     clearFresh();
+    // (the gate in the depth of this round's mode, before the world is painted: gen.js)
+    applyDeepGate(d.mode === 'wipfrettung' ? 'fluffelrettung' : d.mode || 'gold', !!d.teams);
     paintAll();
     activateAll();
     G.money = d.money;
@@ -243,6 +245,7 @@ function deserialize(d) {
     G.evNext = ev.next ?? null;
     G.wormDone = !!ev.worm;
     G.queenDone = !!ev.queen;
+    G.kingDone = !!ev.king;
     G.nights = ev.nights || null;
     G.villagers = ev.village || [];
     G.mineMark = d.mineMark || null;

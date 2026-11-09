@@ -86,7 +86,7 @@ wählen den Modus → `gen.js` (oder `levels/loader.js`) baut die Welt → pro T
 | `fire.js` | Öl und Feuer |
 | `zones.js` | Höhlenbiome tief unten |
 | `shrines.js` | Schreine mit Gaben und Höhlenwächtern |
-| `boss.js`, `queen.js` | Riesenwurm, Lavakönigin (Bosse) |
+| `boss.js`, `queen.js`, `iceking.js` | Riesenwurm, Lavakönigin, Eiskönig (Bosse) |
 | `combat.js`, `fort.js`, `siege.js` | Kampf, Festung, Belagerung |
 | `treasure.js`, `hoards.js` | Schatztruhen, Schatzkarten zu großen Verstecken |
 | `potions.js` | Tränke aus Leuchtpilzen |

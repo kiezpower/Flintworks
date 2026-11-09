@@ -213,3 +213,36 @@ test('acid gnaws through wood and, slowly, through rock; lava chars wood', async
   expect(r.rockEaten).toBeGreaterThan(0);
   expect(errors).toEqual([]);
 });
+
+test('lava melts sand next to it into glass; glass can be dug and blasted', async ({ page }) => {
+  const errors = await field(page);
+  const r = await page.evaluate(() => {
+    const w = window.__ww,
+      { mat, W, paint, activate, SAND, LAVA, GLASS, AIR, SOLID } = w.world,
+      { x0, g } = window.__basin;
+    const set = (x, y, m) => {
+      mat[y * W + x] = m;
+      paint(y * W + x);
+    };
+    // a floor of sand with lava on it
+    for (let x = x0; x < x0 + 20; x++) {
+      set(x, g + 11, SAND);
+      set(x, g + 10, LAVA);
+    }
+    for (let x = x0; x < x0 + 20; x += 3) activate(x, g + 10);
+    for (let k = 0; k < 600; k++) w.step(1);
+    let glass = 0;
+    for (let x = x0; x < x0 + 20; x++) if (mat[(g + 11) * W + x] === GLASS) glass++;
+    // glass is solid ground, and a blast breaks it
+    const solid = SOLID[GLASS] === 1;
+    for (let x = x0 + 24; x < x0 + 30; x++) set(x, g + 11, GLASS);
+    w.explode(x0 + 27, g + 11, 4);
+    let left = 0;
+    for (let x = x0 + 24; x < x0 + 30; x++) if (mat[(g + 11) * W + x] === GLASS) left++;
+    return { glass, solid, left, air: AIR };
+  });
+  expect(r.glass).toBeGreaterThan(10);
+  expect(r.solid).toBe(true);
+  expect(r.left).toBeLessThan(3);
+  expect(errors).toEqual([]);
+});
