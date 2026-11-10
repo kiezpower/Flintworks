@@ -499,6 +499,17 @@ function gen() {
     // a bit higher up, and a lava slime over each lava lake
     // a spot in the cave: from its middle (or a little to the side) down onto the floor or the
     // lava; false when it does not fit
+    // a pocket of room round it, so it can walk about and is not wedged into the rock (a cave
+    // is a blob and other blobs, tunnels and the like overlap it): free ground 14 cells to each
+    // side and 5 above; water, lava, acid and the granite stay
+    const room = a => {
+      for (let yy = Math.floor(a.y) - 5; yy < a.y + a.h; yy++)
+        for (let xx = Math.floor(a.x) - 14; xx < a.x + a.w + 14; xx++) {
+          if (xx < 1 || xx >= W - 1 || yy <= surf[xx] + 2 || yy >= H - 2) continue;
+          const i = yy * W + xx;
+          if (mat[i] !== GRANITE && !LIQ[mat[i]]) mat[i] = AIR;
+        }
+    };
     const put = (kind, c) => {
       if (!c) return false;
       const a = mkAnimal(kind, 0, 0);
@@ -513,6 +524,7 @@ function gen() {
         a.x = x;
         a.y = y;
         animals.push(a);
+        room(a);
         return true;
       }
       return false;
