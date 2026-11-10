@@ -1,4 +1,4 @@
-// Tagesschacht (daily.js): the same world for everybody on a day, a clock that ends the round,
+// Tagesschicht (daily.js): the same world for everybody on a day, a clock that ends the round,
 // the result kept in the profile with medals and a streak, shared as text, and the ?daily link
 // that opens today's shaft: npm test
 import { expect, test } from '@playwright/test';
@@ -75,7 +75,7 @@ test('the streak grows day by day, breaks after a gap, and only the best of a da
   expect(r.s1).toBe(3);
   expect(r.top).toBe(3);
   expect(r.after).toBe(1);
-  expect(r.text).toContain('Tagesschacht #');
+  expect(r.text).toContain('Tagesschicht #');
   expect(r.text).toContain('120 Taler');
   expect(r.text).toContain('🪨 · 🔥 3 Tage in Folge');
 });
@@ -84,7 +84,7 @@ test('the shaft starts from the lobby with today’s world, ends on the clock an
   const errors = await lobby(page);
   await expect(page.locator('#lbDailyTxt')).toContainText('Neu!');
   await page.click('#lbDaily');
-  await expect(page.locator('#panel')).toContainText('Tagesschacht #');
+  await expect(page.locator('#panel')).toContainText('Tagesschicht #');
   await page.click('#dlGo');
   await page.waitForFunction(() => window.__ww.state === 'play');
   const s = await page.evaluate(() =>
@@ -124,7 +124,7 @@ test('the shaft starts from the lobby with today’s world, ends on the clock an
   );
   await page.evaluate(() => window.__ww.step(40));
   await expect(page.locator('#overlay')).toBeVisible();
-  await expect(page.locator('#card')).toContainText('Tagesschacht #');
+  await expect(page.locator('#card')).toContainText('Tagesschicht #');
   await expect(page.locator('#card')).toContainText('🥈 470 Taler');
   await expect(page.locator('#shareBtn')).toBeVisible();
   const best = await page.evaluate(() =>
@@ -140,7 +140,7 @@ test('the shaft starts from the lobby with today’s world, ends on the clock an
 
 test('a shared link (?daily) opens today’s shaft in the lobby', async ({ page }) => {
   const errors = await lobby(page, '/?daily');
-  await expect(page.locator('#panel')).toContainText('Tagesschacht #');
+  await expect(page.locator('#panel')).toContainText('Tagesschicht #');
   await expect(page.locator('#panel')).toContainText('Los geht’s!');
   expect(page.url()).not.toContain('daily');
   expect(errors).toEqual([]);

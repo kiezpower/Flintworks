@@ -1,6 +1,6 @@
 // The level selection: one screen for everything that can be started, scrolled from top to
 // bottom; every section is a row of big cards swiped sideways. On top what is recommended (the
-// next campaign level, the Tagesschacht), then the two campaign chapters, the hand-built maps
+// next campaign level, the Tagesschicht), then the two campaign chapters, the hand-built maps
 // for Koop and Versus, and last each game mode with one card per world type. Cards show a
 // picture (levels/preview.js, or a small landscape of the world type), a tap opens the detail
 // view with the story, goals, dangers, star times and the best time before the start. Opened from the lobby (mode button).
@@ -188,7 +188,7 @@ function ribbon(b, text) {
   r.textContent = tr(text);
   b.appendChild(r);
 }
-// the card of the Tagesschacht: today's world, opened in its own panel in the lobby
+// the card of the Tagesschicht: today's world, opened in its own panel in the lobby
 function dailyCard() {
   const b = document.createElement('button'),
     D = dayInfo();
@@ -205,7 +205,7 @@ function dailyCard() {
   b.appendChild(box);
   const t = document.createElement('div');
   t.className = 'ls-t';
-  t.innerHTML = `<b>${esc(tr('Tagesschacht'))}</b>`;
+  t.innerHTML = `<b>${esc(tr('Tagesschicht'))}</b>`;
   b.appendChild(t);
   const d = document.createElement('small');
   d.className = 'ls-d';
@@ -262,7 +262,7 @@ const allowed = g => !opts.tabs || opts.tabs.includes(g);
 function sections() {
   const list = root.querySelector('.ls-list');
   list.innerHTML = '';
-  // recommended: the campaign level to go on with, and today's shaft (alone only)
+  // recommended: the campaign level to go on with, and today's shift (alone only)
   if (allowed('rec')) {
     const nx = nextOf(ALL_IDS),
       cards = [];
@@ -473,7 +473,7 @@ function build() {
 }
 
 // opts: tabs (allowed groups: rec, modes, k1, k2, maps), current (chosen id), pick (only choose,
-// do not start: the host in a room), onPick(id), onDaily() (the Tagesschacht card), onClose()
+// do not start: the host in a room), onPick(id), onDaily() (the Tagesschicht card), onClose()
 function openSelect(o = {}) {
   if (!root) build();
   opts = o;

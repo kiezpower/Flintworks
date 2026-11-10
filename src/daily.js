@@ -1,7 +1,7 @@
-// Tagesschacht: one world a day, the same for everybody (seed, world type and a twist come from the
+// Tagesschicht: one world a day, the same for everybody (seed, world type and a twist come from the
 // date). Eight minutes to earn as much as possible; the best result of the day, medals and the
 // streak of days in a row are kept in the profile, and the result can be shared like a Wordle grid
-// with a link that leads straight back to today's shaft (?daily).
+// with a link that leads straight back to today's shift (?daily).
 import { announce } from './announce.js';
 import { BIOMES } from './biomes.js';
 import { tr } from './i18n.js';
@@ -19,7 +19,7 @@ const MEDAL_ICON = ['🪨', '🥉', '🥈', '🥇'];
 const BIOME_ICON = { meadow: '🌳', desert: '🏜️', winter: '❄️' };
 // the twist of the day: events, research or money at the start
 const TWISTS = [
-  { id: 'gold', name: 'Goldrausch', intro: 'Ein ganz normaler Schacht: grab, verkauf, werd reich!' },
+  { id: 'gold', name: 'Goldrausch', intro: 'Eine ganz normale Schicht: grab, verkauf, werd reich!' },
   {
     id: 'volcano',
     name: 'Vulkantag',
@@ -47,8 +47,8 @@ const TWISTS = [
 ];
 
 // ---- the day ----
-const FIRST = Date.UTC(2026, 9, 26); // Tagesschacht #1
-// number of the day in the player's own time zone: everybody gets a new shaft at midnight
+const FIRST = Date.UTC(2026, 9, 26); // Tagesschicht #1
+// number of the day in the player's own time zone: everybody gets a new shift at midnight
 const dayNo = (d = new Date()) =>
   Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - FIRST) / 864e5) + 1;
 function hash(n) {
@@ -68,7 +68,7 @@ function dayInfo(n = dayNo()) {
     twist: TWISTS[(((n * 3) % TWISTS.length) + TWISTS.length) % TWISTS.length],
   };
 }
-// the day of the shaft being played (fixed when it started, also over midnight)
+// the day of the shift being played (fixed when it started, also over midnight)
 const cur = () => dayInfo(G.daily?.n ?? dayNo());
 const medalOf = score => MEDALS.filter(m => score >= m).length;
 const left = () => Math.max(0, LEN - (G.playTicks || 0));
@@ -79,7 +79,7 @@ const clock = () => {
 
 // ---- the game mode ----
 GAME_MODES.daily = {
-  name: 'Tagesschacht',
+  name: 'Tagesschicht',
   desc: 'Verdiene in 8 Minuten so viel du kannst',
   daily: true,
   icon: 'dig',
@@ -145,13 +145,13 @@ function store_() {
   P.daily = P.daily || { best: {}, tries: {}, streak: 0, last: 0, top: 0 };
   return P.daily;
 }
-// the streak still counts if the last shaft was today or yesterday
+// the streak still counts if the last shift was today or yesterday
 const streak = () => {
   const D = store_();
   return D.last >= dayNo() - 1 ? D.streak : 0;
 };
 const bestOf = n => store_().best[n];
-// a finished shaft: returns whether it is a new best for that day
+// a finished shift: returns whether it is a new best for that day
 function record(n, score) {
   const D = store_();
   if (D.last !== n) {
@@ -174,13 +174,13 @@ function record(n, score) {
 // ---- sharing ----
 const link = () =>
   `${ownWeb() && location.hostname !== 'localhost' ? location.origin + location.pathname : LIVE}?daily`;
-// ⛏ Flintworks · Tagesschacht #12 / 🏜️ Vulkantag / a bar of gold, the score, medal and streak
+// ⛏ Flintworks · Tagesschicht #12 / 🏜️ Vulkantag / a bar of gold, the score, medal and streak
 function shareText(n = dayNo()) {
   const D = dayInfo(n),
     s = bestOf(n) || 0,
     cells = Math.min(8, Math.round(s / 100));
   return [
-    `⛏ Flintworks · ${tr('Tagesschacht')} #${n}`,
+    `⛏ Flintworks · ${tr('Tagesschicht')} #${n}`,
     `${BIOME_ICON[D.biome]} ${tr(D.twist.name)}`,
     `${'🟨'.repeat(cells)}${'⬛'.repeat(8 - cells)} ${tr('{n} Taler', { n: s })}`,
     `${MEDAL_ICON[medalOf(s)]}${streak() > 1 ? ' · 🔥 ' + tr('{n} Tage in Folge', { n: streak() }) : ''}`,
@@ -213,11 +213,11 @@ async function shareAndTell(n) {
 }
 
 // ---- texts for the lobby, the panel and the end screen ----
-// hours and minutes until the next shaft
+// hours and minutes until the next shift
 function nextIn() {
   const d = new Date(),
     m = Math.ceil((new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1) - d) / 60000);
-  return tr('Neuer Schacht in {h} h {m} min', { h: Math.floor(m / 60), m: m % 60 });
+  return tr('Neue Schicht in {h} h {m} min', { h: Math.floor(m / 60), m: m % 60 });
 }
 // the button in the lobby: "#12 · 🔥 3 · 🥈 540"
 function badge() {
@@ -228,7 +228,7 @@ function badge() {
     .filter(Boolean)
     .join(' · ');
 }
-// the last 7 days as medals (· for a day without a shaft)
+// the last 7 days as medals (· for a day without a shift)
 function week() {
   const n = dayNo(),
     out = [];
@@ -246,7 +246,7 @@ function openDaily(hooks) {
   const n = dayNo(),
     D = dayInfo(n),
     best = bestOf(n),
-    p = openPanel(tr('Tagesschacht #{n}', { n }));
+    p = openPanel(tr('Tagesschicht #{n}', { n }));
   const box = document.createElement('div');
   box.className = 'dl-box';
   box.innerHTML = `<p class="dl-world">${BIOME_ICON[D.biome]} <b>${tr(BIOMES[D.biome].name)}</b> · <b>${tr(D.twist.name)}</b></p>
@@ -273,16 +273,16 @@ function openDaily(hooks) {
   );
   go.addEventListener('click', () => {
     if (performance.now() - G.panelT < (G.tapGuard ?? 450)) return;
-    if (inRoom()) return toast('Den Tagesschacht spielst du allein – verlass erst den Raum');
+    if (inRoom()) return toast('Die Tagesschicht spielst du allein – verlass erst den Raum');
     if (running) return hooks.play(false);
     // a game in progress would be lost: ask with a second tap
     if (hooks.hasRun() && performance.now() - armed > 3000) {
       armed = performance.now();
-      return toast('Nochmal tippen: Tagesschacht starten, dein Spielstand geht verloren');
+      return toast('Nochmal tippen: Tagesschicht starten, dein Spielstand geht verloren');
     }
     armed = -Infinity;
     if (hooks.hasRun()) hooks.discard();
-    G.daily = null; // (today's shaft, not the one played last)
+    G.daily = null; // (today's shift, not the one played last)
     hooks.play(false, 'daily');
   });
   if (best != null)
@@ -304,7 +304,7 @@ function openDaily(hooks) {
 }
 let armed = -Infinity;
 
-// the end of a shaft: record it and show the result (HTML for the end card)
+// the end of a shift: record it and show the result (HTML for the end card)
 function endCard() {
   const n = G.daily?.n ?? dayNo(),
     s = G.earned || 0,
@@ -313,14 +313,14 @@ function endCard() {
     best = bestOf(n);
   return {
     stars: m,
-    html: `<h1>${tr('Tagesschacht #{n}', { n })}</h1>
+    html: `<h1>${tr('Tagesschicht #{n}', { n })}</h1>
       <p class="dl-big">${MEDAL_ICON[m]} ${tr('{n} Taler', { n: s })}</p>
       <p>${isBest ? tr('Neuer Tagesrekord!') : tr('Dein Bestes heute: {n} Taler', { n: best })}${streak() > 1 ? ' · 🔥 ' + tr('{n} Tage in Folge', { n: streak() }) : ''}</p>
       <p class="hint">${MEDAL_ICON[m + 1] ? tr('Nächste Medaille: {m} ab {n} Taler', { m: MEDAL_ICON[m + 1], n: MEDALS[m] }) : tr('Gold! Besser geht’s nicht.')} · ${nextIn()}</p>`,
   };
 }
 
-// opened with ?daily (a shared result): show today's shaft once the lobby is up
+// opened with ?daily (a shared result): show today's shift once the lobby is up
 let fromLink = new URLSearchParams(location.search).has('daily');
 function dailyFromLink(hooks) {
   if (!fromLink) return;

@@ -47,7 +47,7 @@ test('the home crew mines crystals while away, capped by the vault, collected in
   expect(errors).toEqual([]);
 });
 
-test('upgrades cost crystals; the solo boosts work in free play but not in the Tagesschacht', async ({ page }) => {
+test('upgrades cost crystals; the solo boosts work in free play but not in the Tagesschicht', async ({ page }) => {
   const errors = await lobby(page, { camp: { t: Date.now(), k: 200, lv: {} } });
   const r = await page.evaluate(() =>
     import('/src/camp.js').then(c => {
@@ -66,7 +66,7 @@ test('upgrades cost crystals; the solo boosts work in free play but not in the T
   expect(g.boost).toBeCloseTo(1.04);
   expect(g.wood).toBeGreaterThanOrEqual(2);
 
-  // the Tagesschacht is the same for everybody, Versus is fair: no boosts there
+  // the Tagesschicht is the same for everybody, Versus is fair: no boosts there
   const off = await page.evaluate(() =>
     Promise.all([import('/src/state.js'), import('/src/camp.js')]).then(([{ G }, c]) => {
       const was = G.mode;

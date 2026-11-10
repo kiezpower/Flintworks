@@ -2,7 +2,7 @@
 // three daily quests, each with icon, bar and count) and the task board (pinned notes) that
 // opens from the game menu (tab "Aufgaben") and from the level chip in the lobby.
 import { missionNow } from './missions.js';
-import { P, QUESTS, claimQuest, rollQuests } from './profile.js';
+import { P, QUESTS, claimQuest, rollQuests, saveProfile } from './profile.js';
 import { sfx } from './sound.js';
 import { itemIcon, padIcon } from './sprites.js';
 import { G } from './state.js';
@@ -22,6 +22,8 @@ const QUEST_ICON = {
   gem: () => item('gem'),
   chest: () => pad('chest'),
   gold: () => item('nug'),
+  fish: () => item('fish'),
+  deep: () => pad('dig'),
 };
 const MIS_ICON = {
   crewtap: () => pad('crew'),
@@ -91,6 +93,11 @@ el.addEventListener('click', () => openTasks());
 // parent: where it goes; reopen: draws the panel again after a reward was claimed
 function questBoard(parent, reopen, onClaim) {
   rollQuests();
+  // (seen: the new tasks are no news any more)
+  if (P.questNew) {
+    P.questNew = false;
+    saveProfile();
+  }
   const b = document.createElement('div');
   b.className = 'qboard';
   const m = G.state === 'play' && missionNow();

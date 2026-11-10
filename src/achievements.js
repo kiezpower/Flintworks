@@ -33,7 +33,7 @@ const ACH = [
   ['mp', 'mp', 1, '🤝', 'Gemeinsam', 'Spiele eine Runde mit anderen', 100],
   ['local', 'local', 1, '🎮', 'Zu zweit', 'Spiele zu zweit an einem Gerät', 100],
   ['pet', 'pet', 1, '🐾', 'Tierfreund', 'Zähme einen Fluffel mit Brot oder Fisch', 100],
-  ['daily', 'daily', 7, '📅', 'Stammgast', 'Spiele {n} Tagesschächte', 200],
+  ['daily', 'daily', 7, '📅', 'Stammgast', 'Spiele {n} Tagesschichten', 200],
 ].map(([id, key, n, ico, name, text, xp]) => ({ id, key, n, ico, name, text, xp }));
 
 const have = (P, a) => Math.min(a.n, typeof a.key === 'function' ? a.key(P) : (P.life && P.life[a.key]) || 0);

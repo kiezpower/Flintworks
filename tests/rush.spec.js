@@ -1,5 +1,5 @@
 // Gold fever in the middle of a free round (rush.js): after three minutes, for one minute, the
-// castle pays double for gold nuggets; not in the Tagesschacht: npm test
+// castle pays double for gold nuggets; not in the Tagesschicht: npm test
 import { expect, test } from '@playwright/test';
 
 async function start(page, profile = {}, url = '/') {
@@ -61,7 +61,7 @@ test('gold fever comes after three minutes and pays double for gold for one minu
   expect(errors).toEqual([]);
 });
 
-test('the Tagesschacht has no gold fever (its scores stay comparable)', async ({ page }) => {
+test('the Tagesschicht has no gold fever (its scores stay comparable)', async ({ page }) => {
   const errors = await start(page);
   await page.click('#lbDaily');
   await page.click('#dlGo');

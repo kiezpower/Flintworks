@@ -139,7 +139,7 @@ function topSolid(x) {
 const perArea = k => Math.max(1, Math.round((k * W * H) / (W0 * H0))),
   perWidth = k => Math.max(1, Math.round((k * W) / W0));
 // the gate in the depth: in free play alone or in Koop, rock deeper than 45 m (180 cells) needs the
-// diamond pick (digger.js); not in levels, the campaign, the Tagesschacht or Versus. Also set when
+// diamond pick (digger.js); not in levels, the campaign, the Tagesschicht or Versus. Also set when
 // a saved game is loaded (save.js).
 function applyDeepGate(mode = G.mode, versus = !!G.teams) {
   const M = GAME_MODES[mode];
@@ -565,7 +565,7 @@ function finishWorld() {
   G.storm = null; // (storms.js)
   G.stormNext = null;
   G.bloodMoon = false; // (nights.js)
-  // (the map knows only the sky and the surface, fog.js; not in campaign levels, maps, the Tagesschacht)
+  // (the map knows only the sky and the surface, fog.js; not in campaign levels, maps, the Tagesschicht)
   const FM = GAME_MODES[G.mode];
   G.fogOn = !!FM && !FM.campaign && !FM.pkg && !FM.daily && !G.tut;
   G.richDeep = G.fogOn; // (deeper gold gives more nuggets, digger.js goldStep)

@@ -1,6 +1,6 @@
 // Lobby: friends without a login (net/friends.js). The own friend code to share (link, QR code),
 // adding a code, requests to accept, who is online and in which room (join, invite into the own
-// room), today's Tagesschacht among friends. Also the friends chip in the lobby, the invitation
+// room), today's Tagesschicht among friends. Also the friends chip in the lobby, the invitation
 // from a friend and the "+" for players met in a room or round.
 import qrcode from 'qrcode-generator';
 import { MEDAL_ICON, dayNo, medalOf } from './daily.js';
@@ -197,13 +197,13 @@ function openFriends(from, redraw = false) {
     row(l, { dot: f.mutual && f.online ? 'on' : f.mutual ? '' : 'wait', name: esc(f.name || showFid(f.fid)), sub, acts }).dataset.fid = f.fid;
   }
 
-  // today's Tagesschacht among friends
+  // today's Tagesschicht among friends
   const mine = P.daily?.best?.[dayNo()];
   const scores = FR.list.filter(f => f.daily != null).map(f => ({ name: f.name, s: f.daily }));
   if (scores.length) {
     scores.push({ name: P.name, s: mine ?? null, me: true });
     scores.sort((a, b) => (b.s ?? -1) - (a.s ?? -1));
-    const d = sec(p, 'Tagesschacht heute');
+    const d = sec(p, 'Tagesschicht heute');
     d.id = 'frDaily';
     scores.forEach((x, k) =>
       row(d, {
@@ -218,7 +218,7 @@ function openFriends(from, redraw = false) {
   if (rk) {
     let d = p.querySelector('#frDaily');
     if (!d) {
-      d = sec(p, 'Tagesschacht heute');
+      d = sec(p, 'Tagesschicht heute');
       d.id = 'frDaily';
     }
     const r = row(d, {
@@ -228,7 +228,7 @@ function openFriends(from, redraw = false) {
     });
     if (r) r.id = 'frRank';
   }
-  p.insertAdjacentHTML('beforeend', `<p class="hint fr-note">${tr('Ohne Konto: Dein Code und deine Liste gehören zu diesem Gerät. Was andere sehen: dein Name, ob du online bist und dein Tagesschacht – nur Freunde, die dich auch hinzugefügt haben. Für deinen Platz unter allen zählt nur dein Ergebnis, ohne Namen.')}</p>`);
+  p.insertAdjacentHTML('beforeend', `<p class="hint fr-note">${tr('Ohne Konto: Dein Code und deine Liste gehören zu diesem Gerät. Was andere sehen: dein Name, ob du online bist und deine Tagesschicht – nur Freunde, die dich auch hinzugefügt haben. Für deinen Platz unter allen zählt nur dein Ergebnis, ohne Namen.')}</p>`);
   if (back) {
     const b = document.createElement('button');
     b.className = 'lb-way fr-panel-back';

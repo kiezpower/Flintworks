@@ -1,7 +1,7 @@
 // Friends without a login. The relay derives a public friend code from the device token
 // (room.js), so nobody can take another's code. The list lives on the device (P.friends); every
 // connect sends it whole, so the relay keeps nothing on disk. Friendship is mutual: online status,
-// the room and today's Tagesschacht are only shown when both have each other in their lists; the
+// the room and today's Tagesschicht are only shown when both have each other in their lists; the
 // other side sees a request and accepts it with a tap.
 // The line to the relay is shared with the room (transport.js); it is only open while the app is
 // visible, after the tutorial, and once this device has friends or showed its own code.
@@ -23,7 +23,7 @@ const FR = {
   invite: null, // {from, name, room, at}: a friend invites me into their room
   known: false, // the relay answered since the line opened
   watching: false, // the friends panel is open (connect to learn the own code)
-  rank: null, // {day, pos, of}: my place in today's Tagesschacht among everybody (anonymous)
+  rank: null, // {day, pos, of}: my place in today's Tagesschicht among everybody (anonymous)
 };
 if (!Array.isArray(P.friends)) P.friends = [];
 if (!Array.isArray(P.fignored)) P.fignored = [];
@@ -71,13 +71,13 @@ function update() {
   }
   if (want) takePending();
 }
-// tell the relay about a change (list, name, Tagesschacht)
+// tell the relay about a change (list, name, Tagesschicht)
 function friendsSync() {
   update();
   if (wants('friends')) hello();
 }
 document.addEventListener('visibilitychange', update);
-// a new best Tagesschacht today (daily.js): friends see it
+// a new best Tagesschicht today (daily.js): friends see it
 G.onDailyRecord = friendsSync;
 setInterval(update, 3000);
 on('status', () => {
@@ -109,7 +109,7 @@ on('friends', m => {
   if (dirty) saveProfile();
   changed();
 });
-// my place in today's Tagesschacht among everybody the relay knows (anonymous, server/relay.js)
+// my place in today's Tagesschicht among everybody the relay knows (anonymous, server/relay.js)
 on('rank', m => {
   if (!Number.isInteger(m.day) || !Number.isInteger(m.pos) || !Number.isInteger(m.of)) return;
   FR.rank = { day: m.day, pos: m.pos, of: m.of };

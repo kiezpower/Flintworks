@@ -103,12 +103,12 @@ wählen den Modus → `gen.js` (oder `levels/loader.js`) baut die Welt → pro T
 | `scenarios.js`, `levels/` | Kampagne und handgebaute Level |
 | `levels/share.js`, `levels/linkcode.js`, `levels/draft.js` | Level als Link (`?lvl=`) und Entwürfe aus dem Editor: packen, streng prüfen, spielen |
 | `editor/editor.js` (`editor.html`) | Level-Editor: malen, Objekte, probespielen, als Link teilen |
-| `daily.js` | Tagesschacht |
+| `daily.js` | Tagesschicht |
 | `missions.js`, `questui.js`, `coop.js` | Aufträge in der Runde, Tracker, Team-Aufgaben im Koop |
 | `achievements.js` | Erfolge |
 | `teams.js`, `versus.js`, `bots.js` | Teams, Versus-Regeln, Bots |
 | `season.js` | Monatliche Saison für Versus: Punkte, Rang, Kristalle zum Monatswechsel |
-| `replay.js` | Tagesschacht aufzeichnen und als Wiederholung abspielen |
+| `replay.js` | Tagesschicht aufzeichnen und als Wiederholung abspielen |
 | `stats.js`, `scoreboard.js` | Statistik und Punktetafel im Mehrspieler |
 | `reward.js` | Sichtbare Belohnungen (fliegende Münzen) |
 

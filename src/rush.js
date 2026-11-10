@@ -1,7 +1,7 @@
 // Gold fever ("Goldfieber", not to be mixed up with the mode Goldrausch) now and then in the
 // middle of a round, a high point for the long free rounds: for one minute the castle pays double
 // for gold nuggets. Only in the free modes (no campaign, levels,
-// Tagesschacht or tutorial, whose scores must stay comparable), first after three minutes, then
+// Tagesschicht or tutorial, whose scores must stay comparable), first after three minutes, then
 // every five to seven. Runs on the host or in a single game; everybody hears the banner.
 import { announce, announceBanner } from './announce.js';
 import { GAME_MODES } from './modes.js';

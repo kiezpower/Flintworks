@@ -1,4 +1,4 @@
-// Watching a Tagesschacht run again (like the replays of racing and puzzle games): while a shaft
+// Watching a Tagesschicht run again (like the replays of racing and puzzle games): while a shift
 // is played, every play tick is written down – the player's input (stick, buttons), the state of
 // the random numbers, the camera and the view – and every order from the panels with the random
 // state it ran in. Played back in the same world (the day's seed), the game then goes exactly the
@@ -17,7 +17,7 @@ let rec = null, // the run being written down
   play = null, // the run being played back
   view = null; // the view of this device while a tick of the playback runs
 
-// a Tagesschacht run starts (main.js): write it down
+// a Tagesschicht run starts (main.js): write it down
 function recStart(day) {
   play = null;
   G.replaying = false;
@@ -183,7 +183,7 @@ function savedReplay() {
   } catch {}
   return null;
 }
-// play a kept run back: the same day's shaft, steered by the recording
+// play a kept run back: the same day's shift, steered by the recording
 function playStart(d) {
   rec = null;
   play = unpack(d);

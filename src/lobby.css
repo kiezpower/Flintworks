@@ -299,7 +299,7 @@
   opacity: 0.6;
 }
 
-/* the Tagesschacht: a golden sign that glows until today's shaft is played */
+/* the Tagesschicht: a golden sign that glows until today's shift is played */
 .lb-daily {
   background: linear-gradient(#ffe36a, #f2c230 50%, #b9822a);
   color: var(--inkb);
@@ -329,7 +329,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* the Tagesschacht panel and end card */
+/* the Tagesschicht panel and end card */
 .dl-box {
   display: grid;
   gap: 6px;

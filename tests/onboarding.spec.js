@@ -46,7 +46,7 @@ test('no install offer and no lobby before the first real round', async ({ page 
   await expect(page.locator('#panel')).toBeHidden();
 });
 
-test('links to the Tagesschacht or a room still open the lobby for a new player', async ({ page }) => {
+test('links to the Tagesschicht or a room still open the lobby for a new player', async ({ page }) => {
   await fresh(page, { url: '/?daily' });
   await expect(page.locator('#veil')).toBeHidden();
 });

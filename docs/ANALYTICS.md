@@ -107,7 +107,7 @@ kommt, sind `onb_hint`, `onb_rescue` und `onb_recover`.
 | Erste echte Runde (`core_round_start`) | umgesetzt, getestet |
 | Sitzung, Rückkehr (`app_open`, `session_end`) | umgesetzt; `app_open` getestet, `session_end` nur von Hand geprüft (`?ev`) |
 | Rundenende, Rundenabbruch, erschöpfter Wühler (`round_end`, `round_quit`, `digger_down`) | umgesetzt, getestet (`tests/rounds.spec.js`) |
-| Lektionen und Aufträge nach dem Tutorial, Kampagne, Tagesschacht im Einzelnen | aufgeschoben – noch keine Ereignisse |
+| Lektionen und Aufträge nach dem Tutorial, Kampagne, Tagesschicht im Einzelnen | aufgeschoben – noch keine Ereignisse |
 | Anbieter, Einwilligung, Versand | aufgeschoben – kein Anbieter gewählt |
 
 ## Prüfen
