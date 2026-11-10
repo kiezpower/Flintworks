@@ -10,7 +10,9 @@ async function field(page) {
   await page.evaluate(() =>
     localStorage.setItem(
       'flintworks-profile',
-      JSON.stringify({ tutorialDone: true, installAsked: 'done', games: 3, mode: 'meadow' }),
+      // (relaxed: no meteors and lightning, which now and then hit the basin and blast away what the
+      // test built in it)
+      JSON.stringify({ tutorialDone: true, installAsked: 'done', games: 3, mode: 'meadow', diff: 'relaxed' }),
     ),
   );
   await page.reload();
@@ -29,8 +31,14 @@ async function field(page) {
     };
     for (let y = g - 4; y < g + 14; y++) for (let x = x0 - 2; x < x0 + 42; x++) set(x, y, ROCK);
     for (let y = g - 4; y < g + 12; y++) for (let x = x0; x < x0 + 40; x++) set(x, y, AIR);
+    // a lid: rain falling into an open basin cools lava into rock and douses fire, and whether it
+    // rains depends on the world of this round
+    for (let x = x0 - 2; x < x0 + 42; x++) set(x, g - 5, ROCK);
     for (let y = g - 4; y < g + 14; y += 4) for (let x = x0; x < x0 + 40; x += 4) activate(x, y);
     for (const c of w.crew) c.x = 40;
+    // no things of the world about: a TNT or flint that falls into the basin is lit by the lava, and
+    // the blast takes lava, sand and floor with it (where TNT lies depends on the world)
+    w.items.length = 0;
     window.__basin = { x0, g };
   });
   return errors;

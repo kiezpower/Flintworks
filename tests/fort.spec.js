@@ -17,6 +17,15 @@ async function field(page) {
   await page.waitForFunction(() => window.__ww);
   await page.click('#lbPlay');
   await page.waitForFunction(() => window.__ww.state === 'play');
+  // The world of this round depends on where the random numbers stood when "play" was pressed (the
+  // lobby draws some every frame), and the pieces need flat ground: so the world of the seed is
+  // made again, the same on every run.
+  await page.evaluate(() => {
+    const G = window.__ww.G;
+    Object.assign(G, { nextMode: 'gold', nextSeed: 7, nextBiome: 'meadow', nextDiff: 'adventure' });
+    window.__ww.gen();
+    G.nextSeed = null;
+  });
   // build a piece where the player stands (finished at once), on flat ground right of the castle
   await page.evaluate(() => {
     const w = window.__ww,
