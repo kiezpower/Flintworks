@@ -540,6 +540,19 @@ const EN2 = {
   '{name} fühlt sich wohl im Dorf und zahlt mehr Miete.': '{name} feels at home in the village and pays more rent.',
   // the gate in the depth (digger.js)
   'Tiefenfels: Hier kommt nur die Diamanthacke durch (Burg → Forschung „Härten“)': 'Deep rock: only the diamond pick gets through here (castle → research “Hardening”)',
+  // more twists of the Tagesschicht (daily.js)
+  Nachtschicht: 'Night Shift',
+  'Heute beginnt die Schicht bei Nacht. Grubenlampe und Fackeln liegen bereit – nach gut vier Minuten wird es hell.':
+    'Today the shift begins at night. A mine lamp and torches are ready – after a good four minutes it gets light.',
+  Fiebertag: 'Fever Day',
+  'Immer wieder zahlt die Burg eine Minute lang doppelt für Gold. Spar dir dein Gold für die Fieberzeiten auf!':
+    'Again and again the castle pays double for gold for a minute. Save your gold for the fever times!',
+  Schwerttag: 'Sword Day',
+  'Du startest mit Schwert und Metall. Monster unter Tage lassen Gold fallen.':
+    'You start with a sword and metal. Monsters underground drop gold.',
+  Hakentag: 'Hook Day',
+  'Enterhaken und Baumaterial liegen bereit – hoch hinaus, tief hinunter!':
+    'A grappling hook and building material are ready – up high, down deep!',
   // new daily tasks (lobby.js)
   'Neue Tagesaufgaben!': 'New daily tasks!',
   // replays (replay.js)

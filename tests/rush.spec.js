@@ -69,6 +69,8 @@ test('the Tagesschicht has no gold fever (its scores stay comparable)', async ({
   const r = await page.evaluate(() => {
     const w = window.__ww;
     w.step(60);
+    // (whatever today's twist is: only its fever day has the fever, daily.js; tests/twists.spec.js)
+    w.G.daily.tw = 'gold';
     // (even when the countdown would run out)
     w.G.rushNext = 1;
     w.step(5);
