@@ -2,17 +2,19 @@
 
 Ein Aufbau- und Grabespiel mit Pixel-Physik im Stil der Klassiker: Führe deine Crew, grabe nach Gold, fälle Bäume, baue eine Produktionskette und verkaufe alles an der Heimatbasis.
 
-**Tagesschacht:** Jeden Tag eine neue Welt, für alle Spieler gleich. Acht Minuten Zeit, so viel Taler wie möglich verdienen, Medaillen und eine Serie von Tagen in Folge sammeln und das Ergebnis mit Freunden teilen (WhatsApp, Teilen-Menü oder Zwischenablage). Der geteilte Link `?daily` öffnet direkt den Schacht des Tages.
+**Tagesschicht:** Jeden Tag eine neue Welt, für alle Spieler gleich. Acht Minuten Zeit, so viel Taler wie möglich verdienen, Medaillen und eine Serie von Tagen in Folge sammeln und das Ergebnis mit Freunden teilen (WhatsApp, Teilen-Menü oder Zwischenablage). Der geteilte Link `?daily` öffnet direkt den Schacht des Tages.
 
 **Zusammen spielen:** Bis zu acht Spieler, im Koop, im Versus (zwei Teams) oder „Jeder gegen jeden“ (ab drei Spielern jeder mit eigener Burg, höchstens vier Burgen – ab fünf Spielern teilen sich zwei eine Burg; eine gestürmte Burg ist raus, der Letzte gewinnt). „Schnell spielen“ bringt dich ohne Code mit anderen Spielern zusammen (in einen offenen Raum mit freiem Platz, sonst eröffnest du einen); die Liste zeigt alle offenen Räume zum Auswählen. Schnell-Räume spielen den „Modus der Stunde“ (jede Stunde ein anderer Modus oder eine andere Karte, Koop oder Versus, für alle gleich) und starten von selbst: Sind zwei Spieler da, läuft ein Countdown von 20 Sekunden, sind alle bereit, geht es nach 3 Sekunden los; nach einer Runde folgt die nächste genauso. Versus-Runden dauern dort 4 statt 8 Minuten. Ist man allein, geht es nach 30 Sekunden trotzdem los: im Versus gegen Bots, die freie Burgen übernehmen. Wer später dazukommt, übernimmt die Burg eines Bots.
 
 **Bots und Helfer:** Helfer arbeiten nur fürs eigene Lager (graben, sammeln, heimbringen). Bots sind Gegner und spielen wie ein Mensch: Sie kaufen Feuersteine und TNT, laufen zur gegnerischen Burg, zielen und werfen, nehmen den Hügel, verteidigen die eigene Burg, heben Nachschub auf und graben im Wettgraben nach unten. Jeder Bot hat einen Stil (Stürmer, Hügel, Sammler) und trägt „(Bot)“ im Namen. Ein Raum für Freunde bleibt verborgen und wird per Code, Link oder QR-Code geteilt; der Host kann jeden Raum öffnen oder schließen.
 
-**Freunde (ohne Login):** Jedes Gerät hat einen Freundescode (Lobby → Freunde-Knopf oben rechts), zum Teilen als Link oder QR-Code. Wer den Code eingibt, den Link öffnet oder einen Mitspieler im Raum oder am Rundenende mit „+“ antippt, schickt eine Anfrage; erst wenn beide sich hinzugefügt haben, sieht man sich. Dann zeigt die Liste, wer online ist und in welchem Raum (mit einem Tipp beitreten), aus dem eigenen Raum lädt man Freunde ein, und „Tagesschacht heute“ vergleicht die Ergebnisse. Code und Liste gehören zum Gerät; der Server hält nur im Speicher, wer gerade online ist (Freundescode aus dem geheimen Geräte-Token abgeleitet, siehe Kopf von `server/relay.js`).
+**Freunde (ohne Login):** Jedes Gerät hat einen Freundescode (Lobby → Freunde-Knopf oben rechts), zum Teilen als Link oder QR-Code. Wer den Code eingibt, den Link öffnet oder einen Mitspieler im Raum oder am Rundenende mit „+“ antippt, schickt eine Anfrage; erst wenn beide sich hinzugefügt haben, sieht man sich. Dann zeigt die Liste, wer online ist und in welchem Raum (mit einem Tipp beitreten), aus dem eigenen Raum lädt man Freunde ein, und „Tagesschicht heute“ vergleicht die Ergebnisse. Code und Liste gehören zum Gerät; der Server hält nur im Speicher, wer gerade online ist (Freundescode aus dem geheimen Geräte-Token abgeleitet, siehe Kopf von `server/relay.js`).
 
-**Heimatbergwerk:** Kristalle sind die Währung, die zwischen den Runden bleibt. Deine Heim-Crew schürft sie auch, wenn das Spiel zu ist (bis der Tresor voll ist, anfangs nach 4 Stunden), jede Runde bringt welche dazu (1 je 40 verdiente Taler, 10 für einen Sieg, Medaillen im Tagesschacht). Kassiert wird in der Lobby unter „Heimatbergwerk“. Ausgeben kannst du sie für mehr Heim-Crew und einen größeren Tresor, für kleine Boni im freien Spiel allein (Startkasse, schärfere Hacken, Holzvorrat; nie im Mehrspieler, im Tagesschacht, in der Kampagne oder im Tutorial) und für Skins: Outfits für deinen Wühler und Baustile für deine Gebäude. Die sehen auch deine Mitspieler. Kristalle gibt es nur durchs Spielen, nicht für Geld.
+**Heimatbergwerk:** Kristalle sind die Währung, die zwischen den Runden bleibt. Deine Heim-Crew schürft sie auch, wenn das Spiel zu ist (bis der Tresor voll ist, anfangs nach 4 Stunden), jede Runde bringt welche dazu (1 je 40 verdiente Taler, 10 für einen Sieg, Medaillen im Tagesschicht). Kassiert wird in der Lobby unter „Heimatbergwerk“. Ausgeben kannst du sie für mehr Heim-Crew und einen größeren Tresor, für kleine Boni im freien Spiel allein (Startkasse, schärfere Hacken, Holzvorrat; nie im Mehrspieler, im Tagesschicht, in der Kampagne oder im Tutorial) und für Skins: Outfits für deinen Wühler und Baustile für deine Gebäude. Die sehen auch deine Mitspieler. Kristalle gibt es nur durchs Spielen, nicht für Geld.
 
 **Aufgaben im Blick:** Links unter den Talern steht während der Runde ein schmaler Kasten mit höchstens drei Zeilen, je ein Symbol und ein Balken: zuerst der Auftrag der Runde, dann die noch nicht abgeholten Tagesaufgaben. Fertige werden gold, ein Fortschritt blinkt kurz auf. Ein Tipp darauf öffnet Menü → Aufgaben: eine Tafel mit angepinnten Zetteln (mit Text und Stand), auf der man die Belohnung (XP) gleich abholt; abgeholte tragen den Stempel „Erledigt“. Dieselbe Tafel öffnet in der Lobby der Level-Knopf oben rechts.
+
+**Tagesaufgaben:** Jeden Tag gibt es drei neue Aufgaben, um Mitternacht in deiner Ortszeit und für alle Spieler gleich. Es gibt neun Arten (Waren verkaufen, Bäume fällen, Monster besiegen, Goldnuggets verkaufen, bauen, Edelsteine finden, Fische fangen, Truhen öffnen, tief graben). Zwei Tage hintereinander ist keine Art dabei, die schon gestern dran war, und die Menge wechselt mit dem Tag. Sind neue Aufgaben da, leuchtet der Level-Knopf in der Lobby, bis du die Tafel geöffnet hast.
 
 **Produktion im Blick:** Im Burg-Menü zeigt „Produktion“, welches Gebäude läuft und welches auf was wartet. Fehlt Holz, Erz oder Kohle, schickt „Helfer schicken“ einen freien Helfer los. Wartet ein Gebäude länger als 30 Sekunden, blinkt seine Blase.
 
@@ -54,7 +56,7 @@ Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch u
 
 Zwei Steuerungen (Optionen → Steuerung): **Modern** (Standard) gräbt, wenn man gegen Erde läuft, und hat einen eigenen Sprung-Knopf. **Klassisch** gräbt mit dem Graben-Knopf und lässt an Wänden klettern und an Decken hängen, wie im Original.
 
-**Levelauswahl** (Lobby → Modus): ein Screen zum Durchscrollen, jede Reihe zum Wischen. Oben „Empfohlen“ (das nächste Kampagnen-Level und der Tagesschacht), dann Goldrausch, Siedler und Schatzsucher mit je einer Karte für Wiese, Wüste und Winter, die beiden Kapitel der Kampagne und die Karten für Koop und Versus. Die Chips oben springen zu den Abschnitten.
+**Levelauswahl** (Lobby → Modus): ein Screen zum Durchscrollen, jede Reihe zum Wischen. Oben „Empfohlen“ (das nächste Kampagnen-Level und die Tagesschicht), dann Goldrausch, Siedler und Schatzsucher mit je einer Karte für Wiese, Wüste und Winter, die beiden Kapitel der Kampagne und die Karten für Koop und Versus. Die Chips oben springen zu den Abschnitten.
 
 **Monster** (unter der Erde, nicht in „Gemütlich“): Höhlenmonster (beißt kräftig), Giftspinne (schnell, springt dich an, ihr Gift kostet noch ein paar Sekunden Energie), Lavaschleim (hüpft aus den Lavaseen, Lava macht ihm nichts, setzt dich in Brand) und der Steingolem in der tiefsten Höhle (langsam, haut sehr hart zu, Pfeile prallen halb ab – das Schwert hilft; dafür lässt er Gold, Erz und manchmal einen Edelstein fallen). Verletzte Monster zeigen einen Lebensbalken, der Schild halbiert ihren Schaden. Die Kampagne hat nur Höhlenmonster.
 
@@ -66,19 +68,19 @@ Zwei Steuerungen (Optionen → Steuerung): **Modern** (Standard) gräbt, wenn ma
 
 **Eiskönig** (Winterwelten im freien Spiel, nicht in „Gemütlich“, einmal pro Welt): Ab Minute zehn erscheint er in einer Höhle, wenn ein Wühler tief unten ist. Er schwebt durch die Höhlen, wirft Eissplitter, die einfrieren (drei Sekunden langsamer), und ruft Fledermäuse. Besiegt lässt er Edelsteine und Gold liegen (Erfolg „Tauwetter“).
 
-**Tiefenfels** (freies Spiel): Fels tiefer als 45 m ist dunkler und gibt nur der Diamanthacke nach; Erde, Gold, Erz und Edelsteine bleiben überall grabbar. In Kampagne, Leveln, Tagesschacht und Versus gibt es kein Tor in der Tiefe.
+**Tiefenfels** (freies Spiel): Fels tiefer als 45 m ist dunkler und gibt nur der Diamanthacke nach; Erde, Gold, Erz und Edelsteine bleiben überall grabbar. In Kampagne, Leveln, Tagesschicht und Versus gibt es kein Tor in der Tiefe.
 
 **Siedler:** Wer drei Morgen in Folge Brot bekommt, fühlt sich wohl und zahlt 3 statt 2 Taler Miete; wer hungert, zahlt 1, und nach dem zweiten hungrigen Morgen zieht er aus.
 
-**Goldfieber** (freies Spiel, nicht in Kampagne und Tagesschacht): nach drei Minuten und dann alle fünf bis sieben Minuten zahlt die Burg eine Minute lang doppelt für Goldklumpen.
+**Goldfieber** (freies Spiel, nicht in Kampagne und Tagesschicht): nach drei Minuten und dann alle fünf bis sieben Minuten zahlt die Burg eine Minute lang doppelt für Goldklumpen.
 
-**Wiederholung** (Tagesschacht): Jede Runde im Tagesschacht wird mitgeschrieben; am Ende (und im Tagesschacht-Fenster: „Letzte Runde ansehen“) lässt sie sich als Wiederholung ansehen – genau wie gespielt, deine Eingaben zählen dabei nicht, und nichts davon wird gewertet. Gespeichert wird die letzte Runde auf dem Gerät, für dieselbe Version des Spiels.
+**Wiederholung** (Tagesschicht): Jede Runde in der Tagesschicht wird mitgeschrieben; am Ende (und im Tagesschicht-Fenster: „Letzte Runde ansehen“) lässt sie sich als Wiederholung ansehen – genau wie gespielt, deine Eingaben zählen dabei nicht, und nichts davon wird gewertet. Gespeichert wird die letzte Runde auf dem Gerät, für dieselbe Version des Spiels.
 
 **Saison** (Versus und „Jeder gegen jeden“, mit Menschen oder Bots): Jeder Monat ist eine Saison. Ein Sieg bringt 25 Punkte, ein Unentschieden 10, eine Niederlage 5. Ab 100 Punkten ist man Silber, ab 250 Gold, ab 500 Diamant. Die Abschlusskarte zeigt Punkte und Rang. Beginnt ein neuer Monat, zahlt der erreichte Rang Kristalle (Silber 30, Gold 80, Diamant 150) und die Punkte starten neu. Die Saison gehört zum Gerät; der Server speichert nichts, deshalb gibt es keine Liste aller Spieler.
 
-**Tagesschacht unter allen:** Im Freunde-Fenster steht unter „Tagesschacht heute“ dein Platz unter allen, die heute gespielt haben – nur Platz und Anzahl, ohne Namen. Ergebnisse über dem Möglichen zählt das Relay nicht.
+**Tagesschicht unter allen:** Im Freunde-Fenster steht unter „Tagesschicht heute“ dein Platz unter allen, die heute gespielt haben – nur Platz und Anzahl, ohne Namen. Ergebnisse über dem Möglichen zählt das Relay nicht.
 
-**Schwierigkeit** (Optionen → Spiel, gilt fürs freie Spiel; Kampagne und Tagesschacht haben ihre eigene): Gemütlich (keine Monster, kein Gas, keine Blitze und Meteore, ruhiges Tempo), Abenteuer (alle Gefahren) oder Hart (alle Gefahren, volles Tempo). Baugebiete (bauen nur im eigenen Gebiet, Flaggen erweitern es) gelten im Modus Siedler, für alle Spieler gleich.
+**Schwierigkeit** (Optionen → Spiel, gilt fürs freie Spiel; Kampagne und Tagesschicht haben ihre eigene): Gemütlich (keine Monster, kein Gas, keine Blitze und Meteore, ruhiges Tempo), Abenteuer (alle Gefahren) oder Hart (alle Gefahren, volles Tempo). Baugebiete (bauen nur im eigenen Gebiet, Flaggen erweitern es) gelten im Modus Siedler, für alle Spieler gleich.
 
 **Festgesessen?** Ist eine Kante zu hoch zum Springen, gräbt sich der Wühler in einer Grube oder Höhle von selbst schräg nach oben, sobald man gegen die Erdwand läuft (moderne Steuerung). Geht das nicht (Fels), zeigt der Aktions-Knopf den Ausweg: „Treppe“ (1 Brett oder 1 Holz aus Gepäck oder Lager, bis zur Kante) und ohne Holz „Heim“ (zurück zur Basis). Der **Enterhaken** (in der Basis zu kaufen, 30 Taler, 2 Holz, 1 Stein) bekommt einen eigenen Knopf „Haken“ (Taste G). Er wird immer geworfen: Zieh den Knopf in eine Richtung und lass los (eine gestrichelte Linie zeigt das Seil, grün, wenn er greift; am Desktop hält man G und zielt mit dem Mauszeiger, loslassen wirft – oder man hält eine Pfeiltaste und drückt G), ohne Richtung (Zeiger auf dem Wühler) fliegt er an die nächste Kante über dir, sonst schräg nach oben. Der Lauf-Stick bleibt dabei frei. Was er trifft, daran zieht dich das Seil hin (gibt es dort einen Platz zum Stehen, landest du darauf); trifft er nichts, rollt sich das Seil wieder ein.
 
@@ -166,7 +168,7 @@ src/
   save.js             Spielstand im Browser speichern
   camp.js             Heimatbergwerk: Kristalle, Offline-Ertrag, Tresor, Ausbau, Solo-Boni
   lobbycamp.js        Heimatbergwerk-Fenster in der Lobby (Kassieren, Ausbau, Skins)
-  lobbyfriends.js     Freunde-Fenster: eigener Code, Anfragen, online, beitreten, einladen, Tagesschacht
+  lobbyfriends.js     Freunde-Fenster: eigener Code, Anfragen, online, beitreten, einladen, Tagesschicht
   net/friends.js      Freundesliste ohne Login: Liste auf dem Gerät, Status vom Relay
   friends.css         Gestaltung des Freunde-Fensters
   skins.js            Outfits für Wühler und Baustile für Gebäude
@@ -186,7 +188,7 @@ src/
   questui.js          Aufgaben-Kasten unter den Talern und Aufgaben-Tafel (Menü, Lobby)
   versus.js           Versus: Burg-Lebenspunkte, Hügel, Rundenuhr, Nachschub, Sieger
   coop.js             Koop: Teamaufgaben
-  daily.js            Tagesschacht: Welt des Tages, Uhr, Medaillen, Serie, Ergebnis teilen
+  daily.js            Tagesschicht: Welt des Tages, Uhr, Medaillen, Serie, Ergebnis teilen
   stats.js            Mehrspieler: Rangliste und Auszeichnungen am Rundenende
   i18n.js             Übersetzungen (Deutsch ist der Schlüssel, Englisch die Übersetzung)
   i18n2.js            Weitere Übersetzungen (damit keine Datei über 1000 Zeilen wächst)

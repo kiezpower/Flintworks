@@ -21,7 +21,7 @@ const NEWS = [
 const GROWTH = [1.3, 1, 0.8, 0.15];
 
 // seasons only in the green worlds of the free modes (not in campaign levels, maps, the
-// Tagesschacht or the tutorial: their worlds are made for one look)
+// Tagesschicht or the tutorial: their worlds are made for one look)
 function hasSeasons() {
   const M = GAME_MODES[G.mode];
   return !!M && !M.campaign && !M.pkg && !M.daily && !G.tut && G.biome === 'meadow';

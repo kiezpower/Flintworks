@@ -49,7 +49,7 @@ Vorlage für die Einladung:
 > Hallo! Flintworks kommt in den Play Store, und Google verlangt vorher einen Test mit 12 Leuten
 > über 14 Tage. Machst du mit? 1. Schick mir die E-Mail-Adresse deines Google-Kontos. 2. Öffne
 > danach den Link, den ich dir schicke, tippe auf „Tester werden“ und installiere die App aus dem
-> Play Store. 3. Lass sie 14 Tage drauf und spiel ab und zu eine Runde (der Tagesschacht reicht).
+> Play Store. 3. Lass sie 14 Tage drauf und spiel ab und zu eine Runde (die Tagesschicht reicht).
 > Danke!
 
 ## Store-Eintrag
@@ -126,7 +126,7 @@ Antworten hier und in der Play Console anpassen.
 |---|---|---|---|---|---|
 | Persönliche Angaben → **Name** (frei gewählter Name des Wühlers) | Ja | Nein (die Weitergabe an Mitspieler und Freunde geschieht auf Wunsch des Nutzers) | Nein | Optional (nur Mehrspieler/Freunde) | App-Funktionen |
 | Geräte- oder andere IDs (zufällige Geräte-Kennung, Freundescode) | Ja | Nein | Nein | Optional | App-Funktionen |
-| App-Aktivität → Interaktionen in der App (Spielzüge, Tagesschacht-Ergebnis) | Ja | Nein | Nein | Optional | App-Funktionen |
+| App-Aktivität → Interaktionen in der App (Spielzüge, Tagesschicht-Ergebnis) | Ja | Nein | Nein | Optional | App-Funktionen |
 
 Nicht erhoben: Standort, Kontakte, Fotos, Dateien, Finanzdaten, Gesundheit, Nachrichten, Absturzberichte, Analysedaten (die Tutorial-Ereignisse aus `src/analytics.js` bleiben auf dem Gerät).
 

@@ -2,7 +2,7 @@
 // ground is dark on the map until a Wühler (a player or a helper) has been close to it. The sky
 // and a strip under the surface are always known. So gold, caves, shrines and hoards have to be
 // found – the treasure map (hoards.js) shows the way to one. Campaign levels, maps and the
-// Tagesschacht keep the whole map. Counted in map cells (4 × 4 landscape pixels); every device
+// Tagesschicht keep the whole map. Counted in map cells (4 × 4 landscape pixels); every device
 // uncovers around the Wühler it knows of, and the save keeps it.
 import { G, crew } from './state.js';
 import { H, W, surf } from './world.js';

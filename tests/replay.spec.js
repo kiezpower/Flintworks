@@ -1,10 +1,10 @@
-// Watching a Tagesschacht run again (replay.js): the run is written down while it is played and,
+// Watching a Tagesschicht run again (replay.js): the run is written down while it is played and,
 // played back in the same world, ends with the same money and the same ground – with helpers
 // planning, digging, orders from the panels and drawing in between; nothing of the playback
 // counts (no result, no save): npm test
 import { expect, test } from '@playwright/test';
 
-test('a recorded Tagesschacht run plays back exactly, and the playback counts for nothing', async ({ page }) => {
+test('a recorded Tagesschicht run plays back exactly, and the playback counts for nothing', async ({ page }) => {
   test.setTimeout(240000);
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));

@@ -105,7 +105,7 @@ function buySkin(id) {
   saveProfile();
   return true;
 }
-// the boosts only count in free play alone: never in multiplayer, the Tagesschacht (the same world
+// the boosts only count in free play alone: never in multiplayer, the Tagesschicht (the same world
 // for everybody), the campaign or the tutorial
 const soloBoosts = () => !G.net && !G.teams && !mode().campaign && !mode().daily && !G.tut;
 // right after a new free world is made (start money and wood); returns the start money added
@@ -120,7 +120,7 @@ function applyStartBoosts() {
 function setDigBoost() {
   G.digBoost = soloBoosts() ? 1 + 0.04 * level('pick') : 1;
 }
-// crystals for a finished round: one per 40 Taler earned, 10 more for a win, medals of the Tagesschacht
+// crystals for a finished round: one per 40 Taler earned, 10 more for a win, medals of the Tagesschicht
 const roundCrystals = (earned, won, medal = 0) => Math.floor((earned || 0) / 40) + (won ? 10 : 0) + [0, 5, 10, 20][medal];
 
 export {

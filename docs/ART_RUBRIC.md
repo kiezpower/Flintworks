@@ -332,7 +332,7 @@ ein Schaustück-Level (Himmelsinsel oder Siedlung auf mehreren Ebenen).
   Kanone und brennendes Öl treffen den Kopf; Boss-Balken unten; besiegt 14 Goldklumpen, Erz und
   Edelsteine. Kommt im freien Spiel einmal pro Welt nach 10 Minuten und in Nacht 3 von „Festung“.
 - v1.89.0: Erfolge: 18 Langzeitziele (Gold, Taler, Bäume, Gebäude, Edelsteine, Monster, Truhen,
-  Tiefe, Öl, Riesenwurm, Festungsnächte, Siege, 3 Sterne, Mehrspieler, zu zweit, Tagesschächte),
+  Tiefe, Öl, Riesenwurm, Festungsnächte, Siege, 3 Sterne, Mehrspieler, zu zweit, Tagesschichten),
   nur im Profil auf dem Gerät, mit Banner und XP; Liste auf der Aufgaben-Tafel (`achievements.js`).
 - v1.90.0: Angeln (wie Terraria): Angelrute in der Burg (25 Taler, 2 Holz); am Wasser „Angeln“,
   beißt etwas an (Schwimmer taucht, „!“), holt die Aktion es ein: meist ein Fisch (8 Taler), sonst

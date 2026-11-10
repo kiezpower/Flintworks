@@ -48,7 +48,7 @@ function settingsSections(p, reopen, { lobby = false, game: gameSec = null } = {
 
   // (the game menu passes its own first section, the lobby gets one here)
   const game = gameSec || sec(p, 'Spiel');
-  // the difficulty of free play (campaign levels and the Tagesschacht keep their own)
+  // the difficulty of free play (campaign levels and the Tagesschicht keep their own)
   if (lobby) {
     const k = diffOf(P.diff);
     item(game, tr('Schwierigkeit: {name}', { name: tr(DIFF[k].name) }), DIFF[k].info, () => {
@@ -186,7 +186,7 @@ function applyControls() {
   if (!G.climbOn) for (const c of crew) c.climb = c.hangle = false;
 }
 
-// helpers switched off (only in free play alone; Versus, multiplayer, levels, the Tagesschacht and
+// helpers switched off (only in free play alone; Versus, multiplayer, levels, the Tagesschicht and
 // the tutorial keep their crew): the helper Wühler of your castle leave, what they carry goes into
 // the store, and none can be hired (ui.js). Run at every start and resume, and when switched.
 function applyHelpers() {

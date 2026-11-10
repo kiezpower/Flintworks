@@ -1,7 +1,7 @@
 // The night is dangerous (like the zombies of Terraria): in free play, from the second night on, a few
 // monsters come out on the surface, off the screen near a Wühler, and roam; at dawn the ones nobody is
 // fighting dig themselves in and are gone. Not in the relaxed setting, not in the tutorial, campaign
-// levels, the Tagesschacht, Versus or "Festung" (which has its own waves, siege.js). Only the host.
+// levels, the Tagesschicht, Versus or "Festung" (which has its own waves, siege.js). Only the host.
 import { announce } from './announce.js';
 import { track } from './profile.js';
 import { mkAnimal } from './entities.js';

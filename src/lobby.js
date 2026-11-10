@@ -11,7 +11,7 @@ import './lobby.css';
 import { getLang, setLang, tr } from './i18n.js';
 import { camp as campState, pending, vaultFull } from './camp.js';
 import { openCamp } from './lobbycamp.js';
-import { CAPS, HATS, P, saveProfile, unlockText, xpNeed } from './profile.js';
+import { CAPS, HATS, P, rollQuests, saveProfile, unlockText, xpNeed } from './profile.js';
 import { openFriends, refreshFriendsChip } from './lobbyfriends.js';
 import { openInvite, refreshSlots } from './lobbyinvite.js';
 import { badge, dailyFromLink, dayNo, openDaily } from './daily.js';
@@ -146,15 +146,17 @@ function refresh() {
   setTxt('lbKri', campState().k);
   setTxt('lbKriTxt', tr('Kristalle'));
   $('lbCamp').classList.toggle('alert', pending() > 0);
-  // the Tagesschacht glows until today's shaft is played
+  // the Tagesschicht glows until today's shift is played
   setTxt('lbDailyTxt', badge());
   $('lbDaily').classList.toggle('fresh', P.daily?.best?.[dayNo()] == null);
   const nm = P.name;
   setTxt('lbHat', P.hat === 'none' ? `${nm} · ${tr('Level')} ${P.level}` : `${nm} · ${tr(HATS[P.hat].name)}`);
-  // a daily quest is done and its XP waits at the level
+  // a daily quest is done and its XP waits at the level, or new tasks have come with the new day
+  // (a lobby left open over midnight rolls them here)
+  rollQuests();
   $('lbLvlBtn').classList.toggle(
     'alert',
-    P.quests.some(q => !q.done && q.have >= q.goal),
+    !!P.questNew || P.quests.some(q => !q.done && q.have >= q.goal),
   );
   const road = Object.keys(HATS)
     .filter(id => HATS[id].t)
@@ -378,7 +380,7 @@ function openSelection() {
     tabs: room ? ['modes', 'maps'] : null,
     pick: room,
     onClose: refresh,
-    // (the Tagesschacht card, alone only)
+    // (the Tagesschicht card, alone only)
     onDaily: room ? null : () => openDaily(hooks),
     onPick: id => {
       if (room) return setGMode(id);
@@ -437,6 +439,8 @@ function showLobby(h) {
     placeOverlay();
   });
   refresh();
+  // the new day brought new tasks (once, until the board is opened)
+  if (P.questNew && P.tutorialDone) toast('Neue Tagesaufgaben!');
   offerInstall();
   dailyFromLink(hooks);
   // once per visit: the vault is full, the home crew waits

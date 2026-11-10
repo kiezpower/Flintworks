@@ -147,10 +147,10 @@ const EN2 = {
   'deinen Freund': 'your friend',
   'Noch keine Freunde. Teile deinen Code oder tippe in einem Raum auf „+“ neben einem Mitspieler.':
     'No friends yet. Share your code or tap “+” next to a player in a room.',
-  'Tagesschacht heute': "Today's Daily Shaft",
+  'Tagesschicht heute': "Today's Daily Shift",
   'noch nicht gespielt': 'not played yet',
-  'Ohne Konto: Dein Code und deine Liste gehören zu diesem Gerät. Was andere sehen: dein Name, ob du online bist und dein Tagesschacht – nur Freunde, die dich auch hinzugefügt haben. Für deinen Platz unter allen zählt nur dein Ergebnis, ohne Namen.':
-    'No account: your code and your list belong to this device. Others see your name, whether you are online and your Daily Shaft – only friends who added you too. For your place among everybody only your score counts, without a name.',
+  'Ohne Konto: Dein Code und deine Liste gehören zu diesem Gerät. Was andere sehen: dein Name, ob du online bist und deine Tagesschicht – nur Freunde, die dich auch hinzugefügt haben. Für deinen Platz unter allen zählt nur dein Ergebnis, ohne Namen.':
+    'No account: your code and your list belong to this device. Others see your name, whether you are online and your Daily Shift – only friends who added you too. For your place among everybody only your score counts, without a name.',
   'Anfrage an {name} geschickt': 'Request sent to {name}',
   '{name} ist jetzt dein Freund': '{name} is your friend now',
   'Ein Freundescode hat 8 Zeichen': 'A friend code has 8 characters',
@@ -338,7 +338,7 @@ const EN2 = {
   'Zu zweit': 'Two of us',
   'Spiele zu zweit an einem Gerät': 'Play two players on one device',
   Stammgast: 'Regular',
-  'Spiele {n} Tagesschächte': 'Play {n} daily shafts',
+  'Spiele {n} Tagesschichten': 'Play {n} daily shifts',
   // fishing (fishing.js)
   Angelrute: 'Fishing rod',
   'Am Wasser „Angeln“: beißt etwas an (!), mit der Aktion einholen – Fische verkaufst du in der Burg':
@@ -533,13 +533,15 @@ const EN2 = {
   'Goldfieber!': 'Gold fever!',
   'Eine Minute lang zahlt die Burg doppelt für Gold': 'For one minute the castle pays double for gold',
   'Das Goldfieber ist vorbei': 'The gold fever is over',
-  // anonymous place in the Tagesschacht (lobbyfriends.js)
+  // anonymous place in the Tagesschicht (lobbyfriends.js)
   'Platz {pos} von {of}': 'Place {pos} of {of}',
   'unter allen, die heute gespielt haben – ohne Namen': 'among everybody who played today – without names',
   // villagers.js
   '{name} fühlt sich wohl im Dorf und zahlt mehr Miete.': '{name} feels at home in the village and pays more rent.',
   // the gate in the depth (digger.js)
   'Tiefenfels: Hier kommt nur die Diamanthacke durch (Burg → Forschung „Härten“)': 'Deep rock: only the diamond pick gets through here (castle → research “Hardening”)',
+  // new daily tasks (lobby.js)
+  'Neue Tagesaufgaben!': 'New daily tasks!',
   // replays (replay.js)
   'Wiederholung – deine Eingaben zählen hier nicht': 'Replay – your input does not count here',
   'Wiederholung zu Ende': 'Replay over',

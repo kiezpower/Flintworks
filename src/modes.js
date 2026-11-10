@@ -66,7 +66,7 @@ function applyModeSetup() {
   G.introDone = false;
   G.daily = null;
   const M = mode();
-  // (campaign levels, the Tagesschacht, daily.js, and free modes with a start kit)
+  // (campaign levels, the Tagesschicht, daily.js, and free modes with a start kit)
   G.fort = null;
   if (!M.campaign && !M.daily && !M.kit) return;
   if (M.evRate != null) G.evRate = M.evRate;

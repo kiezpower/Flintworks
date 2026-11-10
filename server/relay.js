@@ -19,7 +19,7 @@
 //                                            device token; the public friend code is derived from
 //                                            it here, so nobody can claim another's code), my
 //                                            friend codes, the ones whose request I turned down,
-//                                            today's Tagesschacht {day, score}. Sent again after
+//                                            today's Tagesschicht {day, score}. Sent again after
 //                                            every change
 //   {t:'finvite', to}                        invite a friend (code) into my room
 // Server → client:
@@ -37,7 +37,7 @@
 //                                            score of the same day, or null); asks: who
 //                                            has me in their list but is not in mine [{fid, name}]
 //   {t:'finvite', from, name, room}          a friend invites me into their room
-//   {t:'rank', day, pos, of}                 my place in today's Tagesschacht among everybody the
+//   {t:'rank', day, pos, of}                 my place in today's Tagesschicht among everybody the
 //                                            relay knows (anonymous: no names, only the place and
 //                                            how many played), after every hello with a score
 // Friends are kept in memory only (nothing on disk): every client sends its whole list on each
@@ -110,7 +110,7 @@ function friendsMsg(u) {
   for (const fid of u.friends) {
     const f = users.get(fid);
     if (!f || !mutual(u, f)) continue;
-    // today's Tagesschacht, only when it is the same day for both (time zones)
+    // today's Tagesschicht, only when it is the same day for both (time zones)
     const today = f.daily && u.daily && f.daily.day === u.daily.day && f.daily.score != null;
     list.push({ fid, name: f.name, online: !!f.ws, ...whereIs(f), daily: today ? f.daily.score : null });
   }
@@ -168,7 +168,7 @@ function hello(ws, m) {
   // someone I just removed should hear about it too
   if (old) for (const f of old) if (!u.friends.has(f) && users.get(f)?.ws) dirty.add(users.get(f));
 }
-// the place of a user in the Tagesschacht of their day, among all users of that day; a score
+// the place of a user in the Tagesschicht of their day, among all users of that day; a score
 // above what a round can bring is not believed and not ranked (the clients count their own score)
 const DAILY_MAX = num(process.env.DAILY_MAX, 20000);
 const rankable = d => d && d.score != null && d.score <= DAILY_MAX;

@@ -1,6 +1,6 @@
 // Friends without a login: the own code, a request that the other side accepts (mutual), online
 // status, joining a friend's room, inviting a friend, adding a player from a room and today's
-// Tagesschacht among friends. Runs a relay of its own (server/relay.js): npm test
+// Tagesschicht among friends. Runs a relay of its own (server/relay.js): npm test
 import { expect, test } from '@playwright/test';
 import { startRelay } from './relayproc.js';
 
@@ -63,7 +63,7 @@ test('a friend request, accepted, shows each other online and leads into the roo
   await expect(anna.page.locator('#frList')).toContainText('online', { timeout: 8000 });
   await expect(bert.page.locator('#frList')).toContainText('Anna');
   await expect(bert.page.locator('#frList')).toContainText('online', { timeout: 8000 });
-  // today's Tagesschacht: Bert played, Anna not yet
+  // today's Tagesschicht: Bert played, Anna not yet
   await expect(anna.page.locator('#frDaily')).toContainText('512 Taler');
   await expect(anna.page.locator('#frDaily')).toContainText('noch nicht gespielt');
   // Bert's place among everybody who played today, without names (only Bert has a score)

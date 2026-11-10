@@ -266,7 +266,7 @@ function startGame(withTutorial = false) {
     // the goal as a banner, an arrow to the nearest gold (startcue.js)
     G.cueNext = true;
     G.castleSeen = false;
-    // the Tagesschacht is written down to watch it again (replay.js); a playback is not
+    // the Tagesschicht is written down to watch it again (replay.js); a playback is not
     if (G.mode === 'daily' && !G.net && !playing()) recStart(G.daily?.n ?? dayNo());
     if (playing()) toast('Wiederholung – deine Eingaben zählen hier nicht');
   }
@@ -346,7 +346,7 @@ function replayEnd() {
   card.dataset.replay = same ? 'same' : 'differs';
   $('replayAgain').onclick = () => watchReplay();
 }
-// watch the kept run of the Tagesschacht (end card, daily panel)
+// watch the kept run of the Tagesschicht (end card, daily panel)
 function watchReplay() {
   const d = savedReplay();
   if (!d) return toast('Keine Wiederholung gespeichert');
@@ -373,7 +373,7 @@ function endScreen(won, why, winner = null) {
   // counted in game ticks: a slower tempo or a pause does not cost stars
   const s = Math.round((G.playTicks || 0) / 60);
   const M = mode();
-  // the Tagesschacht: medals instead of stars, the result kept for today (daily.js); the run is
+  // the Tagesschicht: medals instead of stars, the result kept for today (daily.js); the run is
   // kept to watch it again (replay.js)
   const D = M.daily ? endCard() : null;
   const kept = M.daily && recStop();
@@ -382,7 +382,7 @@ function endScreen(won, why, winner = null) {
   if (won && stars === 3 && !G.net) track('stars3');
   const tro = finishGame(won, G.earned || 0, stars);
   ev('round_end', { mode: String(G.mode), won: !!won, sec: s, earned: G.earned || 0, games: P.games || 0, net: !!G.net });
-  // crystals for the Heimatbergwerk: in every mode (Tagesschacht: the medal counts, not the win)
+  // crystals for the Heimatbergwerk: in every mode (Tagesschicht: the medal counts, not the win)
   const kri = addCrystals(roundCrystals(G.earned, D ? false : won, D ? D.stars : 0));
   const time = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   if (D) card.innerHTML = D.html;
@@ -567,7 +567,7 @@ function step() {
   if (G.state === 'play' && !paused) {
     G.playTicks = (G.playTicks || 0) + 1;
     tapGotoInput(sel_());
-    // a Tagesschacht run is written down, or played back (replay.js)
+    // a Tagesschicht run is written down, or played back (replay.js)
     replayTick();
     // players are steered by their input (yours from this device), bots by their own mind,
     // helpers by their AI
@@ -803,7 +803,7 @@ resetCam();
 hud();
 overlay.hidden = true;
 // a brand-new player starts in the tutorial world, not in the lobby (veil.js); links to the
-// Tagesschacht, a room or a level draft, and players who already played, get the lobby
+// Tagesschicht, a room or a level draft, and players who already played, get the lobby
 const linked = ['daily', 'room', 'draft', 'lvl'].some(k => new URLSearchParams(location.search).has(k));
 // (a tutorial saved before v1.52.0 has another world and other steps: it starts afresh)
 const oldTut = savedTut();

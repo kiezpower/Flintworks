@@ -131,7 +131,7 @@ test('a map and a game mode start from the selection', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('recommended: the level to go on with and the Tagesschacht, which opens its panel', async ({ page }) => {
+test('recommended: the level to go on with and the Tagesschicht, which opens its panel', async ({ page }) => {
   const errors = await lobby(page, { campaign: { c1: 1 } });
   await page.click('#lbGMode');
   const rec = await page.evaluate(() =>
@@ -145,7 +145,7 @@ test('recommended: the level to go on with and the Tagesschacht, which opens its
   expect(await page.locator('.ls-card.cur').getAttribute('data-id')).toBe('gold');
   await page.click('.ls-card[data-id="daily"]');
   expect(await shown(page)).toBe(false);
-  await expect(page.locator('#pTitle')).toContainText('Tagesschacht');
+  await expect(page.locator('#pTitle')).toContainText('Tagesschicht');
   expect(errors).toEqual([]);
 });
 

@@ -135,7 +135,7 @@ const solidAt = j => j >= 0 && j < W * H && SOLID[mat[j]] === 1;
 // columns, gem diagonals – drawn on the world texels (x, y at double resolution)
 let patterns = false;
 // The gate in the depth (free play): rock deeper than this many cells below the surface gives only
-// to the diamond pick (digger.js) and looks darker; 0: no gate (levels, campaign, Tagesschacht …)
+// to the diamond pick (digger.js) and looks darker; 0: no gate (levels, campaign, Tagesschicht …)
 let deepGate = 0;
 const setDeepGate = d => (deepGate = d);
 const getDeepGate = () => deepGate;

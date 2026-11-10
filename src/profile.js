@@ -24,12 +24,40 @@ const QUESTS = {
   gem: { text: 'Finde {n} Edelsteine', n: [1, 2, 3], xp: 80 },
   chest: { text: 'Öffne {n} Schatztruhen', n: [1, 2], xp: 80 },
   gold: { text: 'Verkaufe {n} Goldnuggets', n: [4, 6, 10], xp: 60 },
+  fish: { text: 'Fange {n} Fische', n: [2, 3, 4], xp: 70 },
+  // (a depth is a record, not a count: it counts when reached, see track())
+  deep: { text: 'Erreiche {n} m Tiefe', n: [30, 50, 70], xp: 80 },
 };
+// The daily tasks: three of nine kinds a day, the same for everybody on a day (like the
+// Tagesschicht), changing at midnight in the player's own time zone. The kinds go round in steps of
+// four through the list, so two days in a row never share a kind, and each kind is back every
+// three days at most; the amount of a kind is rolled from the day, so a returning kind may ask for
+// more or less.
+const QUEST_ORDER = ['sell', 'chop', 'monster', 'gold', 'build', 'gem', 'fish', 'chest', 'deep'];
+const dayNumber = (d = new Date()) => Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5);
+const dayHash = (n, i) => {
+  let h = Math.imul(n * 2654435761 + i * 40503, 2246822519);
+  h ^= h >>> 15;
+  h = Math.imul(h, 3266489917);
+  return (h ^ (h >>> 13)) >>> 0;
+};
+function questsFor(n) {
+  const k = (((n * 4) % QUEST_ORDER.length) + QUEST_ORDER.length) % QUEST_ORDER.length;
+  return [0, 1, 2].map(i => {
+    const id = QUEST_ORDER[(k + i) % QUEST_ORDER.length],
+      Q = QUESTS[id];
+    return { id, goal: Q.n[dayHash(n, i) % Q.n.length] };
+  });
+}
 // hats unlock by level or trophies
 const unlockText = h => (h.lvl ? `${h.tut ? 'Tutorial · ' : ''}Level ${h.lvl}` : h.t ? `${h.t} 🏆` : '');
 const XP = { sell: 0.2, build: 25, chop: 8, monster: 40, gem: 20, gold: 0, tutorial: 60, chest: 30 };
 
-const today = () => new Date().toISOString().slice(0, 10);
+// the calendar day here (not in UTC: the tasks change at midnight where the player is)
+const today = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 const P = {
   xp: 0,
   level: 1,
@@ -91,13 +119,12 @@ function saveProfile() {
 }
 const xpNeed = () => 80 + P.level * 40;
 function rollQuests() {
-  if (P.questDay === today()) return;
-  P.questDay = today();
-  const ids = Object.keys(QUESTS).sort(() => Math.random() - 0.5);
-  P.quests = ids.slice(0, 3).map(id => {
-    const q = QUESTS[id];
-    return { id, goal: q.n[Math.floor(Math.random() * q.n.length)], have: 0, done: false };
-  });
+  const t = today();
+  if (P.questDay === t) return;
+  // (not the very first day: then nothing is "new")
+  P.questNew = !!P.questDay;
+  P.questDay = t;
+  P.quests = questsFor(dayNumber()).map(q => ({ ...q, have: 0, done: false }));
   saveProfile();
 }
 function addXp(n) {
@@ -121,12 +148,22 @@ function track(id, amount = 1, max = false) {
   rollQuests();
   if (!max) addXp(Math.round((XP[id] ?? 0) * amount));
   if (achTrack(P, id, amount, addXp, max)) saveProfile();
-  if (max) return;
+  let moved = false;
   for (const q of P.quests)
     if (q.id === id && q.have < q.goal) {
-      q.have = Math.min(q.goal, q.have + amount);
-      if (q.have >= q.goal) toast('Aufgabe erfüllt! Belohnung unter Menü → Aufgaben');
+      // (a record like the depth counts as far as it was reached, a count adds up)
+      const to = Math.min(q.goal, max ? Math.max(q.have, amount) : q.have + amount);
+      if (to === q.have) continue;
+      q.have = to;
+      moved = true;
+      // (G.questQuiet: the browser tests do not want today's tasks to talk over what they check, debug.js)
+      if (q.have >= q.goal && !G.questQuiet) toast('Aufgabe erfüllt! Belohnung unter Menü → Aufgaben');
     }
+  // (a record is reported all the time: saved only when a task moved)
+  if (max) {
+    if (moved) saveProfile();
+    return;
+  }
   if (performance.now() - saveT > 2000) {
     saveT = performance.now();
     saveProfile();
@@ -190,7 +227,9 @@ export {
   addXp,
   claimQuest,
   cleanName,
+  dayNumber,
   finishGame,
+  questsFor,
   randomName,
   rollQuests,
   saveProfile,
