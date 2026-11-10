@@ -156,7 +156,8 @@ function track(id, amount = 1, max = false) {
       if (to === q.have) continue;
       q.have = to;
       moved = true;
-      if (q.have >= q.goal) toast('Aufgabe erfüllt! Belohnung unter Menü → Aufgaben');
+      // (G.questQuiet: the browser tests do not want today's tasks to talk over what they check, debug.js)
+      if (q.have >= q.goal && !G.questQuiet) toast('Aufgabe erfüllt! Belohnung unter Menü → Aufgaben');
     }
   // (a record is reported all the time: saved only when a task moved)
   if (max) {

@@ -43,6 +43,9 @@ if (navigator.webdriver && !new URLSearchParams(location.search).has('draw')) G.
 // and a panel takes a tap at once (in the game it ignores taps for 450 ms after it opens,
 // against double taps): the tests need not wait before each click. ?guard keeps the 450 ms.
 if (navigator.webdriver && !new URLSearchParams(location.search).has('guard')) G.tapGuard = 0;
+// and a finished daily task does not toast (which task is active depends on the day, and a test
+// that walks deep would finish a depth task and cover other messages). ?quiet-off: with the toast.
+if (navigator.webdriver && !new URLSearchParams(location.search).has('quietoff')) G.questQuiet = true;
 
 window.__ww = {
   climb,

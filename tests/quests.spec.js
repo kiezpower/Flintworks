@@ -122,3 +122,18 @@ test('the depth task counts as far as it was reached, the fish task adds up; new
   expect(await page.evaluate(async () => (await import('/src/profile.js')).P.questNew)).toBe(false);
   expect(errors).toEqual([]);
 });
+
+test('a finished task says so in the game; the tests keep it quiet', async ({ page }) => {
+  const errors = await lobby(page, new Date('2026-11-10T10:00:00Z'));
+  const quiet = await page.evaluate(() => window.__ww.G.questQuiet);
+  expect(quiet).toBe(true);
+  await page.goto('/?quietoff');
+  await page.waitForFunction(() => window.__ww);
+  await page.evaluate(async () => {
+    const { P, track } = await import('/src/profile.js');
+    P.quests = [{ id: 'chop', goal: 1, have: 0, done: false }];
+    track('chop');
+  });
+  await expect(page.locator('#toast')).toContainText('Aufgabe erfüllt');
+  expect(errors).toEqual([]);
+});
