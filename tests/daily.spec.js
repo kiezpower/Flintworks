@@ -36,7 +36,7 @@ test('every day has its own fixed world, and two days in a row never share a twi
   expect(r.same).toBe(true);
   expect(r.seeds).toBe(30);
   expect(r.biomes).toBe(3);
-  expect(r.twists).toBe(5);
+  expect(r.twists).toBe(9);
   expect(r.repeat).toBe(false);
   expect(r.first).toBe(1);
   expect(r.next).toBe(2);

@@ -44,13 +44,37 @@ const TWISTS = [
     store: { coal: 8, metal: 2, plank: 3 },
   },
   { id: 'rich', name: 'Startkapital', intro: 'Heute startest du mit 200 Talern extra.', money: 240 },
+  // the shift begins at night (a full day is ten minutes: it is bright again after about four and a
+  // half), with a mine lamp and torches in the store
+  {
+    id: 'night',
+    name: 'Nachtschicht',
+    intro: 'Heute beginnt die Schicht bei Nacht. Grubenlampe und Fackeln liegen bereit – nach gut vier Minuten wird es hell.',
+    tools: ['lamp'],
+    store: { torch: 6, coal: 2 },
+    setup: () => (G.dayT = 0.55),
+  },
+  // gold fever (rush.js) comes round three times: for one minute the castle pays double for gold
+  {
+    id: 'fever',
+    name: 'Fiebertag',
+    intro: 'Immer wieder zahlt die Burg eine Minute lang doppelt für Gold. Spar dir dein Gold für die Fieberzeiten auf!',
+  },
+  { id: 'fight', name: 'Schwerttag', intro: 'Du startest mit Schwert und Metall. Monster unter Tage lassen Gold fallen.', research: ['metal'], tools: ['sword'], store: { metal: 2, wood: 2, plank: 2 } },
+  { id: 'hook', name: 'Hakentag', intro: 'Enterhaken und Baumaterial liegen bereit – hoch hinaus, tief hinunter!', tools: ['hook'], store: { wood: 6, rock: 4 }, money: 120 },
 ];
 
 // ---- the day ----
 const FIRST = Date.UTC(2026, 9, 26); // Tagesschicht #1
 // number of the day in the player's own time zone: everybody gets a new shift at midnight
-const dayNo = (d = new Date()) =>
-  Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - FIRST) / 864e5) + 1;
+// (dev server only: ?day=5 plays the shift of day 5, for the browser tests of the twists)
+const DAY_PARAM = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get('day')) || 0 : 0;
+const dayNo = d =>
+  DAY_PARAM > 0 && d === undefined
+    ? DAY_PARAM
+    : Math.floor(
+        (Date.UTC((d ??= new Date()).getFullYear(), d.getMonth(), d.getDate()) - FIRST) / 864e5,
+      ) + 1;
 function hash(n) {
   let t = (n * 0x9e3779b1) >>> 0;
   t = Math.imul(t ^ (t >>> 15), t | 1);
@@ -64,8 +88,9 @@ function dayInfo(n = dayNo()) {
     n,
     seed: h,
     biome: ['meadow', 'desert', 'winter'][h % 3],
-    // (steps of 3 through 5 twists: two days in a row never have the same one)
-    twist: TWISTS[(((n * 3) % TWISTS.length) + TWISTS.length) % TWISTS.length],
+    // (steps of 4 through 9 twists: two days in a row never have the same one, and each comes
+    // round every nine days)
+    twist: TWISTS[(((n * 4) % TWISTS.length) + TWISTS.length) % TWISTS.length],
   };
 }
 // the day of the shift being played (fixed when it started, also over midnight)
@@ -108,14 +133,19 @@ GAME_MODES.daily = {
   get store() {
     return cur().twist.store;
   },
+  get tools() {
+    return cur().twist.tools;
+  },
   get money() {
     return cur().twist.money;
   },
   setup() {
-    // (a playback plays the day it was recorded on, replay.js)
+    // (a playback plays the day it was recorded on, replay.js; tw: the twist, rush.js looks at it)
     G.daily = { n: G.replayDay ?? dayNo() };
     const T = cur().twist;
+    G.daily.tw = T.id;
     if (T.evNext) G.evNext = T.evNext;
+    T.setup?.();
   },
   // every half second: the last minute, then the end
   tick() {
