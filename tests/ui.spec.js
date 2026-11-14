@@ -53,11 +53,13 @@ test('a relaxed round has no dangers and a calm pace', async ({ page }) => {
   expect(await page.evaluate(() => [window.__ww.G.relaxed, window.__ww.G.speed])).toEqual([true, 0.7]);
 });
 
-test('the lobby names mode and world of the chosen card, there is no second choice', async ({ page }) => {
+test('the lobby keeps mode and world together after the play-kind choice', async ({ page }) => {
   await lobby(page, { gmode: 'treasure', mode: 'desert' });
   await expect(page.locator('#lbGModeTxt')).toHaveText('Schatzsucher · Wüste');
   await expect(page.locator('#lbGModePv canvas')).toHaveCount(1);
-  await expect(page.locator('.lb-play .lb-sel')).toHaveCount(1);
+  await expect(page.locator('.lb-play .lb-sel:visible')).toHaveCount(2);
+  await expect(page.locator('#lbKindTxt')).toContainText('Alleine');
+  await expect(page.locator('#lbInvite')).toBeHidden();
 });
 
 test('a tap next to a panel closes it, in the lobby and in the game, without walking there', async ({ page }) => {
