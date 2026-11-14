@@ -58,10 +58,11 @@ for (const [kind, winner] of [['versus', 'host'], ['versus', 'guest'], ['coop', 
       // Walk from the real team spawn using normal keyboard/client input.
       const racer = winner === 'host' ? host : guest;
       const key = kind === 'versus' && winner === 'guest' ? 'ArrowLeft' : 'ArrowRight';
+      await racer.bringToFront();
       await racer.keyboard.down(key);
       const hostState = kind === 'coop' || winner === 'host' ? 'won' : 'lost';
       const guestState = kind === 'coop' || winner === 'guest' ? 'won' : 'lost';
-      await host.waitForFunction(state => window.__ww.G.state === state, hostState, { timeout: 60000 });
+      await expect.poll(() => host.evaluate(() => ({ state: window.__ww.G.state, players: window.__ww.crew.filter(c => c.pid != null).map(c => ({ pid: c.pid, x: Math.round(c.x), y: Math.round(c.y), dead: c.dead })), reached: window.__ww.G.lvl?.reached })), { timeout: 60000 }).toMatchObject({ state: hostState });
       await guest.waitForFunction(state => window.__ww.G.state === state, guestState, { timeout: 60000 });
       await racer.keyboard.up(key);
       expect(errors).toEqual([]);
