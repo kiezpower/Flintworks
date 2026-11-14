@@ -81,7 +81,11 @@ for (const kind of ['coop', 'versus']) {
     await lobby(host, { name: 'Anna' });
     await lobby(guest, { name: 'Bert' });
     await choose(host, kind, kind === 'coop' ? 'expedition' : 'zweiburgen');
-    await host.click('#lbPlay');
+    if (kind === 'versus') {
+      await host.reload();
+      await host.waitForFunction(() => window.__ww);
+      await host.click('#lbSlot1');
+    } else await host.click('#lbPlay');
     await host.waitForFunction(() => performance.now() - window.__ww.G.panelT >= 500);
     await host.click('#lbCreate');
     const code = host.locator('.lb-codetap b');
