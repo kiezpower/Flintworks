@@ -53,7 +53,10 @@ test('solo: the summit is reached by walking, with mirrored terrain and no equip
 for (const [kind, winner] of [['versus', 'host'], ['versus', 'guest'], ['coop', 'guest']])
   test(`${kind}: ${winner} reaches the summit, with correct results on both devices`, async ({ browser }) => {
     const host = await browser.newPage({ viewport: { width: 844, height: 390 } });
-    const guest = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    // Separate browser processes model two devices and keep the host's animation
+    // clock running while real keyboard input focuses the guest.
+    const guestBrowser = await browser.browserType().launch({ executablePath: process.env.PW_CHROMIUM || undefined });
+    const guest = await guestBrowser.newPage({ viewport: { width: 390, height: 844 } });
     const errors = []; for (const p of [host, guest]) p.on('pageerror', e => errors.push(e.message));
     try {
       await open(host, kind); await open(guest, kind);
@@ -74,5 +77,5 @@ for (const [kind, winner] of [['versus', 'host'], ['versus', 'guest'], ['coop', 
       await walkUntil(racer, key, () => host.evaluate(() => window.__ww.G.state), hostState);
       await guest.waitForFunction(state => window.__ww.G.state === state, guestState, { timeout: 60000 });
       expect(errors).toEqual([]);
-    } finally { await host.close(); await guest.close(); }
+    } finally { await host.close(); await guestBrowser.close(); }
   });
