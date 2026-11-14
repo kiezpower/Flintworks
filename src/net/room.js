@@ -152,6 +152,12 @@ function go() {
 // pub: an open room others find in the list and through quick play
 function createRoom(pub = false) {
   if (NET.room && transport.status === 'open') return;
+  // All invitation entries (including the hero's + and the friends panel)
+  // inherit the saved selection, also after reloading the lobby.
+  if (['solo', 'coop', 'versus'].includes(P.playKind)) {
+    NET.versus = P.playKind === 'versus';
+    NET.ffa = NET.versus && NET.ffa;
+  }
   quick = false;
   wantPub = !!pub;
   go();

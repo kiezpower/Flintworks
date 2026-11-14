@@ -170,6 +170,13 @@ test('Jeder gegen jeden over the network: three players, three castles, each the
     await expect(p.page.locator('.lb-codetap b')).toHaveText(code);
   }
   await expect(g.page.locator('.lb-players .opt')).toHaveCount(3);
+  await g.page.waitForFunction(() => performance.now() - window.__ww.G.panelT >= 500);
+  await g.page.locator('.opt', { hasText: 'Zusammen' }).first().click();
+  await g.page.click('.ls-kind[data-kind="versus"]');
+  await g.page.click('.ls-card[data-id="gold"]');
+  await g.page.click('.ls-go');
+  await g.page.click('#lbInvite');
+  await g.page.waitForFunction(() => performance.now() - window.__ww.G.panelT >= 500);
   await g.page.locator('.opt', { hasText: 'Jeder gegen jeden' }).click();
   // the guests see the host's choice
   await expect(i.page.locator('.opt', { hasText: 'Jeder gegen jeden' })).toContainText('✓');
@@ -215,7 +222,7 @@ test('only the host decides: a player cannot send host messages (settings, round
   expect(sent).toBe(true);
   for (const p of [a, b]) {
     expect(await p.page.evaluate(() => !!document.getElementById('pwned'))).toBe(false);
-    await expect(p.page.locator('.opt', { hasText: 'Versus' }).first()).not.toContainText('✓');
+    await expect(p.page.locator('#lbKindTxt')).toContainText('Zusammen');
   }
   for (const p of [a, b]) expect(p.errors).toEqual([]);
 });

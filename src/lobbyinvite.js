@@ -3,6 +3,8 @@
 // share sheet, Telegram, SMS, e-mail, copy, QR code), see who is in and get ready. The "+" slots next
 // to the hero show the players in the room.
 import qrcode from 'qrcode-generator';
+import { GAME_MODES } from './modes.js';
+import { PLAY_KINDS } from './playkind.js';
 import { tr } from './i18n.js';
 import { openName } from './lobbyname.js';
 import {
@@ -29,7 +31,7 @@ import { onlineCount } from './net/friends.js';
 import { netSaveInfo } from './net/netsave.js';
 import { setLocal } from './local.js';
 import { fromTag, kindName, modeName, rotation } from './net/rotation.js';
-import { P } from './profile.js';
+import { P, saveProfile } from './profile.js';
 import { G, safeCap } from './state.js';
 import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
 
@@ -97,10 +99,15 @@ function openInvite() {
     loc.addEventListener('click', () => {
       if (!fresh()) return;
       setLocal(!G.local);
+      if (G.local) {
+        P.playKind = 'coop';
+        saveProfile();
+      }
+      G.onRoomChange?.();
       refreshSlots();
       openInvite();
     });
-    box.appendChild(loc);
+    if (P.playKind !== 'versus') box.appendChild(loc);
     return;
   }
   // the code, a QR code for friends right next to you and the ways to send the link come first:
@@ -156,26 +163,27 @@ function openInvite() {
       ),
       short: true,
     });
-  // Koop, Versus or everybody for themselves: the host chooses, everybody sees it
-  else {
-    const m = sec(p, 'Spielart');
-    const cur = NET.ffa ? 2 : NET.versus ? 1 : 0;
-    for (const [k, title, sub] of [
-      [0, 'Koop', 'Zusammen: eine Burg, eine Kasse, ein Ziel, das mit jedem Spieler wächst, und Teamaufgaben'],
-      [1, 'Versus', 'Gegeneinander, 8 Minuten: Ziel schaffen, den Hügel halten oder die andere Burg stürmen'],
-      [
-        2,
-        'Jeder gegen jeden',
-        'Ab 3 Spielern: jeder mit eigener Burg (höchstens vier, ab 5 Spielern zu zweit), eine gestürmte Burg ist raus, der Letzte gewinnt (zu zweit Versus)',
-      ],
-    ])
-      opt(m, {
-        title: tr(title),
-        sub: tr(sub),
+  // The lobby owns kind and level; the invitation panel only shows that choice.
+  if (!NET.auto) {
+    const choice = sec(p, 'Eure Auswahl');
+    opt(choice, {
+      title: tr(PLAY_KINDS[NET.versus ? 'versus' : 'coop'].name),
+      disabled: !NET.host,
+      sub: tr((GAME_MODES[NET.gmode || P.gmode] || GAME_MODES.gold).name),
+      short: true,
+      onClick: () => {
+        closePanel();
+        $('lbKind').click();
+      },
+    });
+    if (NET.versus && !GAME_MODES[NET.gmode || P.gmode]?.pkg)
+      opt(choice, {
+        title: tr('Jeder gegen jeden'),
+        sub: tr('Ab 3 Spielern: jeder mit eigener Burg (höchstens vier, ab 5 Spielern zu zweit), eine gestürmte Burg ist raus, der Letzte gewinnt (zu zweit Versus)'),
         short: true,
-        cost: cur === k ? '✓' : '',
-        disabled: !NET.host && cur !== k,
-        onClick: () => NET.host && setVersus(k > 0, k === 2),
+        cost: NET.ffa ? '✓' : '',
+        disabled: !NET.host,
+        onClick: () => NET.host && setVersus(true, !NET.ffa),
       });
   }
   const a = sec(p, '');

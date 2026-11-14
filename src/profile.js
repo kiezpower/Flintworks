@@ -69,6 +69,7 @@ const P = {
   quests: [],
   tutorialDone: false,
   mode: 'random',
+  playKind: null, // fresh profiles choose a play kind before their first level
   games: 0,
   wins: 0,
   // Heimatbergwerk (camp.js) and skins (skins.js); old crystals (P.crystals) are not these
@@ -80,7 +81,11 @@ const P = {
   gear: [],
 };
 try {
-  Object.assign(P, JSON.parse(localStorage.getItem(KEY) || '{}'));
+  const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+  Object.assign(P, saved);
+  // Existing players keep their previous solo/local start path. Fresh profiles
+  // save an explicit null until they have chosen a kind in the new selector.
+  if (saved.tutorialDone && !Object.hasOwn(saved, 'playKind')) P.playKind = saved.local ? 'coop' : 'solo';
 } catch {}
 // a fresh digger gets a made-up name instead of everybody being "Kurt"; it can be changed any time
 const NAME_A = ['Flink', 'Kies', 'Erz', 'Moos', 'Stein', 'Funken', 'Kohlen', 'Gold', 'Lehm', 'Fels', 'Rost', 'Kupfer', 'Silber', 'Torf', 'Quarz', 'Ruß'];

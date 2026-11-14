@@ -1,3 +1,5 @@
+import { PLAY_KINDS, supportsKind } from './playkind.js';
+import { setLocal } from './local.js';
 import { GAME_MODES, mode } from './modes.js';
 import { ALL_IDS, totalStars, unlocked } from './scenarios.js';
 import { landscape, mixed, openSelect, selectOpen } from './levelselect.js';
@@ -16,7 +18,7 @@ import { openFriends, refreshFriendsChip } from './lobbyfriends.js';
 import { openInvite, refreshSlots } from './lobbyinvite.js';
 import { badge, dailyFromLink, dayNo, openDaily } from './daily.js';
 import { openName } from './lobbyname.js';
-import { NET, inRoom, others, setGMode } from './net/room.js';
+import { NET, inRoom, others, setGMode, setVersus } from './net/room.js';
 import { drawPortrait } from './portrait.js';
 import { drawScene, friendDx, heroOrigin, heroScreen, sizeScene } from './lobbyscene.js';
 import { audioInit, sfx } from './sound.js';
@@ -173,14 +175,25 @@ function refresh() {
   refreshSlots();
   refreshFriendsChip();
   const run = hooks.hasRun();
+  const kind = chosenKind();
+  setTxt(
+    'lbKindTxt',
+    !P.playKind && !P.gmode && !inRoom()
+      ? tr('Spielart wählen')
+      : tr(PLAY_KINDS[kind].name) + ' · ' + tr(PLAY_KINDS[kind].players),
+  );
+  $('lbKind').disabled = run || (inRoom() && (!NET.host || !!NET.auto));
+  $('lbInvite').hidden = run || kind === 'solo' || (!inRoom() && !G.local);
   // in a room only the host starts; the others wait
   const wait = inRoom() && !NET.host && !run;
-  setTxt(
-    'lbPlayTxt',
-    tr(run ? 'Weiterspielen' : wait ? (NET.auto ? 'Startet gleich' : 'Warte auf Host') : inRoom() ? 'Spielen ({n})' : 'Spielen', {
-      n: NET.players.length,
-    }),
-  );
+  const playText = run ? 'Weiterspielen'
+    : !P.playKind && !P.gmode && !inRoom() ? 'Spielart wählen'
+    : wait ? (NET.auto ? 'Startet gleich' : 'Warte auf Host')
+    : inRoom() ? 'Gemeinsam starten ({n})'
+    : kind === 'solo' ? 'Alleine starten'
+    : G.local && kind === 'coop' ? 'Zu zweit starten'
+    : 'Freunde einladen';
+  setTxt('lbPlayTxt', tr(playText, { n: NET.players.length }));
   $('lbPlay').classList.toggle('wait', wait);
   $('lbNew').hidden = !run;
   const gid = chosen();
@@ -211,12 +224,18 @@ function refresh() {
     if (pic) pvEl.appendChild(pic);
     pvEl.hidden = !pic;
   }
+  pvEl.hidden = !pvEl.childElementCount;
   setTxt(
     'lbGModeDesc',
     camp
       ? tr('{n} Level · Sterne {s}/{m}', { n: ALL_IDS.length, s: totalStars(), m: ALL_IDS.length * 3 })
       : tr(gm.desc, { goal: gm.goal }),
   );
+  if (!run && !inRoom() && !P.playKind && !P.gmode) {
+    setTxt('lbGModeTxt', tr('Zuerst Spielart wählen'));
+    setTxt('lbGModeDesc', '');
+    pvEl.hidden = true;
+  }
 }
 
 function frame() {
@@ -372,22 +391,35 @@ function chosen() {
   if (NET.gmode !== g) setGMode(g);
   return g;
 }
-// the level selection: in a room the host only chooses (modes and maps), alone a choice starts
-function openSelection() {
+// Selection returns to the lobby; only the play button starts a round.
+const chosenKind = () =>
+  inRoom() ? (NET.versus ? 'versus' : 'coop') : PLAY_KINDS[P.playKind] ? P.playKind : G.local ? 'coop' : 'solo';
+function openSelection(chooseKind = false) {
   const room = inRoom();
   openSelect({
-    current: chosen(),
+    current: P.gmode || inRoom() ? chosen() : null,
+    kind: chooseKind || (!room && !P.playKind && !P.gmode) ? null : chosenKind(),
     tabs: room ? ['modes', 'maps'] : null,
-    pick: room,
+    pick: true,
     onClose: refresh,
     // (the Tagesschicht card, alone only)
     onDaily: room ? null : () => openDaily(hooks),
-    onPick: id => {
-      if (room) return setGMode(id);
-      hooks.play(false, GAME_MODES[id].campaign ? id : null);
+    onPick: (id, kind) => {
+      if (kind === 'solo' || kind === 'versus') setLocal(false);
+      if (room) {
+        setVersus(kind === 'versus', kind === 'versus' && NET.ffa);
+        setGMode(id);
+      }
+      refresh();
     },
   });
 }
+tap('lbKind', () => openSelection(true));
+tap('lbInvite', () => {
+  if (!supportsKind(GAME_MODES[chosen()], chosenKind())) return openSelection();
+  if (!inRoom() || NET.host) setVersus(chosenKind() === 'versus', NET.ffa);
+  openInvite();
+});
 tap('lbGMode', () => {
   if (inRoom() && NET.auto) return toast('Schnell spielen: der Modus der Stunde');
   if (inRoom() && !NET.host) return toast('Der Host wählt den Modus');
@@ -395,9 +427,21 @@ tap('lbGMode', () => {
 });
 tap('lbPlay', () => {
   if (selectOpen()) return;
-  const g = P.gmode,
+  const g = P.gmode || 'gold',
     M = GAME_MODES[g];
-  if (hooks.hasRun() || inRoom()) return hooks.play(false);
+  if (hooks.hasRun()) return hooks.play(false);
+  if (inRoom()) {
+    if (NET.host && NET.versus && !NET.auto && !G.resumeNet && NET.players.filter(p => p.online && !p.watch).length < 2) {
+      return toast('Lade noch einen Freund ein, damit ihr gegeneinander spielen könnt');
+    }
+    return hooks.play(false);
+  }
+  if (!P.playKind && !P.gmode) return openSelection(true);
+  if (!supportsKind(M, chosenKind())) return openSelection();
+  if (chosenKind() !== 'solo' && !(chosenKind() === 'coop' && G.local)) {
+    setVersus(chosenKind() === 'versus', NET.ffa);
+    return openInvite();
+  }
   // a chosen campaign level starts as that level; "campaign" (older profiles) opens the choice
   if (M && M.campaign && unlocked(g)) return hooks.play(false, g);
   if (g === 'campaign' || (M && M.campaign)) return openSelection();
