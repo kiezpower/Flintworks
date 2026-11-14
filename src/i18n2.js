@@ -1,6 +1,11 @@
 // More English texts (i18n.js holds the rest; split to keep every file under 1000 lines).
 // Heimatbergwerk, crystals and skins (camp.js, lobbycamp.js, skins.js), production chain (ui.js)
 const EN2 = {
+  Gipfelrennen: 'Summit Race',
+  'Erreiche die Bergspitze in der Mitte': 'Reach the mountain summit in the middle',
+  'Links und rechts führen gleich lange Hänge auf den Berg. Steig bis zur flachen Bergspitze in der Mitte. Gegeneinander gewinnt das erste Team oben; zusammen reicht ein gemeinsamer Aufstieg.':
+    'Equal-length slopes lead up the mountain from both sides. Climb to the flat summit in the middle. In Versus, the first team to the top wins; in co-op, one shared ascent is enough.',
+
   Fluffelstollen: 'Fluffel Tunnels',
   'Rettet 6 Fluffel aus drei Höhlen': 'Rescue 6 fluffels from three caves',
   'Sechs Fluffel warten in drei Höhlen. Folgt dem Stollen bis zur Abzweigung. Allein erkundest du einen Weg nach dem anderen; zusammen könnt ihr euch aufteilen. Die Karte zeigt die Fluffel.':
