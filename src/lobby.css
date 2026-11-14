@@ -945,3 +945,18 @@
 #mpCountdown[hidden] {
   display: none;
 }
+
+/* Keep all setup steps reachable, including short landscape phones. */
+.lb-play { max-height: calc(100% - 92px); overflow-y: auto; box-sizing: border-box; }
+#lbKind, #lbInvite { min-height: 44px; }
+#lbInvite[hidden] { display: none; }
+#lbGModePv { height: 56px; }
+@media (max-height: 500px) and (min-width: 561px) {
+  .lb-play { width: min(340px, 42vw); gap: 4px; padding: 6px 10px; }
+  .lb-play h2 { display: none; }
+  #lbGModePv { height: 36px; }
+  #lbKind, #lbInvite { min-height: 44px; }
+  .lb-go { padding: 7px 10px; font-size: 20px; }
+}
+
+#lbGModePv > canvas { object-fit: contain; image-rendering: pixelated; background: #90b2c3; }

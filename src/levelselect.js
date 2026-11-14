@@ -4,6 +4,7 @@
 // for Koop and Versus, and last each game mode with one card per world type. Cards show a
 // picture (levels/preview.js, or a small landscape of the world type), a tap opens the detail
 // view with the story, goals, dangers, star times and the best time before the start. Opened from the lobby (mode button).
+import { PLAY_KINDS, supportsKind } from './playkind.js';
 import { tr } from './i18n.js';
 import { MAP_IDS } from './levels/index.js';
 import { goalText } from './levels/goals.js';
@@ -152,7 +153,8 @@ function cloneOf(src) {
 const nameOf = (id, M, biome) =>
   M.campaign ? `${M.n} · ${tr(M.name)}` : biome ? `${tr(M.name)} · ${tr(BIOMES[biome].name)}` : tr(M.name);
 const starRow = s => '★'.repeat(s) + '☆'.repeat(3 - s);
-const versus = M => M.pkg && M.pkg.objects.some(o => o.t === 'base' && o.team === 1);
+const matches = id => supportsKind(GAME_MODES[id], opts.kind || 'solo');
+const playerText = () => tr(PLAY_KINDS[opts.kind || 'solo'].players);
 // is this card what the lobby has chosen?
 const isCur = id => id === opts.current;
 
@@ -168,17 +170,25 @@ function card(id, { biome, next } = {}) {
   const t = document.createElement('div');
   t.className = 'ls-t';
   t.innerHTML = `<b>${esc(biome ? tr(BIOMES[biome].name) : nameOf(id, M))}</b><span>${
-    M.campaign ? (open ? starRow(starsOf(id)) : '🔒') : M.map ? esc(tr(versus(M) ? 'Versus' : 'Koop')) : ''
+    M.campaign ? (open ? starRow(starsOf(id)) : '🔒') : ''
   }</span>`;
   b.appendChild(t);
-  // maps and game modes: what they are about, in a line
-  if (M.map || free(M)) {
-    const d = document.createElement('small');
-    d.className = 'ls-d';
-    d.textContent = tr(M.desc, { goal: M.goal });
-    b.appendChild(d);
+  // Show the task on every card, including campaign levels.
+  const d = document.createElement('small');
+  d.className = 'ls-d';
+  d.textContent = tr(M.desc, { goal: M.goal });
+  b.appendChild(d);
+  const players = document.createElement('strong');
+  players.className = 'ls-players';
+  players.textContent = playerText();
+  b.appendChild(players);
+  if (!open) {
+    const lock = document.createElement('small');
+    lock.className = 'ls-lock';
+    lock.textContent = tr('Erst 1 Stern in {name}', { name: tr(GAME_MODES[lockedBy(id)].name) });
+    b.appendChild(lock);
   }
-  if (id === next) ribbon(b, 'Weiter');
+  if (id === next) ribbon(b, 'Hier geht’s weiter');
   b.onclick = () => (shown && shown.id === id && shown.biome === biome && open ? go(id, biome) : detail(id, biome));
   return b;
 }
@@ -209,7 +219,7 @@ function dailyCard() {
   b.appendChild(t);
   const d = document.createElement('small');
   d.className = 'ls-d';
-  d.textContent = badge();
+  d.textContent = badge() + ' · ' + tr('1 Spieler');
   b.appendChild(d);
   ribbon(b, 'Heute');
   b.onclick = () => {
@@ -257,7 +267,7 @@ function section(list, key, group, title, sub, cards) {
   s.appendChild(row);
   list.appendChild(s);
 }
-const allowed = g => !opts.tabs || opts.tabs.includes(g);
+const allowed = g => (opts.kind === 'solo' || ['maps', 'modes'].includes(g)) && (!opts.tabs || opts.tabs.includes(g));
 
 function sections() {
   const list = root.querySelector('.ls-list');
@@ -267,7 +277,7 @@ function sections() {
     const nx = nextOf(ALL_IDS),
       cards = [];
     if (nx) cards.push(card(nx, { next: nx }));
-    if (opts.onDaily) cards.push(dailyCard());
+    if (opts.onDaily && opts.kind === 'solo') cards.push(dailyCard());
     if (cards.length) section(list, 'rec', 'rec', esc(tr('Empfohlen')), '', cards);
   }
   for (const grp of GROUPS.filter(g => g.ids && allowed(g.id))) {
@@ -289,8 +299,8 @@ function sections() {
       'maps',
       'maps',
       esc(tr('Karten')),
-      tr('Koop und Versus'),
-      MAP_IDS.map(id => card(id)),
+      playerText(),
+      MAP_IDS.filter(matches).map(id => card(id)),
     );
   // game modes: one card each, the world changes every round (Wiese, Wüste or Winter)
   if (allowed('modes'))
@@ -300,10 +310,10 @@ function sections() {
       'modes',
       esc(tr('Spielmodi')),
       tr('Die Welt wechselt jede Runde: Wiese, Wüste oder Winter'),
-      MODE_IDS.map(id => card(id)),
+      MODE_IDS.filter(matches).map(id => card(id)),
     );
   // own levels: the editor (alone, not while choosing for a room)
-  if (allowed('modes') && !opts.tabs)
+  if (allowed('modes') && opts.kind === 'solo' && !opts.tabs)
     section(list, 'own', 'modes', esc(tr('Eigene Level')), tr('Bauen, ausprobieren, als Link teilen'), [editorCard()]);
 }
 function chips() {
@@ -373,7 +383,7 @@ function detail(id, biome) {
   if (M.intro) html += `<p class="ls-story">${esc(tr(M.intro))}</p>`;
   html += row('Ziel', `<ul>${goals.map(g => `<li>${esc(g)}</li>`).join('')}</ul>`);
   if (dz.length) html += row('Gefahr', `<p>${dz.map(x => `<span class="ls-chip">${esc(tr(x))}</span>`).join('')}</p>`);
-  if (M.map) html += row('Spielart', `<p>${esc(tr(versus(M) ? 'Koop oder Versus' : 'Koop'))}</p>`);
+  html += row('Spielart', `<p>${esc(tr(PLAY_KINDS[opts.kind].name))} · ${esc(playerText())}</p>`);
   if (M.territory) html += row('Regel', `<p>${esc(tr('Bauen nur im eigenen Gebiet, Flaggen erweitern es'))}</p>`);
   if (size) html += row('Welt', `<p>${esc(size)}</p>`);
   if (M.campaign && M.stars) {
@@ -385,7 +395,7 @@ function detail(id, biome) {
   const go_ = document.createElement('button');
   go_.className = 'ls-go';
   if (open) {
-    go_.textContent = tr(opts.pick ? 'Auswählen' : 'Spielen');
+    go_.textContent = tr(opts.pick ? 'Level auswählen' : 'Spielen');
     go_.onclick = () => go(id, biome);
   } else {
     go_.disabled = true;
@@ -409,13 +419,15 @@ function back() {
   close();
 }
 function go(id, biome) {
+  if (!matches(id) || (GAME_MODES[id].campaign && !unlocked(id))) return;
+  P.playKind = opts.kind;
   P.gmode = id;
   // (a game mode: a different world every round)
   if (biome) P.mode = biome;
   else if (free(GAME_MODES[id])) P.mode = 'random';
   saveProfile();
   close();
-  opts.onPick && opts.onPick(id);
+  opts.onPick && opts.onPick(id, opts.kind);
 }
 function close() {
   if (!root) return;
@@ -450,7 +462,7 @@ function build() {
   root.id = 'levelsel';
   root.hidden = true;
   root.innerHTML = `<header><button class="ls-back" aria-label="${esc(tr('Zurück'))}">‹</button><nav></nav></header>
-    <div class="ls-list"></div><div class="ls-detail"></div>`;
+    <div class="ls-kinds"></div><div class="ls-list"></div><div class="ls-detail"></div>`;
   root.querySelector('.ls-back').onclick = back;
   root.querySelector('.ls-list').addEventListener('scroll', onScroll, { passive: true });
   document.getElementById('lobby').appendChild(root);
@@ -472,15 +484,24 @@ function build() {
   );
 }
 
-// opts: tabs (allowed groups: rec, modes, k1, k2, maps), current (chosen id), pick (only choose,
-// do not start: the host in a room), onPick(id), onDaily() (the Tagesschicht card), onClose()
+// opts: kind (solo/coop/versus, null asks first), tabs (allowed groups: rec, modes, k1, k2, maps), current (chosen id), pick (only choose,
+// do not start: the host in a room), onPick(id, kind), onDaily() (the Tagesschicht card), onClose()
 function openSelect(o = {}) {
   if (!root) build();
-  opts = o;
+  opts = { kind: 'solo', ...o };
   root.hidden = false;
   root.classList.remove('detail');
   shown = null;
   pinned = null;
+  drawKinds();
+  if (!opts.kind) {
+    root.classList.add('choose-kind');
+    root.querySelector('nav').innerHTML = '';
+    root.querySelector('.ls-list').innerHTML = '';
+    root.querySelector('.ls-kind').focus();
+    return;
+  }
+  root.classList.remove('choose-kind');
   sections();
   chips();
   // the chosen card (or the level to go on with) is in view and has the focus
@@ -492,6 +513,20 @@ function openSelect(o = {}) {
     focus.scrollIntoView({ block: 'center', inline: 'nearest' });
   }
   onScroll();
+}
+function drawKinds() {
+  const box = root.querySelector('.ls-kinds');
+  box.innerHTML = `<h2>${esc(tr('1 · Wie möchtest du spielen?'))}</h2>`;
+  for (const [kind, K] of Object.entries(PLAY_KINDS)) {
+    if (opts.tabs && kind === 'solo') continue;
+    const b = document.createElement('button');
+    b.className = 'ls-kind' + (opts.kind === kind ? ' on' : '');
+    b.dataset.kind = kind;
+    b.setAttribute('aria-pressed', String(opts.kind === kind));
+    b.innerHTML = `<b>${esc(tr(K.name))}</b><strong>${esc(tr(K.players))}</strong><small>${esc(tr(K.desc))}</small>`;
+    b.onclick = () => openSelect({ ...opts, kind });
+    box.appendChild(b);
+  }
 }
 const selectOpen = () => !!root && !root.hidden;
 

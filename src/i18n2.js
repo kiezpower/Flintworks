@@ -1,6 +1,25 @@
 // More English texts (i18n.js holds the rest; split to keep every file under 1000 lines).
 // Heimatbergwerk, crystals and skins (camp.js, lobbycamp.js, skins.js), production chain (ui.js)
 const EN2 = {
+  'Zuerst Spielart wählen': 'Choose how to play first',
+  'Lade noch einen Freund ein, damit ihr gegeneinander spielen könnt': 'Invite one more friend to play against each other',
+  Alleine: 'Solo',
+  Zusammen: 'Together',
+  Gegeneinander: 'Against each other',
+  '1 Spieler': '1 player',
+  '2–8 Spieler': '2–8 players',
+  'Dein Abenteuer, dein Tempo': 'Your adventure, your pace',
+  'Eine Burg, ein gemeinsames Ziel': 'One castle, one shared goal',
+  'Zwei Teams, zwei Burgen – wer gewinnt?': 'Two teams, two castles – who will win?',
+  '1 · Wie möchtest du spielen?': '1 · How would you like to play?',
+  'Hier geht’s weiter': 'Continue here',
+  'Level auswählen': 'Choose level',
+  'Spielart wählen': 'Choose how to play',
+  'Alleine starten': 'Start solo',
+  'Zu zweit starten': 'Start with two players',
+  'Gemeinsam starten ({n})': 'Start together ({n})',
+  'Eure Auswahl': 'Your selection',
+
   Heimatbergwerk: 'Home mine',
   '{n} Kristalle': '{n} crystals',
   '+{n} Kristalle': '+{n} crystals',

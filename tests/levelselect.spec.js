@@ -10,7 +10,7 @@ async function lobby(page, profile = {}) {
   await page.evaluate(p => {
     localStorage.clear();
     localStorage.setItem('flintworks-lang', 'de');
-    localStorage.setItem('flintworks-profile', JSON.stringify({ tutorialDone: true, installAsked: 'done', ...p }));
+    localStorage.setItem('flintworks-profile', JSON.stringify({ tutorialDone: true, installAsked: 'done', playKind: 'solo', ...p }));
   }, profile);
   await page.reload();
   await page.waitForFunction(() => window.__ww);
@@ -57,7 +57,7 @@ test('the selection shows the chapters with pictures, the next level, locks and 
   expect(info).toContain('Rette 4 Fluffel');
   expect(info).toContain('3 Sterne unter 6 Min.');
   expect(info).toContain('Bestzeit 5:12');
-  expect(await page.textContent('.ls-go')).toBe('Spielen');
+  expect(await page.textContent('.ls-go')).toBe('Level auswählen');
   // back with Escape, then a locked level says why
   await page.keyboard.press('Escape');
   await page.click('.ls-card[data-id="insel"]');
@@ -89,6 +89,8 @@ test('arrow keys move between cards, Enter opens and starts, the lobby keeps the
   await page.keyboard.press('Enter');
   expect(await page.textContent('.ls-info h3')).toContain('Die alte Mine');
   await page.keyboard.press('Enter');
+  await expect(page.locator('#lobby')).toBeVisible();
+  await page.click('#lbPlay');
   await page.waitForFunction(() => window.__ww.state === 'play');
   const r = await page.evaluate(() => ({
     mode: window.__ww.G.mode,
@@ -113,6 +115,8 @@ test('a map and a game mode start from the selection', async ({ page }) => {
   await page.click('.ls-tab[data-t="maps"]');
   await page.click('.ls-card[data-id="expedition"]');
   await page.click('.ls-go');
+  await expect(page.locator('#lobby')).toBeVisible();
+  await page.click('#lbPlay');
   await page.waitForFunction(() => window.__ww.state === 'play');
   expect(await page.evaluate(() => [window.__ww.G.mode, window.__ww.world.W])).toEqual(['expedition', 2800]);
   await lobby(page);
@@ -124,6 +128,8 @@ test('a map and a game mode start from the selection', async ({ page }) => {
   expect(await page.textContent('.ls-info h3')).toBe('Siedler');
   await expect(page.locator('.ls-info')).toContainText('Wechselt jede Runde');
   await page.click('.ls-go');
+  await expect(page.locator('#lobby')).toBeVisible();
+  await page.click('#lbPlay');
   await page.waitForFunction(() => window.__ww.state === 'play');
   expect(await page.evaluate(() => [window.__ww.G.mode, window.__ww.world.W])).toEqual(['build', 1400]);
   expect(await page.evaluate(() => ['meadow', 'desert', 'winter'].includes(window.__ww.G.biome))).toBe(true);

@@ -215,7 +215,7 @@ test('only the host decides: a player cannot send host messages (settings, round
   expect(sent).toBe(true);
   for (const p of [a, b]) {
     expect(await p.page.evaluate(() => !!document.getElementById('pwned'))).toBe(false);
-    await expect(p.page.locator('.opt', { hasText: 'Versus' }).first()).not.toContainText('✓');
+    await expect(p.page.locator('#lbKindTxt')).toContainText('Zusammen');
   }
   for (const p of [a, b]) expect(p.errors).toEqual([]);
 });

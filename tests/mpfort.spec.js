@@ -171,8 +171,11 @@ test('the score while a Versus round runs: the clock, both teams with goal and c
   await h.page.locator('#lbCreate').click();
   await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
   const code = await h.page.locator('.lb-codetap b').textContent();
-  await h.page.locator('.opt', { hasText: 'Versus' }).first().click();
-  await expect(h.page.locator('.opt', { hasText: 'Versus' }).first()).toContainText('✓');
+  await h.page.locator('.opt', { hasText: 'Zusammen' }).first().click();
+  await h.page.click('.ls-kind[data-kind="versus"]');
+  await h.page.locator('.ls-card[data-id="gold"]').click();
+  await h.page.click('.ls-go');
+  await h.page.click('#lbInvite');
   await g.page.locator('#lbCodeIn').fill(code);
   await g.page.locator('#lbJoinBtn').click();
   await expect(h.page.locator('.lb-players')).toContainText('Lutz');
@@ -213,8 +216,11 @@ test('Festungssturm: Red gets the fortress kit, Blue its explosives after the tr
   await h.page.locator('#lbCreate').click();
   await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
   const code = await h.page.locator('.lb-codetap b').textContent();
-  await h.page.locator('.opt', { hasText: 'Versus' }).first().click();
-  await expect(h.page.locator('.opt', { hasText: 'Versus' }).first()).toContainText('✓');
+  await h.page.locator('.opt', { hasText: 'Zusammen' }).first().click();
+  await h.page.click('.ls-kind[data-kind="versus"]');
+  await h.page.locator('.ls-card[data-id="festungssturm"]').click();
+  await h.page.click('.ls-go');
+  await h.page.click('#lbInvite');
   await g.page.locator('#lbCodeIn').fill(code);
   await g.page.locator('#lbJoinBtn').click();
   await expect(h.page.locator('.lb-players')).toContainText('Nele');
