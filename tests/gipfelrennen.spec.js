@@ -34,6 +34,7 @@ test('solo: the summit is reached by walking, with mirrored terrain and no equip
     return [...w.world.surf].every((y, x, s) => y === s[s.length - 1 - x]);
   });
   expect(symmetric).toBe(true);
+  expect(await page.evaluate(() => window.__ww.crew.length)).toBe(1);
   await page.keyboard.down('ArrowRight');
   await page.waitForFunction(() => window.__ww.G.state === 'won', null, { timeout: 60000 });
   await page.keyboard.up('ArrowRight');
@@ -55,6 +56,7 @@ for (const [kind, winner] of [['versus', 'host'], ['versus', 'guest'], ['coop', 
       await host.locator('.opt', { hasText: 'Spiel starten' }).click();
       for (const p of [host, guest]) await p.waitForFunction(() => window.__ww.G.net && window.__ww.G.state === 'play');
       expect(await host.evaluate(() => ({ teams: window.__ww.G.teams?.length || 0, minutes: window.__ww.G.mp.len / 3600 || 0 }))).toEqual({ teams: kind === 'versus' ? 2 : 0, minutes: kind === 'versus' ? 4 : 0 });
+      expect(await host.evaluate(() => window.__ww.crew.length)).toBe(2);
       // Walk from the real team spawn using normal keyboard/client input.
       const racer = winner === 'host' ? host : guest;
       const key = kind === 'versus' && winner === 'guest' ? 'ArrowLeft' : 'ArrowRight';

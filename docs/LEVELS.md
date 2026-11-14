@@ -234,4 +234,5 @@ Hängen und einer flachen Gipfelzone. Der Granitkern verhindert Abkürzungen dur
 den Berg; beide Seiten lassen sich ohne Ausrüstung besteigen. Allein und im Koop
 muss ein Wühler den Gipfel erreichen. Im Versus zählen erreichte Bereiche pro Team:
 Das erste Team oben gewinnt; die Runde dauert höchstens vier Minuten. Es gibt
-keine zufälligen Katastrophen. Die Sternzeiten 3/5 Minuten sind Richtwerte.
+keine zufälligen Katastrophen und keine automatischen Helfer: Alle starten ohne
+Ausrüstung oder Startgeld. Die Sternzeiten 3/5 Minuten sind Richtwerte.

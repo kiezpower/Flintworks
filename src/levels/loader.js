@@ -161,9 +161,9 @@ function placeObjects(L) {
   }
   crew[0].pid = G.myId;
   G.money = st.money ?? 40;
-  // Versus: two helpers at the second castle, which gets the same start money
+  // Versus: the same helper count and start money at both castles
   if (second) {
-    for (let k = 0; k < 2; k++) {
+    for (let k = 0; k < n - 1; k++) {
       const c = addDigger(second.x + 16 + k * 6, second.gy - 10);
       Object.assign(c, { team: 1, inv: [k ? 'rock' : 'loam'] });
     }

@@ -15,8 +15,11 @@
   "seed": 9519,
   "diff": "relaxed",
   "start": {
-    "money": 40,
-    "crew": 3
+    "money": 0,
+    "crew": 1,
+    "inv": [
+      []
+    ]
   },
   "rules": {
     "meteors": false,
@@ -31,16 +34,6 @@
       "t": "base",
       "x": -96,
       "team": 1
-    },
-    {
-      "t": "tree",
-      "x": 148,
-      "stage": 4
-    },
-    {
-      "t": "tree",
-      "x": 1252,
-      "stage": 4
     },
     {
       "t": "hill",
