@@ -170,6 +170,11 @@ test('Jeder gegen jeden over the network: three players, three castles, each the
     await expect(p.page.locator('.lb-codetap b')).toHaveText(code);
   }
   await expect(g.page.locator('.lb-players .opt')).toHaveCount(3);
+  await g.page.locator('.opt', { hasText: 'Zusammen' }).first().click();
+  await g.page.click('.ls-kind[data-kind="versus"]');
+  await g.page.click('.ls-card[data-id="gold"]');
+  await g.page.click('.ls-go');
+  await g.page.click('#lbInvite');
   await g.page.locator('.opt', { hasText: 'Jeder gegen jeden' }).click();
   // the guests see the host's choice
   await expect(i.page.locator('.opt', { hasText: 'Jeder gegen jeden' })).toContainText('✓');
