@@ -217,3 +217,12 @@ gemalt.
 steht auf festem Boden, kein Wühler steckt im Material, jedes Ziel ist ohne Granit dazwischen
 erreichbar, das Level kommt jedes Mal gleich heraus, und alle Texte sind übersetzt. Zum
 Anschauen startet man das Level in der Lobby über Kampagne → Kapitel 2.
+
+## Fluffelstollen
+
+Die Karte `fluffelstollen` ist ein ruhiges Einzel-/Koop-Abenteuer (1200 × 420).
+Vom Eingang führt ein Stollen zu einer Abzweigung mit drei Höhlenzweigen. In jeder
+Höhle warten zwei Fluffel. Im Koop teilen alle Spieler dasselbe Ziel mit sechs
+Rettungen; es wächst nicht mit der Spielerzahl. Ohne zweite Burg wird die Karte
+nicht unter „Gegeneinander“ angeboten. Es gibt weder Zeitlimit noch zufällige
+Katastrophen. Die Sternzeiten von 8/14 Minuten sind zunächst Richtwerte.

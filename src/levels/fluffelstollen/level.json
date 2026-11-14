@@ -1,0 +1,131 @@
+{
+  "id": "fluffelstollen",
+  "v": 1,
+  "name": "Fluffelstollen",
+  "icon": "crew",
+  "desc": "Rettet 6 Fluffel aus drei Höhlen",
+  "intro": "Sechs Fluffel warten in drei Höhlen. Folgt dem Stollen bis zur Abzweigung. Allein erkundest du einen Weg nach dem anderen; zusammen könnt ihr euch aufteilen. Die Karte zeigt die Fluffel.",
+  "biome": "meadow",
+  "size": [
+    1200,
+    420
+  ],
+  "zoom": 4,
+  "rough": 0.25,
+  "seed": 9417,
+  "diff": "relaxed",
+  "rules": {
+    "meteors": false
+  },
+  "objects": [
+    {
+      "t": "base",
+      "x": 40
+    },
+    {
+      "t": "tree",
+      "x": 120,
+      "stage": 4
+    },
+    {
+      "t": "tree",
+      "x": 152,
+      "stage": 4
+    },
+    {
+      "t": "tree",
+      "x": 1120,
+      "stage": 4
+    },
+    {
+      "t": "animal",
+      "kind": "fluffel",
+      "x": 756,
+      "y": 168,
+      "lost": true
+    },
+    {
+      "t": "animal",
+      "kind": "fluffel",
+      "x": 804,
+      "y": 168,
+      "lost": true
+    },
+    {
+      "t": "animal",
+      "kind": "fluffel",
+      "x": 736,
+      "y": 288,
+      "lost": true
+    },
+    {
+      "t": "animal",
+      "kind": "fluffel",
+      "x": 784,
+      "y": 260,
+      "lost": true
+    },
+    {
+      "t": "animal",
+      "kind": "fluffel",
+      "x": 956,
+      "y": 328,
+      "lost": true
+    },
+    {
+      "t": "animal",
+      "kind": "fluffel",
+      "x": 1004,
+      "y": 328,
+      "lost": true
+    }
+  ],
+  "areas": {
+    "abzweigung": [
+      490,
+      176,
+      100,
+      64
+    ]
+  },
+  "goals": [
+    {
+      "t": "rescue",
+      "n": 6
+    }
+  ],
+  "lose": {
+    "crewDead": true
+  },
+  "stars": [
+    8,
+    14
+  ],
+  "triggers": [
+    {
+      "when": {
+        "t": "enter",
+        "area": "abzweigung"
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Drei Höhlen, drei Wege! Die weißen Punkte auf der Karte zeigen euch die Fluffel."
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "rescued",
+        "n": 3
+      },
+      "do": [
+        {
+          "t": "banner",
+          "title": "Halbzeit",
+          "text": "Drei Fluffel sind frei! Findet auch die anderen drei."
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,14 @@
 // More English texts (i18n.js holds the rest; split to keep every file under 1000 lines).
 // Heimatbergwerk, crystals and skins (camp.js, lobbycamp.js, skins.js), production chain (ui.js)
 const EN2 = {
+  Fluffelstollen: 'Fluffel Tunnels',
+  'Rettet 6 Fluffel aus drei Höhlen': 'Rescue 6 fluffels from three caves',
+  'Sechs Fluffel warten in drei Höhlen. Folgt dem Stollen bis zur Abzweigung. Allein erkundest du einen Weg nach dem anderen; zusammen könnt ihr euch aufteilen. Die Karte zeigt die Fluffel.':
+    'Six fluffels are waiting in three caves. Follow the tunnel to the junction. Explore one path at a time on your own, or split up with friends. The map shows the fluffels.',
+  'Drei Höhlen, drei Wege! Die weißen Punkte auf der Karte zeigen euch die Fluffel.':
+    'Three caves, three paths! The white dots on the map show the fluffels.',
+  'Drei Fluffel sind frei! Findet auch die anderen drei.': 'Three fluffels are free! Find the other three too.',
+
   'Zuerst Spielart wählen': 'Choose how to play first',
   'Lade noch einen Freund ein, damit ihr gegeneinander spielen könnt': 'Invite one more friend to play against each other',
   Alleine: 'Solo',

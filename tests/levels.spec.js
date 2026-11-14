@@ -33,6 +33,20 @@ const levelIds = page => page.evaluate(() => import('/src/levels/index.js').then
 // a level or map started like from the lobby: chosen in the level selection (the profile keeps
 // the choice), then "play"
 async function start(page, id) {
+  // Assault packages require opposing castles. This fixture checks their terrain;
+  // the real two-player start and assault rules are covered by mpfort.spec.js.
+  const assault = await page.evaluate(id => import('/src/modes.js').then(m => !!m.GAME_MODES[id].pkg?.rules?.assault), id);
+  if (assault) {
+    await page.evaluate(async id => {
+      const w = window.__ww, M = (await import('/src/modes.js')).GAME_MODES[id];
+      Object.assign(w.G, { nextMode: id, nextSeed: M.seed, nextBiome: M.biome, nextDiff: M.diff, nextVersus: true, nextNp: 2 });
+      w.gen();
+      Object.assign(w.G, { nextSeed: null, nextVersus: false, nextNp: 1 });
+      (await import('/src/main.js')).startGame(false);
+    }, id);
+    return;
+  }
+
   await page.evaluate(id => {
     const p = JSON.parse(localStorage.getItem('flintworks-profile'));
     localStorage.setItem('flintworks-profile', JSON.stringify({ ...p, gmode: id }));

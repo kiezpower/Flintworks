@@ -68,9 +68,10 @@ function applyModeSetup() {
   const M = mode();
   // (campaign levels, the Tagesschicht, daily.js, and free modes with a start kit)
   G.fort = null;
-  if (!M.campaign && !M.daily && !M.kit) return;
+  // Map rules apply too, independently of a campaign/free-mode start kit.
   if (M.evRate != null) G.evRate = M.evRate;
   if (M.evKinds) G.evKinds = M.evKinds;
+  if (!M.campaign && !M.daily && !M.kit) return;
   if (M.money != null) G.money = M.money;
   for (const id of M.research || []) G.tools['r_' + id] = true;
   // tools the level starts with (the Labyrinth needs the grappling hook)
