@@ -310,13 +310,18 @@ test('a Versus map gets two castles, two teams and a winner', async ({ page }) =
         bases: bases.length,
         teams: G.teams ? G.teams.length : 0,
         apart: bases.length === 2 && Math.abs(bases[0].x - bases[1].x) > w.world.W / 2,
+        crewSize: M.pkg.start?.crew ?? 3,
+        team0: w.crew.filter(c => !c.team).length,
         team1: w.crew.filter(c => c.team === 1).length,
       };
     }
     return out;
   });
   expect(Object.keys(r).length).toBeGreaterThan(0);
-  for (const id in r) expect(r[id], id).toEqual({ bases: 2, teams: 2, apart: true, team1: 2 });
+  for (const id in r) {
+    const { crewSize, ...actual } = r[id];
+    expect(actual, id).toEqual({ bases: 2, teams: 2, apart: true, team0: crewSize, team1: crewSize - 1 });
+  }
   expect(errors).toEqual([]);
 });
 

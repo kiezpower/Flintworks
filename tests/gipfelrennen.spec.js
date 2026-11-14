@@ -13,6 +13,17 @@ async function open(page, kind = 'solo') {
   }, kind);
   await page.reload(); await page.waitForFunction(() => window.__ww);
 }
+// A held physical key repeats. Repeat keydown here too so browser focus/blur
+// between two headless windows cannot silently release the runner's input.
+async function walkUntil(page, key, stateOf, expected) {
+  await page.bringToFront();
+  try {
+    await expect.poll(async () => {
+      await page.keyboard.down(key);
+      return stateOf();
+    }, { timeout: 60000, intervals: [100] }).toBe(expected);
+  } finally { await page.keyboard.up(key); }
+}
 for (const viewport of [{ width: 390, height: 844 }, { width: 844, height: 390 }])
   test(`selection and preview at ${viewport.width}×${viewport.height}: solo, co-op and Versus`, async ({ page }) => {
     await page.setViewportSize(viewport); await open(page); await page.click('#lbGMode');
@@ -35,9 +46,7 @@ test('solo: the summit is reached by walking, with mirrored terrain and no equip
   });
   expect(symmetric).toBe(true);
   expect(await page.evaluate(() => window.__ww.crew.length)).toBe(1);
-  await page.keyboard.down('ArrowRight');
-  await page.waitForFunction(() => window.__ww.G.state === 'won', null, { timeout: 60000 });
-  await page.keyboard.up('ArrowRight');
+  await walkUntil(page, 'ArrowRight', () => page.evaluate(() => window.__ww.G.state), 'won');
   expect(await page.evaluate(() => !!window.__ww.G.lvl?.reached['0:gipfel'])).toBe(true);
   expect(errors).toEqual([]);
 });
@@ -60,13 +69,10 @@ for (const [kind, winner] of [['versus', 'host'], ['versus', 'guest'], ['coop', 
       // Walk from the real team spawn using normal keyboard/client input.
       const racer = winner === 'host' ? host : guest;
       const key = kind === 'versus' && winner === 'guest' ? 'ArrowLeft' : 'ArrowRight';
-      await racer.bringToFront();
-      await racer.keyboard.down(key);
       const hostState = kind === 'coop' || winner === 'host' ? 'won' : 'lost';
       const guestState = kind === 'coop' || winner === 'guest' ? 'won' : 'lost';
-      await expect.poll(() => host.evaluate(() => ({ state: window.__ww.G.state, players: window.__ww.crew.filter(c => c.pid != null).map(c => ({ pid: c.pid, x: Math.round(c.x), y: Math.round(c.y), dead: c.dead })), reached: window.__ww.G.lvl?.reached })), { timeout: 60000 }).toMatchObject({ state: hostState });
+      await walkUntil(racer, key, () => host.evaluate(() => window.__ww.G.state), hostState);
       await guest.waitForFunction(state => window.__ww.G.state === state, guestState, { timeout: 60000 });
-      await racer.keyboard.up(key);
       expect(errors).toEqual([]);
     } finally { await host.close(); await guest.close(); }
   });
