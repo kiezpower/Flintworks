@@ -7,6 +7,7 @@ import { updHazards } from './hazards.js';
 import { GAME_MODES, goalReached, mode, starsFor } from './modes.js';
 import { settlementTick } from './settlement.js';
 import { openWorlds } from './worldui.js';
+import { bootDedicated } from './dedicated.js';
 import { validWorldObjects } from './worldstore.js';
 import { updBuildFx } from './bfx.js';
 import { updMusic } from './music.js';
@@ -595,6 +596,7 @@ function step() {
   // picked in it has run by now, commands.js)
   if (panelEl.hidden) G.panelPid = null;
   readInput();
+  if (G.dedicated && G.serverIdle) { stepTail(); return; }
   // (a multiplayer game never pauses: the others keep playing)
   const paused = !panelEl.hidden && !G.net;
   if (G.state === 'play' && paused) updTutorial(true);
@@ -909,3 +911,5 @@ document.addEventListener(
   },
   true,
 );
+
+bootDedicated().catch(e => window.__flintHostError?.(String(e.message)));

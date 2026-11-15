@@ -1,4 +1,4 @@
-import { fireCells, setFireCells } from './fire.js';
+import { fireCells, setFireCells, saveFire, restoreFire } from './fire.js';
 import { fogPack, fogUnpack } from './fog.js';
 import { archiveWorld } from './worldarchive.js';
 import { glowList, scatterDecor } from './decor.js';
@@ -110,7 +110,9 @@ function serialize() {
       mode: G.mode,
       settlement: G.settlement || null,
       fire: fireCells(),
+      fireState: saveFire(),
       tombs: G.tombs || [],
+      tombN: G.tombN || 0,
       merchant: G.merchant || null,
       merchNext: G.merchNext || null,
       rng: getSeed(),
@@ -240,6 +242,7 @@ function deserialize(d) {
     G.tut = d.tut || null;
     G.settlement = d.settlement || null;
     G.tombs = d.tombs || [];
+    G.tombN = d.tombN || Math.max(0, ...G.tombs.map(t => t.id));
     G.merchant = d.merchant || null;
     G.merchNext = d.merchNext ?? null;
     G.worldId = d.worldId || null;
@@ -306,7 +309,7 @@ function deserialize(d) {
     }
     for (let k = 0; k < 9; k++) clouds.push(mkCloud(rnd() * W));
     // old saves without player ids: the first Wühler is yours
-    if (!crew.some(c => c.pid != null) && crew[0]) crew[0].pid = G.myId;
+    if (!G.dedicated && !crew.some(c => c.pid != null) && crew[0]) crew[0].pid = G.myId;
     arrows.length = 0;
     // (older saves have no glow list: the caves are looked for again)
     scatterDecor(d.glow || null);
@@ -326,7 +329,8 @@ function deserialize(d) {
     G.mp = d.mp || { np: 1, vs: !!G.teams, stats: {} };
     // old saves: give every entity an id
     for (const a of [crew, items, builds, trees, animals, lorries]) for (const e of a) e.id ??= G.nextId = G.nextId + 1;
-    setFireCells(d.fire || []);
+    if (d.fireState) restoreFire(d.fireState);
+    else setFireCells(d.fire || []);
     if (d.rng != null) setSeed(d.rng);
     return true;
   } catch {

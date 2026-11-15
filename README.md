@@ -236,3 +236,9 @@ nicht. Abwesende Freunde behalten in Siedlungswelten ihre Figur und Tasche, stat
 arbeiten. Bei alten Spielständen ohne Kennung wird nur ein eindeutiger Name übernommen. Auf
 einem anderen Gerät entsteht eine neue Kennung; die Exportdatei überträgt keine geheimen
 Geräte-Tokens.
+
+Eine **Dauerwelt** kann zusätzlich auf einem Server laufen: Freunde brauchen dann keinen
+spielenden Gastgeber. Der Welt-Host sichert regelmäßig, behält seinen Einladungscode nach
+Neustarts und pausiert, wenn niemand spielt. Die öffentliche „Flintworks Siedlungswelt“ wird mit
+dem Relay ausgeliefert; eigene private Hosts sind ebenfalls möglich. Einrichtung und
+Sicherungen: [server/WORLDS.md](server/WORLDS.md).

@@ -650,7 +650,7 @@ const EN2 = {
   "Baue einen Fahrstuhl und erschließe einen 25 m tiefen Schacht": "Build a lift and open a shaft 25 m deep",
   "Erforsche Schienenbau und baue eine Grubenbahn oder einen Bohrwagen": "Research railways and build a mine train or drill wagon",
   "Versorge 3 Siedler und lagere 6 Brot": "Support 3 settlers and store 6 bread",
-  "Stelle eine Diamanthacke her und lagere 4 Edelsteine": "Craft a diamond pick and store 4 gems",
+  "Stelle eine Diamanthacke her und verkaufe 4 Edelsteine": "Craft a diamond pick and sell 4 gems",
   "Eure Siedlung wächst weiter – alle Meilensteine erreicht": "Keep growing your settlement \u2013 all milestones reached",
   "Meilenstein erreicht": "Milestone reached",
 
@@ -679,5 +679,6 @@ const EN2 = {
   "Diese Welt-Datei ist ungültig oder zu groß": "This world file is invalid or too large",
   "Welt konnte nicht gespeichert werden – bitte Speicherplatz prüfen": "Could not save the world \u2013 please check available storage",
   "Welt konnte nicht geöffnet werden – die bisherige Welt bleibt gespeichert": "Could not open the world \u2013 the previous world is still saved",
+  "Dauerwelt: {name}": "Persistent world: {name}",
 };
 export { EN2 };

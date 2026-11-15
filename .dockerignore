@@ -1,0 +1,10 @@
+.git
+node_modules
+dist
+dev-dist
+server/node_modules
+server/world-data
+test-results
+playwright-report
+tests/out
+work

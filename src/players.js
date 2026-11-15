@@ -24,8 +24,9 @@ const EDGES = ['jumpP', 'jumpUp', 'throwP', 'actP'];
 function consumeEdges() {
   for (const I of inputs.values()) for (const k of EDGES) I[k] = false;
 }
+const dropInput = pid => inputs.delete(pid);
 function clearInputs() {
   inputs.clear();
 }
 
-export { isAbsent, clearInputs, diggerOf, consumeEdges, helpers, inputOf, isPlayer, setInput };
+export { isAbsent, dropInput, clearInputs, diggerOf, consumeEdges, helpers, inputOf, isPlayer, setInput };

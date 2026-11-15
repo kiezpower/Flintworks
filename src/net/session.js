@@ -7,7 +7,7 @@ import { P, track } from '../profile.js';
 import { parseSkin } from '../skins.js';
 import { addBot, takeOverBot } from '../bots.js';
 import { addDigger } from '../entities.js';
-import { clearInputs, diggerOf } from '../players.js';
+import { clearInputs, diggerOf, dropInput } from '../players.js';
 import { deserialize } from '../save.js';
 import { G, crew } from '../state.js';
 import { useMine } from '../teams.js';
@@ -33,7 +33,7 @@ function startMessage(gmode) {
   // quick play: bots take the castles nobody plays (alone in Versus one, "Jeder gegen jeden" up
   // to three castles)
   // (not when the host switched bots off in the settings)
-  const fill = !!NET.auto && !!NET.versus && P.bots !== false;
+  const fill = !!NET.auto && !!allowVersus && P.bots !== false;
   // (at most four castles: from five players on, two share a castle)
   const castles = free ? Math.min(4, Math.max(n, fill ? 3 : 0)) : fill && n < 2 ? 2 : 0;
   const bots = [];
@@ -104,6 +104,7 @@ function beginNet(d) {
     // the host's castle in the host's style (the other castles: addPlayerDigger)
     const self = d.players.find(p => p.pid === G.myId);
     if (me && self?.fid) me.owner = self.fid;
+    if (me && self?.watch) crew.splice(crew.indexOf(me), 1);
     const own = teamBase(G.myTeam);
     if (self && own) own.skin = parseSkin(self.skin).style;
     for (const p of d.players) addPlayerDigger(p);
@@ -133,7 +134,13 @@ onRoomChange(() => {
   const now = new Set(NET.players.filter(p => p.online).map(p => p.pid));
   if (G.netHost)
     for (const p of NET.players) {
-      if (!p.online || p.pid === G.myId) continue;
+      if (!p.online) {
+        dropInput(p.pid);
+        const c = diggerOf(p.pid);
+        if (c?.owner && G.mode === 'settlement') delete c.pid;
+        continue;
+      }
+      if (p.pid === G.myId) continue;
       if (!online.has(p.pid)) {
         if (!p.watch) teamFor(p.pid);
         addPlayerDigger(p);

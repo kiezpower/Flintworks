@@ -15,8 +15,8 @@ export const MILESTONES = [
     value: () => G.tools?.r_rails && vehicles.some(v => ['train', 'drill'].includes(v.type || v.kind)) ? 1 : 0 },
   { id: 'village', text: 'Versorge 3 Siedler und lagere 6 Brot', goal: 6,
     value: () => (G.villagers || []).length >= 3 ? G.store?.bread || 0 : 0 },
-  { id: 'deep', text: 'Stelle eine Diamanthacke her und lagere 4 Edelsteine', goal: 4,
-    value: () => G.tools?.dpick ? G.store?.gem || 0 : 0 },
+  { id: 'deep', text: 'Stelle eine Diamanthacke her und verkaufe 4 Edelsteine', goal: 4,
+    value: () => G.tools?.dpick ? G.sold?.gem || 0 : 0 },
 ];
 export function settlementStatus() {
   const done = G.settlement?.done || [];

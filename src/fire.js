@@ -152,6 +152,17 @@ function fireSpots(cx, cy, out) {
   }
   return out;
 }
-const clearFire = () => burning.clear();
+// Durable saves keep all burning cells and their remaining lifetime. Network snapshots may
+// stay capped for drawing, but must not be used to reconstruct the authoritative simulation.
+const saveFire = () => ({ cells: [...burning], lit, hissT });
+function restoreFire(saved) {
+  burning.clear(); lit = 0; hissT = 0;
+  if (!saved) return;
+  for (const [i, ticks] of saved.cells || [])
+    if (Number.isInteger(i) && i >= 0 && i < W * H && mat[i] === OIL && Number.isFinite(ticks) && ticks > 0 && burning.size < MAX)
+      burning.set(i, ticks);
+  lit = saved.lit || 0; hissT = saved.hissT || 0;
+}
+const clearFire = () => { burning.clear(); lit = hissT = 0; };
 
-export { burnPlank, clearFire, fireCells, fireIn, fireSpots, igniteCell, igniteNear, isBurning, setFireCells, updFire };
+export { saveFire, restoreFire, burnPlank, clearFire, fireCells, fireIn, fireSpots, igniteCell, igniteNear, isBurning, setFireCells, updFire };
