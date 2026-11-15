@@ -42,8 +42,19 @@ Jeder kann sich verbinden, darum begrenzt das Relay:
 | Verschiedene Geräte-Tokens pro Verbindung | 3 |
 | Benutzer insgesamt (`MAX_USERS`) | 100 000 |
 | Gespeicherter Snapshot | 1 MB |
+| Geteilte Welten auf der Festplatte (`SHARED_DIR`, `MAX_SHARED`, `MAX_SHARED_BYTES`) | 500 Welten, je höchstens 2 MB, eine pro Besitzer; nach 180 Tagen ohne Änderung gelöscht |
 
 Spielnachrichten, die nur der Host senden darf (`start`, `snap`, `ter`, `end`, `cfg`, `toast`, `cd`), leitet das Relay von anderen Spielern nicht weiter; die Clients prüfen das zusätzlich. Ein Raum, den alle verlassen haben, wird sofort gelöscht. Raum-Codes kommen aus `crypto.randomInt`.
+
+## Geteilte Welten
+
+Teilt ein Spieler eine Siedlungswelt mit seinen Freunden, hält das Relay ihren neuesten Spielstand
+als Datei in `SHARED_DIR` (im Container `/data`, Volume `flintworks-relay-data`): eine Datei
+`<Welt-ID>.json` pro Welt, geschrieben über eine temporäre Datei und Umbenennen. Öffnen darf sie,
+wer in der Freundesliste des Besitzers steht; die Liste liegt mit in der Datei, damit das auch nach
+einem Neustart gilt, während der Besitzer offline ist. Es spielt immer nur ein Raum eine Welt: Wer
+sie öffnet, während Freunde darin sind, kommt in deren Raum. Der Host des Raums schickt den Stand
+bei jedem Speichern (etwa einmal pro Minute und beim Verlassen). Sicherung: das Volume kopieren.
 
 ## Logs auf dem Server
 

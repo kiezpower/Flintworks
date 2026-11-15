@@ -172,6 +172,7 @@ src/
   lobbycamp.js        Heimatbergwerk-Fenster in der Lobby (Kassieren, Ausbau, Skins)
   lobbyfriends.js     Freunde-Fenster: eigener Code, Anfragen, online, beitreten, einladen, Tagesschicht
   net/friends.js      Freundesliste ohne Login: Liste auf dem Gerät, Status vom Relay
+  net/shared.js       Geteilte Welten: Freunde bauen abwechselnd weiter, der Stand liegt auf dem Relay
   friends.css         Gestaltung des Freunde-Fensters
   skins.js            Outfits für Wühler und Baustile für Gebäude
   sprites.js          Pixel-Grafiken

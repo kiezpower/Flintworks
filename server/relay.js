@@ -26,6 +26,15 @@
 //                                            my Wühler was and what it had earned, twice a second
 //                                            (base64, src/ghost.js), and how it looks. After hello
 //   {t:'ghostget', fid}                      the ghost of a mutual friend, of the same day as mine
+//   {t:'wshare', id, name, save}             share a settlement world of mine with my friends: the
+//                                            relay keeps its latest state on disk (one world per
+//                                            owner). Who is in the owner's friend list may open it
+//   {t:'wunshare', id}                       owner: take it off the server again
+//   {t:'wopen', id}                          host of a room: open a shared world here. Only one room
+//                                            plays a world at a time: the answer is its state, or
+//                                            the room where it is being played right now
+//   {t:'wput', id, save}                     host of the room that plays it: the latest state
+//   {t:'wclose'}                             host: this room does not play the shared world any more
 // Server → client:
 //   {t:'room', code, pid, host, players, pub, tag} you are in (players: [{pid,name,cap,hat,skin,ready,watch,online}]);
 //                                            tag: the mode of a quick play room (it starts by itself)
@@ -42,9 +51,17 @@
 //                                            has me in their list but is not in mine [{fid, name}]
 //   {t:'finvite', from, name, room}          a friend invites me into their room
 //   {t:'ghost', fid, name, day, score, d, cap, hat, skin}  a friend's ghost (answer to ghostget)
+//   {t:'world', id, name, save}              answer to wopen: the state to play on from; or
+//   {t:'world', id, room}                    it is being played in this room: join there
+//   {t:'wsaved', id, updated}                the state was kept (wshare, wput)
+//   {t:'werr', id, e}                        'nope' (unknown or not for you) | 'big' | 'full' (the
+//                                            server keeps no more worlds) | 'one' (you already share
+//                                            another world) | 'held' (played in another room) | 'bad'
 //   {t:'rank', day, pos, of}                 my place in today's Tagesschicht among everybody the
 //                                            relay knows (anonymous: no names, only the place and
 //                                            how many played), after every hello with a score
+// The friends message also carries `worlds`: the shared worlds I own or may open
+// [{id, name, owner, ownerName, mine, updated, by, room, n}] (room: where it is played right now).
 // Friends and ghosts are kept in memory only (nothing on disk): every client sends its whole list on each
 // connect, so after a restart the index rebuilds itself. Users without a connection for 30 days
 // are dropped.
@@ -54,6 +71,9 @@
 // per connection, the size of a kept snapshot, users in all. Game messages only the host may
 // send (start, snapshots, landscape, end, ...) are dropped when another player sends them.
 import { createHash, randomInt } from 'node:crypto';
+import { mkdirSync, readFileSync, readdirSync } from 'node:fs';
+import { rename, unlink, writeFile } from 'node:fs/promises';
+import { join as pathJoin } from 'node:path';
 import { WebSocketServer } from 'ws';
 
 const PORT = Number(process.env.PORT || 8787);
@@ -73,7 +93,7 @@ const MSG_RATE = 150, // game messages per second (burst: twice that)
   MAX_USERS = num(process.env.MAX_USERS, 100000);
 // game messages only the host sends (the clients check this too)
 const HOST_ONLY = new Set(['start', 'snap', 'ter', 'end', 'cfg', 'toast', 'cd']);
-const CTRL = new Set(['create', 'join', 'quick', 'list', 'public', 'ready', 'watch', 'hello', 'finvite', 'ghost', 'ghostget', 'leave']);
+const CTRL = new Set(['create', 'join', 'quick', 'list', 'public', 'ready', 'watch', 'hello', 'finvite', 'ghost', 'ghostget', 'wshare', 'wunshare', 'wopen', 'wput', 'wclose', 'leave']);
 
 const rooms = new Map(); // code → room
 
@@ -123,7 +143,7 @@ function friendsMsg(u) {
   }
   for (const f of fansOf(u))
     if (f !== u && !u.friends.has(f.fid) && !u.ignored.has(f.fid) && asks.length < 20) asks.push({ fid: f.fid, name: f.name });
-  return { t: 'friends', list, asks: asks.slice(0, 20) };
+  return { t: 'friends', list, asks: asks.slice(0, 20), worlds: worldsOf(u) };
 }
 // tell u and everybody who has u in their list (at most once a second each)
 const dirty = new Set();
@@ -169,6 +189,7 @@ function hello(ws, m) {
   // (a ghost of another day is of no use any more)
   if (u.ghost && u.ghost.day !== u.daily?.day) dropGhost(u);
   ws.user = u;
+  ownerSeen(u);
   send(ws, { t: 'hi', fid });
   send(ws, friendsMsg(u));
   const rk = rankOf(u);
@@ -217,6 +238,155 @@ function ghostget(ws, m) {
     f = users.get(String(m.fid));
   if (!u || !f || !f.ghost || !mutual(u, f) || !u.daily || u.daily.day !== f.ghost.day) return;
   send(ws, { t: 'ghost', fid: f.fid, name: f.name, ...f.ghost });
+}
+
+// ---- shared worlds: a settlement world friends build on in turn, kept on disk ----
+// One file per world (SHARED_DIR/<id>.json: who owns it, who may open it, the state as the game
+// saved it). The relay does not read the state. Only one room plays a world at a time (`held`),
+// so there is always one latest state; the host of that room sends it about once a minute.
+const SHARED_DIR = process.env.SHARED_DIR || './shared-data';
+const MAX_SHARED = num(process.env.MAX_SHARED, 500), // worlds kept in all
+  MAX_SHARED_BYTES = num(process.env.MAX_SHARED_BYTES, 2 * 1024 * 1024), // characters of one state
+  SHARED_TTL = 180 * 24 * 3600 * 1000, // a world nobody opened this long is dropped
+  HELD_GRACE = 60000; // a room without anybody online keeps its world this long
+const WID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const shared = new Map(); // id → {id, name, owner, ownerName, members:[fid], updated, by, save}
+const held = new Map(); // id → the room that plays it
+try {
+  mkdirSync(SHARED_DIR, { recursive: true });
+  for (const f of readdirSync(SHARED_DIR)) {
+    if (!f.endsWith('.json')) continue;
+    try {
+      const w = JSON.parse(readFileSync(pathJoin(SHARED_DIR, f), 'utf8'));
+      if (WID_RE.test(w.id) && f === w.id + '.json' && typeof w.save === 'string' && FID_RE.test(w.owner))
+        shared.set(w.id, { ...w, members: [...codes(w.members)] });
+    } catch {}
+  }
+} catch (e) {
+  console.error('shared worlds: no storage –', e.message);
+}
+// writes of one world follow each other (a temporary file, then renamed: never half a state)
+function persist(w) {
+  const file = pathJoin(SHARED_DIR, w.id + '.json'),
+    { id, name, owner, ownerName, members, updated, by, save } = w,
+    text = JSON.stringify({ id, name, owner, ownerName, members, updated, by, save });
+  w.writing = (w.writing || Promise.resolve())
+    .then(() => writeFile(file + '.tmp', text))
+    .then(() => rename(file + '.tmp', file))
+    .catch(e => console.error('shared world not written:', e.message));
+  return w.writing;
+}
+function dropShared(w) {
+  shared.delete(w.id);
+  held.delete(w.id);
+  (w.writing || Promise.resolve()).then(() => unlink(pathJoin(SHARED_DIR, w.id + '.json'))).catch(() => {});
+}
+const mayOpen = (w, u) => !!u && (w.owner === u.fid || w.members.includes(u.fid));
+// the room that plays a world right now (a room everybody left gives it up after a while)
+function holder(id) {
+  const r = held.get(id);
+  if (r && rooms.get(r.code) === r && r.shared === id && (online(r) > 0 || Date.now() - r.empty < HELD_GRACE)) return r;
+  if (r) {
+    held.delete(id);
+    if (r.shared === id) r.shared = null;
+  }
+  return null;
+}
+function hold(room, id) {
+  if (room.shared && room.shared !== id && held.get(room.shared) === room) held.delete(room.shared);
+  room.shared = id;
+  held.set(id, room);
+}
+function worldsOf(u) {
+  const out = [];
+  for (const w of shared.values()) {
+    if (!mayOpen(w, u)) continue;
+    const r = holder(w.id),
+      live = r && online(r) > 0;
+    out.push({ id: w.id, name: w.name, owner: w.owner, ownerName: w.ownerName, mine: w.owner === u.fid, updated: w.updated, by: w.by, ...(live ? { room: r.code, n: r.players.filter(p => !p.serverHost).length } : {}) });
+  }
+  return out.slice(0, 30);
+}
+// everybody who may open w hears about a change (with their friends list, at most once a second)
+function touchWorld(w) {
+  for (const fid of [w.owner, ...w.members]) {
+    const u = users.get(fid);
+    if (u && u.ws) dirty.add(u);
+  }
+}
+// the owner's friend list is who may open the world: kept with it, so it also holds after a
+// restart while the owner is away
+function ownerSeen(u) {
+  for (const w of shared.values()) {
+    if (w.owner !== u.fid) continue;
+    const next = [...u.friends];
+    if (w.ownerName === u.name && next.length === w.members.length && next.every(f => w.members.includes(f))) continue;
+    const before = w.members;
+    w.members = next;
+    w.ownerName = u.name;
+    persist(w);
+    touchWorld({ owner: w.owner, members: [...new Set([...before, ...next])] });
+  }
+}
+const stateOk = s => typeof s === 'string' && s.length > 1 && s.length <= MAX_SHARED_BYTES;
+const isHost = ws => !!ws.room && !!ws.player && ws.player.pid === ws.room.host;
+function wshare(ws, m) {
+  const u = ws.user,
+    id = String(m.id);
+  const err = e => send(ws, { t: 'werr', id, e });
+  if (!u || !WID_RE.test(id)) return err('bad');
+  if (!stateOk(m.save)) return err('big');
+  let w = shared.get(id);
+  if (w && w.owner !== u.fid) return err('nope');
+  const h = holder(id);
+  if (h && h !== ws.room) return err('held');
+  if (!w) {
+    for (const x of shared.values()) if (x.owner === u.fid) return err('one');
+    if (shared.size >= MAX_SHARED) return err('full');
+    shared.set(id, (w = { id, owner: u.fid }));
+  }
+  Object.assign(w, { name: clean(m.name, 48) || 'Flintworks', ownerName: u.name, members: [...u.friends], updated: Date.now(), by: u.name, save: m.save });
+  if (isHost(ws)) hold(ws.room, id);
+  persist(w);
+  touchWorld(w);
+  send(ws, { t: 'wsaved', id, updated: w.updated });
+}
+function wunshare(ws, m) {
+  const w = shared.get(String(m.id));
+  if (!w || !ws.user || w.owner !== ws.user.fid) return;
+  touchWorld(w);
+  dropShared(w);
+}
+function wopen(ws, m) {
+  const id = String(m.id),
+    w = shared.get(id);
+  if (!w || !mayOpen(w, ws.user)) return send(ws, { t: 'werr', id, e: 'nope' });
+  if (!isHost(ws) || ws.room.worldToken) return send(ws, { t: 'werr', id, e: 'bad' });
+  const h = holder(id);
+  // (a room everybody just left may be a host with a dropout: it keeps the world for a minute)
+  if (h && h !== ws.room) return send(ws, online(h) > 0 ? { t: 'world', id, room: h.code } : { t: 'werr', id, e: 'held' });
+  hold(ws.room, id);
+  send(ws, { t: 'world', id, name: w.name, save: w.save });
+  touchWorld(w);
+}
+function wput(ws, m) {
+  const id = String(m.id),
+    w = shared.get(id);
+  if (!w || !mayOpen(w, ws.user)) return send(ws, { t: 'werr', id, e: 'nope' });
+  if (!isHost(ws) || holder(id) !== ws.room) return send(ws, { t: 'werr', id, e: 'held' });
+  if (!stateOk(m.save)) return send(ws, { t: 'werr', id, e: 'big' });
+  Object.assign(w, { updated: Date.now(), by: ws.user.name, save: m.save });
+  persist(w);
+  touchWorld(w);
+  send(ws, { t: 'wsaved', id, updated: w.updated });
+}
+function wclose(ws) {
+  const r = ws.room;
+  if (!r || !r.shared || !isHost(ws)) return;
+  const w = shared.get(r.shared);
+  if (held.get(r.shared) === r) held.delete(r.shared);
+  r.shared = null;
+  if (w) touchWorld(w);
 }
 
 function finvite(ws, m) {
@@ -363,6 +533,16 @@ function onMessage(ws, raw) {
       return ghost(ws, m);
     case 'ghostget':
       return ghostget(ws, m);
+    case 'wshare':
+      return wshare(ws, m);
+    case 'wunshare':
+      return wunshare(ws, m);
+    case 'wopen':
+      return wopen(ws, m);
+    case 'wput':
+      return wput(ws, m);
+    case 'wclose':
+      return wclose(ws);
   }
   if (!room) return send(ws, { t: 'error', e: 'bad' });
   switch (m.t) {
@@ -434,6 +614,11 @@ setInterval(() => {
       dropGhost(u);
       users.delete(fid);
     } else if (u.ghost && !u.ws && now - u.seen > GHOST_TTL) dropGhost(u);
+  for (const w of [...shared.values()]) {
+    if (now - w.updated > SHARED_TTL && !holder(w.id)) dropShared(w);
+    // (a room that gave its world up: who may open it sees that it is free again)
+    else if (held.has(w.id) && !holder(w.id)) touchWorld(w);
+  }
   for (const [code, room] of rooms) {
     if (room.worldToken) room.players = room.players.filter(p => p.serverHost || p.ws || now - p.gone < 30000);
     if (room.empty && now - room.empty > ROOM_TTL) {

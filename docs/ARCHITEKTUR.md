@@ -151,6 +151,7 @@ gegraben ist, wie Level offen sind; der eigene Wühler steht dort, wo es weiterg
 | `session.js`, `host.js`, `client.js` | Ablauf einer geteilten Runde |
 | `sync.js`, `terrain.js` | Was der Host verschickt: Figuren und Gelände |
 | `netsave.js` | Geteilte Runde speichern |
+| `shared.js` | Geteilte Welten: Siedlungswelt, die Freunde abwechselnd weiterbauen; der neueste Stand liegt auf dem Relay |
 | `watch.js` | Zuschauen statt mitspielen |
 | `friends.js`, `emotes.js`, `deeplink.js` | Freunde ohne Login, Zurufe, Einladungen in die App |
 | `server/relay.js` | Relay: Räume und Weiterleitung, rechnet selbst kein Spiel |

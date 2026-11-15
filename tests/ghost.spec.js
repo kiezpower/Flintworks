@@ -12,6 +12,8 @@ test.beforeAll(async () => {
   await r.ready;
 });
 test.afterAll(() => relay?.kill());
+// (one relay for the file: the tests run one after the other)
+test.describe.configure({ mode: 'serial' });
 
 async function player(browser, name, extra = {}, ghosts = null) {
   const page = await browser.newPage();
