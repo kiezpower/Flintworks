@@ -83,6 +83,10 @@
   .lb-crew-heading b { font-size: 22px; }
   .lb-crew-heading span { font-size: 10px; }
 }
+@media (min-width: 601px) and (max-height: 500px) {
+  .werkhof .lb-crew-heading { top: 62px; }
+  .werkhof .lb-crew-heading b { display: none; }
+}
 @media (max-width: 600px) {
   #lobby.werkhof { overflow-y: auto; overflow-x: hidden; padding: 12px 12px max(20px, env(safe-area-inset-bottom)); box-sizing: border-box; background: #30251e; }
   .werkhof #lbCv { top: 64px; height: 280px; }

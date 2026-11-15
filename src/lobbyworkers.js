@@ -205,22 +205,26 @@ function updWorkers(land, t) {
   if (!nav || navKey !== land.cells) resetWorkers(land);
   for (const w of workers) updWorker(w, land, t);
 }
-function drawWorkers(g) {
-  for (const w of workers) drawDiggerHi(w, Math.round(w.x), Math.round(w.y), w.face, g);
+function drawWorkers(g, reducedMotion = false) {
+  for (const w of workers) drawDiggerHi(w, Math.round(w.x), Math.round(w.y), w.face, g, reducedMotion ? 0 : undefined);
   for (let k = dust.length - 1; k >= 0; k--) {
     const d = dust[k];
-    d.x += d.vx;
-    d.y += d.vy;
-    d.vy += 0.04;
-    if (--d.l <= 0) dust.splice(k, 1);
+    if (!reducedMotion) {
+      d.x += d.vx;
+      d.y += d.vy;
+      d.vy += 0.04;
+      if (--d.l <= 0) dust.splice(k, 1);
+    }
     g.fillStyle = d.c;
     g.fillRect(d.x, d.y, 0.5, 0.5);
   }
   // delivered ore floats up over the castle
   for (let k = gains.length - 1; k >= 0; k--) {
     const o = gains[k];
-    o.y -= 0.25;
-    if (--o.l <= 0) gains.splice(k, 1);
+    if (!reducedMotion) {
+      o.y -= 0.25;
+      if (--o.l <= 0) gains.splice(k, 1);
+    }
     g.globalAlpha = Math.min(1, o.l / 20);
     drawItemBig(g, o.t, Math.round(o.x), Math.round(o.y), 4, 3);
     g.globalAlpha = 1;

@@ -146,6 +146,14 @@ test('the crew uses live room members, readiness and additional player counts', 
     await host.locator('#lbSlot1').click({ trial: true });
     await host.locator('#lbSlot2').click({ trial: true });
     await host.screenshot({ path: 'test-results/werkhof-crew.png' });
+    await host.setViewportSize({ width: 844, height: 390 });
+    await host.locator('#lbSlot1').click({ trial: true });
+    const heading = await host.locator('.lb-crew-heading').boundingBox();
+    for (const slot of ['#lbSlot1', '#lbSlot2']) {
+      const name = await host.locator(`${slot} .nm`).boundingBox();
+      expect(heading.y + heading.height).toBeLessThanOrEqual(name.y);
+    }
+    await host.screenshot({ path: 'test-results/werkhof-crew-landscape.png' });
     await host.click('#lbSlot2');
     await expect(host.locator('.lb-players')).toContainText('Dora');
   } finally { await Promise.all(pages.map(p => p.close())); r.relay.kill(); }
@@ -155,8 +163,16 @@ test('reduced motion keeps the lobby scene still', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await lobby(page);
   // Wait for the first paint and overlay placement before comparing the canvas.
-  await page.waitForFunction(() => document.querySelector('#lbSlot1').style.left);
-  const first = await page.locator('#lbCv').evaluate(c => c.toDataURL());
+  await page.waitForFunction(() => {
+    const c = document.querySelector('#lbCv');
+    return document.querySelector('#lbSlot1').style.left && c.getContext('2d').getImageData(0, 0, 1, 1).data[3] === 255;
+  });
+  const hash = () => page.locator('#lbCv').evaluate(async c => {
+    const pixels = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    const digest = await crypto.subtle.digest('SHA-256', pixels);
+    return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
+  });
+  const first = await hash();
   await page.waitForTimeout(700);
-  expect(await page.locator('#lbCv').evaluate(c => c.toDataURL())).toBe(first);
+  expect(await hash()).toBe(first);
 });

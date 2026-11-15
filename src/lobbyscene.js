@@ -249,7 +249,7 @@ function drawScene(g, opts) {
   drawSky(g, b, t);
   g.drawImage(terrain, 0, 0, LW, LH);
   g.drawImage(overlay, 0, 0, LW, LH);
-  drawWorkers(g, land);
+  drawWorkers(g, reducedMotion);
   // the hero on the hill: twice as big as in the game, bobbing and turning now and then
   const hx = land.heroX,
     hy = groundY(hx);
