@@ -200,6 +200,7 @@ function play(withTutorial, level = null, veil = false) {
       hideLobby();
       overlay.hidden = true;
       openVeil(() => startGame(go), go === 'loaded');
+      tutHud(); // hide controls immediately, before the first scheduled HUD refresh
       return;
     }
     startGame(withTutorial);
