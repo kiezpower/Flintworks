@@ -109,6 +109,7 @@ wählen den Modus → `gen.js` (oder `levels/loader.js`) baut die Welt → pro T
 | `teams.js`, `versus.js`, `bots.js` | Teams, Versus-Regeln, Bots |
 | `season.js` | Monatliche Saison für Versus: Punkte, Rang, Kristalle zum Monatswechsel |
 | `replay.js` | Tagesschicht aufzeichnen und als Wiederholung abspielen |
+| `ghost.js` | Tagesschicht mit Freunden: bester Lauf des Tages als Geist (Position und Verdienst, zweimal pro Sekunde), „… hat dich überholt“ |
 | `stats.js`, `scoreboard.js` | Statistik und Punktetafel im Mehrspieler |
 | `reward.js` | Sichtbare Belohnungen (fliegende Münzen) |
 
@@ -150,6 +151,7 @@ gegraben ist, wie Level offen sind; der eigene Wühler steht dort, wo es weiterg
 | `session.js`, `host.js`, `client.js` | Ablauf einer geteilten Runde |
 | `sync.js`, `terrain.js` | Was der Host verschickt: Figuren und Gelände |
 | `netsave.js` | Geteilte Runde speichern |
+| `shared.js` | Geteilte Welten: Siedlungswelt, die Freunde abwechselnd weiterbauen; der neueste Stand liegt auf dem Relay |
 | `watch.js` | Zuschauen statt mitspielen |
 | `friends.js`, `emotes.js`, `deeplink.js` | Freunde ohne Login, Zurufe, Einladungen in die App |
 | `server/relay.js` | Relay: Räume und Weiterleitung, rechnet selbst kein Spiel |

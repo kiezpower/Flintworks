@@ -4,6 +4,7 @@
 // with a link that leads straight back to today's shift (?daily).
 import { announce } from './announce.js';
 import { BIOMES } from './biomes.js';
+import { ghostHint, ghostList, ghostRecord, ghostRival, passReset, passSeen } from './ghost.js';
 import { tr } from './i18n.js';
 import { GAME_MODES } from './modes.js';
 import { LIVE, isNative, ownWeb } from './platform.js';
@@ -161,8 +162,11 @@ GAME_MODES.daily = {
     const e = G.earned || 0,
       m = medalOf(e),
       next = MEDALS[m];
+    // the ghost of a friend just ahead (or the best one behind): what it had earned by now
+    const r = ghostRival(),
+      rival = r ? ` · 👻 ${r.name.slice(0, 8)} ${r.e}` : '';
     return {
-      text: next ? `${clock()} · ${e} → ${MEDAL_ICON[m + 1]} ${next}` : `${clock()} · ${e} ${MEDAL_ICON[3]}`,
+      text: (next ? `${clock()} · ${e} → ${MEDAL_ICON[m + 1]} ${next}` : `${clock()} · ${e} ${MEDAL_ICON[3]}`) + rival,
       p: next ? e - (MEDALS[m - 1] || 0) : 1,
       of: next ? next - (MEDALS[m - 1] || 0) : 1,
     };
@@ -196,8 +200,12 @@ function record(n, score) {
   for (const k of Object.keys(D.best)) if (k < n - 30) delete D.best[k];
   for (const k of Object.keys(D.tries)) if (k < n - 30) delete D.tries[k];
   saveProfile();
-  // friends see today's best (net/friends.js)
-  if (best) G.onDailyRecord?.();
+  // friends see today's best and get the run as a ghost (ghost.js, net/friends.js)
+  if (best) {
+    ghostRecord(n, score);
+    if (n === dayNo()) passReset();
+    G.onDailyRecord?.();
+  }
   return best;
 }
 
@@ -250,11 +258,13 @@ function nextIn() {
   return tr('Neue Schicht in {h} h {m} min', { h: Math.floor(m / 60), m: m % 60 });
 }
 // the button in the lobby: "#12 · 🔥 3 · 🥈 540"
+// (a friend who leads today is named: "👑 Anna 620")
 function badge() {
   const n = dayNo(),
     s = bestOf(n),
-    st = streak();
-  return [`#${n}`, st ? `🔥 ${st}` : '', s != null ? `${MEDAL_ICON[medalOf(s)]} ${s}` : tr('Neu!')]
+    st = streak(),
+    L = G.dailyLeader?.();
+  return [`#${n}`, st ? `🔥 ${st}` : '', s != null ? `${MEDAL_ICON[medalOf(s)]} ${s}` : tr('Neu!'), L ? `👑 ${L.name.slice(0, 8)} ${L.score}` : '']
     .filter(Boolean)
     .join(' · ');
 }
@@ -289,8 +299,10 @@ function openDaily(hooks) {
       <span><small>${tr('Beste Serie')}</small><b>${store_().top || 0}</b></span>
     </div>
     ${week().replace(/[· ]/g, '') ? `<p class="dl-week">${esc(week())}</p>` : ''}
+    ${friendsHtml(n, best)}
     <p class="hint">${nextIn()}</p>`;
   p.appendChild(box);
+  passSeen();
   const running = hooks.hasRun() && G.mode === 'daily' && G.daily?.n === n;
   const go = document.createElement('button');
   go.className = 'go dl-go';
@@ -333,12 +345,33 @@ function openDaily(hooks) {
     });
 }
 let armed = -Infinity;
+// friends in the panel: who leads today, and whose ghosts run along
+function friendsHtml(n, best) {
+  const L = G.dailyLeader?.(),
+    lead = L
+      ? `<p class="dl-lead" id="dlLead">${esc(best != null ? tr('{name} liegt vor dir: {n} Taler', { name: L.name, n: L.score }) : tr('{name} hat heute {n} Taler geschafft', { name: L.name, n: L.score }))}</p>`
+      : '';
+  const gh = ghostHint(n);
+  return lead + (gh ? `<p class="hint" id="dlGhosts">${esc(gh)}</p>` : '');
+}
+// how the shift went against the friends' ghosts, for the end card
+function ghostResult(n, s) {
+  const list = ghostList(n);
+  if (!list.length) return '';
+  const beaten = list.filter(g => s > g.score),
+    ahead = list.filter(g => s <= g.score).sort((a, b) => a.score - b.score)[0];
+  const parts = [];
+  if (beaten.length) parts.push(tr('Geschlagen: {list}', { list: beaten.map(g => g.name).join(', ') }));
+  if (ahead) parts.push(tr('{name} liegt noch {n} Taler vor dir', { name: ahead.name, n: ahead.score - s + 1 }));
+  return `<p class="dl-ghosts" id="dlGhostEnd">👻 ${esc(parts.join(' · '))}</p>`;
+}
 
 // the end of a shift: record it and show the result (HTML for the end card)
 function endCard() {
   const n = G.daily?.n ?? dayNo(),
     s = G.earned || 0,
     m = medalOf(s),
+    versus = ghostResult(n, s), // (before the result is kept: the list as it ran along)
     isBest = record(n, s),
     best = bestOf(n);
   return {
@@ -346,6 +379,7 @@ function endCard() {
     html: `<h1>${tr('Tagesschicht #{n}', { n })}</h1>
       <p class="dl-big">${MEDAL_ICON[m]} ${tr('{n} Taler', { n: s })}</p>
       <p>${isBest ? tr('Neuer Tagesrekord!') : tr('Dein Bestes heute: {n} Taler', { n: best })}${streak() > 1 ? ' · 🔥 ' + tr('{n} Tage in Folge', { n: streak() }) : ''}</p>
+      ${versus}
       <p class="hint">${MEDAL_ICON[m + 1] ? tr('Nächste Medaille: {m} ab {n} Taler', { m: MEDAL_ICON[m + 1], n: MEDALS[m] }) : tr('Gold! Besser geht’s nicht.')} · ${nextIn()}</p>`,
   };
 }

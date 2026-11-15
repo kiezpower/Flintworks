@@ -926,6 +926,8 @@ function render() {
       }
     }
   });
+  // the Tagesschicht: the friends' ghosts run along (ghost.js)
+  G.drawGhosts?.(ctx, cx, cy, drawDiggerHi, nameTag);
   for (const list of [parts, vparts])
     for (const p of list) {
       const x = Math.floor(p.x - cx),

@@ -228,7 +228,7 @@ function openFriends(from, redraw = false) {
     });
     if (r) r.id = 'frRank';
   }
-  p.insertAdjacentHTML('beforeend', `<p class="hint fr-note">${tr('Ohne Konto: Dein Code und deine Liste gehören zu diesem Gerät. Was andere sehen: dein Name, ob du online bist und deine Tagesschicht – nur Freunde, die dich auch hinzugefügt haben. Für deinen Platz unter allen zählt nur dein Ergebnis, ohne Namen.')}</p>`);
+  p.insertAdjacentHTML('beforeend', `<p class="hint fr-note">${tr('Ohne Konto: Dein Code und deine Liste gehören zu diesem Gerät. Was andere sehen: dein Name, ob du online bist und deine Tagesschicht (Ergebnis und bester Lauf als Geist) – nur Freunde, die dich auch hinzugefügt haben. Für deinen Platz unter allen zählt nur dein Ergebnis, ohne Namen.')}</p>`);
   if (back) {
     const b = document.createElement('button');
     b.className = 'lb-way fr-panel-back';

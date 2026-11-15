@@ -12,6 +12,8 @@ export function archiveWorld(save) {
   // Queue writes so an earlier autosave cannot overwrite a newer explicit save.
   const world = { id: G.worldId, name: G.worldName, save: structuredClone(save) };
   const pending = (G.worldSavePending || Promise.resolve()).catch(() => {}).then(() => putWorld(world));
+  // a shared world: the friends get this state too (net/shared.js)
+  G.sharedUpload?.(world.id, world.save);
   G.worldSavePending = pending;
   pending.catch(() => {
     if (!warned) { warned = true; toast('Welt konnte nicht gespeichert werden – bitte Speicherplatz prüfen'); }

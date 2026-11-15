@@ -7,6 +7,9 @@ services:
     restart: unless-stopped
     environment:
       - PORT=8787
+      - SHARED_DIR=/data
+    volumes:
+      - relay-data:/data
     networks:
       - kiezpower-net
     logging:
@@ -57,3 +60,6 @@ networks:
 volumes:
   world-data:
     name: flintworks-world-data
+  # shared worlds of friends (server/relay.js)
+  relay-data:
+    name: flintworks-relay-data

@@ -1,5 +1,6 @@
 import { PLAY_KINDS, supportsKind } from './playkind.js';
 import { openWorlds } from './worldui.js';
+import { sharedNews } from './net/shared.js';
 import { activeWorldInfo, chooseNewGame, enterLobbyWorlds, lastWorld, refreshLastWorld, resumeLastWorld, resumingWorld } from './lobbyworld.js';
 import { setLocal } from './local.js';
 import { GAME_MODES, mode } from './modes.js';
@@ -160,6 +161,10 @@ function refresh() {
   // the Tagesschicht glows until today's shift is played
   setTxt('lbDailyTxt', badge());
   $('lbDaily').classList.toggle('fresh', P.daily?.best?.[dayNo()] == null);
+  // a friend went past my result of today: a dot until the panel was opened
+  $('lbDaily').classList.toggle('alert', P.dailyPass?.day === dayNo() && !!P.dailyPass.news);
+  // a friend built on in a shared world, or shares a new one: a dot until the worlds were opened
+  $('lbWorlds').classList.toggle('alert', sharedNews().length > 0);
   const nm = P.name;
   setTxt('lbHat', P.hat === 'none' ? `${nm} · ${tr('Level')} ${P.level}` : `${nm} · ${tr(HATS[P.hat].name)}`);
   // a daily quest is done and its XP waits at the level, or new tasks have come with the new day

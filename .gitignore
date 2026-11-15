@@ -10,3 +10,5 @@ tests/out/
 
 # Dedicated world's private device identity and checkpoints
 /server/world-data/
+# Shared worlds of a relay started by hand
+shared-data/
