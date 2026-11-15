@@ -17,7 +17,7 @@ den Raumcode funktionieren ebenfalls. Der Server übernimmt keine fremden privat
   Datei liegt unter `world.json.bak`. Schreibfehler stoppen den Host mit einem Fehlerstatus.
 - `identity` enthält den geheimen Geräte-Token. Er hält den Einladungscode über Neustarts
   von Host, Relay und Container stabil. Der Token wird nicht an Mitspieler weitergegeben.
-- Sind keine Menschen verbunden, pausiert die Simulation. Vorräte werden während einer
+- Sind keine Menschen verbunden oder fehlt die Verbindung zum Relay, pausiert die Simulation. Vorräte werden während einer
   leeren Welt nicht verbraucht, Angriffe und Aufgaben laufen nicht weiter.
 - Abwesende Besitzerfiguren arbeiten nicht als Helfer, geben ihre Tasche nicht ab, liefern
   keine Baumaterialien und erleiden keinen Schaden. Ihre Gerätekennung ordnet sie beim
