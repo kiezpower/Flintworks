@@ -1,0 +1,130 @@
+{
+  "id": "kuehlekluft",
+  "v": 1,
+  "name": "Kühle Kluft",
+  "icon": "stairs",
+  "desc": "Klettere aus der Kluft hinaus",
+  "intro": "Euer Lager liegt am Grund einer tiefen Eiskluft. Oben am Rand ist der Weg nach Hause. Die Wände sind steil, aber es gibt Vorsprünge – und Treppen, Leitern und Lehm.",
+  "biome": "winter",
+  "rough": 0.25,
+  "seed": 9308,
+  "diff": "adventure",
+  "fill": {
+    "caves": 0
+  },
+  "start": {
+    "money": 80,
+    "crew": 3,
+    "inv": [
+      [
+        "loam",
+        "loam"
+      ],
+      [
+        "wood"
+      ],
+      [
+        "rock"
+      ]
+    ],
+    "store": {
+      "plank": 8,
+      "wood": 8,
+      "loam": 6
+    },
+    "tools": [
+      "hook"
+    ]
+  },
+  "rules": {
+    "meteors": false
+  },
+  "objects": [
+    {
+      "t": "base",
+      "x": 310
+    },
+    {
+      "t": "tree",
+      "x": 500,
+      "stage": 3
+    }
+  ],
+  "areas": {
+    "rand": [
+      0,
+      0,
+      200,
+      70
+    ],
+    "rand2": [
+      600,
+      0,
+      200,
+      60
+    ],
+    "halb": [
+      200,
+      250,
+      400,
+      50
+    ]
+  },
+  "goals": [
+    {
+      "t": "reach",
+      "area": "rand",
+      "label": "Rand erreicht"
+    }
+  ],
+  "lose": {
+    "crewDead": true
+  },
+  "stars": [
+    5,
+    9
+  ],
+  "triggers": [
+    {
+      "when": {
+        "t": "after",
+        "min": 0.3
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Holztreppen (Bauen) führen von Vorsprung zu Vorsprung. Der Enterhaken (G) hilft an glatten Stellen."
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "enter",
+        "area": "halb"
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Die Hälfte geschafft. Nicht nach unten schauen!"
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "enter",
+        "area": "rand2"
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Das ist die falsche Seite – der Weg nach Hause liegt am linken Rand."
+        }
+      ]
+    }
+  ],
+  "size": [
+    800,
+    600
+  ],
+  "zoom": 5
+}

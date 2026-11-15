@@ -201,6 +201,51 @@ const EN = {
     'The lava moat! A bridge of loam carries you across – or dig your way under the rock.',
   'Der Thronsaal': 'The throne hall',
   'Der Steinwächter des Herrn stellt sich dir': 'The lord’s stone guardian stands in your way',
+  // (five more: Kohlenflöz, Heimweg, Bruchlandung, Kühle Kluft, Schatzberg)
+  Kohlenflöz: 'Coal seam',
+  'Bringe {goal} Kohle ins Lager': 'Bring {goal} coal to the store',
+  'Tief unter der Wiese zieht sich ein mächtiges Kohleflöz durch den Boden. Darüber hängen Wassertaschen, darin sammelt sich Grubengas. Ein alter Stollen führt hinab.':
+    'Deep under the meadow a thick seam of coal runs through the ground. Pockets of water hang above it, and firedamp gathers in it. An old adit leads down.',
+  'Das Flöz! Über dir hängen Wassertaschen – grab nicht nach oben in den Fels.':
+    'The seam! Pockets of water hang above you – do not dig up into the rock.',
+  'Eine Lore auf Schienen bringt viel Kohle auf einmal zur Burg.':
+    'A mine cart on rails brings a lot of coal to the castle at once.',
+  Heimweg: 'The way home',
+  'Finde den Weg zurück zur Hütte': 'Find the way back to the hut',
+  'Beim Wandern habt ihr euch verlaufen. Die Hütte steht auf dem letzten Gipfel im Osten, dazwischen liegen Grate und tiefe Schluchten. Der Enterhaken hilft über die Abgründe.':
+    'You got lost while hiking. The hut stands on the last peak in the east, with ridges and deep gorges in between. The grappling hook helps across the drops.',
+  'Hütte erreicht': 'Hut reached',
+  'Der Enterhaken (G) zieht dich über Schluchten. Lehm und Holz bauen Brücken.':
+    'The grappling hook (G) pulls you across gorges. Loam and wood build bridges.',
+  'Halber Weg! Von hier oben siehst du schon die Hütte im Osten.':
+    'Halfway! From up here you can already see the hut in the east.',
+  Bruchlandung: 'Crash landing',
+  'Berge die Wrackteile und finde die Quelle': 'Recover the wreckage and find the spring',
+  'Euer Ballon ist zwischen zwei Lavaseen abgestürzt. Seine Teile liegen in Höhlen unter den Seen. Frisches Wasser gibt es erst an der Quelle weit im Osten.':
+    'Your balloon came down between two lakes of lava. Its pieces lie in caves under the lakes. Fresh water is only found at the spring far in the east.',
+  'Quelle erreicht': 'Spring reached',
+  'Eine Lehmbrücke trägt dich über die Lava. Unten durch geht es auch – der Fels um die Seen hält.':
+    'A bridge of loam carries you over the lava. Going underneath works too – the rock round the lakes holds.',
+  'Alle Teile geborgen': 'All pieces recovered',
+  'Jetzt zur Quelle im Osten': 'Now on to the spring in the east',
+  'Kühle Kluft': 'Cold cleft',
+  'Klettere aus der Kluft hinaus': 'Climb out of the cleft',
+  'Euer Lager liegt am Grund einer tiefen Eiskluft. Oben am Rand ist der Weg nach Hause. Die Wände sind steil, aber es gibt Vorsprünge – und Treppen, Leitern und Lehm.':
+    'Your camp lies at the bottom of a deep cleft of ice. The way home is up at the rim. The walls are steep, but there are ledges – and stairs, ladders and loam.',
+  'Rand erreicht': 'Rim reached',
+  'Holztreppen (Bauen) führen von Vorsprung zu Vorsprung. Der Enterhaken (G) hilft an glatten Stellen.':
+    'Wooden stairs (Build) lead from ledge to ledge. The grappling hook (G) helps on smooth walls.',
+  'Die Hälfte geschafft. Nicht nach unten schauen!': 'Halfway up. Do not look down!',
+  'Das ist die falsche Seite – der Weg nach Hause liegt am linken Rand.':
+    'This is the wrong side – the way home is at the left rim.',
+  Schatzberg: 'Treasure mountain',
+  'Öffne {goal} Truhen im Schatzberg': 'Open {goal} chests in the treasure mountain',
+  'Im Schatzberg liegen die Hallen eines alten Tempels, eine unter der anderen. In der tiefsten steht die Truhe mit dem Juwel. Die Bewohner des Bergs mögen keine Besucher.':
+    'Inside the treasure mountain lie the halls of an old temple, one below the other. The chest with the jewel stands in the deepest. The mountain’s dwellers do not like visitors.',
+  'Die erste Tempelhalle. Treppen aus Stollen führen tiefer in den Berg.':
+    'The first temple hall. Stairs of tunnel lead deeper into the mountain.',
+  'Die Juwelenhalle': 'The jewel hall',
+  'Ein Steinwächter hütet die letzte Truhe': 'A stone guardian keeps the last chest',
   'Die alte Mine': 'The old mine',
   'Hier wurde früher Gold gegraben. Der alte Schacht führt zu drei Stollen – und ganz unten liegen die reichsten Adern.':
     'Gold was mined here long ago. The old shaft leads to three galleries – and the richest veins lie at the very bottom.',

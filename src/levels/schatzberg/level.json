@@ -1,0 +1,153 @@
+{
+  "id": "schatzberg",
+  "v": 1,
+  "name": "Schatzberg",
+  "icon": "trophy",
+  "desc": "Öffne {goal} Truhen im Schatzberg",
+  "intro": "Im Schatzberg liegen die Hallen eines alten Tempels, eine unter der anderen. In der tiefsten steht die Truhe mit dem Juwel. Die Bewohner des Bergs mögen keine Besucher.",
+  "biome": "desert",
+  "rough": 0.3,
+  "seed": 9306,
+  "diff": "adventure",
+  "fill": {
+    "caves": 0.15,
+    "gold": 0.6
+  },
+  "start": {
+    "money": 100,
+    "crew": 3,
+    "inv": [
+      [
+        "flint",
+        "flint"
+      ],
+      [
+        "loam"
+      ],
+      [
+        "rock"
+      ]
+    ],
+    "research": [
+      "metal",
+      "archery"
+    ],
+    "store": {
+      "metal": 2,
+      "wood": 6,
+      "plank": 2
+    }
+  },
+  "rules": {
+    "meteors": false
+  },
+  "objects": [
+    {
+      "t": "base",
+      "x": 30
+    },
+    {
+      "t": "tree",
+      "x": 200,
+      "stage": 3
+    },
+    {
+      "t": "chest",
+      "x": 520,
+      "y": 205
+    },
+    {
+      "t": "chest",
+      "x": 700,
+      "y": 290
+    },
+    {
+      "t": "chest",
+      "x": 740,
+      "y": 450
+    },
+    {
+      "t": "animal",
+      "kind": "bat",
+      "x": 520,
+      "y": 180
+    },
+    {
+      "t": "animal",
+      "kind": "spider",
+      "x": 660,
+      "y": 282
+    },
+    {
+      "t": "animal",
+      "kind": "spider",
+      "x": 550,
+      "y": 362
+    },
+    {
+      "t": "animal",
+      "kind": "golem",
+      "x": 690,
+      "y": 434
+    }
+  ],
+  "areas": {
+    "tempel": [
+      470,
+      160,
+      110,
+      50
+    ],
+    "tief": [
+      640,
+      400,
+      130,
+      55
+    ]
+  },
+  "goals": [
+    {
+      "t": "chests",
+      "n": 3
+    }
+  ],
+  "lose": {
+    "crewDead": true
+  },
+  "stars": [
+    11,
+    16
+  ],
+  "triggers": [
+    {
+      "when": {
+        "t": "enter",
+        "area": "tempel"
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Die erste Tempelhalle. Treppen aus Stollen führen tiefer in den Berg."
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "enter",
+        "area": "tief"
+      },
+      "do": [
+        {
+          "t": "banner",
+          "title": "Die Juwelenhalle",
+          "text": "Ein Steinwächter hütet die letzte Truhe"
+        }
+      ]
+    }
+  ],
+  "size": [
+    1000,
+    500
+  ],
+  "zoom": 5
+}
