@@ -1,0 +1,119 @@
+/* The work yard: one launch board, a living landscape and the crew beside it. */
+#lobby.werkhof {
+  --wood: #533623;
+  --wood-hi: #795236;
+  --wood-lo: #2d211b;
+  background: #30251e;
+}
+.werkhof .lb-top { z-index: 3; top: max(16px, env(safe-area-inset-top)); left: 24px; right: 24px; }
+.werkhof .lb-logo { padding: 6px 14px 8px; }
+.werkhof .lb-opt, .werkhof .lb-lvl { min-height: 44px; min-width: 44px; }
+.werkhof .lb-opt { justify-content: center; }
+.werkhof .lb-play {
+  left: 24px;
+  right: auto;
+  top: 100px;
+  bottom: auto;
+  width: clamp(280px, 31vw, 380px);
+  max-height: calc(100% - 124px);
+  gap: 10px;
+  padding: 22px;
+  color: var(--parch);
+  background: repeating-linear-gradient(0deg, transparent 0 52px, #1b130c24 53px 55px), linear-gradient(115deg, #59402f, #30221c);
+  border: 3px solid #20160f;
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 2px #9d76563d, 5px 8px 0 #17100d66;
+  scrollbar-width: thin;
+  scrollbar-color: #a4865a #30221c;
+}
+.werkhof .lb-play::before, .werkhof .lb-play::after { display: none; }
+.lb-eyebrow { color: #e5b866; font: 11px var(--font-ui); letter-spacing: .12em; text-transform: uppercase; }
+.werkhof .lb-play h2 { display: block; color: #fff0cf; font-size: clamp(22px, 2.2vw, 28px); line-height: 1.1; text-align: left; margin-bottom: 4px; }
+.lb-resume-name { margin: 0; color: #ffdf91; overflow-wrap: anywhere; font-size: 20px; line-height: 1.15; }
+.werkhof .lb-sel { min-height: 44px; border: 1px solid #b38b5c66; background: #120e0b45; color: #fff0cf; padding: 8px 26px 8px 12px; }
+.werkhof .lb-sel small { color: #d1b58b; font-size: 10px; }
+.werkhof .lb-sel b { font-size: 17px; text-overflow: ellipsis; }
+.werkhof .lb-sel em { color: #d7c6a8; line-height: 1.3; margin-top: 3px; }
+.werkhof .lb-sel::after { color: #e5b866; }
+.werkhof .lb-sel:disabled { opacity: .75; }
+.werkhof #lbGModePv { height: 64px; margin-top: 8px; border-color: #a4865a66; }
+.werkhof .lb-go { min-height: 54px; font-size: clamp(21px, 2vw, 26px); margin: 2px 0 4px; }
+.lb-paths { display: grid; gap: 6px; }
+.lb-path { min-height: 44px; text-align: left; padding: 9px 12px; border: 1px solid #b38b5c66; border-radius: 4px; background: #694a3266; color: #efdcba; font-size: 15px; }
+.lb-path::after { content: '›'; float: right; color: #e5b866; }
+.lb-path:disabled { opacity: .5; cursor: default; }
+.werkhof .lb-new { min-height: 44px; font-size: 14px; }
+.werkhof .lb-side {
+  top: auto;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  left: max(360px, 39%);
+  right: 24px;
+  width: auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.werkhof .lb-b { min-height: 62px; padding: 10px 12px; font-size: 16px; background: linear-gradient(#684a33, #38281e); border-width: 2px; }
+.werkhof .lb-daily { background: linear-gradient(#9c783c, #65472a); color: #fff0cf; text-shadow: 1px 2px #24160c; }
+.werkhof .lb-daily.fresh { animation: none; border-color: #dcb767; }
+.werkhof .lb-dbox small { color: #e4c990; }
+.werkhof .lb-roadtrack { max-width: 140px; }
+.lb-crew-heading { position: absolute; top: 22%; left: 43%; right: 5%; display: grid; gap: 5px; text-align: center; color: #fff1cf; text-shadow: 0 2px 3px #172f36; pointer-events: none; }
+.lb-crew-heading b { font-size: 28px; }
+.lb-crew-heading span { font: 12px var(--font-ui); }
+.werkhof .lb-name { max-width: 260px; min-height: 36px; white-space: normal; overflow-wrap: anywhere; z-index: 1; }
+.werkhof .lb-slot { width: 48px; }
+.werkhof .lb-slot.filled { width: calc(var(--k, 5) * 18px); }
+.werkhof .lb-slot .nm { max-width: min(140px, 20vw); overflow: hidden; text-overflow: ellipsis; }
+.werkhof button:focus-visible { outline: 3px solid #fff2b3; outline-offset: 4px; }
+@media (min-width: 601px) and (max-height: 620px) {
+  .werkhof .lb-top { top: 8px; left: 16px; right: 16px; }
+  .werkhof .lb-logo { padding: 3px 10px 5px; }
+  .werkhof .lb-play { top: 72px; left: 16px; width: 34%; min-width: 270px; max-height: calc(100% - 88px); padding: 12px; gap: 6px; }
+  .werkhof .lb-play h2 { font-size: 21px; margin-bottom: 0; }
+  .werkhof .lb-eyebrow, .werkhof #lbGModePv, .werkhof #lbGModeDesc { display: none; }
+  .werkhof .lb-sel { padding-top: 5px; padding-bottom: 5px; }
+  .werkhof .lb-go { min-height: 48px; padding: 7px 10px; font-size: 21px; }
+  .werkhof .lb-paths { grid-template-columns: 1fr 1fr; }
+  .werkhof .lb-path { font-size: 12px; padding: 6px 8px; }
+  .werkhof .lb-path::after { display: none; }
+  .werkhof .lb-side { left: 39%; right: 16px; bottom: 16px; gap: 6px; }
+  .werkhof .lb-b { min-height: 48px; padding: 5px 8px; font-size: 14px; }
+  .lb-crew-heading { top: 20%; }
+  .lb-crew-heading b { font-size: 22px; }
+  .lb-crew-heading span { font-size: 10px; }
+}
+@media (min-width: 601px) and (max-height: 500px) {
+  .werkhof .lb-crew-heading { top: 62px; }
+  .werkhof .lb-crew-heading b { display: none; }
+}
+@media (max-width: 600px) {
+  #lobby.werkhof { overflow-y: auto; overflow-x: hidden; padding: 12px 12px max(20px, env(safe-area-inset-bottom)); box-sizing: border-box; background: #30251e; }
+  .werkhof #lbCv { top: 64px; height: 280px; }
+  .werkhof .lb-top { position: relative; top: auto; left: auto; right: auto; align-items: center; gap: 6px; height: 44px; }
+  .werkhof .lb-logo { padding: 4px 8px 6px; min-width: 0; flex: 1; }
+  .werkhof .lb-logo-art { max-width: 100%; height: auto !important; }
+  .werkhof .lb-chips { flex: none; }
+  .werkhof .lb-logo b { font-size: 22px; }
+  .werkhof .lb-chips { gap: 5px; }
+  .werkhof .lb-xp { display: none; }
+  .werkhof .lb-play { position: relative; top: auto; left: auto; right: auto; bottom: auto; width: 100%; max-height: none; overflow: visible; margin-top: 246px; padding: 16px; gap: 8px; }
+  .werkhof .lb-play h2 { font-size: 24px; }
+  .werkhof #lbGModePv { display: none; }
+  .werkhof #lbGModeDesc { display: none; }
+  .werkhof .lb-side { position: relative; top: auto; bottom: auto; left: auto; right: auto; margin-top: 16px; gap: 8px; }
+  .werkhof .lb-b { min-height: 64px; padding: 8px; font-size: 14px; }
+  .werkhof .lb-b .ico { width: 20px; height: 20px; }
+  .werkhof .lb-crew-heading { top: 82px; left: 12px; right: 12px; gap: 3px; }
+  .werkhof .lb-crew-heading b { font-size: 22px; }
+  .werkhof .lb-crew-heading span { font-size: 10px; }
+  .werkhof .lb-name { max-width: 190px; font-size: 12px; }
+}
+/* The display preference also applies to the launch board and crew labels. */
+:root.bigtext .werkhof .lb-sel b { font-size: calc(17px * var(--ui-scale)); }
+:root.bigtext .werkhof .lb-path { font-size: calc(15px * var(--ui-scale)); }
+:root.bigtext .werkhof .lb-crew-heading span { font-size: calc(12px * var(--ui-scale)); }
+:root.bigtext .werkhof .lb-name { font-size: calc(13px * var(--ui-scale)); }
+@media (prefers-reduced-motion: reduce) {
+  .werkhof *, .werkhof *::after { animation: none !important; transition: none !important; }
+}

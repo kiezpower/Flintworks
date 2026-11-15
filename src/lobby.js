@@ -1,5 +1,6 @@
 import { PLAY_KINDS, supportsKind } from './playkind.js';
 import { openWorlds } from './worldui.js';
+import { activeWorldInfo, chooseNewGame, enterLobbyWorlds, lastWorld, refreshLastWorld, resumeLastWorld, resumingWorld } from './lobbyworld.js';
 import { setLocal } from './local.js';
 import { GAME_MODES, mode } from './modes.js';
 import { ALL_IDS, totalStars, unlocked } from './scenarios.js';
@@ -8,9 +9,10 @@ import { previewOf } from './levels/preview.js';
 import { lessonsPanel } from './lessons.js';
 import { canInstall, offerInstall, openInstall } from './install.js';
 import { LIVE, isNative, ownWeb } from './platform.js';
-// Lobby between games: the player's Wühler on a stage, resources on top, menus left, play button right.
+// The work yard keeps the next game on the launch board and the current crew in the scene.
 import { BIOMES } from './biomes.js';
 import './lobby.css';
+import './werkhof.css';
 import { getLang, setLang, tr } from './i18n.js';
 import { camp as campState, pending, vaultFull } from './camp.js';
 import { openCamp } from './lobbycamp.js';
@@ -99,8 +101,9 @@ let t = 0,
 const sparks = [];
 // Lobby sky follows the chosen world type; random cycles through all three
 function stageBiome() {
-  if (hooks.hasRun?.()) return G.biome || 'meadow';
-  return P.mode && P.mode !== 'random' ? P.mode : MODES[1 + (Math.floor(t / 600) % 3)];
+  if (hooks.hasRun?.()) return activeWorldInfo()?.biome || 'meadow';
+  if (lastWorld()) return lastWorld().biome || 'meadow';
+  return P.mode && P.mode !== 'random' ? P.mode : MODES[1 + (Math.floor((G.reduceMotion ? 0 : t) / 600) % 3)];
 }
 // keep the invite slots and the name tag next to the hero in the painted scene
 function placeOverlay() {
@@ -109,7 +112,7 @@ function placeOverlay() {
   const put = (id, dx, dy) => {
     const e = $(id);
     e.style.left = r.left - el.getBoundingClientRect().left + h.x + dx * h.k + 'px';
-    e.style.top = h.y + dy * h.k + 'px';
+    e.style.top = r.top - el.getBoundingClientRect().top + el.scrollTop + h.y + dy * h.k + 'px';
   };
   const [d1, d2] = friendDx();
   put('lbSlot1', d1, 0);
@@ -121,7 +124,12 @@ function placeOverlay() {
 }
 function drawStage() {
   if (sizeScene(cv)) placeOverlay();
-  drawScene(g, { t, biome: stageBiome(), cap: P.cap, hat: P.hat, outfit: P.outfit, jumpY, spin, sparks, friends: others() });
+  const friends = others();
+  if (!NET.room && G.local) friends.push({ cap: '#2f7fd0', hat: 'none', online: true });
+  drawScene(g, {
+    t, biome: stageBiome(), cap: P.cap, hat: P.hat, outfit: P.outfit,
+    jumpY, spin, sparks, friends, reducedMotion: !!G.reduceMotion,
+  });
 }
 function burst(n, cols) {
   const o = heroOrigin();
@@ -177,6 +185,17 @@ function refresh() {
   refreshFriendsChip();
   const run = hooks.hasRun();
   const kind = chosenKind();
+  const resume = run ? activeWorldInfo() : lastWorld();
+  setTxt('lbHeading', tr(resume ? 'Zurück ins Bergwerk' : 'Willkommen im Werkhof'));
+  const worldName = resume?.name;
+  $('lbResumeName').hidden = !worldName;
+  setTxt('lbResumeName', worldName || '');
+  setTxt('lbEyebrow', tr(!run && resume ? 'Zuletzt gespielt' : 'Deine nächste Schicht'));
+  $('lbPlay').disabled = resumingWorld();
+  const crewText = NET.room ? 'Spieler im Raum: {n}' : G.local
+    ? 'Zu zweit an diesem Gerät' : 'Dein Wühler · Freunde jederzeit einladen';
+  setTxt('lbCrewState', tr(crewText, { n: NET.players.filter(p => p.online && !p.watch).length }));
+  $('lbScenarios').disabled = run || (inRoom() && (!NET.host || !!NET.auto));
   setTxt(
     'lbKindTxt',
     !P.playKind && !P.gmode && !inRoom()
@@ -187,7 +206,7 @@ function refresh() {
   $('lbInvite').hidden = run || kind === 'solo' || (!inRoom() && !G.local);
   // in a room only the host starts; the others wait
   const wait = inRoom() && !NET.host && !run;
-  const playText = run ? 'Weiterspielen'
+  const playText = run || resume ? (worldName ? 'Welt fortsetzen' : 'Weiterspielen')
     : !P.playKind && !P.gmode && !inRoom() ? 'Spielart wählen'
     : wait ? (NET.auto ? 'Startet gleich' : 'Warte auf Host')
     : inRoom() ? 'Gemeinsam starten ({n})'
@@ -197,15 +216,15 @@ function refresh() {
   setTxt('lbPlayTxt', tr(playText, { n: NET.players.length }));
   $('lbPlay').classList.toggle('wait', wait);
   $('lbNew').hidden = !run;
-  const gid = chosen();
+  const gid = resume?.mode || chosen();
   const camp = !run && gid === 'campaign';
   const GM = GAME_MODES[gid] || GAME_MODES.gold;
   // a guest in a room sees the host's choice and cannot change it
   $('lbGMode').disabled = run || (inRoom() && (!NET.host || !!NET.auto));
-  const gm = run ? mode() : GM;
+  const gm = resume ? GAME_MODES[resume.mode] || GM : run ? mode() : GM;
   // a game mode names its world too: one card in the selection is mode and world together
   // (a running world shows what it was made with)
-  const biome = run ? G.biome : chosenBiome(),
+  const biome = resume?.biome || (run ? G.biome : chosenBiome()),
     free = !gm.map && !gm.campaign && !gm.daily;
   const gmName = gm.map
     ? `${tr('Karte')} · ${tr(gm.name)}`
@@ -214,7 +233,7 @@ function refresh() {
       : `${tr(gm.name)} · ${tr(biome ? BIOMES[biome].name : MODE_NAME.random)}`;
   setTxt('lbGModeTxt', camp ? tr('Kampagne') : gmName);
   // a small picture of the chosen level or map, or of the world of a game mode
-  const pvId = run ? G.mode : gid,
+  const pvId = resume?.mode || (run ? G.mode : gid),
     pvKey = free ? `${pvId}@${biome}` : pvId,
     pvEl = $('lbGModePv');
   if (pvEl.dataset.id !== pvKey) {
@@ -232,15 +251,19 @@ function refresh() {
       ? tr('{n} Level · Sterne {s}/{m}', { n: ALL_IDS.length, s: totalStars(), m: ALL_IDS.length * 3 })
       : tr(gm.desc, { goal: gm.goal }),
   );
-  if (!run && !inRoom() && !P.playKind && !P.gmode) {
+  if (!resume && !run && !inRoom() && !P.playKind && !P.gmode) {
     setTxt('lbGModeTxt', tr('Zuerst Spielart wählen'));
     setTxt('lbGModeDesc', '');
     pvEl.hidden = true;
   }
 }
 
+let panelWasOpen = false;
 function frame() {
   if (el.hidden) return;
+  const panelOpen = !panelEl.hidden;
+  if (panelWasOpen && !panelOpen) refreshLastWorld(refresh);
+  panelWasOpen = panelOpen;
   t++;
   if (jumpY < 0 || jumpV) {
     jumpY += jumpV;
@@ -251,7 +274,7 @@ function frame() {
     }
   }
   if (spin > 0) spin--;
-  if (t % 420 === 0 && !jumpV) spin = 36;
+  if (!G.reduceMotion && t % 420 === 0 && !jumpV) spin = 36;
   drawStage();
   if (t % 10 === 0) refresh();
 }
@@ -397,6 +420,7 @@ function chosen() {
 const chosenKind = () =>
   inRoom() ? (NET.versus ? 'versus' : 'coop') : PLAY_KINDS[P.playKind] ? P.playKind : G.local ? 'coop' : 'solo';
 function openSelection(chooseKind = false) {
+  chooseNewGame();
   const room = inRoom();
   openSelect({
     current: P.gmode || inRoom() ? chosen() : null,
@@ -417,6 +441,12 @@ function openSelection(chooseKind = false) {
   });
 }
 tap('lbKind', () => openSelection(true));
+tap('lbScenarios', () => openSelection());
+tap('lbTogether', () => {
+  chooseNewGame();
+  if (!inRoom()) setVersus(chosenKind() === 'versus', NET.ffa);
+  openInvite();
+});
 tap('lbInvite', () => {
   if (!supportsKind(GAME_MODES[chosen()], chosenKind())) return openSelection();
   if (!inRoom() || NET.host) setVersus(chosenKind() === 'versus', NET.ffa);
@@ -432,6 +462,7 @@ tap('lbPlay', () => {
   const g = P.gmode || 'gold',
     M = GAME_MODES[g];
   if (hooks.hasRun()) return hooks.play(false);
+  if (lastWorld()) return resumeLastWorld(refresh);
   if (inRoom()) {
     if (NET.host && NET.versus && !NET.auto && !G.resumeNet && NET.players.filter(p => p.online && !p.watch).length < 2) {
       return toast('Lade noch einen Freund ein, damit ihr gegeneinander spielen könnt');
@@ -460,6 +491,7 @@ tap('lbNew', () => {
   }
   newArmed = -Infinity;
   hooks.discard();
+  chooseNewGame();
   refresh();
 });
 cv.addEventListener('pointerdown', e => {
@@ -479,6 +511,7 @@ function showLobby(h) {
   checkUpdate();
   G.state = 'menu';
   el.hidden = false;
+  enterLobbyWorlds(refresh);
   $('game').classList.add('inlobby');
   requestAnimationFrame(() => {
     sizeScene(cv);

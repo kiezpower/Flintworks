@@ -642,6 +642,18 @@ const EN2 = {
   'Lautstärke der Musik': 'Volume of the music',
   'Lautstärke von Regen, Wind, Vögeln und Grillen': 'Volume of rain, wind, birds and crickets',
 
+  // Werkhof lobby
+  'Deine Crew': 'Your crew',
+  'Im Werkhof': 'In the work yard',
+  'Deine nächste Schicht': 'Your next shift',
+  'Willkommen im Werkhof': 'Welcome to the work yard',
+  'Zurück ins Bergwerk': 'Back to the mine',
+  'Spieler im Raum: {n}': 'Players in the room: {n}',
+  'Dein Wühler · Freunde jederzeit einladen': 'Your digger · Invite friends anytime',
+  'Szenarien & Kampagne': 'Scenarios & campaign',
+  'Mit Freunden spielen': 'Play with friends',
+  'Zuletzt gespielt': 'Last played',
+
   // Persistent settlements
   "Siedlungswelt": "Settlement world",
   "Baut eine gemeinsame Siedlung – ohne Rundenende": "Build a settlement together \u2013 with no round ending",

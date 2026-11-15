@@ -27,7 +27,7 @@ test('named worlds can be created, renamed, switched, exported and safely import
   await page.click('#menuBtn');
   await page.locator('#pBody').getByText('Lobby', { exact: true }).click();
   await page.click('#lbWorlds');
-  await page.getByText('Abendberg', { exact: true }).click();
+  await page.locator('#pBody').getByText('Abendberg', { exact: true }).click();
   await page.fill('#worldName', 'Unser Berg');
   await page.getByText('Umbenennen', { exact: true }).click();
   await expect(page.locator('#worldName')).toHaveValue('Unser Berg');

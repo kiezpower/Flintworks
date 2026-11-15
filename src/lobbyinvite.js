@@ -352,9 +352,11 @@ function refreshSlots() {
     b.classList.toggle('waiting', !pl && !!NET.room);
     // a friend is drawn in the scene; the button only carries the name
     b.innerHTML = pl
-      ? `<span class="nm">${esc(pl.name)}${pl.ready || pl.pid === NET.hostPid ? ' ✓' : ''}${more}</span>`
+      ? `<span class="nm">${esc(pl.name)}${pl.online !== false && (pl.ready || pl.pid === NET.hostPid) ? ' ✓' : ''}${more}</span>`
       : '<b>+</b>';
-    b.title = pl ? pl.name : tr('Mitspieler einladen');
+    const status = pl && (!pl.online && pl.pid != null ? tr('getrennt') : pl.watch ? tr('schaut zu') : pl.ready || pl.pid === NET.hostPid ? tr('bereit') : tr('noch nicht bereit'));
+    b.title = pl ? `${pl.name} · ${status}${more}` : tr('Mitspieler einladen');
+    b.setAttribute('aria-label', b.title);
   });
 }
 onRoomChange(() => {

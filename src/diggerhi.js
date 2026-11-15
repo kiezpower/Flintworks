@@ -56,9 +56,9 @@ const GREY = { s: '#9a8f84', d: '#7a7068', n: '#aaa094', T: '#6a6a72', t: '#5555
 
 // where in the swing of the pick a digging Wühler is (0…1, the strike at 0.6); the host
 // knows the beat, other players and the lobby workers just follow the animation
-function digPhase(c) {
+function digPhase(c, frame = G.frame) {
   if (c.digPh !== undefined && c.digging) return c.digPh;
-  return ((c.anim || G.frame * 0.3) * 0.11) % 1;
+  return ((c.anim || frame * 0.3) * 0.11) % 1;
 }
 // the angle of the pick against the dig direction (negative: raised over the shoulder)
 function pickAngle(c, ph) {
@@ -110,23 +110,23 @@ function drawPick(c, ox, oy, f, g, dph, lean, skin) {
     g.fillRect(q(hx), q(hy), 0.5, 0.5);
   }
 }
-function drawDiggerHi(c, ox, oy, f, g) {
+function drawDiggerHi(c, ox, oy, f, g, frame = G.frame) {
   if (!BODY) init();
   const hurt = c.hurt > 0 && c.hurt & 2;
   const cap = c.dead ? '#77777f' : c.cap;
   const pal = { ...FIXED, ...outfitPal(parseSkin(c.skin).outfit), C: cap, c: shade(cap, 0.72), h: shade(cap, 1.35) };
   if (c.dead) Object.assign(pal, GREY);
   // digging: lean back while raising the pick, forward and down into the strike
-  const dph = c.digging || c.picking > 0 ? digPhase(c) : -1,
+  const dph = c.digging || c.picking > 0 ? digPhase(c, frame) : -1,
     lean = dph < 0 ? 0 : dph >= 0.3 && dph < 0.45 ? -1 : dph >= 0.58 && dph < 0.72 ? 1 : 0;
   // starting off leans forward and a little down, braking leans back (frames since, digger.js)
   const onFoot = !c.climb && !c.hangle && !(c.airT > 3) && dph < 0,
-    starting = onFoot && c.startF != null && G.frame - c.startF < 4,
-    braking = onFoot && c.stopF != null && G.frame - c.stopF < 5,
-    facing = onFoot && c.turnF != null && G.frame - c.turnF < 5;
+    starting = onFoot && c.startF != null && frame - c.startF < 4,
+    braking = onFoot && c.stopF != null && frame - c.stopF < 5,
+    facing = onFoot && c.turnF != null && frame - c.turnF < 5;
   const X = ox * 2 - 2 + (lean + (starting ? 1 : braking ? -1 : 0)) * f,
     Y = oy * 2 + (lean > 0 || starting ? 1 : 0);
-  const blink = !c.dead && (G.frame + c.x * 7) % 240 < 6;
+  const blink = !c.dead && (frame + c.x * 7) % 240 < 6;
   // one texel = half a landscape pixel
   const px = (x, y, w, h, col) => {
     g.fillStyle = hurt && col !== FIXED.o ? '#ff6a5a' : col;
