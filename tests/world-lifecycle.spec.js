@@ -15,21 +15,21 @@ test('a solo world can be saved, closed, reopened after reload and deliberately 
   await page.click('#menuBtn');
   const id = await page.evaluate(() => { window.__ww.G.money = 1001; return window.__ww.G.worldId; });
   await page.locator('#pBody').getByText('Meine Welten', { exact: true }).click();
-  await page.getByText('Feierabend', { exact: true }).click();
+  await page.locator('#pBody').getByText('Feierabend', { exact: true }).click();
   await page.getByText('Welt schließen', { exact: true }).click();
   await expect(page.locator('#lobby')).toBeVisible();
   expect(await page.evaluate(() => [window.__ww.G.inRun, window.__ww.hasSave()])).toEqual([false, false]);
   expect(await page.evaluate(async id => (await (await import('/src/worldstore.js')).readWorld(id)).save.data.money, id)).toBe(1001);
   await page.reload(); await page.waitForFunction(() => window.__ww);
   await page.click('#lbWorlds');
-  await page.getByText('Feierabend', { exact: true }).click();
-  await page.getByText('Welt fortsetzen', { exact: true }).click();
+  await page.locator('#pBody').getByText('Feierabend', { exact: true }).click();
+  await page.locator('#pBody').getByText('Welt fortsetzen', { exact: true }).click();
   await page.waitForFunction(() => window.__ww.G.inRun && window.__ww.G.worldName === 'Feierabend');
   await page.click('#menuBtn');
   await page.locator('#pBody').getByText('Meine Welten', { exact: true }).click();
-  await page.getByText('Feierabend', { exact: true }).click();
+  await page.locator('#pBody').getByText('Feierabend', { exact: true }).click();
   await page.getByText('Welt schließen', { exact: true }).click();
-  await page.getByText('Feierabend', { exact: true }).click();
+  await page.locator('#pBody').getByText('Feierabend', { exact: true }).click();
   await page.locator('#pBody').getByText('Welt löschen', { exact: true }).click();
   await page.getByText('Abbrechen', { exact: true }).click();
   expect(await page.evaluate(async id => !!await (await import('/src/worldstore.js')).readWorld(id), id)).toBe(true);
@@ -43,7 +43,7 @@ test('a failed archive write keeps the running world open', async ({ page }) => 
   await page.evaluate(() => window.__ww.G.createWorld({ name: 'Nicht verlieren', biome: 'meadow' }));
   await page.click('#menuBtn');
   await page.locator('#pBody').getByText('Meine Welten', { exact: true }).click();
-  await page.getByText('Nicht verlieren', { exact: true }).click();
+  await page.locator('#pBody').getByText('Nicht verlieren', { exact: true }).click();
   await page.evaluate(() => {
     window.__originalWorldTransaction = IDBDatabase.prototype.transaction;
     IDBDatabase.prototype.transaction = function (...args) {

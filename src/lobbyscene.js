@@ -25,10 +25,9 @@ let terrain = null, // ground with tunnels (repainted where the workers dig)
   biomeName = 'meadow',
   dirty = false,
   topCols = [];
-const HERO = { x: 0.36 };
-// where friends stand, in landscape pixels from the hero (landscape: both on the right,
-// the menus cover the left side)
-const friendDx = () => (HERO.x > 0.4 ? [-20, 20] : [20, 40]); // hero position as a fraction of the width
+const HERO = { x: 0.69 };
+// Friends stand on either side of the hero, in landscape pixels.
+const friendDx = () => [-20, 20];
 
 const rgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 const groundY = x =>
@@ -40,14 +39,14 @@ land.groundY = groundY;
 // tunnels at the start: from the hill down to a cave on the right
 function tunnelAt(x, y) {
   const { LW, LH } = land;
-  const x0 = LW * (HERO.x + 0.06),
+  const x0 = LW * 0.79,
     y0 = groundY(x0) + 4;
-  if (x > x0 && x < LW * 0.62) {
+  if (x > x0 && x < LW * 0.93) {
     const ty = y0 + (x - x0) * 0.42;
     if (y > ty - 5 && y < ty + 6) return true;
   }
-  const cx = LW * 0.66,
-    cy = y0 + (LW * 0.62 - x0) * 0.42 + 2;
+  const cx = LW * 0.93,
+    cy = y0 + (LW * 0.93 - x0) * 0.42 + 2;
   return ((x - cx) / 13) ** 2 + ((y - cy) / 7) ** 2 < 1;
 }
 // ore blobs, new ones every round (the workers dig them out, then the ground is renewed)
@@ -60,7 +59,7 @@ function mkBlobs() {
     // (only where the menus do not cover the ground)
     const portrait = land.LH > land.LW;
     const x0 = land.castleX + 44,
-      x1 = portrait ? land.LW - 8 : land.LW * 0.58,
+      x1 = land.LW - 8,
       y1 = portrait ? land.LH * 0.66 : land.LH - 6;
     const x = x0 + ((k + 0.1 + r() * 0.8) / kinds.length) * (x1 - x0);
     const gy = groundY(Math.round(x));
@@ -159,6 +158,13 @@ function paintTerrain() {
   o.setTransform(2, 0, 0, 2, 0, 0);
   o.imageSmoothingEnabled = false;
   drawCrafted(o, SPR.base, land.castleX, groundY(land.castleX + 18) - SPR.base.height + 1);
+  // Real building artwork keeps the lobby a place in the game, rather than a menu backdrop.
+  for (const [type, fx] of [['saw', 0.43], ['lift', 0.88]]) {
+    const s = SPR[type];
+    if (!s) continue;
+    const x = Math.round(LW * fx);
+    drawCrafted(o, s, x, groundY(x + s.width / 2) - s.height + 1);
+  }
   const treeType = biomeName === 'desert' ? 'cactus' : biomeName === 'winter' ? 'snowpine' : 'oak';
   for (const [fx, stage, type] of [
     [0.5, 3, treeType],
@@ -219,7 +225,8 @@ function drawSky(g, b, t) {
 }
 
 function drawScene(g, opts) {
-  const { t, biome, cap, hat, outfit, jumpY, spin, sparks, friends = [] } = opts;
+  const { biome, cap, hat, outfit, jumpY, spin, sparks, friends = [], reducedMotion = false } = opts;
+  const t = reducedMotion ? 0 : opts.t;
   const b = BIOMES[biome] || BIOMES.meadow;
   const key = `${land.LW}|${land.LH}`;
   if (key !== terrainKey) {
@@ -231,7 +238,7 @@ function drawScene(g, opts) {
     biomeName = biome;
     paintTerrain();
   }
-  updWorkers(land, t);
+  if (!reducedMotion) updWorkers(land, t);
   if (dirty) {
     terrain.getContext('2d').putImageData(img, 0, 0);
     dirty = false;
@@ -242,7 +249,7 @@ function drawScene(g, opts) {
   drawSky(g, b, t);
   g.drawImage(terrain, 0, 0, LW, LH);
   g.drawImage(overlay, 0, 0, LW, LH);
-  drawWorkers(g, land);
+  drawWorkers(g, reducedMotion);
   // the hero on the hill: twice as big as in the game, bobbing and turning now and then
   const hx = land.heroX,
     hy = groundY(hx);
@@ -251,7 +258,7 @@ function drawScene(g, opts) {
   // portrait texels at one landscape pixel each: 16×20, double the in-game size
   g.fillStyle = 'rgba(0,0,0,0.25)';
   g.fillRect(hx - 6, hy - 1, 12, 1);
-  drawPortrait(g, hx - 8, hy - 20 + bob + Math.round(jumpY), f, cap, hat, t % 240 < 6, outfit);
+  drawPortrait(g, hx - 8, hy - 20 + bob + Math.round(jumpY), f, cap, hat, !reducedMotion && t % 240 < 6, outfit);
   // friends in the room stand left and right of the hero, facing it
   friends.slice(0, 2).forEach((p, k) => {
     const fx = hx + friendDx()[k],
@@ -266,7 +273,7 @@ function drawScene(g, opts) {
       friendDx()[k] > 0 ? -1 : 1,
       p.cap,
       p.hat,
-      (t + k * 90) % 240 < 6,
+      !reducedMotion && (t + k * 90) % 240 < 6,
       parseSkin(p.skin).outfit,
     );
     g.globalAlpha = 1;
@@ -288,8 +295,11 @@ function sizeScene(cv) {
   if (!r.width) return false;
   const w = Math.max(150, Math.min(260, Math.round(r.width / 5)));
   const h = Math.round((w * r.height) / r.width);
-  HERO.x = h > w ? 0.5 : 0.36;
-  if (w === land.LW && h === land.LH) return false;
+  const heroX = window.innerWidth <= 600 ? 0.5 : 0.69;
+  const moved = HERO.x !== heroX;
+  HERO.x = heroX;
+  if (!moved && w === land.LW && h === land.LH) return false;
+  if (moved) terrainKey = '';
   land.LW = w;
   land.LH = h;
   cv.width = w * 2;
