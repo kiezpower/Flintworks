@@ -181,8 +181,8 @@ const EN2 = {
     'No friends yet. Share your code or tap “+” next to a player in a room.',
   'Tagesschicht heute': "Today's Daily Shift",
   'noch nicht gespielt': 'not played yet',
-  'Ohne Konto: Dein Code und deine Liste gehören zu diesem Gerät. Was andere sehen: dein Name, ob du online bist und deine Tagesschicht – nur Freunde, die dich auch hinzugefügt haben. Für deinen Platz unter allen zählt nur dein Ergebnis, ohne Namen.':
-    'No account: your code and your list belong to this device. Others see your name, whether you are online and your Daily Shift – only friends who added you too. For your place among everybody only your score counts, without a name.',
+  'Ohne Konto: Dein Code und deine Liste gehören zu diesem Gerät. Was andere sehen: dein Name, ob du online bist und deine Tagesschicht (Ergebnis und bester Lauf als Geist) – nur Freunde, die dich auch hinzugefügt haben. Für deinen Platz unter allen zählt nur dein Ergebnis, ohne Namen.':
+    'No account: your code and your list belong to this device. Others see your name, whether you are online and your Daily Shift (score and best run as a ghost) – only friends who added you too. For your place among everybody only your score counts, without a name.',
   'Anfrage an {name} geschickt': 'Request sent to {name}',
   '{name} ist jetzt dein Freund': '{name} is your friend now',
   'Ein Freundescode hat 8 Zeichen': 'A friend code has 8 characters',
@@ -682,5 +682,13 @@ const EN2 = {
   "Dauerwelt: {name}": "Persistent world: {name}",
   "Welt schließen": "Close world",
   "Sichern und zur Lobby zurückkehren": "Save and return to the lobby",
+  // friends in the Tagesschicht: ghosts and who went past whom (ghost.js, daily.js)
+  'Du hast {name} überholt!': 'You overtook {name}!',
+  '{name} hat dich in der Tagesschicht überholt: {n} Taler': '{name} overtook you in the Daily Shift: {n} coins',
+  '👻 Geister deiner Freunde laufen mit: {list}': '👻 Your friends’ ghosts run along: {list}',
+  '{name} liegt vor dir: {n} Taler': '{name} is ahead of you: {n} coins',
+  '{name} hat heute {n} Taler geschafft': '{name} made {n} coins today',
+  'Geschlagen: {list}': 'Beaten: {list}',
+  '{name} liegt noch {n} Taler vor dir': '{name} is still {n} coins ahead of you',
 };
 export { EN2 };

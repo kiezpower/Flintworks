@@ -36,7 +36,8 @@ Jeder kann sich verbinden, darum begrenzt das Relay:
 |---|---|
 | Verbindungen pro IP (Umgebungsvariable `MAX_PER_IP`) | 16 (die IP kommt von Caddy aus `X-Forwarded-For`) |
 | Nachrichten pro Verbindung | 150/s (kurz bis 300); wer weit darüber liegt, wird getrennt |
-| Raum- und Freundes-Anfragen (`create`, `join`, `hello`, `list` …) | 4/s, kurz bis 20 |
+| Raum- und Freundes-Anfragen (`create`, `join`, `hello`, `list`, `ghost` …) | 4/s, kurz bis 20 |
+| Geister-Läufe der Tagesschicht (`MAX_GHOSTS`), nur im Arbeitsspeicher | 4 000, je höchstens 16 000 Zeichen |
 | Falsche Raum-Codes pro Verbindung | 20, dann getrennt (kein Durchprobieren privater Räume) |
 | Verschiedene Geräte-Tokens pro Verbindung | 3 |
 | Benutzer insgesamt (`MAX_USERS`) | 100 000 |

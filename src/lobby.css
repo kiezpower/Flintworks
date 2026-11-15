@@ -374,6 +374,16 @@
   font-size: 28px;
   color: var(--gold);
 }
+/* friends in the Tagesschicht: who leads, whose ghosts run along */
+.dl-lead {
+  padding: 5px 8px;
+  border: 2px solid var(--edge);
+  border-radius: 6px;
+  font-weight: bold;
+}
+.dl-ghosts {
+  font-size: 14px;
+}
 
 /* right: parchment scroll with the game setup and the play button */
 .lb-play {

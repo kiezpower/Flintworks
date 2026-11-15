@@ -191,6 +191,7 @@ src/
   versus.js           Versus: Burg-Lebenspunkte, Hügel, Rundenuhr, Nachschub, Sieger
   coop.js             Koop: Teamaufgaben
   daily.js            Tagesschicht: Welt des Tages, Uhr, Medaillen, Serie, Ergebnis teilen
+  ghost.js            Tagesschicht mit Freunden: Geister-Läufe und „… hat dich überholt“
   stats.js            Mehrspieler: Rangliste und Auszeichnungen am Rundenende
   i18n.js             Übersetzungen (Deutsch ist der Schlüssel, Englisch die Übersetzung)
   i18n2.js            Weitere Übersetzungen (damit keine Datei über 1000 Zeilen wächst)

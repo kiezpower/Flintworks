@@ -109,6 +109,7 @@ wählen den Modus → `gen.js` (oder `levels/loader.js`) baut die Welt → pro T
 | `teams.js`, `versus.js`, `bots.js` | Teams, Versus-Regeln, Bots |
 | `season.js` | Monatliche Saison für Versus: Punkte, Rang, Kristalle zum Monatswechsel |
 | `replay.js` | Tagesschicht aufzeichnen und als Wiederholung abspielen |
+| `ghost.js` | Tagesschicht mit Freunden: bester Lauf des Tages als Geist (Position und Verdienst, zweimal pro Sekunde), „… hat dich überholt“ |
 | `stats.js`, `scoreboard.js` | Statistik und Punktetafel im Mehrspieler |
 | `reward.js` | Sichtbare Belohnungen (fliegende Münzen) |
 

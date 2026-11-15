@@ -7,9 +7,11 @@
 // visible, after the tutorial, and once this device has friends or showed its own code.
 import { Share } from '@capacitor/share';
 import { dayNo } from '../daily.js';
+import { ghostTake, ghostsWanted, leader, myGhost, passCheck } from '../ghost.js';
 import { tr } from '../i18n.js';
 import { LIVE, isNative, ownWeb } from '../platform.js';
 import { P, cleanName, saveProfile } from '../profile.js';
+import { skinTag } from '../skins.js';
 import { G } from '../state.js';
 import { NET, copyText, joinRoom, leaveRoom, token } from './room.js';
 import { connect, disconnect, on, send, transport, wants } from './transport.js';
@@ -56,6 +58,9 @@ function hello() {
     ignored: P.fignored,
     daily: { day: n, score: best ?? null },
   });
+  // my best run of today as a ghost for my friends (ghost.js; once per connection and run)
+  const g = myGhost(transport.ws);
+  if (g) send({ t: 'ghost', ...g, cap: P.cap, hat: P.hat, skin: skinTag(P.outfit, P.bstyle, P.gear) });
 }
 function update() {
   const want = needed();
@@ -77,8 +82,13 @@ function friendsSync() {
   if (wants('friends')) hello();
 }
 document.addEventListener('visibilitychange', update);
-// a new best Tagesschicht today (daily.js): friends see it
-G.onDailyRecord = friendsSync;
+// a new best Tagesschicht today (daily.js): friends see it; who is ahead of it now is no news
+G.onDailyRecord = () => {
+  friendsSync();
+  if (FR.known) passCheck(FR.list);
+};
+// the friend who leads today's Tagesschicht ahead of me (daily.js: the lobby sign and the panel)
+G.dailyLeader = () => leader(FR.list);
 setInterval(update, 3000);
 on('status', () => {
   if (transport.status !== 'open' && FR.known) {
@@ -107,6 +117,13 @@ on('friends', m => {
     }
   }
   if (dirty) saveProfile();
+  // the Tagesschicht: who went past me since I played, and the ghosts of today that are not here yet
+  passCheck(FR.list);
+  for (const fid of ghostsWanted(FR.list)) send({ t: 'ghostget', fid });
+  changed();
+});
+on('ghost', m => {
+  ghostTake(m);
   changed();
 });
 // my place in today's Tagesschicht among everybody the relay knows (anonymous, server/relay.js)

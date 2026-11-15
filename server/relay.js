@@ -22,6 +22,10 @@
 //                                            today's Tagesschicht {day, score}. Sent again after
 //                                            every change
 //   {t:'finvite', to}                        invite a friend (code) into my room
+//   {t:'ghost', day, score, d, cap, hat, skin} my best Tagesschicht run of the day as a ghost: where
+//                                            my Wühler was and what it had earned, twice a second
+//                                            (base64, src/ghost.js), and how it looks. After hello
+//   {t:'ghostget', fid}                      the ghost of a mutual friend, of the same day as mine
 // Server → client:
 //   {t:'room', code, pid, host, players, pub, tag} you are in (players: [{pid,name,cap,hat,skin,ready,watch,online}]);
 //                                            tag: the mode of a quick play room (it starts by itself)
@@ -37,10 +41,11 @@
 //                                            score of the same day, or null); asks: who
 //                                            has me in their list but is not in mine [{fid, name}]
 //   {t:'finvite', from, name, room}          a friend invites me into their room
+//   {t:'ghost', fid, name, day, score, d, cap, hat, skin}  a friend's ghost (answer to ghostget)
 //   {t:'rank', day, pos, of}                 my place in today's Tagesschicht among everybody the
 //                                            relay knows (anonymous: no names, only the place and
 //                                            how many played), after every hello with a score
-// Friends are kept in memory only (nothing on disk): every client sends its whole list on each
+// Friends and ghosts are kept in memory only (nothing on disk): every client sends its whole list on each
 // connect, so after a restart the index rebuilds itself. Users without a connection for 30 days
 // are dropped.
 //
@@ -68,7 +73,7 @@ const MSG_RATE = 150, // game messages per second (burst: twice that)
   MAX_USERS = num(process.env.MAX_USERS, 100000);
 // game messages only the host sends (the clients check this too)
 const HOST_ONLY = new Set(['start', 'snap', 'ter', 'end', 'cfg', 'toast', 'cd']);
-const CTRL = new Set(['create', 'join', 'quick', 'list', 'public', 'ready', 'watch', 'hello', 'finvite', 'leave']);
+const CTRL = new Set(['create', 'join', 'quick', 'list', 'public', 'ready', 'watch', 'hello', 'finvite', 'ghost', 'ghostget', 'leave']);
 
 const rooms = new Map(); // code → room
 
@@ -77,6 +82,7 @@ const FID_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const FID_RE = /^[A-Z2-9]{8}$/;
 const MAX_FRIENDS = 100;
 const USER_TTL = 30 * 24 * 3600 * 1000;
+const GHOST_TTL = 36 * 3600 * 1000; // a ghost of somebody gone this long is of a past day
 const users = new Map(); // fid → {fid, name, friends:Set, ignored:Set, daily, ws, seen}
 const fans = new Map(); // fid → Set of fids that have it in their list (whether they exist or not)
 function setFriends(u, next) {
@@ -112,7 +118,8 @@ function friendsMsg(u) {
     if (!f || !mutual(u, f)) continue;
     // today's Tagesschicht, only when it is the same day for both (time zones)
     const today = f.daily && u.daily && f.daily.day === u.daily.day && f.daily.score != null;
-    list.push({ fid, name: f.name, online: !!f.ws, ...whereIs(f), daily: today ? f.daily.score : null });
+    const ghost = today && !!f.ghost && f.ghost.day === u.daily.day;
+    list.push({ fid, name: f.name, online: !!f.ws, ...whereIs(f), daily: today ? f.daily.score : null, ...(ghost ? { ghost: f.ghost.score } : {}) });
   }
   for (const f of fansOf(u))
     if (f !== u && !u.friends.has(f.fid) && !u.ignored.has(f.fid) && asks.length < 20) asks.push({ fid: f.fid, name: f.name });
@@ -159,6 +166,8 @@ function hello(ws, m) {
   const d = m.daily;
   if (d && Number.isInteger(d.day))
     u.daily = { day: d.day, score: Number.isFinite(d.score) ? Math.max(0, Math.round(d.score)) : null };
+  // (a ghost of another day is of no use any more)
+  if (u.ghost && u.ghost.day !== u.daily?.day) dropGhost(u);
   ws.user = u;
   send(ws, { t: 'hi', fid });
   send(ws, friendsMsg(u));
@@ -183,6 +192,33 @@ function rankOf(u) {
   }
   return { t: 'rank', day: u.daily.day, pos, of };
 }
+// ---- ghosts: the best Tagesschicht run of a day, for mutual friends to play against ----
+const MAX_GHOST = 16000, // characters of base64 (a full shift is about 7700)
+  MAX_GHOSTS = num(process.env.MAX_GHOSTS, 4000); // kept in all (memory)
+let ghosts = 0;
+function dropGhost(u) {
+  if (!u.ghost) return;
+  u.ghost = null;
+  ghosts--;
+}
+function ghost(ws, m) {
+  const u = ws.user;
+  if (!u || !Number.isInteger(m.day) || !u.daily || u.daily.day !== m.day || !rankable(u.daily)) return;
+  if (typeof m.d !== 'string' || !m.d.length || m.d.length > MAX_GHOST || !/^[A-Za-z0-9+/]+=*$/.test(m.d)) return;
+  if (!u.ghost) {
+    if (ghosts >= MAX_GHOSTS) return;
+    ghosts++;
+  }
+  u.ghost = { day: m.day, score: u.daily.score, d: m.d, cap: clean(m.cap, 9), hat: clean(m.hat, 12), skin: clean(m.skin, 20) };
+  touch(u);
+}
+function ghostget(ws, m) {
+  const u = ws.user,
+    f = users.get(String(m.fid));
+  if (!u || !f || !f.ghost || !mutual(u, f) || !u.daily || u.daily.day !== f.ghost.day) return;
+  send(ws, { t: 'ghost', fid: f.fid, name: f.name, ...f.ghost });
+}
+
 function finvite(ws, m) {
   const u = ws.user,
     f = users.get(String(m.to));
@@ -323,6 +359,10 @@ function onMessage(ws, raw) {
       return hello(ws, m);
     case 'finvite':
       return finvite(ws, m);
+    case 'ghost':
+      return ghost(ws, m);
+    case 'ghostget':
+      return ghostget(ws, m);
   }
   if (!room) return send(ws, { t: 'error', e: 'bad' });
   switch (m.t) {
@@ -391,8 +431,9 @@ setInterval(() => {
   for (const [fid, u] of users)
     if (!u.ws && now - u.seen > USER_TTL) {
       setFriends(u, new Set());
+      dropGhost(u);
       users.delete(fid);
-    }
+    } else if (u.ghost && !u.ws && now - u.seen > GHOST_TTL) dropGhost(u);
   for (const [code, room] of rooms) {
     if (room.worldToken) room.players = room.players.filter(p => p.serverHost || p.ws || now - p.gone < 30000);
     if (room.empty && now - room.empty > ROOM_TTL) {

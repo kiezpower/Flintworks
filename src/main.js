@@ -34,6 +34,7 @@ import './onboarding.css';
 import './panels.css';
 import { ev } from './analytics.js';
 import { seasonLine, seasonResult, seasonRoll } from './season.js';
+import { ghostTick } from './ghost.js';
 import { playStart, playStop, playing, recStart, recStop, replayAfter, replayTick, savedReplay, worldHash } from './replay.js';
 import { closeVeil, openVeil, veilOpen } from './veil.js';
 import { startCue, updCue } from './startcue.js';
@@ -619,6 +620,7 @@ function step() {
     tapGotoInput(sel_());
     // a Tagesschicht run is written down, or played back (replay.js)
     replayTick();
+    ghostTick();
     // players are steered by their input (yours from this device), bots by their own mind,
     // helpers by their AI
     crew.forEach((c, n) => {
