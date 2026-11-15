@@ -508,13 +508,27 @@ function gen() {
     // lava; false when it does not fit
     // a pocket of room round it, so it can walk about and is not wedged into the rock (a cave
     // is a blob and other blobs, tunnels and the like overlap it): free ground 14 cells to each
-    // side and 5 above; water, lava, acid and the granite stay
+    // side and 5 above. The sand has settled already, so the pocket must not let anything run
+    // in: a cell next to water, lava, acid or oil stays (a wall against it), granite stays, and
+    // sand on the rim of the pocket turns to earth (else it would trickle down onto the creature)
     const room = a => {
-      for (let yy = Math.floor(a.y) - 5; yy < a.y + a.h; yy++)
-        for (let xx = Math.floor(a.x) - 14; xx < a.x + a.w + 14; xx++) {
-          if (xx < 1 || xx >= W - 1 || yy <= surf[xx] + 2 || yy >= H - 2) continue;
+      const x0 = Math.max(1, Math.floor(a.x) - 14),
+        x1 = Math.min(W - 2, Math.ceil(a.x + a.w) + 13),
+        y0 = Math.max(1, Math.floor(a.y) - 5),
+        y1 = Math.min(H - 3, Math.ceil(a.y + a.h) - 1);
+      const wet = i => LIQ[mat[i - 1]] || LIQ[mat[i + 1]] || LIQ[mat[i - W]] || LIQ[mat[i + W]] || LIQ[mat[i - W - 1]] || LIQ[mat[i - W + 1]];
+      const cut = [];
+      for (let yy = y0; yy <= y1; yy++)
+        for (let xx = x0; xx <= x1; xx++) {
+          if (yy <= surf[xx] + 2) continue;
           const i = yy * W + xx;
-          if (mat[i] !== GRANITE && !LIQ[mat[i]]) mat[i] = AIR;
+          if (mat[i] !== GRANITE && !LIQ[mat[i]] && !wet(i)) cut.push(i);
+        }
+      for (const i of cut) mat[i] = AIR;
+      for (let yy = y0 - 1; yy <= y1; yy++)
+        for (let xx = x0 - 1; xx <= x1 + 1; xx++) {
+          const i = yy * W + xx;
+          if (mat[i] === SAND) mat[i] = EARTH;
         }
     };
     const put = (kind, c) => {
@@ -600,7 +614,39 @@ function finishWorld() {
   // the cave biomes' creatures and the shrines' guardians (zones.js, shrines.js)
   zoneCreatures();
   spawnGuardians();
+  unstick();
   scatterDecor();
+}
+// a creature that walks and stands in the ground after all of the above (a cave overlapped by
+// a vein, a pocket of a campaign level at the edge, a cave biome's shell): to the nearest free
+// spot around it, then down onto the floor – so nobody stands wedged and unable to move. The
+// ground itself stays as it is (the campaign's worlds are tuned to it)
+const FLY = { bat: 1, fish: 1, worm: 1, iceking: 1 };
+function unstick() {
+  for (const a of animals) {
+    if (FLY[a.kind] || free(a.x, a.y, a.w, a.h)) continue;
+    const x0 = Math.round(a.x),
+      y0 = Math.round(a.y);
+    let best = null;
+    for (let r = 1; r <= 30 && !best; r++)
+      for (let dy = -r; dy <= r && !best; dy++)
+        for (const dx of [-r, r, ...Array.from({ length: 2 * r - 1 }, (_, k) => k - r + 1)]) {
+          if (Math.abs(dy) !== r && Math.abs(dx) !== r) continue;
+          const x = x0 + dx,
+            y = y0 + dy;
+          if (x < 2 || x + a.w > W - 2 || y < 2 || y + a.h > H - 3) continue;
+          if (free(x, y, a.w, a.h)) {
+            best = [x, y];
+            break;
+          }
+        }
+    if (!best) continue;
+    let [x, y] = best;
+    const cx = Math.round(x + a.w / 2);
+    while (y < H - a.h - 3 && free(x, y + 1, a.w, a.h) && !LIQ[mat[(y + a.h + 1) * W + cx]]) y++;
+    a.x = x;
+    a.y = y;
+  }
 }
 // where the castles stand (their middle): one; Versus a second at the right edge; "Jeder gegen
 // jeden" (G.nextFfa: three or four teams) the others in between
