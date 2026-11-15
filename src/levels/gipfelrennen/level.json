@@ -1,0 +1,65 @@
+{
+  "id": "gipfelrennen",
+  "v": 1,
+  "name": "Gipfelrennen",
+  "icon": "castle",
+  "desc": "Erreiche die Bergspitze in der Mitte",
+  "intro": "Links und rechts führen gleich lange Hänge auf den Berg. Steig bis zur flachen Bergspitze in der Mitte. Gegeneinander gewinnt das erste Team oben; zusammen reicht ein gemeinsamer Aufstieg.",
+  "biome": "winter",
+  "size": [
+    1400,
+    440
+  ],
+  "zoom": 2,
+  "rough": 0,
+  "seed": 9519,
+  "diff": "relaxed",
+  "start": {
+    "money": 0,
+    "crew": 1,
+    "inv": [
+      []
+    ]
+  },
+  "rules": {
+    "meteors": false,
+    "vsTime": 4
+  },
+  "objects": [
+    {
+      "t": "base",
+      "x": 60
+    },
+    {
+      "t": "base",
+      "x": -96,
+      "team": 1
+    },
+    {
+      "t": "hill",
+      "x": 700,
+      "r": 30
+    }
+  ],
+  "areas": {
+    "gipfel": [
+      660,
+      64,
+      80,
+      60
+    ]
+  },
+  "goals": [
+    {
+      "t": "reach",
+      "area": "gipfel",
+      "label": "Gipfel erreicht"
+    }
+  ],
+  "lose": {},
+  "stars": [
+    3,
+    5
+  ],
+  "triggers": []
+}

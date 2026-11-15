@@ -226,3 +226,13 @@ Höhle warten zwei Fluffel. Im Koop teilen alle Spieler dasselbe Ziel mit sechs
 Rettungen; es wächst nicht mit der Spielerzahl. Ohne zweite Burg wird die Karte
 nicht unter „Gegeneinander“ angeboten. Es gibt weder Zeitlimit noch zufällige
 Katastrophen. Die Sternzeiten von 8/14 Minuten sind zunächst Richtwerte.
+
+## Gipfelrennen
+
+`gipfelrennen` (1400 × 440, Winter) ist eine kurze Bergtour mit spiegelgleichen
+Hängen und einer flachen Gipfelzone. Der Granitkern verhindert Abkürzungen durch
+den Berg; beide Seiten lassen sich ohne Ausrüstung besteigen. Allein und im Koop
+muss ein Wühler den Gipfel erreichen. Im Versus zählen erreichte Bereiche pro Team:
+Das erste Team oben gewinnt; die Runde dauert höchstens vier Minuten. Es gibt
+keine zufälligen Katastrophen und keine automatischen Helfer: Alle starten ohne
+Ausrüstung oder Startgeld. Die Sternzeiten 3/5 Minuten sind Richtwerte.

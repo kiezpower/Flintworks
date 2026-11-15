@@ -156,6 +156,11 @@ function gen() {
   G.merchant = G.merchNext = null; // (the wandering trader, merchant.js)
   G.nights = null; // (the nights counted for the roaming monsters, nights.js)
   G.villagers = []; // (the settlers in the huts, villagers.js)
+  // Authored maps return before procedural placement. Do not carry these
+  // structures (or the creatures spawned from them) over from the last world.
+  G.zones = [];
+  G.shrines = [];
+  G.hoards = [];
   G.villageNight = false;
   // a hand-built level (levels/) is loaded from its map instead of being generated
   const LP = GAME_MODES[G.nextMode]?.pkg;
