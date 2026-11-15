@@ -43,7 +43,7 @@ test('the selection shows the chapters with pictures, the next level, locks and 
       picture: !!c.querySelector('.ls-pv img, .ls-pv canvas:not(.ls-badge)'),
     })),
   );
-  expect(cards.length).toBe(11);
+  expect(cards.length).toBe(16);
   expect(cards.every(c => c.picture)).toBe(true);
   expect(cards.filter(c => c.next).map(c => c.id)).toEqual(['altemine']);
   expect(cards.filter(c => !c.locked).map(c => c.id)).toEqual(['fluffelrettung', 'altemine']);
@@ -55,7 +55,7 @@ test('the selection shows the chapters with pictures, the next level, locks and 
       at = m.querySelector('.ls-card.next').getBoundingClientRect();
     return { ground: m.querySelectorAll('canvas.ls-ground').length, stations: m.querySelectorAll('.ls-st').length, beside: me.right <= at.left + 30 && me.right > at.left - 40 };
   });
-  expect(mine).toEqual({ ground: 1, stations: 11, beside: true });
+  expect(mine).toEqual({ ground: 1, stations: 16, beside: true });
   // the pictures load
   await page.waitForFunction(() =>
     [...document.querySelectorAll('.ls-sec[data-s="k2"] .ls-card img')].every(i => i.complete && i.naturalWidth > 0),

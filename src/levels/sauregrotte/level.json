@@ -1,0 +1,165 @@
+{
+  "id": "sauregrotte",
+  "v": 1,
+  "name": "Saure Grotte",
+  "icon": "dig",
+  "desc": "Finde den Steinkopf und erreiche die Statue",
+  "intro": "In den Grotten unter der Wiese stand einst die Statue eines Bergmanns. Ein Beben hat ihr den Kopf genommen, die Seen sind seitdem sauer. Der Kopf liegt in einer Truhe jenseits eines Säuresees.",
+  "biome": "meadow",
+  "rough": 0.3,
+  "seed": 9304,
+  "diff": "adventure",
+  "fill": {
+    "caves": 0.1,
+    "gold": 0.6
+  },
+  "start": {
+    "money": 60,
+    "crew": 3,
+    "inv": [
+      [
+        "flint",
+        "loam"
+      ],
+      [
+        "loam",
+        "loam"
+      ],
+      [
+        "rock"
+      ]
+    ],
+    "store": {
+      "loam": 6
+    }
+  },
+  "rules": {
+    "meteors": false
+  },
+  "objects": [
+    {
+      "t": "base",
+      "x": 40
+    },
+    {
+      "t": "tree",
+      "x": 260,
+      "stage": 4
+    },
+    {
+      "t": "tree",
+      "x": 520,
+      "stage": 4
+    },
+    {
+      "t": "tree",
+      "x": 760,
+      "stage": 3
+    },
+    {
+      "t": "chest",
+      "x": 170,
+      "y": 375
+    },
+    {
+      "t": "gas",
+      "x": 350,
+      "y": 275,
+      "r": 9
+    },
+    {
+      "t": "gas",
+      "x": 525,
+      "y": 230,
+      "r": 8
+    },
+    {
+      "t": "animal",
+      "kind": "bat",
+      "x": 525,
+      "y": 230
+    },
+    {
+      "t": "animal",
+      "kind": "slime",
+      "x": 625,
+      "y": 330
+    }
+  ],
+  "areas": {
+    "statue": [
+      815,
+      285,
+      150,
+      95
+    ],
+    "saeure": [
+      280,
+      260,
+      150,
+      80
+    ]
+  },
+  "goals": [
+    {
+      "t": "chests",
+      "n": 1
+    },
+    {
+      "t": "reach",
+      "area": "statue",
+      "label": "Statue erreicht"
+    }
+  ],
+  "lose": {
+    "crewDead": true
+  },
+  "stars": [
+    9,
+    14
+  ],
+  "triggers": [
+    {
+      "when": {
+        "t": "enter",
+        "area": "saeure"
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Säure frisst Erde, Lehm und Wühler. Nur Fels hält sie – grab nie von unten an einen See heran."
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "goal",
+        "n": 0
+      },
+      "do": [
+        {
+          "t": "banner",
+          "title": "Der Steinkopf",
+          "text": "Jetzt zur Statue, tief im Osten"
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "enter",
+        "area": "statue"
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Die alte Statue. Ihr fehlt nur noch der Kopf."
+        }
+      ]
+    }
+  ],
+  "size": [
+    1000,
+    450
+  ],
+  "zoom": 5
+}

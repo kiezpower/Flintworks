@@ -1,0 +1,123 @@
+{
+  "id": "meeresgrund",
+  "v": 1,
+  "name": "Meeresgrund",
+  "icon": "crystal",
+  "desc": "Verkaufe {goal} Edelsteine vom Meeresgrund",
+  "intro": "Deine Insel liegt mitten im Meer. Die Edelsteine liegen in Felsbuckeln auf dem Meeresgrund und tief darunter. Unter dem Grund ist es trocken – grab dich von der Insel aus hin.",
+  "biome": "meadow",
+  "rough": 0.35,
+  "seed": 9301,
+  "diff": "adventure",
+  "fill": {
+    "caves": 0.15,
+    "gems": 0,
+    "gold": 0.5
+  },
+  "start": {
+    "money": 60,
+    "crew": 3,
+    "inv": [
+      [
+        "flint",
+        "loam"
+      ],
+      [
+        "loam"
+      ],
+      [
+        "rock"
+      ]
+    ],
+    "store": {
+      "loam": 6,
+      "plank": 4,
+      "wood": 4
+    }
+  },
+  "rules": {
+    "meteors": false
+  },
+  "objects": [
+    {
+      "t": "base",
+      "x": 40
+    },
+    {
+      "t": "tree",
+      "x": 140,
+      "stage": 4
+    },
+    {
+      "t": "tree",
+      "x": 175,
+      "stage": 3
+    }
+  ],
+  "areas": {
+    "grund": [
+      280,
+      260,
+      650,
+      120
+    ]
+  },
+  "goals": [
+    {
+      "t": "sell",
+      "what": "gem",
+      "n": 6
+    }
+  ],
+  "lose": {
+    "crewDead": true
+  },
+  "stars": [
+    10,
+    16
+  ],
+  "triggers": [
+    {
+      "when": {
+        "t": "after",
+        "min": 0.4
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Wer taucht, muss Luft holen. Ein trockener Gang unter dem Meeresboden ist sicherer – Lehm stopft Lecks."
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "enter",
+        "area": "grund"
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Unter dem Meer! Edelsteine stecken in den Felsnestern – ein Feuerstein sprengt sie frei."
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "goal",
+        "n": 0
+      },
+      "do": [
+        {
+          "t": "banner",
+          "title": "Schatz des Meeres",
+          "text": "Sechs Edelsteine sind verkauft"
+        }
+      ]
+    }
+  ],
+  "size": [
+    1000,
+    400
+  ],
+  "zoom": 5
+}

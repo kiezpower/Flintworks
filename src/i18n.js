@@ -152,6 +152,55 @@ const EN = {
     'Gold glitters next to the deep cave – it brings money at the castle.',
   Halbzeit: 'Halfway',
   'Zwei Fluffel sind frei, zwei warten noch.': 'Two fluffels are free, two are still waiting.',
+  // (the five levels after classic Clonk missions: Bergwerk im Eis, Meeresgrund, Saure Grotte, Glutberg, Finsterburg)
+  'Bergwerk im Eis': 'Mine in the ice',
+  'Rette {goal} eingeschlossene Bergleute': 'Rescue {goal} trapped miners',
+  'Im alten Bergwerk ist der Stollen eingebrochen. Drei Bergleute sitzen am Ende der Gänge fest. Der Eingang liegt am Hang – dann geht es den Schacht hinab.':
+    'The gallery of the old mine has caved in. Three miners are stuck at the ends of the passages. The entrance is on the slope – then down the shaft.',
+  'Der Schacht ist unten verschüttet. Lockerer Sand lässt sich schnell weggraben.':
+    'The shaft is blocked further down. Loose sand is quick to dig away.',
+  'Hier unten riecht es nach Grubengas. Kein Feuer in die Nähe bringen!':
+    'It smells of firedamp down here. Keep fire away!',
+  'Einer ist frei': 'One is free',
+  'Zwei Bergleute warten noch': 'Two miners are still waiting',
+  Meeresgrund: 'Sea floor',
+  'Verkaufe {goal} Edelsteine vom Meeresgrund': 'Sell {goal} gems from the sea floor',
+  'Deine Insel liegt mitten im Meer. Die Edelsteine liegen in Felsbuckeln auf dem Meeresgrund und tief darunter. Unter dem Grund ist es trocken – grab dich von der Insel aus hin.':
+    'Your island lies in the middle of the sea. The gems are in mounds of rock on the sea floor and deep below it. Under the floor it is dry – dig your way there from the island.',
+  'Wer taucht, muss Luft holen. Ein trockener Gang unter dem Meeresboden ist sicherer – Lehm stopft Lecks.':
+    'Whoever dives must come up for air. A dry tunnel under the sea floor is safer – loam plugs leaks.',
+  'Unter dem Meer! Edelsteine stecken in den Felsnestern – ein Feuerstein sprengt sie frei.':
+    'Under the sea! Gems are stuck in the nests of rock – a flint blasts them free.',
+  'Schatz des Meeres': 'Treasure of the sea',
+  'Sechs Edelsteine sind verkauft': 'Six gems are sold',
+  'Saure Grotte': 'Sour grotto',
+  'Finde den Steinkopf und erreiche die Statue': 'Find the stone head and reach the statue',
+  'In den Grotten unter der Wiese stand einst die Statue eines Bergmanns. Ein Beben hat ihr den Kopf genommen, die Seen sind seitdem sauer. Der Kopf liegt in einer Truhe jenseits eines Säuresees.':
+    'In the grottoes under the meadow there once stood the statue of a miner. A quake took its head, and since then the lakes have turned to acid. The head lies in a chest beyond an acid lake.',
+  'Statue erreicht': 'Statue reached',
+  'Säure frisst Erde, Lehm und Wühler. Nur Fels hält sie – grab nie von unten an einen See heran.':
+    'Acid eats earth, loam and diggers. Only rock holds it – never dig up to a lake from below.',
+  'Der Steinkopf': 'The stone head',
+  'Jetzt zur Statue, tief im Osten': 'Now on to the statue, deep in the east',
+  'Die alte Statue. Ihr fehlt nur noch der Kopf.': 'The old statue. All it lacks is its head.',
+  Glutberg: 'Ember mountain',
+  'Verkaufe {goal} Edelsteine aus dem Glutberg': 'Sell {goal} gems from the ember mountain',
+  'Im Glutberg brodelt ein Kern aus Lava. Um ihn herum wachsen Edelsteine. In zwei Höhlen stehen Truhen alter Schürfer – vielleicht ist etwas Nützliches darin.':
+    'A core of lava seethes inside the ember mountain. Gems grow around it. In two caves stand the chests of old prospectors – maybe there is something useful in them.',
+  'Der Fels wird warm – dahinter liegt die Lava. Sprenge nicht ins Blaue, und halte Lehm bereit.':
+    'The rock is getting warm – the lava lies behind it. Do not blast blindly, and keep loam at hand.',
+  'Der Berg bebt': 'The mountain shakes',
+  'Die Glut im Inneren wird unruhig': 'The embers inside are stirring',
+  Finsterburg: 'Gloom castle',
+  'Stürme die Finsterburg und besiege {goal} Wachen': 'Storm the gloom castle and defeat {goal} guards',
+  'Der Herr der Finsterburg plündert die Dörfer. Seine Burg steht auf einem Felsen hinter einem Graben aus Lava, voller Wachen. Schwert und Bogen gibt es an deiner Burg.':
+    'The lord of the gloom castle plunders the villages. His castle stands on a rock behind a moat of lava, full of guards. Sword and bow are sold at your castle.',
+  'Erst rüsten: Schwert und Langbogen kannst du an der Burg kaufen.':
+    'Arm yourself first: you can buy sword and longbow at the castle.',
+  'Der Lavagraben! Eine Lehmbrücke trägt dich hinüber – oder grab dich unter dem Fels hindurch.':
+    'The lava moat! A bridge of loam carries you across – or dig your way under the rock.',
+  'Der Thronsaal': 'The throne hall',
+  'Der Steinwächter des Herrn stellt sich dir': 'The lord’s stone guardian stands in your way',
   'Die alte Mine': 'The old mine',
   'Hier wurde früher Gold gegraben. Der alte Schacht führt zu drei Stollen – und ganz unten liegen die reichsten Adern.':
     'Gold was mined here long ago. The old shaft leads to three galleries – and the richest veins lie at the very bottom.',
