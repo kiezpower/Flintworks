@@ -1,9 +1,10 @@
 import { expect, test } from '@playwright/test';
 import { startRelay } from './relayproc.js';
 
-const PORT = 8798;
-let relay;
-test.beforeAll(async () => {
+// Every parallel worker owns its relay; another worker's afterAll must not close its room.
+let PORT, relay;
+test.beforeAll(async ({}, worker) => {
+  PORT = 19000 + worker.workerIndex;
   const r = startRelay(PORT);
   relay = r.relay;
   await r.ready;

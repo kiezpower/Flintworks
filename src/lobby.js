@@ -407,6 +407,11 @@ tap('lbCamp', () => openCamp({ burst }));
 tap('lbOpt', openOptions);
 tap('lbFriends', () => openFriends(null));
 tap('lbDaily', () => openDaily(hooks));
+tap('lbPractice', async () => {
+  const stamp = G.panelT;
+  const { openBlastRange } = await import('./blastrange.js');
+  if (!el.hidden && panelEl.hidden && G.panelT === stamp) openBlastRange();
+});
 // what is chosen to play: the profile's choice; in a room the host's (no campaign there)
 function chosen() {
   if (!inRoom()) return P.gmode || 'gold';

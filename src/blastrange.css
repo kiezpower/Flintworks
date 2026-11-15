@@ -1,0 +1,18 @@
+.blast-range { display: grid; gap: 10px; min-width: 0; }
+.blast-range .blast-hint { margin: 0; color: #d8c9b0; font-size: calc(14px * var(--ui-scale, 1)); line-height: 1.35; }
+.blast-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.blast-stats > div { display: grid; gap: 4px; padding: 8px; border: 1px solid #92704e; background: #211810; border-radius: 4px; }
+.blast-stats span { font-size: 12px; color: #cdb997; }
+.blast-stats b { font-size: 23px; color: #ffe08a; }
+#blastCanvas { display: block; width: 100%; height: auto; aspect-ratio: 2; border: 2px solid #24160c; box-sizing: border-box; image-rendering: pixelated; cursor: crosshair; touch-action: pan-y; }
+.blast-aim { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 10px; }
+.blast-aim input { min-width: 0; width: 100%; height: 44px; margin: 0; accent-color: #f2c230; cursor: ew-resize; }
+.blast-range button { min-height: 44px; }
+#blastStatus { min-height: 20px; margin: 0; font-size: calc(16px * var(--ui-scale, 1)); color: #ffe08a; }
+.blast-range [disabled] { opacity: .55; cursor: default; }
+.blast-range :focus-visible { outline: 3px solid #fff2b3; outline-offset: 3px; }
+.lb-practice { display: flex; align-items: center; gap: 8px; }
+.lb-practice .ico { width: 20px; height: 20px; }
+@media (min-width: 601px) and (max-height: 620px) {
+  .werkhof .lb-practice { grid-column: 1 / -1; }
+}
