@@ -148,7 +148,7 @@
         <div class="card panel" id="card"></div>
       </div>
 
-      <div id="lobby" hidden>
+      <div id="lobby" class="werkhof" hidden>
         <canvas id="lbCv" width="400" height="220" aria-label="Dein Wühler" data-i18n-aria="Dein Wühler"></canvas>
         <div class="lb-top">
           <div class="lb-logo">
@@ -169,7 +169,37 @@
             </button>
           </div>
         </div>
-        <nav class="lb-side">
+        <div class="lb-crew-heading" aria-live="polite">
+          <b data-i18n="Deine Crew">Deine Crew</b><span id="lbCrewState"></span>
+        </div>
+
+        <button class="lb-slot" id="lbSlot1" aria-label="Mitspieler einladen" data-i18n-aria="Mitspieler einladen">
+          <b>+</b>
+        </button>
+        <button class="lb-slot" id="lbSlot2" aria-label="Mitspieler einladen" data-i18n-aria="Mitspieler einladen">
+          <b>+</b>
+        </button>
+        <button class="lb-name" id="lbNameTag" aria-label="Name ändern" data-i18n-aria="Name ändern">
+          <span id="lbHat"></span><i class="lb-pen">✎</i>
+        </button>
+        <section class="lb-play">
+          <small id="lbEyebrow" class="lb-eyebrow">Deine nächste Schicht</small>
+          <h2 id="lbHeading">Willkommen im Werkhof</h2>
+          <p id="lbResumeName" class="lb-resume-name" hidden></p>
+          <button class="lb-sel" id="lbGMode">
+            <small data-i18n="Level">Level</small><b id="lbGModeTxt">Goldrausch</b><em id="lbGModeDesc"></em
+            ><span id="lbGModePv" hidden></span>
+          </button>
+          <button class="lb-go" id="lbPlay"><span id="lbPlayTxt">Spielen</span></button>
+          <button class="lb-sel" id="lbKind"><small data-i18n="Spielart">Spielart</small><b id="lbKindTxt">Alleine</b></button>
+          <button class="lb-sel" id="lbInvite"><b data-i18n="Freunde einladen">Freunde einladen</b></button>
+          <div class="lb-paths">
+            <button id="lbScenarios" class="lb-path" data-i18n="Szenarien & Kampagne">Szenarien &amp; Kampagne</button>
+            <button id="lbTogether" class="lb-path" data-i18n="Mit Freunden spielen">Mit Freunden spielen</button>
+          </div>
+          <button class="lb-new" id="lbNew" data-i18n="Neue Welt">Neue Welt</button>
+        </section>
+        <nav class="lb-side" aria-label="Im Werkhof" data-i18n-aria="Im Werkhof">
           <button class="lb-b lb-daily" id="lbDaily">
             <i class="ico" data-ico="dig"></i
             ><span class="lb-dbox"><b data-i18n="Tagesschicht">Tagesschicht</b><small id="lbDailyTxt"></small></span>
@@ -192,26 +222,6 @@
             ></span>
           </button>
         </nav>
-        <button class="lb-slot" id="lbSlot1" aria-label="Mitspieler einladen" data-i18n-aria="Mitspieler einladen">
-          <b>+</b>
-        </button>
-        <button class="lb-slot" id="lbSlot2" aria-label="Mitspieler einladen" data-i18n-aria="Mitspieler einladen">
-          <b>+</b>
-        </button>
-        <button class="lb-name" id="lbNameTag" aria-label="Name ändern" data-i18n-aria="Name ändern">
-          <span id="lbHat"></span><i class="lb-pen">✎</i>
-        </button>
-        <section class="lb-play">
-          <h2 data-i18n="Neues Spiel">Neues Spiel</h2>
-          <button class="lb-sel" id="lbKind"><small data-i18n="Spielart">Spielart</small><b id="lbKindTxt">Alleine</b></button>
-          <button class="lb-sel" id="lbGMode">
-            <small data-i18n="Level">Level</small><b id="lbGModeTxt">Goldrausch</b><em id="lbGModeDesc"></em
-            ><span id="lbGModePv" hidden></span>
-          </button>
-          <button class="lb-sel" id="lbInvite"><b data-i18n="Freunde einladen">Freunde einladen</b></button>
-          <button class="lb-go" id="lbPlay"><span id="lbPlayTxt">Spielen</span></button>
-          <button class="lb-new" id="lbNew" data-i18n="Neue Welt">Neue Welt</button>
-        </section>
       </div>
     </div>
     <script type="module" src="/src/main.js"></script>
