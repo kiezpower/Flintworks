@@ -87,10 +87,13 @@ test('a storage chest deep down takes the finds; a helper carries them to the ca
     const chest = w.builds.find(b => b.id === 9970);
     const stored = chest.items.length,
       kept = [...me.inv];
-    // a helper with nothing to do fetches them
-    const h = w.crew.find(c => c.pid == null && !c.dead);
-    for (const c of [...w.crew]) if (c !== me && c !== h) w.crew.splice(w.crew.indexOf(c), 1);
-    Object.assign(h, { x: x + 4, y: y - 10, vx: 0, vy: 0, job: null, path: null, inv: [] });
+    // Isolate an idle helper: pre-existing helpers may already be chopping, and loose
+    // drops legitimately have priority over fetching a crate (helpers.js pickJob).
+    for (const c of [...w.crew]) if (c !== me) w.crew.splice(w.crew.indexOf(c), 1);
+    w.items.length = 0;
+    const { addDigger } = await import('/src/entities.js');
+    const h = addDigger(x + 4, y - 10);
+    G.detPlan = true; // fixed search-node budget, independent of CI machine speed
     me.x = G.base.x + 10;
     me.y = G.base.gy - 10;
     let k = 0;
