@@ -1,0 +1,205 @@
+{
+  "id": "finsterburg",
+  "v": 1,
+  "name": "Finsterburg",
+  "icon": "sword",
+  "desc": "Stürme die Finsterburg und besiege {goal} Wachen",
+  "intro": "Der Herr der Finsterburg plündert die Dörfer. Seine Burg steht auf einem Felsen hinter einem Graben aus Lava, voller Wachen. Schwert und Bogen gibt es an deiner Burg.",
+  "biome": "meadow",
+  "rough": 0.25,
+  "seed": 9305,
+  "diff": "adventure",
+  "fill": {
+    "caves": 0.15,
+    "ore": 1.2,
+    "coal": 1.2
+  },
+  "start": {
+    "money": 150,
+    "crew": 3,
+    "inv": [
+      [
+        "flint",
+        "flint"
+      ],
+      [
+        "loam",
+        "loam"
+      ],
+      [
+        "rock"
+      ]
+    ],
+    "research": [
+      "metal",
+      "archery"
+    ],
+    "store": {
+      "metal": 4,
+      "wood": 8,
+      "rock": 6,
+      "plank": 4,
+      "loam": 4
+    }
+  },
+  "rules": {
+    "meteors": false
+  },
+  "objects": [
+    {
+      "t": "base",
+      "x": 40
+    },
+    {
+      "t": "tree",
+      "x": 230,
+      "stage": 4
+    },
+    {
+      "t": "tree",
+      "x": 300,
+      "stage": 4
+    },
+    {
+      "t": "tree",
+      "x": 420,
+      "stage": 3
+    },
+    {
+      "t": "tree",
+      "x": 560,
+      "stage": 4
+    },
+    {
+      "t": "animal",
+      "kind": "monster",
+      "x": 830,
+      "y": 113
+    },
+    {
+      "t": "animal",
+      "kind": "monster",
+      "x": 870,
+      "y": 113
+    },
+    {
+      "t": "animal",
+      "kind": "monster",
+      "x": 910,
+      "y": 113
+    },
+    {
+      "t": "animal",
+      "kind": "spider",
+      "x": 900,
+      "y": 193
+    },
+    {
+      "t": "animal",
+      "kind": "spider",
+      "x": 1000,
+      "y": 193
+    },
+    {
+      "t": "animal",
+      "kind": "spore",
+      "x": 950,
+      "y": 193
+    },
+    {
+      "t": "animal",
+      "kind": "spore",
+      "x": 1050,
+      "y": 193
+    },
+    {
+      "t": "animal",
+      "kind": "monster",
+      "x": 1020,
+      "y": 118
+    },
+    {
+      "t": "animal",
+      "kind": "monster",
+      "x": 1060,
+      "y": 118
+    },
+    {
+      "t": "animal",
+      "kind": "golem",
+      "x": 1100,
+      "y": 118
+    }
+  ],
+  "areas": {
+    "graben": [
+      600,
+      50,
+      170,
+      150
+    ],
+    "thron": [
+      980,
+      80,
+      185,
+      55
+    ]
+  },
+  "goals": [
+    {
+      "t": "kills",
+      "n": 8
+    }
+  ],
+  "lose": {
+    "crewDead": true
+  },
+  "stars": [
+    12,
+    18
+  ],
+  "triggers": [
+    {
+      "when": {
+        "t": "after",
+        "min": 0.4
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Erst rüsten: Schwert und Langbogen kannst du an der Burg kaufen."
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "enter",
+        "area": "graben"
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Der Lavagraben! Eine Lehmbrücke trägt dich hinüber – oder grab dich unter dem Fels hindurch."
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "enter",
+        "area": "thron"
+      },
+      "do": [
+        {
+          "t": "banner",
+          "title": "Der Thronsaal",
+          "text": "Der Steinwächter des Herrn stellt sich dir"
+        }
+      ]
+    }
+  ],
+  "size": [
+    1200,
+    450
+  ],
+  "zoom": 5
+}

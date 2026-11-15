@@ -1,0 +1,128 @@
+{
+  "id": "bruchlandung",
+  "v": 1,
+  "name": "Bruchlandung",
+  "icon": "balloon",
+  "desc": "Berge die Wrackteile und finde die Quelle",
+  "intro": "Euer Ballon ist zwischen zwei Lavaseen abgestürzt. Seine Teile liegen in Höhlen unter den Seen. Frisches Wasser gibt es erst an der Quelle weit im Osten.",
+  "biome": "desert",
+  "rough": 0.3,
+  "seed": 9309,
+  "diff": "adventure",
+  "fill": {
+    "caves": 0.15,
+    "gold": 0.5
+  },
+  "start": {
+    "money": 60,
+    "crew": 3,
+    "inv": [
+      [
+        "loam",
+        "loam"
+      ],
+      [
+        "loam"
+      ],
+      [
+        "flint"
+      ]
+    ],
+    "store": {
+      "loam": 8,
+      "plank": 4
+    }
+  },
+  "rules": {
+    "meteors": false,
+    "events": [
+      "volcano"
+    ],
+    "evRate": 0.5
+  },
+  "objects": [
+    {
+      "t": "base",
+      "x": 100
+    },
+    {
+      "t": "tree",
+      "x": 500,
+      "stage": 3
+    },
+    {
+      "t": "chest",
+      "x": 360,
+      "y": 315
+    },
+    {
+      "t": "chest",
+      "x": 730,
+      "y": 335
+    }
+  ],
+  "areas": {
+    "quelle": [
+      920,
+      100,
+      130,
+      70
+    ],
+    "see": [
+      240,
+      90,
+      240,
+      60
+    ]
+  },
+  "goals": [
+    {
+      "t": "chests",
+      "n": 2
+    },
+    {
+      "t": "reach",
+      "area": "quelle",
+      "label": "Quelle erreicht"
+    }
+  ],
+  "lose": {
+    "crewDead": true
+  },
+  "stars": [
+    9,
+    14
+  ],
+  "triggers": [
+    {
+      "when": {
+        "t": "enter",
+        "area": "see"
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Eine Lehmbrücke trägt dich über die Lava. Unten durch geht es auch – der Fels um die Seen hält."
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "goal",
+        "n": 0
+      },
+      "do": [
+        {
+          "t": "banner",
+          "title": "Alle Teile geborgen",
+          "text": "Jetzt zur Quelle im Osten"
+        }
+      ]
+    }
+  ],
+  "size": [
+    1100,
+    450
+  ],
+  "zoom": 5
+}

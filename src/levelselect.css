@@ -363,3 +363,185 @@
   .ls-kind { min-height: 44px; }
   .ls-detail { overflow: hidden; }
 }
+
+/* The campaign as a mine shaft (mineshaft.js): the ground drawn in landscape pixels, the levels
+   as stations along the tunnel – a porthole with the level's picture over a sign with its name */
+.ls-mine {
+  position: relative;
+  display: block;
+  padding: 0;
+  scroll-snap-type: none;
+  border: 3px solid var(--line);
+  border-radius: 6px;
+  background: #24160c;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.55), 0 3px 0 rgba(0, 0, 0, 0.45);
+}
+.ls-mine .ls-ground {
+  position: absolute;
+  left: 0;
+  top: 0;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.ls-mine .ls-me {
+  position: absolute;
+  width: 32px;
+  height: 40px;
+  image-rendering: pixelated;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.5));
+  animation: ls-bob 1.6s steps(2) infinite;
+}
+@keyframes ls-bob {
+  50% {
+    transform: translateY(-2px);
+  }
+}
+.ls-card.ls-st {
+  position: absolute;
+  width: 116px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  scroll-snap-align: none;
+}
+.ls-card.ls-st:focus-visible,
+.ls-card.ls-st.cur {
+  outline: none;
+}
+/* the porthole: a ring of wood with rivets, the level's picture behind glass */
+.ls-st .ls-pv {
+  width: 70px;
+  height: 70px;
+  flex: none;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 5px solid #8a5a32;
+  outline: 2px solid var(--line);
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 0, 0, 0.35),
+    inset 0 -8px 12px rgba(0, 0, 0, 0.35),
+    0 3px 0 rgba(0, 0, 0, 0.5);
+  background-image: radial-gradient(circle at 50% 3px, #d8b070 1.5px, transparent 2px),
+    radial-gradient(circle at 50% calc(100% - 3px), #d8b070 1.5px, transparent 2px);
+  transition: transform 0.12s;
+}
+.ls-st .ls-pv > img,
+.ls-st .ls-pv > canvas:not(.ls-badge):not(.ls-icon) {
+  object-fit: cover;
+  object-position: center;
+  image-rendering: pixelated;
+}
+.ls-st .ls-pv::after {
+  /* the shine on the glass */
+  content: '';
+  position: absolute;
+  left: 14%;
+  top: 10%;
+  width: 34%;
+  height: 22%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  transform: rotate(-25deg);
+  pointer-events: none;
+}
+.ls-st .ls-badge,
+.ls-st .ls-icon,
+.ls-st .ls-d,
+.ls-st .ls-players,
+.ls-st .ls-lock {
+  display: none;
+}
+/* the sign under it: name and stars */
+.ls-st .ls-t {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  max-width: 116px;
+  padding: 2px 7px 3px;
+  font-size: 11px;
+  line-height: 1.15;
+  text-align: center;
+  color: var(--inkb);
+  background: linear-gradient(#f4e2b4, #e2c88e);
+  border: 2px solid var(--line);
+  border-radius: 3px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+}
+.ls-st .ls-t b {
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ls-st .ls-t span {
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 1px;
+  color: #c08a10;
+  text-shadow: 0 1px 0 #5e3b1e;
+}
+.ls-st:hover .ls-pv,
+.ls-st:focus-visible .ls-pv {
+  transform: scale(1.07);
+}
+.ls-st:focus-visible .ls-t,
+.ls-st.cur .ls-t {
+  outline: 3px solid #ffe066;
+}
+/* still closed: the porthole dark and boarded, the sign faded */
+.ls-st.locked .ls-pv {
+  border-color: #5e3b1e;
+  filter: none;
+}
+.ls-st.locked .ls-pv > img,
+.ls-st.locked .ls-pv > canvas {
+  filter: grayscale(1) brightness(0.35);
+}
+.ls-st.locked .ls-pv::before {
+  content: '';
+  position: absolute;
+  inset: 40% -6%;
+  background: repeating-linear-gradient(90deg, #6e4728 0 9px, #5e3b1e 9px 10px);
+  border-block: 2px solid var(--line);
+  transform: rotate(-14deg);
+  z-index: 1;
+}
+.ls-st.locked .ls-t {
+  opacity: 0.7;
+  filter: saturate(0.5);
+}
+/* where it goes on: a golden ring that glows, a small flag over it */
+.ls-st.next .ls-pv {
+  border-color: #f2c230;
+  animation: ls-glow 1.4s ease-in-out infinite;
+}
+@keyframes ls-glow {
+  50% {
+    box-shadow:
+      inset 0 0 0 2px rgba(0, 0, 0, 0.35),
+      0 0 0 3px rgba(255, 224, 102, 0.55),
+      0 0 18px 6px rgba(255, 200, 80, 0.55);
+  }
+}
+.ls-st .ls-ribbon {
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 10px;
+  padding: 0 6px;
+  z-index: 2;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ls-mine .ls-me,
+  .ls-st.next .ls-pv {
+    animation: none;
+  }
+}

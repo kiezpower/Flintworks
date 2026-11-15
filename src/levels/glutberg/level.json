@@ -1,0 +1,137 @@
+{
+  "id": "glutberg",
+  "v": 1,
+  "name": "Glutberg",
+  "icon": "farrow",
+  "desc": "Verkaufe {goal} Edelsteine aus dem Glutberg",
+  "intro": "Im Glutberg brodelt ein Kern aus Lava. Um ihn herum wachsen Edelsteine. In zwei Höhlen stehen Truhen alter Schürfer – vielleicht ist etwas Nützliches darin.",
+  "biome": "desert",
+  "rough": 0.35,
+  "seed": 9303,
+  "diff": "adventure",
+  "fill": {
+    "caves": 0.2,
+    "gems": 0.3,
+    "gold": 0.5
+  },
+  "start": {
+    "money": 80,
+    "crew": 3,
+    "inv": [
+      [
+        "flint",
+        "flint"
+      ],
+      [
+        "loam",
+        "loam"
+      ],
+      [
+        "rock"
+      ]
+    ],
+    "research": [
+      "metal"
+    ],
+    "tools": [
+      "hook"
+    ]
+  },
+  "rules": {
+    "meteors": false,
+    "events": [
+      "quake"
+    ],
+    "evRate": 0.8
+  },
+  "objects": [
+    {
+      "t": "base",
+      "x": 30
+    },
+    {
+      "t": "tree",
+      "x": 220,
+      "stage": 3
+    },
+    {
+      "t": "tree",
+      "x": 900,
+      "stage": 3
+    },
+    {
+      "t": "chest",
+      "x": 390,
+      "y": 315
+    },
+    {
+      "t": "chest",
+      "x": 750,
+      "y": 335
+    },
+    {
+      "t": "gas",
+      "x": 650,
+      "y": 400,
+      "r": 8
+    }
+  ],
+  "areas": {
+    "kern": [
+      450,
+      210,
+      220,
+      160
+    ]
+  },
+  "goals": [
+    {
+      "t": "sell",
+      "what": "gem",
+      "n": 8
+    }
+  ],
+  "lose": {
+    "crewDead": true
+  },
+  "stars": [
+    12,
+    18
+  ],
+  "triggers": [
+    {
+      "when": {
+        "t": "enter",
+        "area": "kern"
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Der Fels wird warm – dahinter liegt die Lava. Sprenge nicht ins Blaue, und halte Lehm bereit."
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "after",
+        "min": 10
+      },
+      "do": [
+        {
+          "t": "banner",
+          "title": "Der Berg bebt",
+          "text": "Die Glut im Inneren wird unruhig"
+        },
+        {
+          "t": "event",
+          "kind": "quake"
+        }
+      ]
+    }
+  ],
+  "size": [
+    1000,
+    500
+  ],
+  "zoom": 5
+}

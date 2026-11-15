@@ -137,6 +137,9 @@ wählen den Modus → `gen.js` (oder `levels/loader.js`) baut die Welt → pro T
 
 `lobby.js` mit `lobbyscene.js`, `lobbyworkers.js`, `lobbyname.js`, `lobbyinvite.js`,
 `lobbyfriends.js` und den `*.css`-Dateien; `install.js` bietet die Installation als App an.
+Die Levelauswahl (`levelselect.js`) zeigt jedes Kampagnen-Kapitel als Schacht (`mineshaft.js`):
+ein gezeichneter Querschnitt durch den Boden, die Level als Stationen an einem Stollen, der so weit
+gegraben ist, wie Level offen sind; der eigene Wühler steht dort, wo es weitergeht.
 
 ### Mehrspieler (`src/net/` und `server/`)
 
