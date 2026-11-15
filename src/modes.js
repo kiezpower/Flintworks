@@ -1,6 +1,7 @@
 // Game modes chosen in the lobby: each has its own win condition and star times.
 import { G, builds } from './state.js';
 import { nightTick } from './siege.js';
+import { settlementStatus } from './settlement.js';
 
 // Multiplayer: Koop goals grow by half for every further player, Versus goals are smaller
 // because the round has a clock (G.mp is made for every new world, see versus.js)
@@ -10,6 +11,17 @@ const scaled = (n, step = 1, max = 1e9, np, vs) => Math.min(max, Math.round((n *
 const treasureGoal = (np, vs) => scaled(4, 1, 1e9, np, vs);
 
 const GAME_MODES = {
+  settlement: {
+    name: 'Siedlungswelt',
+    desc: 'Baut eine gemeinsame Siedlung – ohne Rundenende',
+    icon: 'castle',
+    endless: true,
+    territory: true,
+    goal: 6,
+    prog: () => G.settlement?.done?.length || 0,
+    status: settlementStatus,
+    stars: [0, 0],
+  },
   gold: {
     name: 'Goldrausch',
     desc: 'Verdiene {goal} Taler',
@@ -80,7 +92,7 @@ function applyModeSetup() {
   M.setup?.();
 }
 const mode = () => GAME_MODES[G.mode] || GAME_MODES.gold;
-const goalReached = () => mode().prog() >= mode().goal;
+const goalReached = () => !mode().endless && mode().prog() >= mode().goal;
 // 3 stars under the first time limit (minutes), 2 under the second, otherwise 1
 function starsFor(sec) {
   const [a, b] = mode().stars;

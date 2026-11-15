@@ -5,6 +5,7 @@ import { tapGotoInput } from './tapgo.js';
 import { calcTerr } from './render.js';
 import { updHazards } from './hazards.js';
 import { GAME_MODES, goalReached, mode, starsFor } from './modes.js';
+import { settlementTick } from './settlement.js';
 import { updBuildFx } from './bfx.js';
 import { updMusic } from './music.js';
 import { updFloats } from './floats.js';
@@ -611,6 +612,7 @@ function step() {
     updBeams();
     updMissions();
     updResearch();
+    settlementTick();
     if (G.frame % 30 === 0) updScenario();
     if (G.frame % 30 === 0) bossTick();
     if (G.frame % 30 === 0) merchantTick();

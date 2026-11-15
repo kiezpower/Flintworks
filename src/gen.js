@@ -156,6 +156,7 @@ function gen() {
   G.merchant = G.merchNext = null; // (the wandering trader, merchant.js)
   G.nights = null; // (the nights counted for the roaming monsters, nights.js)
   G.villagers = []; // (the settlers in the huts, villagers.js)
+  G.settlement = null;
   // Authored maps return before procedural placement. Do not carry these
   // structures (or the creatures spawned from them) over from the last world.
   G.zones = [];

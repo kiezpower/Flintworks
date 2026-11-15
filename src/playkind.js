@@ -8,6 +8,7 @@ export const PLAY_KINDS = {
 export function supportsKind(M, kind) {
   if (!M || !PLAY_KINDS[kind]) return false;
   if (M.campaign || M.daily) return kind === 'solo';
+  if (M.endless) return kind !== 'versus';
   if (M.pkg?.rules?.assault) return kind === 'versus';
   if (kind === 'versus' && M.pkg) return M.pkg.objects.some(o => o.t === 'base' && o.team === 1);
   return true;

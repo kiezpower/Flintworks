@@ -641,5 +641,17 @@ const EN2 = {
   'Lautstärke von Graben, Treffern, Verkauf und Sprengungen': 'Volume of digging, hits, sales and blasts',
   'Lautstärke der Musik': 'Volume of the music',
   'Lautstärke von Regen, Wind, Vögeln und Grillen': 'Volume of rain, wind, birds and crickets',
+
+  // Persistent settlements
+  "Siedlungswelt": "Settlement world",
+  "Baut eine gemeinsame Siedlung – ohne Rundenende": "Build a settlement together \u2013 with no round ending",
+  "Baue ein Sägewerk und lagere 6 Bretter": "Build a sawmill and store 6 planks",
+  "Erforsche Metallurgie und lagere 4 Metall": "Research metallurgy and store 4 metal",
+  "Baue einen Fahrstuhl und erschließe einen 25 m tiefen Schacht": "Build a lift and open a shaft 25 m deep",
+  "Erforsche Schienenbau und baue eine Grubenbahn oder einen Bohrwagen": "Research railways and build a mine train or drill wagon",
+  "Versorge 3 Siedler und lagere 6 Brot": "Support 3 settlers and store 6 bread",
+  "Stelle eine Diamanthacke her und lagere 4 Edelsteine": "Craft a diamond pick and store 4 gems",
+  "Eure Siedlung wächst weiter – alle Meilensteine erreicht": "Keep growing your settlement \u2013 all milestones reached",
+  "Meilenstein erreicht": "Milestone reached",
 };
 export { EN2 };
