@@ -11,8 +11,3 @@
 #blastStatus { min-height: 20px; margin: 0; font-size: calc(16px * var(--ui-scale, 1)); color: #ffe08a; }
 .blast-range [disabled] { opacity: .55; cursor: default; }
 .blast-range :focus-visible { outline: 3px solid #fff2b3; outline-offset: 3px; }
-.lb-practice { display: flex; align-items: center; gap: 8px; }
-.lb-practice .ico { width: 20px; height: 20px; }
-@media (min-width: 601px) and (max-height: 620px) {
-  .werkhof .lb-practice { grid-column: 1 / -1; }
-}
