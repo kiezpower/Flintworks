@@ -1,5 +1,7 @@
 // In-game Wühler at double resolution: the lobby portrait art (16×20 texels = 8×10 landscape
 // pixels) with animated legs, arms for climbing and hanging, tools and the held item.
+import { drawMinerFrame } from './minerart.js';
+import { digTool } from './digtool.js';
 import { heroPal } from './heroes.js';
 import { outfitPal, parseSkin } from './skins.js';
 import { ART, FIXED, hatRects } from './portrait.js';
@@ -111,6 +113,22 @@ function drawPick(c, ox, oy, f, g, dph, lean, skin) {
     g.fillRect(q(hx), q(hy), 0.5, 0.5);
   }
 }
+function drawShovel(c, ox, oy, f, g, ph, skin) {
+  const t = ph < .5 ? ph * 2 : (1 - ph) * 2;
+  const angle = Math.atan2(c.digDir?.[1] || 0, Math.abs(c.digDir?.[0] || 1)) + .75 - t * 1.1;
+  const dx = Math.cos(angle) * f, dy = Math.sin(angle);
+  const hx = ox + 3 + f * 1.5, hy = oy + 6 - t * 1.7;
+  g.fillStyle = '#24160c';
+  for (let k = -2; k <= 9; k++) g.fillRect(q(hx + dx * k * .5) - .5, q(hy + dy * k * .5) - .5, 1.5, 1.5);
+  g.fillStyle = '#a77643';
+  for (let k = -2; k <= 9; k++) g.fillRect(q(hx + dx * k * .5), q(hy + dy * k * .5), .5, .5);
+  // broad square spade, clearly different from the narrow double-pointed pick
+  const ex = q(hx + dx * 4.8), ey = q(hy + dy * 4.8);
+  g.fillStyle = '#24160c'; g.fillRect(ex - 1.5, ey - 1, 3, 3);
+  g.fillStyle = '#9aa6ae'; g.fillRect(ex - 1, ey - .5, 2, 2);
+  g.fillStyle = '#e0e8eb'; g.fillRect(ex - 1, ey - .5, 1, .5);
+  g.fillStyle = skin; g.fillRect(q(hx), q(hy), 1, 1);
+}
 function drawDiggerHi(c, ox, oy, f, g, frame = G.frame) {
   if (!BODY) init();
   const hurt = c.hurt > 0 && c.hurt & 2;
@@ -148,7 +166,11 @@ function drawDiggerHi(c, ox, oy, f, g, frame = G.frame) {
   const walking = Math.abs(c.vx || 0) > 0.15;
   const ph = Math.floor(((c.anim % (Math.PI * 2)) + Math.PI * 2) / (Math.PI / 2)) % 4;
   // a pick raised over the shoulder is behind the head
-  const pickBehind = dph >= 0 && pickAngle(c, dph) < -0.7;
+  const tool = digTool(c.digM);
+  const action = dph >= 0 ? tool : walking || c.climb || c.hangle || c.airT > 3 ? 'walk' : 'idle';
+  const spriteFrame = dph >= 0 ? Math.floor(dph * 6) : action === 'walk' ? Math.floor((c.anim || 0) * 6 / (Math.PI * 2)) : Math.floor(frame / 20);
+  const sheet = appearance.hero === 'bruno' && drawMinerFrame(g, ox + 3, oy + 10, f, action, spriteFrame, cap, appearance.outfit, .25, c.dead ? 'dead' : hurt ? 'hurt' : '');
+  const pickBehind = !sheet && tool === 'pick' && dph >= 0 && pickAngle(c, dph) < -0.7;
   if (pickBehind) drawPick(c, ox, oy, f, g, dph, lean, null);
   // a full pack: a sack on the back, behind the body
   if (c.inv && c.inv.length >= 3 && !c.dead && !c.climb && !c.hangle && !facing) {
@@ -163,19 +185,21 @@ function drawDiggerHi(c, ox, oy, f, g, frame = G.frame) {
     for (const [x, y, w, h] of rs) px(x - 1, y - 1, w + 2, h + 2, FIXED.o);
     for (const [x, y, w, h, col] of rs) px(x, y, w, h, col);
   };
-  if (facing) {
+  if (facing && !sheet) {
     rows(FRONT, 0);
     hat();
     return;
   }
-  rows(BODY, 0);
+  if (!sheet) rows(BODY, 0);
   const air = c.airT > 3 && !c.climb && !c.hangle;
-  if (c.climb) rows(CLIMB[ph < 2 ? 0 : 1], 16);
-  else if (c.hangle) rows(CLIMB[ph % 2], 16);
-  else if (air) rows(c.vy < 0 ? JUMP : FALL, 16);
-  else if (braking) rows(BRAKE, 16);
-  else if (starting) rows(LEGS[1], 16);
-  else rows(LEGS[walking ? ph : 0], 16);
+  if (!sheet) {
+    if (c.climb) rows(CLIMB[ph < 2 ? 0 : 1], 16);
+    else if (c.hangle) rows(CLIMB[ph % 2], 16);
+    else if (air) rows(c.vy < 0 ? JUMP : FALL, 16);
+    else if (braking) rows(BRAKE, 16);
+    else if (starting) rows(LEGS[1], 16);
+    else rows(LEGS[walking ? ph : 0], 16);
+  }
   hat();
   const skin = pal.s,
     sleeve = pal.t;
@@ -190,7 +214,10 @@ function drawDiggerHi(c, ox, oy, f, g, frame = G.frame) {
     px(13, up ? 2 : 6, 3, 5, FIXED.o);
     px(13, up ? 2 : 6, 2, 2, skin);
   } else if (c.digging || c.picking > 0) {
-    if (!pickBehind) drawPick(c, ox, oy, f, g, dph, lean, skin);
+    if (!sheet) {
+      if (tool === 'shovel') drawShovel(c, ox, oy, f, g, dph, skin);
+      else if (!pickBehind) drawPick(c, ox, oy, f, g, dph, lean, skin);
+    }
   } else if (c.hammer || c.chop || c.bridge) {
     const up = Math.sin(c.anim * 2) > 0;
     px(12, up ? 6 : 10, 3, 4, sleeve);

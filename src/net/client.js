@@ -55,7 +55,7 @@ onGameMsg('ter', d => {
 onGameMsg('toast', d => toast(d.key, d.params));
 onGameMsg('end', d => G.netClient && G.onNetEnd?.(d.won, d.winner, d.why, d.stats));
 
-const OWN = ['x', 'y', 'vx', 'vy', 'face', 'digging', 'digDir', 'climb', 'hangle'];
+const OWN = ['x', 'y', 'vx', 'vy', 'face', 'digging', 'digDir', 'digM', 'climb', 'hangle'];
 function applySnap(d) {
   if (d.g) applyGame((gameRaw = { ...gameRaw, ...d.g }));
   if (d.day != null) G.dayT = d.day;
