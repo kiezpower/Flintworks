@@ -642,6 +642,24 @@ const EN2 = {
   'Lautstärke der Musik': 'Volume of the music',
   'Lautstärke von Regen, Wind, Vögeln und Grillen': 'Volume of rain, wind, birds and crickets',
 
+  // Werkhof practice pit
+  'Sprengplatz': 'Blasting range',
+  'Drei Ladungen. Lege Gold frei und triff die Pulverfässer für Kettenreaktionen.': 'Three charges. Uncover gold and hit powder kegs to set off chain reactions.',
+  'Ladungen': 'Charges',
+  'Punkte': 'Points',
+  'Dein Rekord': 'Your best',
+  'Sprengplatz: mit Links und Rechts zielen, mit Leertaste werfen': 'Blasting range: aim with Left and Right, throw with Space',
+  'Wurfziel': 'Throw target',
+  'Weiter links zielen': 'Aim further left',
+  'Weiter rechts zielen': 'Aim further right',
+  'Tippe auf ein Ziel oder verschiebe die Markierung. Die Punkte der Sprengkette zählen mehrfach.': 'Tap a target or move the marker. Chain reactions multiply your points.',
+  'Ladung werfen': 'Throw charge',
+  'Schicht geschafft: {n} Punkte!': 'Shift complete: {n} points!',
+  'Kettenreaktion ×{n}!': 'Chain reaction ×{n}!',
+  'Achtung, gleich knallt es!': 'Stand back, here it comes!',
+  'Ziele auf die Fässer unter der Erde.': 'Aim for the kegs underground.',
+  'Ziel bei {n} Metern': 'Target at {n} metres',
+
   // Werkhof lobby
   'Deine Crew': 'Your crew',
   'Im Werkhof': 'In the work yard',
