@@ -1,6 +1,7 @@
 // The Wühler button opens a collection book. Browsing never changes the profile;
 // only the explicit selection commits an unlocked cosmetic identity.
 import './heroalbum.css';
+import { minerArtReady } from './minerart.js';
 import { HEROES, heroAvailable, heroOf, selectHero } from './heroes.js';
 import { tr } from './i18n.js';
 import { P, saveProfile } from './profile.js';
@@ -129,6 +130,11 @@ function openHeroAlbum({ onAppearance, onOutfits, onAchievements, onSelected } =
     document.getElementById('lbWho')?.focus({ preventScroll: true });
   });
   update();
+  minerArtReady.then(ready => {
+    if (!ready || !album.isConnected) return;
+    for (const hero of HEROES) cards.get(hero.id).querySelector('canvas').replaceWith(portrait(hero, P.hero === hero.id));
+    update();
+  });
   requestAnimationFrame(() => {
     if (album.isConnected) cards.get(previewId)?.focus({ preventScroll: true });
   });

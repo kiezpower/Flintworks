@@ -1,4 +1,5 @@
 // Detailed 16×20 Wühler for the lobby and shop (the in-game sprite is 7×10).
+import { drawMinerFrame } from './minerart.js';
 import { heroPal } from './heroes.js';
 import { outfitPal } from './skins.js';
 import { drawHat, shade } from './render.js';
@@ -61,7 +62,8 @@ function drawPortrait(g, X, Y, f, cap, hat, blink, outfit, hero) {
     g.fillStyle = col;
     g.fillRect(f > 0 ? X + x : X + 16 - x - w, Y + y, w, h);
   };
-  for (let y = 0; y < ART.length; y++) {
+  const sheet = hero === 'bruno' && drawMinerFrame(g, X + 8, Y + 20, f, 'idle', 0, cap, outfit, .5);
+  for (let y = 0; !sheet && y < ART.length; y++) {
     const row = ART[y];
     for (let x = 0; x < row.length; x++) {
       let ch = row[x];

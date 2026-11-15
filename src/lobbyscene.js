@@ -2,6 +2,7 @@
 // sky, mountains, the castle on a hill, tunnels and ore in the ground. The ground is a real
 // little world: the lobby workers (lobbyworkers.js) dig through it and carry the ore home.
 // The canvas fills the whole lobby; it has double resolution like the game view.
+import { minerArtLoaded } from './minerart.js';
 import { parseSkin } from './skins.js';
 import { BIOMES } from './biomes.js';
 import { drawPortrait } from './portrait.js';
@@ -30,7 +31,7 @@ let heroScale = 2;
 let heroArt;
 let heroArtKey = '';
 function heroPortrait(cap, hat, outfit, blink, hero) {
-  const key = JSON.stringify([cap, hat, outfit, blink, hero]);
+  const key = JSON.stringify([cap, hat, outfit, blink, hero, minerArtLoaded]);
   if (!heroArt) {
     heroArt = document.createElement('canvas');
     heroArt.width = 24; heroArt.height = 32;
