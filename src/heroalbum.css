@@ -1,0 +1,99 @@
+/* Leather-bound collection, parchment stamps and a live portrait on its own podium. */
+#panel:has(#heroAlbum) {
+  width: min(1000px, calc(100% - 32px));
+  box-sizing: border-box;
+  background: linear-gradient(115deg, #4d3526, #241a14);
+  border: 3px solid #21160f;
+  box-shadow: inset 0 0 0 2px #99734a70, 0 12px 50px #0008;
+}
+.hero-album { --ha-ink: #3b291b; display: grid; grid-template-columns: 1.6fr 1fr; gap: 18px; color: #f1dfb5; }
+.ha-book {
+  position: relative; padding: 14px 18px 18px; color: var(--ha-ink);
+  border: 8px solid #6b442c; border-left-width: 16px; border-radius: 8px 18px 18px 8px;
+  background: linear-gradient(90deg, #b79862, #f3e1b5 6%, #ecdaad 94%, #d2b77c);
+  box-shadow: inset 3px 0 #60412460, inset -3px 0 #9e79464a, 0 4px #160d09;
+}
+.ha-book::before { content: ''; position: absolute; top: 0; bottom: 0; left: -11px; border-left: 2px dashed #cca36c; }
+.ha-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.ha-tabs > * { flex: 1; padding: 8px; border: 2px solid #6d4b29; border-radius: 6px 6px 0 0; font: inherit; text-align: center; }
+.ha-tab-current { background: linear-gradient(#ffe47e, #eab738); }
+.ha-tabs button { color: #eed9ac; background: #61432d; }
+.ha-book h3 { margin: 0 0 12px; text-align: center; font-size: 23px; }
+.ha-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.ha-card {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; min-width: 0; min-height: 132px; padding: 6px 4px;
+  color: var(--ha-ink); font: inherit; font-size: 17px;
+  border: 4px solid #c4a275; outline: 2px dashed #a37c48; outline-offset: -7px;
+  border-radius: 3px; background: linear-gradient(#b5d8e0, #e6d9ab 75%); cursor: pointer;
+}
+.ha-card canvas { width: 66px; height: 88px; image-rendering: pixelated; }
+.ha-card small { font-size: 11px; line-height: 1.1; }
+.ha-card.previewing { border-color: #e6ad22; background: linear-gradient(#ffe9a2, #e9d096); box-shadow: 0 0 0 2px #7c561b; }
+.ha-stamp { position: absolute; top: 0; right: 2px; font-size: 19px; color: #246a32; display: none; }
+.ha-card.selected .ha-stamp, .ha-card.locked .ha-stamp { display: block; }
+.ha-card.locked { background: #c6b89c; }
+.ha-card.locked canvas, .ha-stage.locked canvas { filter: brightness(0); opacity: .35; }
+.ha-progress-label { text-align: center; font-size: 17px; margin: 16px 0 8px; }
+.ha-progress { display: block; width: 100%; height: 20px; appearance: none; border: 3px solid #48301d; border-radius: 10px; background: #715134; overflow: hidden; }
+.ha-progress::-webkit-progress-bar { background: #715134; }
+.ha-progress::-webkit-progress-value { background: linear-gradient(#ffe67c, #eab327); }
+.ha-progress::-moz-progress-bar { background: #efc442; }
+.ha-preview { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-width: 0; }
+.ha-name { color: #342318; background: #f0ddb0; border: 3px solid #553a22; border-radius: 4px; padding: 7px 20px; margin: 0; font-size: 28px; }
+.ha-stage { position: relative; display: grid; justify-items: center; width: 100%; padding: 0 0 18px; background: radial-gradient(ellipse at 50% 60%, #ffdd7550, transparent 65%); }
+.ha-art { position: relative; z-index: 1; }
+.ha-art canvas { display: block; width: 156px; height: 208px; image-rendering: pixelated; }
+.ha-podium { width: 85%; height: 25px; margin-top: -16px; background: repeating-linear-gradient(90deg, transparent 0 24px, #605c4b 25px 27px), linear-gradient(#8cb441 0 5px, #c3b89a 5px 14px, #7b7562 14px); border: 3px solid #382c20; box-shadow: 0 6px #292018; }
+.ha-description, .ha-status { margin: 0; text-align: center; line-height: 1.3; }
+.ha-description { min-height: 2.6em; font-size: 15px; }
+.ha-status { font-size: 14px; color: #f1cf73; }
+.ha-select { width: 100%; min-height: 48px; padding: 8px; color: #382617; border: 3px solid #24160c; border-radius: 6px; font: bold 24px var(--font-display); background: linear-gradient(#ffe777, #f0be2c 60%, #c58c22); box-shadow: inset 0 2px #fff2b0, 0 4px #21160e; cursor: pointer; }
+.ha-select:disabled { color: #e9d7ad; background: #5a4835; box-shadow: none; cursor: default; }
+.ha-appearance { display: flex; gap: 8px; width: 100%; }
+.ha-appearance button { flex: 1; min-height: 44px; padding: 4px; color: #f1dfb5; background: #5a402d; border: 2px solid #a78254; border-radius: 4px; font: inherit; font-size: 13px; cursor: pointer; }
+.ha-note { grid-column: 1 / -1; text-align: center; font-size: 12px; margin: 0; color: #d7c5a4; }
+.hero-album button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; box-shadow: 0 0 0 5px #594019; }
+:root.bigtext .hero-album { font-size: calc(16px * var(--ui-scale)); }
+@media (max-width: 600px) {
+  #panel:has(#heroAlbum) { width: calc(100% - 16px); padding: 8px; max-height: calc(100% - 16px); }
+  .hero-album { grid-template-columns: 1fr; gap: 12px; }
+  .ha-preview { order: -1; display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 6px 10px; }
+  .ha-name { grid-column: 2; font-size: 22px; text-align: center; padding: 3px 8px; }
+  .ha-stage { grid-column: 1; grid-row: 1 / 5; padding-bottom: 8px; }
+  .ha-art canvas { width: 96px; height: 128px; }
+  .ha-podium { height: 16px; margin-top: -10px; }
+  .ha-description { grid-column: 2; min-height: 0; font-size: 12px; }
+  .ha-status, .ha-select { grid-column: 2; }
+  .ha-select { font-size: 20px; min-height: 44px; }
+  .ha-appearance { grid-column: 1 / -1; }
+  .ha-book { padding: 8px 9px 12px; border-width: 5px; border-left-width: 10px; }
+  .ha-tabs { margin-bottom: 8px; }
+  .ha-tabs > * { padding: 5px; }
+  .ha-book h3 { font-size: 20px; margin-bottom: 8px; }
+  .ha-grid { gap: 8px; }
+  .ha-card { min-height: 104px; padding: 3px 2px; font-size: 15px; border-width: 3px; }
+  .ha-card canvas { width: 48px; height: 64px; }
+  .ha-card small { font-size: 10px; }
+  .ha-progress-label { margin-top: 12px; font-size: 14px; }
+  .ha-note { font-size: 11px; }
+}
+@media (min-width: 601px) and (max-height: 500px) {
+  .hero-album { gap: 10px; }
+  .ha-book { padding: 7px 10px 10px; border-width: 5px; }
+  .ha-tabs { margin-bottom: 5px; }
+  .ha-tabs > * { padding: 4px; }
+  .ha-book h3 { font-size: 18px; margin-bottom: 7px; }
+  .ha-grid { gap: 8px; }
+  .ha-card { min-height: 89px; padding: 2px; font-size: 14px; }
+  .ha-card canvas { width: 45px; height: 60px; }
+  .ha-progress-label { margin: 9px 0 4px; font-size: 13px; }
+  .ha-progress { height: 14px; }
+  .ha-preview { gap: 5px; }
+  .ha-name { font-size: 20px; padding: 3px 10px; }
+  .ha-art canvas { width: 81px; height: 108px; }
+  .ha-stage { padding-bottom: 8px; }
+  .ha-description { font-size: 12px; min-height: 0; }
+  .ha-select { font-size: 21px; min-height: 44px; }
+  .ha-note { font-size: 10px; }
+}

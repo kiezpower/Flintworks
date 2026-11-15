@@ -320,7 +320,7 @@ function startGame(withTutorial = false) {
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   const mine = sel_();
-  if (mine) Object.assign(mine, { hat: P.hat, cap: P.cap, skin: skinTag(P.outfit, P.bstyle, P.gear), name: P.name || mine.name });
+  if (mine) Object.assign(mine, { hat: P.hat, cap: P.cap, skin: skinTag(P.outfit, P.bstyle, P.gear, P.hero), name: P.name || mine.name });
   // your castle in your building style (alone; in a room the host sets it, net/session.js)
   if (!G.net && G.base && !G.tut) G.base.skin = P.bstyle;
   setDigBoost();

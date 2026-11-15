@@ -4,6 +4,32 @@ import { pseudo } from './pseudo.js';
 import { EN2 } from './i18n2.js';
 
 const EN = {
+  // hero collection
+  Heldenalbum: 'Hero album',
+  Sammlung: 'Collection',
+  Helden: 'Heroes',
+  'Deine Sammlung': 'Your collection',
+  Heldenvorschau: 'Hero preview',
+  'Ab Level {n}': 'From level {n}',
+  '{n} Siege': '{n} wins',
+  'Level {have}/{need}': 'Level {have}/{need}',
+  'Siege {have}/{need}': 'Wins {have}/{need}',
+  Freigeschaltet: 'Unlocked',
+  Ausgewählt: 'Selected',
+  Auswählen: 'Select',
+  '{n} von {m} entdeckt': '{n} of {m} discovered',
+  'Hüte & Farben': 'Hats & colours',
+  Outfits: 'Outfits',
+  'Zurück zum Album': 'Back to album',
+  'Spiele weiter, um diesen Helden zu entdecken.': 'Keep playing to discover this hero.',
+  'Alle Helden haben dieselben Fähigkeiten. Hüte und Outfits bleiben erhalten.':
+    'All heroes have the same abilities. Your hat and outfit stay equipped.',
+  'Mit Mut ins Bergwerk': 'Into the mine with courage',
+  'Immer eine gute Geschichte dabei': 'Always a good story to tell',
+  'Neugierig auf jeden neuen Stollen': 'Curious about every new tunnel',
+  'Findet überall ein neues Abenteuer': 'Finds a new adventure everywhere',
+  'Mit Erfahrung durch den Fels': 'Experience cuts through rock',
+  'Die nächste Entdeckung wartet schon': 'The next discovery awaits',
   // lobby and profile
   'Als App installieren': 'Install as an app',
   'Startbildschirm, Vollbild, offline': 'Home screen, full screen, offline',

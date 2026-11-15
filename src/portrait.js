@@ -1,4 +1,5 @@
 // Detailed 16×20 Wühler for the lobby and shop (the in-game sprite is 7×10).
+import { heroPal } from './heroes.js';
 import { outfitPal } from './skins.js';
 import { drawHat, shade } from './render.js';
 
@@ -54,8 +55,8 @@ function hatRects(hat) {
 }
 
 // outfit: a skin from skins.js (jacket, belt and trousers)
-function drawPortrait(g, X, Y, f, cap, hat, blink, outfit) {
-  const pal = { ...FIXED, ...outfitPal(outfit), C: cap, c: shade(cap, 0.72), h: shade(cap, 1.35) };
+function drawPortrait(g, X, Y, f, cap, hat, blink, outfit, hero) {
+  const pal = { ...FIXED, ...heroPal(hero), ...outfitPal(outfit), C: cap, c: shade(cap, 0.72), h: shade(cap, 1.35) };
   const px = (x, y, w, h, col) => {
     g.fillStyle = col;
     g.fillRect(f > 0 ? X + x : X + 16 - x - w, Y + y, w, h);

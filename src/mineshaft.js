@@ -255,7 +255,7 @@ function mineShaft(ids, { card, open, next, part }) {
     wc.className = 'ls-me';
     wc.width = 16;
     wc.height = 20;
-    drawPortrait(wc.getContext('2d'), 0, 0, 1, P.cap || '#2f7fd0', P.hat, false, P.outfit);
+    drawPortrait(wc.getContext('2d'), 0, 0, 1, P.cap || '#2f7fd0', P.hat, false, P.outfit, P.hero);
     wc.style.left = pos[at][0] - 22 + 'px';
     wc.style.top = pos[at][1] + PORT - 50 + 'px';
     box.appendChild(wc);
