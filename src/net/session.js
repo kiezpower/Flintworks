@@ -28,7 +28,8 @@ function startMessage(gmode) {
   const n = players.filter(p => !p.watch).length;
   // "Jeder gegen jeden": a castle for every player, from three on and in generated worlds (the
   // maps are built for two castles); with two it is plain Versus
-  const free = NET.versus && NET.ffa && !GAME_MODES[gmode]?.pkg;
+  const allowVersus = NET.versus && !GAME_MODES[gmode]?.endless;
+  const free = allowVersus && NET.ffa && !GAME_MODES[gmode]?.pkg;
   // quick play: bots take the castles nobody plays (alone in Versus one, "Jeder gegen jeden" up
   // to three castles)
   // (not when the host switched bots off in the settings)
@@ -37,7 +38,7 @@ function startMessage(gmode) {
   const castles = free ? Math.min(4, Math.max(n, fill ? 3 : 0)) : fill && n < 2 ? 2 : 0;
   const bots = [];
   for (let t = n; t < castles; t++) bots.push(free ? t : 1);
-  const versus = !!NET.versus && n + bots.length >= 2;
+  const versus = !!allowVersus && n + bots.length >= 2;
   const ffa = versus && free && n + bots.length >= 3 ? Math.min(4, n + bots.length) : 0;
   // Versus: players in turn to the red and the blue castle (1:1, 2:1, 2:2); each to its own
   const teams = {};

@@ -101,6 +101,7 @@ function serialize() {
       earned: G.earned || 0,
       biome: G.biome,
       mode: G.mode,
+      settlement: G.settlement || null,
       tut: (!G.net && G.tut) || null,
       relaxed: !!G.relaxed,
       store: G.store || {},
@@ -222,6 +223,7 @@ function deserialize(d) {
     // (saves from before v1.69.0 use older names for the Fluffel and the Wühler)
     G.mode = d.mode === 'wipfrettung' ? 'fluffelrettung' : d.mode || 'gold';
     G.tut = d.tut || null;
+    G.settlement = d.settlement || null;
     G.relaxed = !!d.relaxed;
     G.store = d.store || {};
     G.tools = d.tools || {};

@@ -209,3 +209,12 @@ Regeln:
 - Analyse-Ereignisse nur über `src/analytics.js` und erst in `docs/ANALYTICS.md` eintragen.
 - Neue Grafik folgt [docs/STYLE.md](docs/STYLE.md), Menüs und HUD folgen [docs/UI_STYLE.md](docs/UI_STYLE.md). Prüfen und bewerten mit der Rubrik in [docs/ART_RUBRIC.md](docs/ART_RUBRIC.md).
 - Der erste Start gehört dem Tutorial: nichts davor (kein Dialog, keine Lobby, kein Installieren-Angebot); neue Systeme kommen als Lektion (`lessons.js`), nicht ins Tutorial.
+
+## Siedlungswelten
+
+„Siedlungswelt“ ist ein freier Modus für Alleine oder Zusammen: kein Zeitlimit und kein
+Rundenende bei einem erreichten Ziel. Sechs bleibende Meilensteine führen vom Sägewerk über
+Metallurgie und einen tiefen Fahrstuhlschacht zu Maschinen, Versorgung und Tiefenbergbau.
+Der nächste Meilenstein steht im HUD. Ein erreichtes Ziel bleibt erreicht, auch wenn seine
+Vorräte später verbraucht werden. Fortschritt wird mit der Welt gespeichert und im Koop geteilt.
+Szenarien, Tagesschicht und Wettkampf behalten ihre bisherigen Regeln.

@@ -309,6 +309,7 @@ function packGame() {
     mark: G.mineMark,
     beams: G.beams,
     mis: G.mis,
+    settlement: G.settlement && structuredClone(G.settlement),
     gold: G.goldSold,
     chests: G.chests && G.chests.map(c => (c.open ? 1 : 0)),
     shrines: G.shrines && G.shrines.map(s => (s.used ? 1 : 0)), // (shrines.js)
@@ -348,6 +349,7 @@ function applyGame(d) {
     mineMark: d.mark,
     beams: d.beams,
     mis: d.mis,
+    settlement: d.settlement || null,
     goldSold: d.gold,
     rainT: d.rainT,
     dayN: d.dayN || 0,
