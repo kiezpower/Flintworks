@@ -336,7 +336,10 @@ function sizeScene(cv) {
   const w = Math.max(150, Math.min(260, Math.round(r.width / 5)));
   const h = Math.round((w * r.height) / r.width);
   const heroX = 0.5;
-  heroScale = Math.max(1, Math.min(3.4, (h * 0.43) / 20));
+  // Leave the top controls clear even on short landscape phones.
+  const safeTop = window.innerWidth <= 600 ? 16 : 64;
+  const feet = h * 0.6 - 10 + Math.sin(w * 0.5 * 0.07) * 2;
+  heroScale = Math.max(1, Math.min(3.4, (h * 0.43) / 20, (feet - safeTop * w / r.width) / 20));
   const moved = HERO.x !== heroX;
   HERO.x = heroX;
   if (!moved && w === land.LW && h === land.LH) return false;

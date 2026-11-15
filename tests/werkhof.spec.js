@@ -189,7 +189,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 844, height: 390 
       return { x: r.left + h.x, top: r.top + h.y - h.height, bottom: r.top + h.y, height: h.height, canvasHeight: r.height };
     });
     expect(Math.abs(hero.x - viewport.width / 2)).toBeLessThan(6);
-    expect(hero.height).toBeGreaterThan(hero.canvasHeight * .35);
+    expect(hero.height).toBeGreaterThan(hero.canvasHeight * .28);
     expect(hero.top).toBeGreaterThan(54);
     const play = await page.locator('#lbPlay').boundingBox();
     expect(hero.bottom).toBeLessThan(play.y);
