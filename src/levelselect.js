@@ -3,7 +3,9 @@
 // next campaign level, the Tagesschicht), then the two campaign chapters, the hand-built maps
 // for Koop and Versus, and last each game mode with one card per world type. Cards show a
 // picture (levels/preview.js, or a small landscape of the world type), a tap opens the detail
-// view with the story, goals, dangers, star times and the best time before the start. Opened from the lobby (mode button).
+// view with the story, goals, dangers, star times and the best time before the start. The two
+// campaign chapters are drawn as a mine shaft going down level by level (mineshaft.js). Opened
+// from the lobby (mode button).
 import { PLAY_KINDS, supportsKind } from './playkind.js';
 import { tr } from './i18n.js';
 import { MAP_IDS } from './levels/index.js';
@@ -15,6 +17,7 @@ import { GAME_MODES, MODE_IDS } from './modes.js';
 import { P, saveProfile } from './profile.js';
 import { ALL_IDS, CHAPTER1, CHAPTERS, bestTime, lockedBy, starsOf, unlocked } from './scenarios.js';
 import { toolIcon } from './sprites.js';
+import { mineShaft } from './mineshaft.js';
 import './levelselect.css';
 
 // game modes without an icon of their own
@@ -255,14 +258,14 @@ function editorCard() {
   return b;
 }
 // a section: a title (with a line under it) and its row of cards
-function section(list, key, group, title, sub, cards) {
+function section(list, key, group, title, sub, cards, make) {
   const s = document.createElement('section');
   s.className = 'ls-sec';
   s.dataset.s = key;
   s.dataset.g = group;
   s.innerHTML = `<h3 class="ls-h">${title}${sub ? ` <small>${esc(sub)}</small>` : ''}</h3>`;
-  const row = document.createElement('div');
-  row.className = 'ls-cards';
+  const row = make ? make() : document.createElement('div');
+  if (!make) row.className = 'ls-cards';
   for (const c of cards) row.appendChild(c);
   s.appendChild(row);
   list.appendChild(s);
@@ -284,13 +287,9 @@ function sections() {
     const ids = grp.ids(),
       got = ids.reduce((s, id) => s + starsOf(id), 0),
       next = nextOf(ids);
-    section(
-      list,
-      grp.id,
-      grp.id,
-      `${esc(tr(grp.name))} <b class="ls-stars">★${got}/${ids.length * 3}</b>`,
-      '',
-      ids.map(id => card(id, { next })),
+    // (a chapter is a mine shaft: its levels are stations along a tunnel, mineshaft.js)
+    section(list, grp.id, grp.id, `${esc(tr(grp.name))} <b class="ls-stars">★${got}/${ids.length * 3}</b>`, '', [], () =>
+      mineShaft(ids, { card, open: unlocked, next, part: grp.id === 'k1' ? 0 : 1 }),
     );
   }
   if (allowed('maps'))
@@ -439,7 +438,7 @@ function close() {
 
 // arrows: left and right along a row, up and down to the nearest card of the row above or below
 function arrow(e) {
-  const rows = [...root.querySelectorAll('.ls-cards')].map(r => [...r.children]),
+  const rows = [...root.querySelectorAll('.ls-cards')].map(r => [...r.querySelectorAll(':scope > .ls-card')]),
     el = document.activeElement,
     r = rows.findIndex(cs => cs.includes(el));
   if (r < 0 || root.classList.contains('detail')) return;
