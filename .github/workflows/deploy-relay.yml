@@ -7,6 +7,11 @@ on:
     branches: [main]
     paths:
       - 'server/**'
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package*.json'
+      - 'vite.config.js'
       - '.github/workflows/deploy-relay.yml'
   workflow_dispatch:
 
@@ -16,6 +21,7 @@ concurrency:
 
 env:
   IMAGE: ghcr.io/${{ github.repository_owner }}/flintworks-relay
+  WORLD_IMAGE: ghcr.io/${{ github.repository_owner }}/flintworks-world-host
 
 jobs:
   build:
@@ -42,6 +48,16 @@ jobs:
           tags: |
             ${{ env.IMAGE }}:sha-${{ github.sha }}
             ${{ env.IMAGE }}:latest
+
+      - name: Build and push dedicated world host
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: server/world-host.Dockerfile
+          push: true
+          tags: |
+            ${{ env.WORLD_IMAGE }}:sha-${{ github.sha }}
+            ${{ env.WORLD_IMAGE }}:latest
 
   deploy:
     name: Deploy to dogado vServer
@@ -86,6 +102,20 @@ jobs:
             docker network inspect kiezpower-net >/dev/null 2>&1 || docker network create kiezpower-net
             docker compose pull
             docker compose up -d
+
+            # Wait for the persistent simulation, as well as the WebSocket relay.
+            READY=0
+            for i in $(seq 1 30); do
+              if docker exec flintworks-world node -e "fetch('http://127.0.0.1:8790/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then
+                READY=1
+                break
+              fi
+              sleep 5
+            done
+            if [ "$READY" != 1 ]; then
+              echo "Dedicated world did not become ready; its volume has been preserved."
+              exit 1
+            fi
 
             # Caddy: add play.kiez-power.de once (the same block lives in kiez-power-b2b/deploy/Caddyfile,
             # so it survives their deploys), then reload without restarting the other sites

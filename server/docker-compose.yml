@@ -15,6 +15,45 @@ services:
         max-size: 10m
         max-file: '3'
 
+
+  world:
+    image: ghcr.io/kiezpower/flintworks-world-host:${IMAGE_TAG:-latest}
+    container_name: flintworks-world
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 30s
+    mem_limit: 768m
+    cpus: 1.0
+    shm_size: 256mb
+    environment:
+      WORLD_NAME: Flintworks Siedlungswelt
+      WORLD_BIOME: meadow
+      WORLD_DIFFICULTY: adventure
+      WORLD_PUBLIC: 'true'
+      WORLD_RELAY_URL: ws://flintworks-relay:8787
+      WORLD_HTTP_PORT: '8790'
+    volumes:
+      - world-data:/data
+    networks:
+      - kiezpower-net
+    depends_on:
+      - relay
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:8790/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 90s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+
 networks:
   kiezpower-net:
     external: true
+
+volumes:
+  world-data:
+    name: flintworks-world-data

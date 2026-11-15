@@ -23,7 +23,7 @@ import { FX_PAL, dust, glint, splash } from './effects.js';
 import { insideB, midMat, moveBody, overlap, sel_, spawnItem, unstuck } from './entities.js';
 import { ev } from './analytics.js';
 import { darkness } from './weather.js';
-import { inputOf } from './players.js';
+import { isAbsent, inputOf } from './players.js';
 import { vehicleContext } from './vehicles/index.js';
 import { climbContext, rampHere, setDigTest, updHook } from './climb.js';
 import { sfx } from './sound.js';
@@ -68,6 +68,7 @@ import {
 const COYOTE = 6, // frames after leaving the ground in which a jump still counts
   JUMP_BUF = 7; // frames a jump pressed in the air is kept for the landing
 function hurt(c, a, silent) {
+  if (isAbsent(c)) return;
   if (c.dead || c.puppet || G.netClient) return; // in multiplayer only the host deals damage
   if (hasGift(c, 'tough')) a *= 0.67; // (a gift of the shrines, shrines.js)
   c.energy -= a;
@@ -81,6 +82,7 @@ function hurt(c, a, silent) {
   if (c.energy <= 0) killDigger(c);
 }
 function killDigger(c) {
+  if (isAbsent(c)) return;
   c.dead = true;
   c.energy = 0;
   c.deadT = 0;

@@ -7,3 +7,6 @@ tests/out/
 
 # Screenshots aus Testläufen und zum Ausprobieren gehören nicht ins Root
 /*.png
+
+# Dedicated world's private device identity and checkpoints
+/server/world-data/

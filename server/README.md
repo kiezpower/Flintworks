@@ -47,3 +47,9 @@ Spielnachrichten, die nur der Host senden darf (`start`, `snap`, `ter`, `end`, `
 ## Logs auf dem Server
 
 `docker logs -f flintworks-relay`
+
+## Dauerhafte Welten
+
+Die Standard-Auslieferung enthält zusätzlich `flintworks-world`, einen separaten Welt-Host mit
+persistentem Volume. Er rechnet die gebaute Spielversion und nutzt dieses Relay wie ein Client.
+Betrieb, Sicherungen, private Welten und Wiederherstellung: [WORLDS.md](WORLDS.md).

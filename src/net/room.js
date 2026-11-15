@@ -24,10 +24,12 @@ const NET = {
   gmode: null, // the host's game mode or map
   pub: false, // open room: anybody can find and join it without a code
   rooms: null, // the open rooms while looking for one: [{code, host, n, versus, playing, tag}]
+  hosted: false, // a dedicated world with an operator-owned host
   auto: null, // a quick play room: its mode {gmode, versus}, fixed; it starts by itself
   cdEnd: 0, // the next round starts at this time (performance.now()), 0: no countdown
 };
 let quick = false, // the next room to enter is any open one
+  wantHosted = false,
   wantPub = false; // a room about to be created is open
 const MAX_PLAYERS = 8; // (the relay's limit, server/relay.js MAX)
 const listeners = [];
@@ -64,7 +66,7 @@ const me = () => ({ name: P.name || 'Kurt', cap: P.cap, hat: P.hat, skin: skinTa
 
 // the players as the relay reports them, with what others chose made safe to show
 const cleanPlayers = list =>
-  (Array.isArray(list) ? list : []).map(p => ({ ...p, name: String(p.name || '').slice(0, 16), cap: safeCap(p.cap) }));
+  (Array.isArray(list) ? list : []).filter(p => !p.serverHost || p.pid === NET.pid).map(p => ({ ...p, name: String(p.name || '').slice(0, 16), cap: safeCap(p.cap) }));
 on('room', m => {
   NET.room = m.code;
   NET.pid = m.pid;
@@ -72,6 +74,7 @@ on('room', m => {
   NET.host = m.host === m.pid;
   NET.players = cleanPlayers(m.players);
   NET.pub = !!m.pub;
+  NET.hosted = !!m.hosted;
   NET.auto = fromTag(m.tag);
   if (NET.auto) Object.assign(NET, { versus: NET.auto.versus, ffa: NET.auto.ffa, gmode: NET.auto.gmode });
   NET.status = 'waiting';
@@ -86,6 +89,7 @@ on('players', m => {
   NET.hostPid = m.host;
   NET.host = m.host === NET.pid;
   NET.pub = !!m.pub;
+  NET.hosted = !!m.hosted;
   if (NET.host) sendCfg();
   changed();
 });
@@ -139,7 +143,7 @@ on('msg', m => {
 function enter() {
   if (NET.room) send({ t: 'join', code: NET.room, ...me() });
   else if (quick) send({ t: 'quick', tag: rotation().tag, ...me() });
-  else send({ t: 'create', pub: wantPub, ...me() });
+  else send({ t: 'create', pub: wantPub, hosted: wantHosted, ...me() });
 }
 function go() {
   NET.status = 'connecting';
@@ -150,7 +154,7 @@ function go() {
   if (open) enter();
 }
 // pub: an open room others find in the list and through quick play
-function createRoom(pub = false) {
+function createRoom(pub = false, hosted = false) {
   if (NET.room && transport.status === 'open') return;
   // All invitation entries (including the hero's + and the friends panel)
   // inherit the saved selection, also after reloading the lobby.
@@ -160,6 +164,7 @@ function createRoom(pub = false) {
   }
   quick = false;
   wantPub = !!pub;
+  wantHosted = !!hosted;
   go();
 }
 // play with anybody: into an open room with space, or a new open one others will find
@@ -201,7 +206,7 @@ function leaveRoom(keepError) {
   if (NET.room) send({ t: 'leave' });
   disconnect('room');
   quick = false;
-  Object.assign(NET, { room: null, pid: null, host: false, pub: false, auto: null, cdEnd: 0, players: [], gmode: null, status: keepError ? 'error' : 'offline' });
+  Object.assign(NET, { room: null, pid: null, host: false, pub: false, hosted: false, auto: null, cdEnd: 0, players: [], gmode: null, status: keepError ? 'error' : 'offline' });
   G.myId = 0;
   changed();
 }

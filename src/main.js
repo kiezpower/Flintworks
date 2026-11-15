@@ -7,6 +7,7 @@ import { updHazards } from './hazards.js';
 import { GAME_MODES, goalReached, mode, starsFor } from './modes.js';
 import { settlementTick } from './settlement.js';
 import { openWorlds } from './worldui.js';
+import { bootDedicated } from './dedicated.js';
 import { validWorldObjects } from './worldstore.js';
 import { updBuildFx } from './bfx.js';
 import { updMusic } from './music.js';
@@ -80,7 +81,7 @@ import { updFarm } from './farm.js';
 import { roamTick } from './nights.js';
 import { villageMove, villageTick } from './villagers.js';
 import './net/deeplink.js';
-import { inputOf, isPlayer } from './players.js';
+import { inputOf, isPlayer, isAbsent } from './players.js';
 import { updWeather } from './weather.js';
 import { seasonName } from './seasons.js';
 import { guardTick, shrineTick } from './shrines.js';
@@ -595,6 +596,7 @@ function step() {
   // picked in it has run by now, commands.js)
   if (panelEl.hidden) G.panelPid = null;
   readInput();
+  if (G.dedicated && G.serverIdle) { stepTail(); return; }
   // (a multiplayer game never pauses: the others keep playing)
   const paused = !panelEl.hidden && !G.net;
   if (G.state === 'play' && paused) updTutorial(true);
@@ -612,7 +614,7 @@ function step() {
     // helpers by their AI
     crew.forEach((c, n) => {
       // A returning friend keeps their figure and bag; absent players are not hired helpers.
-      if (G.mode === 'settlement' && c.owner && c.pid == null) return;
+      if (isAbsent(c)) return;
       useTeam(teamOf(c)); // Versus: castle, cash and store of this Wühler's team
       const I = c.dead ? (isPlayer(c) ? inputOf(c.pid) : NOIN) : c.bot ? botAI(c, n) : isPlayer(c) ? inputOf(c.pid) : helperAI(c, n);
       updDigger(c, I);
@@ -909,3 +911,5 @@ document.addEventListener(
   },
   true,
 );
+
+bootDedicated().catch(e => window.__flintHostError?.(String(e.message)));

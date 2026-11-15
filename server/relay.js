@@ -101,8 +101,8 @@ const mutual = (a, b) => a.friends.has(b.fid) && b.friends.has(a.fid);
 // where a friend is: a room with space (code, players), only while online
 function whereIs(u) {
   const r = u.ws && u.ws.room;
-  if (!r || r.players.length >= MAX || !r.players.includes(u.ws.player)) return {};
-  return { room: r.code, n: r.players.length };
+  if (!r || r.players.length >= capacity(r) || !r.players.includes(u.ws.player)) return {};
+  return { room: r.code, n: r.players.filter(p => !p.serverHost).length };
 }
 function friendsMsg(u) {
   const list = [],
@@ -187,7 +187,7 @@ function finvite(ws, m) {
   const u = ws.user,
     f = users.get(String(m.to));
   const r = ws.room;
-  if (!u || !f || !f.ws || !mutual(u, f) || !r || r.players.length >= MAX) return;
+  if (!u || !f || !f.ws || !mutual(u, f) || !r || r.players.length >= capacity(r)) return;
   send(f.ws, { t: 'finvite', from: u.fid, name: u.name, room: r.code });
 }
 
@@ -197,7 +197,7 @@ function newCode() {
     if (!rooms.has(c)) return c;
   }
 }
-const pubP = p => ({ pid: p.pid, fid: p.token ? fidOf(p.token) : undefined, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin, ready: p.ready, watch: !!p.watch, online: !!p.ws });
+const pubP = p => ({ serverHost: !!p.serverHost, pid: p.pid, fid: p.token ? fidOf(p.token) : undefined, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin, ready: p.ready, watch: !!p.watch, online: !!p.ws });
 function send(ws, m) {
   if (ws && ws.readyState === 1) ws.send(JSON.stringify(m));
 }
@@ -205,7 +205,7 @@ function broadcast(room, m, except) {
   for (const p of room.players) if (p !== except) send(p.ws, m);
 }
 function playersMsg(room) {
-  return { t: 'players', host: room.host, pub: room.pub, players: room.players.map(pubP) };
+  return { t: 'players', host: room.host, pub: room.pub, hosted: !!room.worldToken, players: room.players.map(pubP) };
 }
 function newRoom(pub, tag = null) {
   const r = { code: newCode(), players: [], host: 0, nextPid: 0, snap: null, empty: 0, hostGone: 0 };
@@ -215,14 +215,15 @@ function newRoom(pub, tag = null) {
 }
 // open rooms someone can join right now: public, somebody there, a place free
 const online = r => r.players.filter(p => p.ws).length;
-const joinable = r => r.pub && online(r) > 0 && r.players.length < MAX;
+const capacity = r => MAX + (r.worldToken ? 1 : 0);
+const joinable = r => r.pub && online(r) > 0 && r.players.length < capacity(r);
 function openRooms() {
   const out = [];
   for (const r of rooms.values()) {
     if (!joinable(r)) continue;
     const h = r.players.find(p => p.pid === r.host);
     const { code, versus, ffa, playing, tag } = r;
-    out.push({ code, host: h ? h.name : '', n: r.players.length, versus, ffa, playing, tag });
+    out.push({ code, hosted: !!r.worldToken, host: r.worldName || (h ? h.name : ''), n: r.players.filter(p => !p.serverHost).length, versus, ffa, playing, tag });
   }
   // fullest first: a room that already has company gets going sooner
   return out.sort((a, b) => b.n - a.n).slice(0, 20);
@@ -234,8 +235,9 @@ function clean(s, n) {
 function join(ws, room, m) {
   let p = room.players.find(q => q.token && q.token === m.token);
   if (!p) {
-    if (room.players.length >= MAX) return send(ws, { t: 'error', e: 'full' });
+    if (room.players.length >= capacity(room)) return send(ws, { t: 'error', e: 'full' });
     p = { pid: room.nextPid++, token: clean(m.token, 40), ready: false };
+    if (room.worldToken && m.token === room.worldToken) { p.serverHost = true; p.watch = true; room.host = p.pid; }
     room.players.push(p);
   }
   if (ws.room && ws.room !== room && ws.player) leave(ws.room, ws.player, true);
@@ -246,7 +248,7 @@ function join(ws, room, m) {
   room.empty = 0;
   if (room.host === p.pid) room.hostGone = 0;
   const players = room.players.map(pubP);
-  send(ws, { t: 'room', code: room.code, pid: p.pid, host: room.host, pub: room.pub, tag: room.tag, players });
+  send(ws, { t: 'room', code: room.code, pid: p.pid, host: room.host, pub: room.pub, hosted: !!room.worldToken, tag: room.tag, players });
   if (room.snap) send(ws, { t: 'snap', d: room.snap });
   broadcast(room, playersMsg(room), p);
   touch(ws.user);
@@ -279,8 +281,24 @@ function onMessage(ws, raw) {
   switch (m.t) {
     case 'ping':
       return send(ws, { t: 'pong', ts: m.ts });
-    case 'create':
-      return join(ws, newRoom(!!m.pub), m);
+    case 'create': {
+      if (!m.hosted) return join(ws, newRoom(!!m.pub), m);
+      if (!/^[a-f0-9]{32}$/.test(m.token || '')) return send(ws, { t: 'error', e: 'bad' });
+      // Stable code derived from a secret kept on the operator's disk. Neither a supplied
+      // code nor a public player id can claim ownership of an existing world.
+      const digest = createHash('sha256').update('fw-world:' + m.token).digest();
+      const code = Array.from(digest.subarray(0, 6), b => CHARS[b & 31]).join('');
+      let r = rooms.get(code);
+      if (r && r.worldToken !== m.token) return send(ws, { t: 'error', e: 'bad' });
+      if (!r) {
+        r = newRoom(!!m.pub);
+        rooms.delete(r.code);
+        r.code = code; r.worldToken = m.token;
+        rooms.set(code, r);
+      }
+      r.worldName = clean(m.name, 48);
+      return join(ws, r, m);
+    }
     case 'quick': {
       // a room with the mode of the hour first, then one still in the lobby, the fullest first
       const tag = clean(m.tag, 24) || null;
@@ -376,11 +394,12 @@ setInterval(() => {
       users.delete(fid);
     }
   for (const [code, room] of rooms) {
+    if (room.worldToken) room.players = room.players.filter(p => p.serverHost || p.ws || now - p.gone < 30000);
     if (room.empty && now - room.empty > ROOM_TTL) {
       rooms.delete(code);
       continue;
     }
-    if (room.hostGone && now - room.hostGone > HOST_GRACE) {
+    if (!room.worldToken && room.hostGone && now - room.hostGone > HOST_GRACE) {
       const next = room.players.find(p => p.ws);
       if (next) {
         room.host = next.pid;

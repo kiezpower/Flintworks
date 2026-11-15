@@ -1,3 +1,4 @@
+import { isAbsent } from './players.js';
 // Farming (like OpenClonk's wheat, mill and bread): on a field (a building) grain grows in four
 // stages, faster in the rain, slower in winter and in the desert. Ripe, a Wühler standing on it
 // harvests it with the action button (3 grain, then it is sown again by itself). The mill makes
@@ -27,7 +28,7 @@ function updFarm() {
   for (const b of builds) if (b.type === 'field' && b.done && !ripe(b)) b.grow = Math.min(1, (b.grow || 0) + p);
   if (G.frame % 30) return;
   for (const c of crew) {
-    if (c.dead) continue;
+    if (c.dead || isAbsent(c)) continue;
     if (c.energy < 35 && c.inv.includes('bread')) {
       c.inv.splice(c.inv.indexOf('bread'), 1);
       c.energy = Math.min(100, c.energy + 50);

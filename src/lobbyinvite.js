@@ -251,7 +251,7 @@ function drawRooms() {
   for (const r of NET.rooms) {
     const t = fromTag(r.tag);
     opt(l, {
-      title: tr('Raum von {name}', { name: esc(r.host || '?') }),
+      title: tr(r.hosted ? 'Dauerwelt: {name}' : 'Raum von {name}', { name: esc(r.host || '?') }),
       sub: `${t ? modeName(t, tr) : tr(kindName(r))}${r.playing ? ' · ' + tr('Spiel läuft') : ''}`,
       cost: `${r.n}/${MAX_PLAYERS}`,
       short: true,

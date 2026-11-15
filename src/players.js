@@ -8,6 +8,7 @@ import { G, crew } from './state.js';
 G.myId = 0;
 const inputs = new Map(); // pid → latest input of a remote player
 
+const isAbsent = c => G.mode === 'settlement' && c?.owner && c.pid == null;
 const isPlayer = c => !!c && c.pid != null;
 const diggerOf = pid => crew.find(c => c.pid === pid) || null;
 const helpers = () => crew.filter(c => !isPlayer(c) && !c.dead);
@@ -23,8 +24,9 @@ const EDGES = ['jumpP', 'jumpUp', 'throwP', 'actP'];
 function consumeEdges() {
   for (const I of inputs.values()) for (const k of EDGES) I[k] = false;
 }
+const dropInput = pid => inputs.delete(pid);
 function clearInputs() {
   inputs.clear();
 }
 
-export { clearInputs, diggerOf, consumeEdges, helpers, inputOf, isPlayer, setInput };
+export { isAbsent, dropInput, clearInputs, diggerOf, consumeEdges, helpers, inputOf, isPlayer, setInput };

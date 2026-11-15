@@ -7,7 +7,7 @@ import { tr } from './i18n.js';
 import { digCell, lorryNear, onCase, spawnFromDig } from './digger.js';
 import { register } from './commands.js';
 import { teamOf, useMine, useTeam } from './teams.js';
-import { inputOf, isPlayer } from './players.js';
+import { isAbsent, inputOf, isPlayer } from './players.js';
 import { insideB, isFoe, midMat, moveBody, newId, overlap, sel_, spawnItem, unstuck } from './entities.js';
 import { clearFoot } from './gen.js';
 import { calcTerr } from './render.js';
@@ -220,7 +220,7 @@ function resSources(c) {
   const src = [c.inv];
   const L = lorryNear(c);
   if (L) src.push(L.items);
-  for (const o of crew) if (o !== c && !o.dead && Math.abs(o.x - c.x) < 26 && Math.abs(o.y - c.y) < 14) src.push(o.inv);
+  for (const o of crew) if (o !== c && !o.dead && !isAbsent(o) && Math.abs(o.x - c.x) < 26 && Math.abs(o.y - c.y) < 14) src.push(o.inv);
   return src;
 }
 function countRes(c, t) {
@@ -451,7 +451,7 @@ function updBuilds() {
     if (!b.done) {
       const helpers = crew.filter(
         c =>
-          !c.dead &&
+          !c.dead && !isAbsent(c) &&
           teamOf(c) === teamOf(b) &&
           insideB(c, b) &&
           !c.digging &&
