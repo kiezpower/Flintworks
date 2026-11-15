@@ -25,9 +25,27 @@ let terrain = null, // ground with tunnels (repainted where the workers dig)
   biomeName = 'meadow',
   dirty = false,
   topCols = [];
-const HERO = { x: 0.69 };
+const HERO = { x: 0.5 };
+let heroScale = 2;
+let heroArt;
+let heroArtKey = '';
+function heroPortrait(cap, hat, outfit, blink) {
+  const key = JSON.stringify([cap, hat, outfit, blink]);
+  if (!heroArt) {
+    heroArt = document.createElement('canvas');
+    heroArt.width = 24; heroArt.height = 32;
+  }
+  if (key !== heroArtKey) {
+    const ctx = heroArt.getContext('2d');
+    ctx.clearRect(0, 0, 24, 32);
+    drawPortrait(ctx, 4, 10, 1, cap, hat, blink, outfit);
+    heroArtKey = key;
+  }
+  return heroArt;
+}
+const podiumTop = () => groundY(land.heroX) - 3;
 // Friends stand on either side of the hero, in landscape pixels.
-const friendDx = () => [-20, 20];
+const friendDx = () => [-Math.max(20, heroScale * 11), Math.max(20, heroScale * 11)];
 
 const rgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 const groundY = x =>
@@ -159,7 +177,7 @@ function paintTerrain() {
   o.imageSmoothingEnabled = false;
   drawCrafted(o, SPR.base, land.castleX, groundY(land.castleX + 18) - SPR.base.height + 1);
   // Real building artwork keeps the lobby a place in the game, rather than a menu backdrop.
-  for (const [type, fx] of [['saw', 0.43], ['lift', 0.88]]) {
+  for (const [type, fx] of [['saw', 0.23], ['lift', 0.88]]) {
     const s = SPR[type];
     if (!s) continue;
     const x = Math.round(LW * fx);
@@ -252,13 +270,35 @@ function drawScene(g, opts) {
   drawWorkers(g, reducedMotion);
   // the hero on the hill: twice as big as in the game, bobbing and turning now and then
   const hx = land.heroX,
-    hy = groundY(hx);
+    hy = podiumTop();
+  // Soft focus behind the real, customisable Wühler; no flattened menu artwork.
+  const halo = g.createRadialGradient(hx, hy - 12 * heroScale, 0, hx, hy - 12 * heroScale, 20 * heroScale);
+  halo.addColorStop(0, 'rgba(255,239,163,0.6)');
+  halo.addColorStop(1, 'rgba(255,239,163,0)');
+  g.fillStyle = halo;
+  g.fillRect(hx - 22 * heroScale, hy - 34 * heroScale, 44 * heroScale, 36 * heroScale);
+  // Stepped stone plinth with a grassy crown.
+  for (let step = 2; step >= 0; step--) {
+    const half = 10 * heroScale + step * 3;
+    g.fillStyle = '#382d25';
+    g.fillRect(hx - half, hy + step * 2, half * 2, 3);
+    g.fillStyle = step % 2 ? '#8e8979' : '#b0aa92';
+    g.fillRect(hx - half + 1, hy + step * 2, half * 2 - 2, 2);
+    g.fillStyle = '#625f53';
+    for (let x = hx - half + 5; x < hx + half; x += 9) g.fillRect(x, hy + step * 2, 1, 2);
+  }
+  g.fillStyle = b.top[0];
+  g.fillRect(hx - 10 * heroScale, hy - 1, 20 * heroScale, 2);
   const bob = jumpY < 0 ? 0 : Math.floor(t / 30) % 2;
   const f = spin > 0 ? (Math.floor(spin / 6) % 2 ? 1 : -1) : 1;
   // portrait texels at one landscape pixel each: 16×20, double the in-game size
   g.fillStyle = 'rgba(0,0,0,0.25)';
   g.fillRect(hx - 6, hy - 1, 12, 1);
-  drawPortrait(g, hx - 8, hy - 20 + bob + Math.round(jumpY), f, cap, hat, !reducedMotion && t % 240 < 6, outfit);
+  g.save();
+  g.translate(hx, hy + bob + Math.round(jumpY));
+  g.scale(heroScale * f, heroScale);
+  g.drawImage(heroPortrait(cap, hat, outfit, !reducedMotion && t % 240 < 6), -12, -30);
+  g.restore();
   // friends in the room stand left and right of the hero, facing it
   friends.slice(0, 2).forEach((p, k) => {
     const fx = hx + friendDx()[k],
@@ -295,7 +335,8 @@ function sizeScene(cv) {
   if (!r.width) return false;
   const w = Math.max(150, Math.min(260, Math.round(r.width / 5)));
   const h = Math.round((w * r.height) / r.width);
-  const heroX = window.innerWidth <= 600 ? 0.5 : 0.69;
+  const heroX = 0.5;
+  heroScale = Math.max(1, Math.min(3.4, (h * 0.43) / 20));
   const moved = HERO.x !== heroX;
   HERO.x = heroX;
   if (!moved && w === land.LW && h === land.LH) return false;
@@ -311,8 +352,8 @@ function heroScreen(cv) {
   const r = cv.getBoundingClientRect(),
     k = r.width / land.LW;
   const x = land.LW * HERO.x;
-  return { x: x * k, y: groundY(Math.round(x)) * k, k };
+  return { x: x * k, y: podiumTop() * k, k, scale: heroScale, height: 20 * heroScale * k };
 }
-const heroOrigin = () => ({ x: land.LW * HERO.x, y: groundY(Math.round(land.LW * HERO.x)) - 14 });
+const heroOrigin = () => ({ x: land.LW * HERO.x, y: podiumTop() - 14 * heroScale });
 
 export { COAL, EARTH, GEM, GOLD, ORE, drawScene, friendDx, heroOrigin, heroScreen, sizeScene };
