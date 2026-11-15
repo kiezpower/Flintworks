@@ -64,10 +64,10 @@ test('a saved cooperative settlement reclaims inventory by identity after renami
   try {
     await open(a, 'Gleicher Name', 8802); await open(b, 'Gleicher Name', 8802);
     await a.evaluate(async () => (await import('/src/net/room.js')).createRoom());
-    await a.waitForFunction(async () => !!(await import('/src/net/room.js')).NET.room);
+    await expect.poll(() => a.evaluate(async () => !!(await import('/src/net/room.js')).NET.room), { timeout: 15000 }).toBeTruthy();
     const code = await a.evaluate(async () => (await import('/src/net/room.js')).NET.room);
     await b.evaluate(async code => (await import('/src/net/room.js')).joinRoom(code), code);
-    await a.waitForFunction(async () => (await import('/src/net/room.js')).NET.players.length === 2);
+    await expect.poll(() => a.evaluate(async () => (await import('/src/net/room.js')).NET.players.length === 2), { timeout: 15000 }).toBeTruthy();
     await a.evaluate(() => window.__ww.G.createWorld({ name: 'Freundesberg', biome: 'meadow' }));
     await b.waitForFunction(() => window.__ww.G.netClient && window.__ww.G.state === 'play');
     const ids = await a.evaluate(async () => {
@@ -82,7 +82,7 @@ test('a saved cooperative settlement reclaims inventory by identity after renami
     await a.waitForFunction(() => window.__ww); await b.waitForFunction(() => window.__ww);
     await b.evaluate(async () => { const { P, saveProfile } = await import('/src/profile.js'); P.name = 'Neuer Name'; saveProfile(); });
     await a.evaluate(async () => (await import('/src/net/room.js')).createRoom());
-    await a.waitForFunction(async () => !!(await import('/src/net/room.js')).NET.room);
+    await expect.poll(() => a.evaluate(async () => !!(await import('/src/net/room.js')).NET.room), { timeout: 15000 }).toBeTruthy();
     const newCode = await a.evaluate(async () => (await import('/src/net/room.js')).NET.room);
     await a.evaluate(async id => { const { readWorld } = await import('/src/worldstore.js'); await window.__ww.G.loadWorld(await readWorld(id)); }, ids.world);
     await b.evaluate(async code => (await import('/src/net/room.js')).joinRoom(code), newCode);

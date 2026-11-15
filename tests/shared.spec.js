@@ -170,3 +170,46 @@ test('only the owner’s friends get a shared world, one world per owner, and on
   expect(cleo.errors).toEqual([]);
   expect(dora.errors).toEqual([]);
 });
+
+test('a friend joins a shared world that is being played, and carries it on when the host leaves', async ({ browser }) => {
+  test.setTimeout(180_000);
+  const eva = await player(browser, 'Eva');
+  const finn = await player(browser, 'Finn');
+  await befriend(eva, finn);
+  // Eva shares a world and plays it
+  const id = await eva.page.evaluate(async () => {
+    const w = window.__ww;
+    await w.G.createWorld({ name: 'Evas Hof', biome: 'meadow' });
+    const sh = await import('/src/net/shared.js');
+    const id = w.G.worldId;
+    if ((await sh.shareWorld(id)) !== 'ok') return null;
+    await new Promise(done => setTimeout(done, 1500));
+    return (await sh.openShared(id)) === 'ok' ? id : null;
+  });
+  expect(id).toBeTruthy();
+  await eva.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.netHost);
+  // Finn opens it: he lands in Eva's room, not in a copy of his own
+  await expect.poll(() => finn.page.evaluate(async id => (await import('/src/net/shared.js')).sharedInfo(id)?.room || '', id), { timeout: 10000 }).toMatch(/^[A-Z0-9]{6}$/);
+  expect(await finn.page.evaluate(async id => (await import('/src/net/shared.js')).openShared(id), id)).toBe('joined');
+  await finn.page.waitForFunction(() => window.__ww.G.netClient && window.__ww.G.state === 'play' && window.__ww.G.worldName === 'Evas Hof', null, { timeout: 30000 });
+  await expect.poll(() => eva.page.evaluate(async () => (await import('/src/net/room.js')).NET.players.length), { timeout: 10000 }).toBe(2);
+
+  // Eva saves and is gone: Finn becomes host, and his saves reach the relay
+  await eva.page.evaluate(async () => {
+    window.__ww.G.money = 777;
+    (await import('/src/net/netsave.js')).saveNet();
+    await window.__ww.G.worldSavePending;
+  });
+  await expect.poll(() => stored().filter(w => w.id === id).map(w => [w.by, JSON.parse(w.save).data.money])).toEqual([['Eva', 777]]);
+  await eva.page.close();
+  await finn.page.waitForFunction(() => window.__ww.G.netHost && window.__ww.G.state === 'play', null, { timeout: 30000 });
+  await expect.poll(() => finn.page.evaluate(async () => (await import('/src/net/shared.js')).SH.open), { timeout: 10000 }).toBe(id);
+  await finn.page.waitForTimeout(5200); // (saves go to the relay at most every five seconds)
+  await finn.page.evaluate(async () => {
+    window.__ww.G.money = 888;
+    (await import('/src/net/netsave.js')).saveNet();
+    await window.__ww.G.worldSavePending;
+  });
+  await expect.poll(() => stored().filter(w => w.id === id).map(w => [w.by, JSON.parse(w.save).data.money]), { timeout: 10000 }).toEqual([['Finn', 888]]);
+  expect(finn.errors).toEqual([]);
+});
