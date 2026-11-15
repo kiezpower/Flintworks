@@ -80,7 +80,7 @@ import { updFarm } from './farm.js';
 import { roamTick } from './nights.js';
 import { villageMove, villageTick } from './villagers.js';
 import './net/deeplink.js';
-import { inputOf, isPlayer } from './players.js';
+import { inputOf, isPlayer, isAbsent } from './players.js';
 import { updWeather } from './weather.js';
 import { seasonName } from './seasons.js';
 import { guardTick, shrineTick } from './shrines.js';
@@ -612,7 +612,7 @@ function step() {
     // helpers by their AI
     crew.forEach((c, n) => {
       // A returning friend keeps their figure and bag; absent players are not hired helpers.
-      if (G.mode === 'settlement' && c.owner && c.pid == null) return;
+      if (isAbsent(c)) return;
       useTeam(teamOf(c)); // Versus: castle, cash and store of this Wühler's team
       const I = c.dead ? (isPlayer(c) ? inputOf(c.pid) : NOIN) : c.bot ? botAI(c, n) : isPlayer(c) ? inputOf(c.pid) : helperAI(c, n);
       updDigger(c, I);
