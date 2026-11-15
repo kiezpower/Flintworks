@@ -12,7 +12,7 @@ import { sfx } from './sound.js';
 import { mkAnimal } from './entities.js';
 import { G, animals, crew, parts } from './state.js';
 import { toast } from './ui.js';
-import { AIR, GRANITE, H, W, bg, mat, surf } from './world.js';
+import { AIR, GRANITE, H, W, bg, free, mat, surf } from './world.js';
 
 // id: name, what it does, colour of its crystal
 const GIFTS = {
@@ -25,7 +25,7 @@ const GIFTS = {
 };
 const IDS = Object.keys(GIFTS);
 const SW = 26, // the hall: width and height
-  SH = 15;
+  SH = 17;
 
 const hasGift = (c, id) => !!(c && c.gifts && c.gifts.includes(id));
 function allowed() {
@@ -73,7 +73,16 @@ const shrineNear = c =>
 function spawnGuardians() {
   if (G.relaxed) return;
   (G.shrines || []).forEach((s, k) => {
-    const a = mkAnimal('guardian', s.x + 2, s.y - 15);
+    // (on the hall's floor, in its middle: its arch is narrower at the top, so the first place a
+    // little to either side where it stands free)
+    const a = mkAnimal('guardian', 0, 0);
+    a.y = s.y - a.h;
+    a.x = Math.round(s.x - a.w / 2);
+    for (const dx of [0, -1, 1, -2, 2, -3, 3, -4, 4])
+      if (free(s.x - a.w / 2 + dx, a.y, a.w, a.h)) {
+        a.x = Math.round(s.x - a.w / 2 + dx);
+        break;
+      }
     a.shrine = k;
     animals.push(a);
   });
