@@ -680,5 +680,7 @@ const EN2 = {
   "Welt konnte nicht gespeichert werden – bitte Speicherplatz prüfen": "Could not save the world \u2013 please check available storage",
   "Welt konnte nicht geöffnet werden – die bisherige Welt bleibt gespeichert": "Could not open the world \u2013 the previous world is still saved",
   "Dauerwelt: {name}": "Persistent world: {name}",
+  "Welt schließen": "Close world",
+  "Sichern und zur Lobby zurückkehren": "Save and return to the lobby",
 };
 export { EN2 };

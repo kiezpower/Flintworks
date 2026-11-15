@@ -15,7 +15,7 @@ export async function bootDedicated() {
   P.mode = boot.biome || 'meadow'; P.diff = boot.diff || 'adventure';
   P.sound = false; P.music = false; saveProfile();
   const updateIdle = () => {
-    G.serverIdle = !NET.players.some(p => p.online && !p.watch && !p.serverHost);
+    G.serverIdle = !inRoom() || !NET.players.some(p => p.online && !p.watch && !p.serverHost);
   };
   onRoomChange(updateIdle);
   createRoom(boot.public !== false, true);

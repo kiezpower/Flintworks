@@ -242,3 +242,8 @@ spielenden Gastgeber. Der Welt-Host sichert regelmäßig, behält seinen Einladu
 Neustarts und pausiert, wenn niemand spielt. Die öffentliche „Flintworks Siedlungswelt“ wird mit
 dem Relay ausgeliefert; eigene private Hosts sind ebenfalls möglich. Einrichtung und
 Sicherungen: [server/WORLDS.md](server/WORLDS.md).
+
+Eine aktive Solo-Welt kannst du unter „Meine Welten“ → Welt auswählen → „Welt schließen“
+sichern und freigeben. Danach kannst du eine andere Runde beginnen oder das Archiv ausdrücklich
+löschen. Scheitert das Sichern, bleibt die laufende Welt geöffnet. Löschen benötigt weiterhin eine
+separate Bestätigung und ist unabhängig vom Schließen.

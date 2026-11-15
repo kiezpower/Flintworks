@@ -7,7 +7,7 @@ import { saveGame, serialize } from './save.js';
 import { saveNet } from './net/netsave.js';
 import { archiveWorld } from './worldarchive.js';
 import { MAX_IMPORT, readWorld, listWorlds, renameWorld, deleteWorld, exportWorld, importWorld } from './worldstore.js';
-import { closePanel, openPanel, opt, sec, toast } from './ui.js';
+import { closePanel, openPanel, opt, sec, toast, panelEl } from './ui.js';
 import { tr } from './i18n.js';
 import './worldui.css';
 
@@ -19,8 +19,12 @@ async function preserve() {
   }
   await G.worldSavePending;
 }
+let busy = false;
 const guard = fn => async () => {
+  if (busy) return;
+  busy = true;
   try { await fn(); } catch { toast('Welt konnte nicht geöffnet werden – die bisherige Welt bleibt gespeichert'); }
+  finally { busy = false; }
 };
 function field(parent, label, value, id) {
   const l = document.createElement('label');
@@ -33,6 +37,8 @@ function field(parent, label, value, id) {
 }
 export async function openWorlds() {
   const p = openPanel('Meine Welten');
+  const stamp = G.panelT;
+  const active = () => !panelEl.hidden && G.panelT === stamp;
   const note = document.createElement('p');
   note.className = 'hint';
   note.textContent = tr('Welten bleiben auf diesem Gerät. Exportiere eine Sicherung für andere Geräte.');
@@ -46,7 +52,7 @@ export async function openWorlds() {
   let worlds;
   try { worlds = await listWorlds(); }
   catch { toast('Welt konnte nicht gespeichert werden – bitte Speicherplatz prüfen'); return; }
-  if (!p.isConnected) return;
+  if (!active()) return;
   const list = sec(p, 'Gespeicherte Welten');
   if (!worlds.length) {
     const empty = document.createElement('p'); empty.textContent = tr('Noch keine Welt gespeichert'); list.appendChild(empty);
@@ -68,13 +74,14 @@ export async function openWorlds() {
     if (f.size > MAX_IMPORT) { toast('Diese Welt-Datei ist ungültig oder zu groß'); return; }
     try { await importWorld(await f.text(), Object.keys(GAME_MODES)); }
     catch { toast('Diese Welt-Datei ist ungültig oder zu groß'); return; }
-    await openWorlds();
+    if (active()) await openWorlds();
   });
   imp.appendChild(file);
 }
 async function detail(id) {
+  const stamp = G.panelT;
   const w = await readWorld(id);
-  if (!w || !mayManage()) return;
+  if (!w || !mayManage() || panelEl.hidden || G.panelT !== stamp) return;
   const p = openPanel('Welt verwalten');
   const name = field(p, 'Weltname', w.name, 'worldName');
   const actions = sec(p, '');
@@ -99,6 +106,11 @@ async function detail(id) {
     a.href = url; a.download = 'flintworks-' + current.name.replace(/[^a-z0-9äöüß_-]/gi, '_') + '.json';
     a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }) });
+  if (G.worldId === id && G.inRun && !G.net && !inRoom())
+    opt(actions, { title: tr('Welt schließen'), sub: tr('Sichern und zur Lobby zurückkehren'), short: true, onClick: guard(async () => {
+      await preserve();
+      if (G.closeWorld()) await openWorlds();
+    }) });
   // Deletion deliberately needs a second distinct button; cancelling has no side effects.
   opt(actions, { title: tr('Welt löschen'), short: true, onClick: () => {
     if (G.worldId === id && G.inRun) return toast('Verlasse diese Welt, bevor du sie löschst');

@@ -200,6 +200,7 @@ function play(withTutorial, level = null, veil = false) {
       hideLobby();
       overlay.hidden = true;
       openVeil(() => startGame(go), go === 'loaded');
+      tutHud(); // hide controls immediately, before the first scheduled HUD refresh
       return;
     }
     startGame(withTutorial);
@@ -248,6 +249,14 @@ function discard() {
   endNet();
   G.inRun = false;
 }
+// The UI awaits the archive transaction before releasing a solo world's live state.
+G.closeWorld = () => {
+  if (G.net || inRoom() || !G.worldId) return false;
+  discard();
+  G.worldId = G.worldName = null;
+  closePanel(); menu();
+  return true;
+};
 // World management starts only after the previous world's archive transaction finished.
 G.createWorld = async ({ name, biome: worldBiome }) => {
   if (inRoom() && (!NET.host || NET.auto)) return false;

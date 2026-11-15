@@ -20,11 +20,20 @@ test('a gravestone marks the lost bag until it is picked up again', async ({ pag
     const w = window.__ww,
       G = w.G;
     const { hurt } = await import('/src/digger.js');
-    const { surf } = await import('/src/world.js');
+    const { surf, mat, W, AIR, ROCK, paintAll } = await import('/src/world.js');
     const me = w.crew.find(c => c.pid === G.myId);
     for (const c of [...w.crew]) if (c !== me) w.crew.splice(w.crew.indexOf(c), 1);
-    const x = G.base.x + 400;
-    Object.assign(me, { x, y: surf[x + 3] - 10, vx: 0, vy: 0 });
+    // Pickups and gravestone lifetime are the subject here, not random cliffs or caves.
+    // Give dropped items a clear, level landing area instead of teleporting into terrain.
+    w.items.length = 0;
+    const x = G.base.x + 400, floor = surf[x + 3];
+    for (let xx = x - 40; xx <= x + 40; xx++) {
+      for (let yy = floor - 60; yy < floor; yy++) mat[yy * W + xx] = AIR;
+      for (let yy = floor; yy < floor + 3; yy++) mat[yy * W + xx] = ROCK;
+      surf[xx] = floor;
+    }
+    paintAll();
+    Object.assign(me, { x, y: floor - 10, vx: 0, vy: 0 });
     me.inv = ['nug', 'nug', 'gem'];
     w.step(2);
     hurt(me, 500);
