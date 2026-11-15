@@ -181,7 +181,11 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 844, height: 390 
   test(`hero podium stays central and clear of launch controls at ${viewport.width}×${viewport.height}`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await lobby(page);
-    await page.waitForFunction(() => document.querySelector('#lbSlot1').style.left);
+    await page.waitForFunction(() => {
+      const cv = document.querySelector('#lbCv');
+      const width = Math.max(150, Math.min(260, Math.round(cv.getBoundingClientRect().width / 5)));
+      return cv.width === width * 2 && cv.getContext('2d').getImageData(0, 0, 1, 1).data[3] === 255;
+    });
     const hero = await page.evaluate(async () => {
       const { heroScreen } = await import('/src/lobbyscene.js');
       const cv = document.querySelector('#lbCv');
