@@ -1,6 +1,7 @@
 // Skins bought with crystals: outfits for the Wühler (jacket, belt and trousers recoloured) and
 // building styles (the wooden parts of every building sprite recoloured). Only looks: they are
 // sent to the other players with the name and cap and work in every mode, Versus included.
+import { HEROES, heroOf } from './heroes.js';
 import { SPR } from './sprites.js';
 
 // palette overrides for portrait.js ART (T/t/L jacket, b/g belt, p/P trousers)
@@ -40,13 +41,15 @@ const outfitPal = id => (OUTFITS[id] || OUTFITS.blue).pal;
 const GEAR_CODE = { hook: 'h', lamp: 'l' };
 // what travels with the player: "outfit.style" or "outfit.style.gear" (one short field, at most
 // 20 characters, see server/relay.js)
-function skinTag(outfit, style, gear = []) {
-  const g = gear.map(id => GEAR_CODE[id] || '').join('');
+function skinTag(outfit, style, gear = [], hero = null) {
+  const g = gear.map(id => GEAR_CODE[id] || '').join('') + (heroOf(hero)?.code || '');
   return `${OUTFITS[outfit] ? outfit : 'blue'}.${BSTYLES[style] ? style : 'wood'}` + (g ? '.' + g : '');
 }
 function parseSkin(s) {
   const [o, b, g] = String(s || '').split('.');
-  return { outfit: OUTFITS[o] ? o : 'blue', style: BSTYLES[b] ? b : 'wood', gear: g || '' };
+  const hero = HEROES.find(h => (g || '').includes(h.code));
+  return { outfit: OUTFITS[o] ? o : 'blue', style: BSTYLES[b] ? b : 'wood', gear: (g || '').replace(/[1-6]/g, ''),
+    ...(hero ? { hero: hero.id } : {}) };
 }
 // whether a Wühler brought this gear from the lobby (memoised: asked every frame)
 const gearMemo = {};

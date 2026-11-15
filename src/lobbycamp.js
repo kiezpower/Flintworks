@@ -32,7 +32,7 @@ function outfitIcon(id) {
   c.height = 56;
   const x = c.getContext('2d');
   x.scale(2, 2);
-  drawPortrait(x, 2, 7, 1, P.cap, P.hat, false, id);
+  drawPortrait(x, 2, 7, 1, P.cap, P.hat, false, id, P.hero);
   return c;
 }
 function styleIcon(id) {

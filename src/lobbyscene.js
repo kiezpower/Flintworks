@@ -29,8 +29,8 @@ const HERO = { x: 0.5 };
 let heroScale = 2;
 let heroArt;
 let heroArtKey = '';
-function heroPortrait(cap, hat, outfit, blink) {
-  const key = JSON.stringify([cap, hat, outfit, blink]);
+function heroPortrait(cap, hat, outfit, blink, hero) {
+  const key = JSON.stringify([cap, hat, outfit, blink, hero]);
   if (!heroArt) {
     heroArt = document.createElement('canvas');
     heroArt.width = 24; heroArt.height = 32;
@@ -38,7 +38,7 @@ function heroPortrait(cap, hat, outfit, blink) {
   if (key !== heroArtKey) {
     const ctx = heroArt.getContext('2d');
     ctx.clearRect(0, 0, 24, 32);
-    drawPortrait(ctx, 4, 10, 1, cap, hat, blink, outfit);
+    drawPortrait(ctx, 4, 10, 1, cap, hat, blink, outfit, hero);
     heroArtKey = key;
   }
   return heroArt;
@@ -243,7 +243,7 @@ function drawSky(g, b, t) {
 }
 
 function drawScene(g, opts) {
-  const { biome, cap, hat, outfit, jumpY, spin, sparks, friends = [], reducedMotion = false } = opts;
+  const { biome, cap, hat, outfit, hero, jumpY, spin, sparks, friends = [], reducedMotion = false } = opts;
   const t = reducedMotion ? 0 : opts.t;
   const b = BIOMES[biome] || BIOMES.meadow;
   const key = `${land.LW}|${land.LH}`;
@@ -297,7 +297,7 @@ function drawScene(g, opts) {
   g.save();
   g.translate(hx, hy + bob + Math.round(jumpY));
   g.scale(heroScale * f, heroScale);
-  g.drawImage(heroPortrait(cap, hat, outfit, !reducedMotion && t % 240 < 6), -12, -30);
+  g.drawImage(heroPortrait(cap, hat, outfit, !reducedMotion && t % 240 < 6, hero), -12, -30);
   g.restore();
   // friends in the room stand left and right of the hero, facing it
   friends.slice(0, 2).forEach((p, k) => {
@@ -315,6 +315,7 @@ function drawScene(g, opts) {
       p.hat,
       !reducedMotion && (t + k * 90) % 240 < 6,
       parseSkin(p.skin).outfit,
+      parseSkin(p.skin).hero,
     );
     g.globalAlpha = 1;
   });

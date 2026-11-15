@@ -76,6 +76,7 @@ const P = {
   camp: null,
   owned: [],
   outfit: 'blue',
+  hero: null, // older profiles keep their exact appearance until a hero is chosen
   bstyle: 'wood',
   // gear bought for good in the Heimatbergwerk (camp.js GEAR)
   gear: [],

@@ -60,7 +60,7 @@ function hello() {
   });
   // my best run of today as a ghost for my friends (ghost.js; once per connection and run)
   const g = myGhost(transport.ws);
-  if (g) send({ t: 'ghost', ...g, cap: P.cap, hat: P.hat, skin: skinTag(P.outfit, P.bstyle, P.gear) });
+  if (g) send({ t: 'ghost', ...g, cap: P.cap, hat: P.hat, skin: skinTag(P.outfit, P.bstyle, P.gear, P.hero) });
 }
 function update() {
   const want = needed();

@@ -1,3 +1,4 @@
+import { openHeroAlbum } from './heroalbum.js';
 import { PLAY_KINDS, supportsKind } from './playkind.js';
 import { openWorlds } from './worldui.js';
 import { sharedNews } from './net/shared.js';
@@ -129,7 +130,7 @@ function drawStage() {
   const friends = others();
   if (!NET.room && G.local) friends.push({ cap: '#2f7fd0', hat: 'none', online: true });
   drawScene(g, {
-    t, biome: stageBiome(), cap: P.cap, hat: P.hat, outfit: P.outfit,
+    t, biome: stageBiome(), cap: P.cap, hat: P.hat, outfit: P.outfit, hero: P.hero,
     jumpY, spin, sparks, friends, reducedMotion: !!G.reduceMotion,
   });
 }
@@ -294,18 +295,23 @@ function hatIcon(hat, cap = P.cap, outfit = P.outfit) {
   c.height = 56;
   const x = c.getContext('2d');
   x.scale(2, 2);
-  drawPortrait(x, 2, 7, 1, cap, hat, false, outfit);
+  drawPortrait(x, 2, 7, 1, cap, hat, false, outfit, P.hero);
   return c;
 }
 function openWho() {
+  openHeroAlbum({ onAppearance: openAppearance, onOutfits: () => openCamp({ burst }),
+    onAchievements: openQuests, onSelected: refresh });
+}
+function openAppearance() {
   const p = openPanel('Dein Wühler');
+  opt(sec(p, 'Heldenalbum'), { title: tr('Zurück zum Album'), short: true, onClick: openWho });
   // the name others see in a shared game
   opt(sec(p, 'Name'), {
     title: P.name,
     sub: tr('Tippen zum Ändern'),
     cost: '✎',
     short: true,
-    onClick: () => openName(openWho),
+    onClick: () => openName(openAppearance),
   });
   const l = sec(p, 'Hut');
   for (const id in HATS) {
@@ -320,7 +326,7 @@ function openWho() {
       onClick: () => {
         P.hat = id;
         saveProfile();
-        openWho();
+        openAppearance();
       },
     });
   }
@@ -334,7 +340,7 @@ function openWho() {
       onClick: () => {
         P.cap = col;
         saveProfile();
-        openWho();
+        openAppearance();
       },
     });
 }

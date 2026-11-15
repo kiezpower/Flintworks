@@ -29,7 +29,7 @@ export function rangePainter(canvas) {
       if (s.cells[surface(x) * WIDTH + x]) { g.fillStyle = '#62865d'; g.fillRect(x, surface(x) - 1, 1, 2); }
     }
     g.drawImage(terrain, 0, 0, WIDTH, HEIGHT);
-    drawPortrait(g, 11, surface(16) - 20, 1, P.cap, P.hat, false, P.outfit);
+    drawPortrait(g, 11, surface(16) - 20, 1, P.cap, P.hat, false, P.outfit, P.hero);
     // Stocked powder kegs are visible in the cross-section, including their fuses.
     for (const b of s.barrels) if (!b.spent) {
       const x = b.x - 3, y = b.y - 4;

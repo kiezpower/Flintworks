@@ -62,7 +62,7 @@ function randomToken() {
   const b = crypto.getRandomValues(new Uint8Array(16));
   return Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
 }
-const me = () => ({ name: P.name || 'Kurt', cap: P.cap, hat: P.hat, skin: skinTag(P.outfit, P.bstyle, P.gear), token: token() });
+const me = () => ({ name: P.name || 'Kurt', cap: P.cap, hat: P.hat, skin: skinTag(P.outfit, P.bstyle, P.gear, P.hero), token: token() });
 
 // the players as the relay reports them, with what others chose made safe to show
 const cleanPlayers = list =>
