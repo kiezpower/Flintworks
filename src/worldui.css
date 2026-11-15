@@ -1,0 +1,2 @@
+.world-field { display: grid; gap: 6px; margin: 12px 0; }
+.world-field input, .world-field select { box-sizing: border-box; width: 100%; padding: 10px; font: inherit; color: #ffe6ac; background: #251e1a; border: 2px solid #92704a; border-radius: 4px; }

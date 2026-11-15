@@ -218,3 +218,21 @@ Metallurgie und einen tiefen Fahrstuhlschacht zu Maschinen, Versorgung und Tiefe
 Der nächste Meilenstein steht im HUD. Ein erreichtes Ziel bleibt erreicht, auch wenn seine
 Vorräte später verbraucht werden. Fortschritt wird mit der Welt gespeichert und im Koop geteilt.
 Szenarien, Tagesschicht und Wettkampf behalten ihre bisherigen Regeln.
+
+„Meine Welten“ in der Lobby und im Spielmenü verwaltet benannte Welten. Dort kannst du eine
+Siedlungswelt allein oder mit Freunden anlegen, umbenennen, später fortsetzen und als JSON-Datei
+sichern. In einem Raum öffnet der Host eine gespeicherte Welt für alle; Freunde können auch erst
+nach dem Laden dazukommen. Im Einladungsfenster gibt es dafür ebenfalls „Meine Welten“.
+
+Die Weltarchive liegen in IndexedDB auf dem Gerät des jeweiligen Hosts. Ein Import legt immer
+eine zusätzliche Kopie an und prüft Format, Gelände, Größe und bekannte Spielobjekte, bevor eine
+laufende Welt verändert wird. Browserdaten löschen entfernt auch die Archive: Exportdateien sind
+die Sicherung für einen Gerätewechsel. Der bisherige Einzelspielstand und „Gespeicherte Runde
+fortsetzen“ bleiben nutzbar.
+
+Spielerfiguren in gemeinsamen Welten gehören zur vom Relay abgeleiteten Gerätekennung, nicht
+zum sichtbaren Namen. Namenswechsel und gleiche Namen anderer Spieler ändern diese Zuordnung
+nicht. Abwesende Freunde behalten in Siedlungswelten ihre Figur und Tasche, statt als Helfer zu
+arbeiten. Bei alten Spielständen ohne Kennung wird nur ein eindeutiger Name übernommen. Auf
+einem anderen Gerät entsteht eine neue Kennung; die Exportdatei überträgt keine geheimen
+Geräte-Tokens.

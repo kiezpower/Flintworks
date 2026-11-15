@@ -1,6 +1,6 @@
 // A simpler UI: one settings list in groups for the lobby and the game menu (settings.js), one
 // difficulty for dangers and pace, modern or classic controls, building areas as a rule of the
-// mode, and a lobby with three signposts: npm test
+// mode, and a lobby with four signposts: npm test
 import { expect, test } from '@playwright/test';
 
 async function lobby(page, profile = {}) {
@@ -21,9 +21,10 @@ const play = async page => {
   await page.waitForFunction(() => window.__ww.state === 'play');
 };
 
-test('the lobby has three signposts, the level opens the daily quests', async ({ page }) => {
+test('the lobby offers worlds and the level opens the daily quests', async ({ page }) => {
   const errors = await lobby(page);
-  await expect(page.locator('.lb-side .lb-b')).toHaveCount(3);
+  await expect(page.locator('#lbWorlds')).toBeVisible();
+  await expect(page.locator('.lb-side .lb-b')).toHaveCount(4);
   await expect(page.locator('#lbKri')).toHaveText('0');
   await expect(page.locator('#lbRoadTxt')).toContainText('0/');
   await page.click('#lbLvlBtn');

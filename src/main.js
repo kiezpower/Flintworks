@@ -6,6 +6,8 @@ import { calcTerr } from './render.js';
 import { updHazards } from './hazards.js';
 import { GAME_MODES, goalReached, mode, starsFor } from './modes.js';
 import { settlementTick } from './settlement.js';
+import { openWorlds } from './worldui.js';
+import { validWorldObjects } from './worldstore.js';
 import { updBuildFx } from './bfx.js';
 import { updMusic } from './music.js';
 import { updFloats } from './floats.js';
@@ -50,14 +52,14 @@ import { updResearch } from './research.js';
 import { updEvents } from './events.js';
 import { ALL_IDS, nextLevel, recordCampaign, updScenario } from './scenarios.js';
 import { cam, render, resize } from './render.js';
-import { clearSave, hasSave, loadGame, saveGame, savedTut } from './save.js';
+import { clearSave, hasSave, loadGame, saveGame, savedTut, deserialize } from './save.js';
 import { simulate } from './sim.js';
 import { audioInit, sfx } from './sound.js';
 import { initUiArt } from './uiart.js';
 import { G, animals, builds, crew, lorries, esc, parts, vparts } from './state.js';
 import { $, closePanel, drawMini, hud, openBase, openBuild, openUi, panelEl, toast, toastEl, toggleMap } from './ui.js';
 import { register, send } from './commands.js';
-import { NET, inRoom, onGameMsg, sendTo } from './net/room.js';
+import { NET, inRoom, onGameMsg, sendTo, token } from './net/room.js';
 import { beginNet, endNet, resumeNet, startMessage } from './net/session.js';
 import { clearNetSave, loadNetSave, saveNet } from './net/netsave.js';
 import { clientStep } from './net/client.js';
@@ -78,7 +80,7 @@ import { updFarm } from './farm.js';
 import { roamTick } from './nights.js';
 import { villageMove, villageTick } from './villagers.js';
 import './net/deeplink.js';
-import { inputOf, isPlayer } from './players.js';
+import { inputOf, isPlayer, isAbsent } from './players.js';
 import { updWeather } from './weather.js';
 import { seasonName } from './seasons.js';
 import { guardTick, shrineTick } from './shrines.js';
@@ -245,6 +247,39 @@ function discard() {
   endNet();
   G.inRun = false;
 }
+// World management starts only after the previous world's archive transaction finished.
+G.createWorld = async ({ name, biome: worldBiome }) => {
+  if (inRoom() && (!NET.host || NET.auto)) return false;
+  endNet(); clearSave(); G.inRun = false;
+  P.gmode = 'settlement'; P.mode = worldBiome; P.playKind = inRoom() ? 'coop' : 'solo'; saveProfile();
+  G.creatingWorld = { id: crypto.randomUUID(), name: String(name || 'Flintworks').trim().slice(0, 48) || 'Flintworks' };
+  play(false);
+  G.creatingWorld = null;
+  saveGame(); saveNet(); await G.worldSavePending;
+  return true;
+};
+G.loadWorld = async w => {
+  if (!w || !await validWorldObjects(w.save) || !GAME_MODES[w.save.data.mode] || (inRoom() && (!NET.host || NET.auto))) return false;
+  endNet();
+  if (inRoom()) {
+    if (!resumeNet({ ...w.save, start: w.save.start || { seed: w.save.data.seed, gmode: w.save.data.mode, biome: w.save.data.biome, versus: false } })) return false;
+  } else {
+    if (!deserialize(w.save.data)) return false;
+    G.myId = 0;
+    // Reclaim the same device's figure even after changing the displayed name.
+    const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode('fw-friend:' + token())));
+    const fid = Array.from(digest.slice(0, 8), b => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[b & 31]).join('');
+    const own = crew.find(c => c.owner === fid) || crew.find(c => c.pid != null && !c.owner && !c.bot);
+    for (const c of crew) if (!c.bot) delete c.pid;
+    const c = own || addDigger(G.base.x + 10, G.base.gy - 10);
+    Object.assign(c, { pid: 0, owner: fid });
+    G.myTeam = c.team || 0; useMine();
+  }
+  G.worldId = w.id; G.worldName = w.name;
+  G.inRun = true; resetCam(); startGame('resume');
+  saveGame(); saveNet(); await G.worldSavePending;
+  return true;
+};
 const lobbyHooks = { play, discard, hasRun, keysHtml };
 setTutHooks({ play, menu, discard, save: saveGame });
 function menu() {
@@ -295,6 +330,8 @@ function startGame(withTutorial = false) {
   G.crewKey = '';
   G.state = 'play';
   localSetup();
+  if (G.creatingWorld) { G.worldId = G.creatingWorld.id; G.worldName = G.creatingWorld.name; }
+  if (G.mode === 'settlement' && (!G.net || G.netHost)) { saveGame(); saveNet(); }
   hideLobby();
   overlay.hidden = true;
   if (withTutorial !== 'resume') {
@@ -489,6 +526,7 @@ function openMenu() {
       endTutorial('skip', 'menu');
     }, 'skip');
   item('Lobby', 'Spiel speichern und zur Lobby', () => $('newBtn').click(), 'lobby');
+  if (!tut) item('Meine Welten', 'Speichern, fortsetzen und Sicherungen verwalten', openWorlds);
   item('Zurück zur Basis', 'Wenn du feststeckst: dein Wühler geht nach Hause', () => {
     closePanel();
     send('home');
@@ -573,6 +611,8 @@ function step() {
     // players are steered by their input (yours from this device), bots by their own mind,
     // helpers by their AI
     crew.forEach((c, n) => {
+      // A returning friend keeps their figure and bag; absent players are not hired helpers.
+      if (isAbsent(c)) return;
       useTeam(teamOf(c)); // Versus: castle, cash and store of this Wühler's team
       const I = c.dead ? (isPlayer(c) ? inputOf(c.pid) : NOIN) : c.bot ? botAI(c, n) : isPlayer(c) ? inputOf(c.pid) : helperAI(c, n);
       updDigger(c, I);

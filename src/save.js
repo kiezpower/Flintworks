@@ -1,4 +1,6 @@
+import { fireCells, setFireCells } from './fire.js';
 import { fogPack, fogUnpack } from './fog.js';
+import { archiveWorld } from './worldarchive.js';
 import { glowList, scatterDecor } from './decor.js';
 import { setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
@@ -8,6 +10,7 @@ import { treeSprite } from './sprites.js';
 import { useTeam } from './teams.js';
 import {
   G,
+  onNewWorld,
   animals,
   birds,
   builds,
@@ -23,6 +26,8 @@ import {
 } from './state.js';
 import {
   H,
+  getSeed,
+  setSeed,
   H0,
   W,
   W0,
@@ -93,6 +98,8 @@ function serialize() {
     };
     const data = {
       v: 1,
+      worldId: G.worldId || null,
+      worldName: G.worldName || null,
       w: W,
       h: H,
       world: b64(new Uint8Array(u16.buffer)),
@@ -102,6 +109,11 @@ function serialize() {
       biome: G.biome,
       mode: G.mode,
       settlement: G.settlement || null,
+      fire: fireCells(),
+      tombs: G.tombs || [],
+      merchant: G.merchant || null,
+      merchNext: G.merchNext || null,
+      rng: getSeed(),
       tut: (!G.net && G.tut) || null,
       relaxed: !!G.relaxed,
       store: G.store || {},
@@ -158,7 +170,9 @@ function saveGame() {
   // a playback (replay.js) is no game of one's own
   if (G.replaying) return;
   try {
-    localStorage.setItem(SAVEKEY, JSON.stringify(serialize()));
+    const data = serialize();
+    archiveWorld({ data, start: null, players: [] });
+    localStorage.setItem(SAVEKEY, JSON.stringify(data));
   } catch {}
 }
 function hasSave() {
@@ -193,6 +207,7 @@ function loadGame() {
 function deserialize(d) {
   if (!d || d.v !== 1) return false;
   try {
+    for (const fn of onNewWorld) fn();
     setBiome(d.biome || 'meadow');
     // saves from before different world sizes are 1400 × 400
     resizeWorld(d.w || W0, d.h || H0);
@@ -224,6 +239,11 @@ function deserialize(d) {
     G.mode = d.mode === 'wipfrettung' ? 'fluffelrettung' : d.mode || 'gold';
     G.tut = d.tut || null;
     G.settlement = d.settlement || null;
+    G.tombs = d.tombs || [];
+    G.merchant = d.merchant || null;
+    G.merchNext = d.merchNext ?? null;
+    G.worldId = d.worldId || null;
+    G.worldName = d.worldName || null;
     G.relaxed = !!d.relaxed;
     G.store = d.store || {};
     G.tools = d.tools || {};
@@ -296,6 +316,7 @@ function deserialize(d) {
     G.startT = performance.now() - (d.play || 0);
     G.playTicks = d.playTicks || 0;
     G.nextId = d.nextId || 0;
+    G.frame = d.frame || 0;
     G.seed = d.seed;
     G.daily = d.daily || null;
     G.teams = d.teams ? d.teams.map(t => ({ ...t, base: builds.find(b => b.id === t.base) })) : null;
@@ -305,6 +326,8 @@ function deserialize(d) {
     G.mp = d.mp || { np: 1, vs: !!G.teams, stats: {} };
     // old saves: give every entity an id
     for (const a of [crew, items, builds, trees, animals, lorries]) for (const e of a) e.id ??= G.nextId = G.nextId + 1;
+    setFireCells(d.fire || []);
+    if (d.rng != null) setSeed(d.rng);
     return true;
   } catch {
     return false;

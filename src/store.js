@@ -7,7 +7,7 @@ import { addFloat } from './floats.js';
 import { sold } from './profile.js';
 import { sfx } from './sound.js';
 import { ITEM } from './sprites.js';
-import { isPlayer } from './players.js';
+import { isAbsent, isPlayer } from './players.js';
 import { addStat } from './stats.js';
 import { G, builds } from './state.js';
 import { flyCoins } from './reward.js';
@@ -60,6 +60,7 @@ function unload(list, x, y, all = false) {
   return !!(money || stored);
 }
 function arriveAtBase(c) {
+  if (isAbsent(c)) return;
   const was = G.money;
   if (unload(c.inv, G.base.x + G.base.w / 2, G.base.gy - G.base.h - 4, !isPlayer(c))) {
     if (isPlayer(c)) addStat(c.pid, 'sold', G.money - was);
