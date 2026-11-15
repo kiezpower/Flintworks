@@ -152,9 +152,10 @@
         <canvas id="lbCv" width="400" height="220" aria-label="Dein Wühler" data-i18n-aria="Dein Wühler"></canvas>
         <div class="lb-top">
           <div class="lb-logo">
-            <b id="lbTitle">Flintworks</b>
+            <b id="lbProfileName">Flintworks</b><small id="lbProfileStats"></small>
           </div>
           <div class="lb-chips">
+            <button class="chip lb-opt" id="lbCrystals" aria-label="Kristalle" data-i18n-aria="Kristalle"><i class="ico" data-ico="crystal"></i><b id="lbKri">0</b></button>
             <!-- the level and its XP; the daily quests bring XP, so they open here -->
             <button class="lb-lvl" id="lbLvlBtn" aria-label="Aufgaben" data-i18n-aria="Aufgaben">
               <b id="lbLvl">1</b>
@@ -193,18 +194,9 @@
           <button class="lb-go" id="lbPlay"><span id="lbPlayTxt">Spielen</span></button>
           <button class="lb-sel" id="lbKind"><small data-i18n="Spielart">Spielart</small><b id="lbKindTxt">Alleine</b></button>
           <button class="lb-sel" id="lbInvite"><b data-i18n="Freunde einladen">Freunde einladen</b></button>
-          <div class="lb-paths">
-            <button id="lbScenarios" class="lb-path" data-i18n="Szenarien & Kampagne">Szenarien &amp; Kampagne</button>
-            <button id="lbTogether" class="lb-path" data-i18n="Mit Freunden spielen">Mit Freunden spielen</button>
-            <button id="lbPractice" class="lb-path lb-practice"><i class="ico" data-ico="throw"></i><span data-i18n="Sprengplatz">Sprengplatz</span></button>
-          </div>
           <button class="lb-new" id="lbNew" data-i18n="Neue Welt">Neue Welt</button>
         </section>
         <nav class="lb-side" aria-label="Im Werkhof" data-i18n-aria="Im Werkhof">
-          <button class="lb-b lb-daily" id="lbDaily">
-            <i class="ico" data-ico="dig"></i
-            ><span class="lb-dbox"><b data-i18n="Tagesschicht">Tagesschicht</b><small id="lbDailyTxt"></small></span>
-          </button>
           <button class="lb-b" id="lbWorlds">
             <i class="ico" data-ico="castle"></i><span class="lb-dbox"><b data-i18n="Meine Welten">Meine Welten</b></span>
           </button>
@@ -222,6 +214,18 @@
               ><b data-i18n="Heimatbergwerk">Heimatbergwerk</b><small><b id="lbKri">0</b> <span id="lbKriTxt"></span></small
             ></span>
           </button>
+          <button class="lb-b" id="lbFriendsSide"><i class="ico" data-ico="crew"></i><b data-i18n="Freunde">Freunde</b></button>
+        </nav>
+        <nav class="lb-modes" aria-label="Spielmodi" data-i18n-aria="Spielart">
+          <button class="lb-b lb-daily" id="lbDaily">
+            <i class="ico" data-ico="dig"></i
+            ><span class="lb-dbox"><b data-i18n="Tagesschicht">Tagesschicht</b><small id="lbDailyTxt"></small></span>
+          </button>
+          <div class="lb-paths">
+            <button id="lbScenarios" class="lb-path" data-i18n="Szenarien & Kampagne">Szenarien &amp; Kampagne</button>
+            <button id="lbTogether" class="lb-path" data-i18n="Mit Freunden spielen">Mit Freunden spielen</button>
+            <button id="lbPractice" class="lb-path lb-practice"><i class="ico" data-ico="throw"></i><span data-i18n="Sprengplatz">Sprengplatz</span></button>
+          </div>
         </nav>
       </div>
     </div>

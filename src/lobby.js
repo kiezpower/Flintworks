@@ -14,6 +14,7 @@ import { LIVE, isNative, ownWeb } from './platform.js';
 import { BIOMES } from './biomes.js';
 import './lobby.css';
 import './werkhof.css';
+import './heropodium.css';
 import { getLang, setLang, tr } from './i18n.js';
 import { camp as campState, pending, vaultFull } from './camp.js';
 import { openCamp } from './lobbycamp.js';
@@ -152,6 +153,8 @@ const setTxt = (id, v) => {
 };
 function refresh() {
   setTxt('lbLvl', P.level);
+  setTxt('lbProfileName', P.name);
+  setTxt('lbProfileStats', `🏆 ${P.trophies} · ${tr('Level')} ${P.level}`);
   $('lbXp').style.width = Math.round((P.xp / xpNeed()) * 100) + '%';
   setTxt('lbXpTxt', `${P.xp}/${xpNeed()}`);
   // Heimatbergwerk: crystals, and a dot while the home crew has something to collect
@@ -411,6 +414,8 @@ tap('lbLvlBtn', openQuests);
 tap('lbCamp', () => openCamp({ burst }));
 tap('lbOpt', openOptions);
 tap('lbFriends', () => openFriends(null));
+tap('lbFriendsSide', () => openFriends(null));
+tap('lbCrystals', () => openCamp({ burst }));
 tap('lbDaily', () => openDaily(hooks));
 tap('lbPractice', async () => {
   const stamp = G.panelT;
@@ -507,7 +512,7 @@ tap('lbNew', () => {
 cv.addEventListener('pointerdown', e => {
   const h = heroScreen(cv),
     r = cv.getBoundingClientRect();
-  if (Math.abs(e.clientX - r.left - h.x) > 14 * h.k || Math.abs(e.clientY - r.top - h.y + 10 * h.k) > 14 * h.k) return;
+  if (Math.abs(e.clientX - r.left - h.x) > 8 * h.scale * h.k || e.clientY < r.top + h.y - h.height || e.clientY > r.top + h.y) return;
   if (jumpY < 0) return;
   jumpV = -1.9;
   jumpY = -0.01;

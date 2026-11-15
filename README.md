@@ -2,7 +2,7 @@
 
 Ein Aufbau- und Grabespiel mit Pixel-Physik im Stil der Klassiker: Führe deine Crew, grabe nach Gold, fälle Bäume, baue eine Produktionskette und verkaufe alles an der Heimatbasis.
 
-**Werkhof-Lobby:** Die Crew steht direkt in der Bergbauwelt. Links geht es mit einem Hauptknopf zurück in die laufende oder zuletzt gespeicherte Welt; Szenarien, Kampagne und Einladungen sind direkt erreichbar. Auf dem Handy stehen die Spielauswahl und die Werkhof-Schilder unter der Crew. „Meine Welten“ verwaltet weiterhin Sicherungen und neue Siedlungen.
+**Werkhof-Lobby:** Dein Wühler steht groß auf einem zentralen, grasbewachsenen Steinpodest mit sanftem Lichtschein. Links liegen Wühler, Welten, Heimatbergwerk und Freunde, rechts Tagesschicht, Szenarien und Kampagne, gemeinsames Spielen und Sprengplatz. Der goldene Startknopf und die Spielauswahl stehen direkt unter der Crew. Auf dem Handy folgen die Verwaltung und Spielzugänge unter dem Podest; Skins, Mitspieler, Einladungen und das Fortsetzen gespeicherter Welten bleiben erhalten.
 
 **Sprengplatz:** Im Werkhof mit drei TNT-Ladungen Gold und Edelsteine freisprengen. Eine Flugbahn-Vorschau hilft beim Zielen; vergrabene Pulverfässer lösen Kettenreaktionen mit Punktmultiplikator aus. Drei feste Schächte – Werkhof, Kettenstollen und Edelsteinkammer – bieten unterschiedliche Herausforderungen, jeweils mit eigenem Rekord und Bronze-, Silber- und Goldmedaille. Die Rekorde bleiben auf diesem Gerät gespeichert; bisherige Werkhof-Rekorde werden übernommen. Auf dem Handy antippen oder den Zielregler verschieben, mit Tastatur am Spielfeld links/rechts und Leertaste nutzen.
 

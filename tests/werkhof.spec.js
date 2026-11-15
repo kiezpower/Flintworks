@@ -176,3 +176,28 @@ test('reduced motion keeps the lobby scene still', async ({ page }) => {
   await page.waitForTimeout(700);
   expect(await hash()).toBe(first);
 });
+
+for (const viewport of [{ width: 1280, height: 800 }, { width: 844, height: 390 }, { width: 390, height: 844 }]) {
+  test(`hero podium stays central and clear of launch controls at ${viewport.width}×${viewport.height}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await lobby(page);
+    await page.waitForFunction(() => {
+      const cv = document.querySelector('#lbCv');
+      const width = Math.max(150, Math.min(260, Math.round(cv.getBoundingClientRect().width / 5)));
+      return cv.width === width * 2 && cv.getContext('2d').getImageData(0, 0, 1, 1).data[3] === 255;
+    });
+    const hero = await page.evaluate(async () => {
+      const { heroScreen } = await import('/src/lobbyscene.js');
+      const cv = document.querySelector('#lbCv');
+      const h = heroScreen(cv), r = cv.getBoundingClientRect();
+      return { x: r.left + h.x, top: r.top + h.y - h.height, bottom: r.top + h.y, height: h.height, canvasHeight: r.height };
+    });
+    expect(Math.abs(hero.x - viewport.width / 2)).toBeLessThan(6);
+    expect(hero.height).toBeGreaterThan(hero.canvasHeight * .28);
+    expect(hero.top).toBeGreaterThan(54);
+    const play = await page.locator('#lbPlay').boundingBox();
+    expect(hero.bottom).toBeLessThan(play.y);
+    await page.locator('#lbFriendsSide').click();
+    await expect(page.locator('#panel')).toBeVisible();
+  });
+}

@@ -1,0 +1,87 @@
+/* Hero podium: management left, activities right, launch below the crew. */
+.werkhof .lb-crew-heading { top: 72px; left: 25%; right: 25%; }
+.werkhof .lb-crew-heading b { display: none; }
+.werkhof .lb-side, .werkhof .lb-modes {
+  position: absolute; top: 23%; bottom: auto; width: clamp(84px, 10vw, 138px);
+  display: grid; grid-template-columns: 1fr; gap: clamp(6px, 1.4vh, 14px); z-index: 2;
+}
+.werkhof .lb-side { left: max(16px, env(safe-area-inset-left)); right: auto; }
+.werkhof .lb-modes { right: max(16px, env(safe-area-inset-right)); left: auto; }
+.werkhof .lb-paths { display: contents; }
+.werkhof .lb-side .lb-b, .werkhof .lb-modes button {
+  box-sizing: border-box; width: 100%; min-height: 64px; height: clamp(64px, 12vh, 118px);
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  gap: 5px; padding: 8px 4px; text-align: center; font-size: clamp(12px, 1.2vw, 17px);
+  color: #f4e4bc; background: linear-gradient(#614733, #39281c);
+  border: 3px solid #281a10; border-radius: 16px;
+  box-shadow: inset 0 2px #9b785640, 3px 5px #24160c66; text-shadow: 1px 2px #24160c;
+}
+.werkhof .lb-side .ico, .werkhof .lb-modes .ico { width: 32px; height: 32px; }
+.werkhof .lb-modes .lb-path::after { display: none; }
+.werkhof #lbScenarios::before { content: '⚑'; font-size: 30px; color: #ff7958; line-height: 1; }
+.werkhof #lbTogether::before { content: 'ϟ'; font-size: 34px; color: #ffda4c; line-height: 1; }
+.werkhof .lb-dbox { min-width: 0; }
+.werkhof .lb-dbox small, .werkhof .lb-roadtrack { display: none; }
+.werkhof #lbWho { order: -1; }
+.werkhof .lb-play {
+  left: 50%; right: auto; top: 67%; bottom: 12px; transform: translateX(-50%);
+  width: min(420px, 48%); min-width: 0; max-height: none; padding: 4px;
+  display: flex; flex-direction: column; gap: 5px; overflow-y: auto;
+  background: none; border: 0; box-shadow: none; color: var(--inkb);
+}
+/* Keep the existing selection and resume flows while simplifying their presentation. */
+.werkhof .lb-play h2, .werkhof .lb-eyebrow {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%);
+}
+.werkhof .lb-go { order: -2; flex-shrink: 0; min-height: clamp(48px, 9vh, 88px); font-size: clamp(24px, 3vw, 38px); margin: 0 0 3px; }
+.werkhof .lb-resume-name { order: -3; color: #fff0cf; text-align: center; font-size: 15px; text-shadow: 1px 2px #24160c; }
+.werkhof .lb-sel { flex-shrink: 0; min-height: 44px; padding: 5px 24px 5px 10px; background: #f0dfb0; color: #3a2414; border: 2px solid #382519; }
+.werkhof .lb-sel b { font-size: 15px; }
+.werkhof .lb-sel small, .werkhof #lbGModeDesc, .werkhof #lbGModePv { display: none; }
+.werkhof .lb-sel::after { color: #3a2414; }
+.werkhof .lb-name { z-index: 2; min-height: 30px; max-width: 250px; }
+.werkhof .lb-slot { width: clamp(44px, 5vw, 64px); z-index: 2; }
+.werkhof .lb-logo { max-width: 30vw; }
+@media (min-width: 601px) and (max-height: 500px) {
+  .werkhof .lb-crew-heading { top: 58px; }
+  .werkhof .lb-side, .werkhof .lb-modes { top: 72px; gap: 5px; width: 112px; }
+  .werkhof .lb-side .lb-b, .werkhof .lb-modes button { height: 61px; min-height: 61px; font-size: 12px; gap: 2px; padding: 3px; }
+  .werkhof .lb-side .ico, .werkhof .lb-modes .ico { width: 24px; height: 24px; }
+  .werkhof #lbScenarios::before, .werkhof #lbTogether::before { font-size: 24px; }
+  .werkhof .lb-play { top: 69%; width: min(420px, 48%); bottom: 5px; gap: 3px; }
+  .werkhof .lb-go { min-height: 44px; font-size: 23px; }
+}
+@media (max-width: 600px) {
+  #lobby.werkhof { padding: 10px 10px max(16px, env(safe-area-inset-bottom)); }
+  .werkhof #lbCv { top: 62px; height: 360px; }
+  .werkhof .lb-top { height: 44px; }
+  .werkhof .lb-logo { max-width: 36%; }
+  .werkhof .lb-logo b { font-size: 18px; }
+  .werkhof .lb-chips { gap: 4px; }
+  .werkhof .lb-crew-heading { top: 70px; left: 10%; right: 10%; }
+  .werkhof .lb-crew-heading span { font-size: 9px; }
+  .werkhof .lb-name { max-width: 180px; font-size: 12px; }
+  .werkhof .lb-slot { width: 44px; }
+  .werkhof .lb-play { position: relative; left: auto; top: auto; bottom: auto; transform: none; width: 100%; margin-top: 228px; padding: 4px; box-sizing: border-box; overflow: visible; gap: 6px; }
+  .werkhof .lb-go { min-height: 56px; }
+  .werkhof .lb-side, .werkhof .lb-modes { position: relative; top: auto; bottom: auto; left: auto; right: auto; width: 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0 0; }
+  .werkhof .lb-side .lb-b, .werkhof .lb-modes button { height: 84px; font-size: 12px; }
+  .werkhof .lb-slot .nm { max-width: 88px; }
+}
+
+.werkhof .lb-logo small { color: #e9c56c; font-size: 12px; }
+.werkhof .lb-logo b { font-size: clamp(18px, 2.5vw, 26px); }
+@media (max-width: 600px) {
+  .werkhof .lb-logo { max-width: none; padding: 4px 6px; }
+  .werkhof .lb-logo small { font-size: 9px; white-space: nowrap; }
+  .werkhof .lb-chips { gap: 3px; }
+  .werkhof .lb-opt { min-width: 34px; padding: 2px; font-size: 13px; }
+  .werkhof .lb-side, .werkhof .lb-modes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 601px) and (max-height: 500px) {
+  .werkhof .lb-crew-heading { top: 38px; }
+}
+@media (min-width: 601px) and (max-height: 500px) {
+  .werkhof .lb-crew-heading { width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+}
