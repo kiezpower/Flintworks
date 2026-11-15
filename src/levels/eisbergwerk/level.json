@@ -1,0 +1,193 @@
+{
+  "id": "eisbergwerk",
+  "v": 1,
+  "name": "Bergwerk im Eis",
+  "icon": "crew",
+  "desc": "Rette {goal} eingeschlossene Bergleute",
+  "intro": "Im alten Bergwerk ist der Stollen eingebrochen. Drei Bergleute sitzen am Ende der Gänge fest. Der Eingang liegt am Hang – dann geht es den Schacht hinab.",
+  "biome": "winter",
+  "rough": 0.3,
+  "seed": 9302,
+  "diff": "adventure",
+  "fill": {
+    "caves": 0.1,
+    "gems": 0.2
+  },
+  "start": {
+    "money": 60,
+    "crew": 3,
+    "inv": [
+      [
+        "flint",
+        "flint"
+      ],
+      [
+        "loam"
+      ],
+      [
+        "wood"
+      ]
+    ],
+    "store": {
+      "plank": 4,
+      "wood": 4
+    }
+  },
+  "rules": {
+    "meteors": false,
+    "events": [
+      "quake"
+    ],
+    "evRate": 0.6
+  },
+  "objects": [
+    {
+      "t": "base",
+      "x": 30
+    },
+    {
+      "t": "tree",
+      "x": 200,
+      "stage": 4
+    },
+    {
+      "t": "tree",
+      "x": 230,
+      "stage": 3
+    },
+    {
+      "t": "beam",
+      "x": 550,
+      "y0": 215,
+      "y1": 229
+    },
+    {
+      "t": "beam",
+      "x": 625,
+      "y0": 215,
+      "y1": 229
+    },
+    {
+      "t": "beam",
+      "x": 550,
+      "y0": 300,
+      "y1": 314
+    },
+    {
+      "t": "beam",
+      "x": 625,
+      "y0": 300,
+      "y1": 314
+    },
+    {
+      "t": "beam",
+      "x": 550,
+      "y0": 390,
+      "y1": 404
+    },
+    {
+      "t": "beam",
+      "x": 625,
+      "y0": 390,
+      "y1": 404
+    },
+    {
+      "t": "gas",
+      "x": 700,
+      "y": 304,
+      "r": 8
+    },
+    {
+      "t": "gas",
+      "x": 650,
+      "y": 394,
+      "r": 9
+    },
+    {
+      "t": "trapped",
+      "x": 735,
+      "y": 230
+    },
+    {
+      "t": "trapped",
+      "x": 785,
+      "y": 315
+    },
+    {
+      "t": "trapped",
+      "x": 825,
+      "y": 405
+    }
+  ],
+  "areas": {
+    "schacht": [
+      460,
+      120,
+      40,
+      50
+    ],
+    "tief": [
+      490,
+      370,
+      375,
+      50
+    ]
+  },
+  "goals": [
+    {
+      "t": "rescue",
+      "n": 3
+    }
+  ],
+  "lose": {
+    "crewDead": true
+  },
+  "stars": [
+    9,
+    14
+  ],
+  "triggers": [
+    {
+      "when": {
+        "t": "enter",
+        "area": "schacht"
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Der Schacht ist unten verschüttet. Lockerer Sand lässt sich schnell weggraben."
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "enter",
+        "area": "tief"
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Hier unten riecht es nach Grubengas. Kein Feuer in die Nähe bringen!"
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "rescued",
+        "n": 1
+      },
+      "do": [
+        {
+          "t": "banner",
+          "title": "Einer ist frei",
+          "text": "Zwei Bergleute warten noch"
+        }
+      ]
+    }
+  ],
+  "size": [
+    900,
+    500
+  ],
+  "zoom": 5
+}

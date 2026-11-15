@@ -236,3 +236,24 @@ muss ein Wühler den Gipfel erreichen. Im Versus zählen erreichte Bereiche pro 
 Das erste Team oben gewinnt; die Runde dauert höchstens vier Minuten. Es gibt
 keine zufälligen Katastrophen und keine automatischen Helfer: Alle starten ohne
 Ausrüstung oder Startgeld. Die Sternzeiten 3/5 Minuten sind Richtwerte.
+
+## Zehn Level nach Clonk-Missionen
+
+Am Ende von Kapitel 2 stehen zehn Level, deren Spielidee meist von Missionen aus OpenClonk stammt
+(Karten, Namen und Texte sind eigene). Erzeugt mit einem Skript, die Karten sind normale
+`map.txt`-Dateien und lassen sich im Editor weiter bearbeiten.
+
+| Level | Vorbild | Ziel |
+|---|---|---|
+| `eisbergwerk` – Bergwerk im Eis | Mine Rescue | drei Bergleute am Ende verschütteter Stollen retten |
+| `meeresgrund` – Meeresgrund | Deep Sea Mining | sechs Edelsteine vom und unter dem Meeresgrund verkaufen |
+| `sauregrotte` – Saure Grotte | Deadly Grotto | eine Truhe jenseits eines Säuresees öffnen, dann die Statue erreichen |
+| `glutberg` – Glutberg | Golden Mountain | acht Edelsteine um einen Lavakern verkaufen |
+| `finsterburg` – Finsterburg | Dark Castle | über den Lavagraben in die Burg, acht Wachen besiegen |
+| `kohlenfloez` – Kohlenflöz | eigene Idee | 20 Kohle aus einem Flöz unter Wassertaschen und Gas ins Lager |
+| `heimweg` – Heimweg | Mount Brame | über verschneite Grate zurück zur Hütte auf dem letzten Gipfel |
+| `bruchlandung` – Bruchlandung | Crash | zwei Wrackteile unter Lavaseen bergen, dann die Quelle erreichen |
+| `kuehlekluft` – Kühle Kluft | Cool Cavern | vom Grund einer Eiskluft über Vorsprünge hinauf an den Rand |
+| `schatzberg` – Schatzberg | Treasure Hunt | drei Truhen in Tempelhallen eines bewachten Bergs öffnen |
+
+Die Sternzeiten sind Richtwerte.

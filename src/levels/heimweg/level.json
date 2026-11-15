@@ -1,0 +1,117 @@
+{
+  "id": "heimweg",
+  "v": 1,
+  "name": "Heimweg",
+  "icon": "hook",
+  "desc": "Finde den Weg zurück zur Hütte",
+  "intro": "Beim Wandern habt ihr euch verlaufen. Die Hütte steht auf dem letzten Gipfel im Osten, dazwischen liegen Grate und tiefe Schluchten. Der Enterhaken hilft über die Abgründe.",
+  "biome": "winter",
+  "rough": 0.3,
+  "seed": 9307,
+  "diff": "adventure",
+  "fill": {
+    "caves": 0.1
+  },
+  "start": {
+    "money": 40,
+    "crew": 3,
+    "inv": [
+      [
+        "loam",
+        "loam"
+      ],
+      [
+        "loam"
+      ],
+      [
+        "wood"
+      ]
+    ],
+    "store": {
+      "plank": 6,
+      "wood": 6,
+      "loam": 4
+    },
+    "tools": [
+      "hook"
+    ]
+  },
+  "rules": {
+    "meteors": false
+  },
+  "objects": [
+    {
+      "t": "base",
+      "x": 20
+    },
+    {
+      "t": "tree",
+      "x": 140,
+      "stage": 3
+    },
+    {
+      "t": "tree",
+      "x": 600,
+      "stage": 3
+    }
+  ],
+  "areas": {
+    "huette": [
+      1060,
+      10,
+      100,
+      45
+    ],
+    "mitte": [
+      625,
+      20,
+      60,
+      80
+    ]
+  },
+  "goals": [
+    {
+      "t": "reach",
+      "area": "huette",
+      "label": "Hütte erreicht"
+    }
+  ],
+  "lose": {
+    "crewDead": true
+  },
+  "stars": [
+    6,
+    10
+  ],
+  "triggers": [
+    {
+      "when": {
+        "t": "after",
+        "min": 0.3
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Der Enterhaken (G) zieht dich über Schluchten. Lehm und Holz bauen Brücken."
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "enter",
+        "area": "mitte"
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Halber Weg! Von hier oben siehst du schon die Hütte im Osten."
+        }
+      ]
+    }
+  ],
+  "size": [
+    1200,
+    400
+  ],
+  "zoom": 5
+}

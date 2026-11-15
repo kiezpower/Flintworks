@@ -1,0 +1,129 @@
+{
+  "id": "kohlenfloez",
+  "v": 1,
+  "name": "Kohlenflöz",
+  "icon": "dig",
+  "desc": "Bringe {goal} Kohle ins Lager",
+  "intro": "Tief unter der Wiese zieht sich ein mächtiges Kohleflöz durch den Boden. Darüber hängen Wassertaschen, darin sammelt sich Grubengas. Ein alter Stollen führt hinab.",
+  "biome": "meadow",
+  "rough": 0.3,
+  "seed": 9310,
+  "diff": "adventure",
+  "fill": {
+    "caves": 0.1,
+    "coal": 0.4
+  },
+  "start": {
+    "money": 60,
+    "crew": 3,
+    "inv": [
+      [
+        "flint"
+      ],
+      [
+        "loam",
+        "loam"
+      ],
+      [
+        "rock"
+      ]
+    ],
+    "store": {
+      "plank": 6,
+      "wood": 4
+    }
+  },
+  "rules": {
+    "meteors": false,
+    "events": [
+      "quake"
+    ],
+    "evRate": 0.6
+  },
+  "objects": [
+    {
+      "t": "base",
+      "x": 40
+    },
+    {
+      "t": "tree",
+      "x": 300,
+      "stage": 4
+    },
+    {
+      "t": "tree",
+      "x": 600,
+      "stage": 4
+    },
+    {
+      "t": "tree",
+      "x": 820,
+      "stage": 3
+    },
+    {
+      "t": "gas",
+      "x": 475,
+      "y": 285,
+      "r": 9
+    },
+    {
+      "t": "gas",
+      "x": 725,
+      "y": 295,
+      "r": 9
+    }
+  ],
+  "areas": {
+    "floez": [
+      240,
+      240,
+      150,
+      90
+    ]
+  },
+  "goals": [
+    {
+      "t": "collect",
+      "what": "coal",
+      "n": 20
+    }
+  ],
+  "lose": {
+    "crewDead": true
+  },
+  "stars": [
+    9,
+    14
+  ],
+  "triggers": [
+    {
+      "when": {
+        "t": "enter",
+        "area": "floez"
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Das Flöz! Über dir hängen Wassertaschen – grab nicht nach oben in den Fels."
+        }
+      ]
+    },
+    {
+      "when": {
+        "t": "after",
+        "min": 6
+      },
+      "do": [
+        {
+          "t": "say",
+          "text": "Eine Lore auf Schienen bringt viel Kohle auf einmal zur Burg."
+        }
+      ]
+    }
+  ],
+  "size": [
+    1000,
+    450
+  ],
+  "zoom": 5
+}
