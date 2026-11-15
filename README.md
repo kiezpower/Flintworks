@@ -4,7 +4,7 @@ Ein Aufbau- und Grabespiel mit Pixel-Physik im Stil der Klassiker: Führe deine 
 
 **Werkhof-Lobby:** Die Crew steht direkt in der Bergbauwelt. Links geht es mit einem Hauptknopf zurück in die laufende oder zuletzt gespeicherte Welt; Szenarien, Kampagne und Einladungen sind direkt erreichbar. Auf dem Handy stehen die Spielauswahl und die Werkhof-Schilder unter der Crew. „Meine Welten“ verwaltet weiterhin Sicherungen und neue Siedlungen.
 
-**Sprengplatz:** Im Werkhof mit drei TNT-Ladungen Gold und Edelsteine freisprengen. Eine Flugbahn-Vorschau hilft beim Zielen; vergrabene Pulverfässer lösen Kettenreaktionen mit Punktmultiplikator aus. Der gleiche Übungsschacht macht Versuche vergleichbar, dein Rekord bleibt auf diesem Gerät gespeichert. Auf dem Handy antippen oder den Zielregler verschieben, mit Tastatur am Spielfeld links/rechts und Leertaste nutzen.
+**Sprengplatz:** Im Werkhof mit drei TNT-Ladungen Gold und Edelsteine freisprengen. Eine Flugbahn-Vorschau hilft beim Zielen; vergrabene Pulverfässer lösen Kettenreaktionen mit Punktmultiplikator aus. Drei feste Schächte – Werkhof, Kettenstollen und Edelsteinkammer – bieten unterschiedliche Herausforderungen, jeweils mit eigenem Rekord und Bronze-, Silber- und Goldmedaille. Die Rekorde bleiben auf diesem Gerät gespeichert; bisherige Werkhof-Rekorde werden übernommen. Auf dem Handy antippen oder den Zielregler verschieben, mit Tastatur am Spielfeld links/rechts und Leertaste nutzen.
 
 **Tagesschicht:** Jeden Tag eine neue Welt, für alle Spieler gleich. Acht Minuten Zeit, so viel Taler wie möglich verdienen, Medaillen und eine Serie von Tagen in Folge sammeln und das Ergebnis mit Freunden teilen (WhatsApp, Teilen-Menü oder Zwischenablage). Der geteilte Link `?daily` öffnet direkt den Schacht des Tages.
 

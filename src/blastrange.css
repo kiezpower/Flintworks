@@ -11,3 +11,20 @@
 #blastStatus { min-height: 20px; margin: 0; font-size: calc(16px * var(--ui-scale, 1)); color: #ffe08a; }
 .blast-range [disabled] { opacity: .55; cursor: default; }
 .blast-range :focus-visible { outline: 3px solid #fff2b3; outline-offset: 3px; }
+
+.blast-courses { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.blast-courses button { display: grid; align-content: center; gap: 5px; min-width: 0; padding: 8px 5px; text-align: center; }
+.blast-courses b { font: 16px var(--font-display); overflow-wrap: anywhere; }
+.blast-courses small { font: 11px var(--font-display); color: #ddc9a4; }
+.blast-courses [aria-pressed="true"] { border-color: #f2c230; box-shadow: inset 0 0 0 1px #f2c230; }
+#blastGoal[data-medal="3"] { color: #ffe08a; }
+@media (max-width: 400px) {
+  .blast-courses b { font-size: 14px; }
+  .blast-courses small { font-size: 10px; }
+}
+@media (min-width: 401px) {
+  .blast-range { grid-template-columns: minmax(0, 1fr) auto; }
+  .blast-range > * { grid-column: 1 / -1; }
+  .blast-range #blastThrow { grid-column: 1; }
+  .blast-range #blastAgain { grid-column: 2; }
+}

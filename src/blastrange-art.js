@@ -22,10 +22,10 @@ export function rangePainter(canvas) {
     if (s.events.length) dirty = true;
     if (dirty) repaint(s);
     g.setTransform(2, 0, 0, 2, 0, 0); g.imageSmoothingEnabled = false;
-    g.fillStyle = '#8fb7c9'; g.fillRect(0, 0, WIDTH, HEIGHT);
+    g.fillStyle = s.course.sky; g.fillRect(0, 0, WIDTH, HEIGHT);
     // A painted cut through the mine: dark backing is revealed by the blasts.
     for (let x = 0; x < WIDTH; x++) {
-      g.fillStyle = '#3e2a25'; g.fillRect(x, surface(x), 1, HEIGHT);
+      g.fillStyle = s.course.backing; g.fillRect(x, surface(x), 1, HEIGHT);
       if (s.cells[surface(x) * WIDTH + x]) { g.fillStyle = '#62865d'; g.fillRect(x, surface(x) - 1, 1, 2); }
     }
     g.drawImage(terrain, 0, 0, WIDTH, HEIGHT);
