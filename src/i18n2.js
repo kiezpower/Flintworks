@@ -644,6 +644,16 @@ const EN2 = {
 
   // Werkhof practice pit
   'Sprengplatz': 'Blasting range',
+  'Werkhof': 'Work yard',
+  'Kettenstollen': 'Chain tunnel',
+  'Edelsteinkammer': 'Gem chamber',
+  'Zünde die lange Fassreihe. Jeder weitere Knall erhöht den Punktmultiplikator.': 'Ignite the long row of kegs. Each blast increases the score multiplier.',
+  'Die Edelsteine liegen tief. Nutze deine Krater, um die nächste Ladung tiefer zu werfen.': 'The gems lie deep. Use your craters to throw the next charge deeper.',
+  'Übungsschacht wählen': 'Choose a practice shaft',
+  'Noch keine Medaille': 'No medal yet',
+  'Silber': 'Silver',
+  'Noch {n} Punkte bis {medal}': '{n} more points for {medal}',
+  'Goldmedaille erreicht!': 'Gold medal earned!',
   'Drei Ladungen. Lege Gold frei und triff die Pulverfässer für Kettenreaktionen.': 'Three charges. Uncover gold and hit powder kegs to set off chain reactions.',
   'Ladungen': 'Charges',
   'Punkte': 'Points',

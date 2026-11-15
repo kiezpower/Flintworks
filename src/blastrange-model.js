@@ -1,20 +1,22 @@
 // The practice pit owns its terrain, clock and score. It never touches a running world or RNG.
+import { courseOf } from './blastrange-courses.js';
+
 export const WIDTH = 240, HEIGHT = 120;
 const GRAVITY = 0.12, ANGLE = Math.PI / 4;
 export const surface = x => Math.round(43 + x * 0.07 + Math.sin(x * 0.08) * 2);
 export const ORIGIN = { x: 24, y: surface(16) - 10 };
-export function newRange() {
+export function newRange(id = 'yard') {
+  const course = courseOf(id);
   const cells = new Uint8Array(WIDTH * HEIGHT);
-  const veins = [[65, 65, 10, 8, 3], [95, 74, 12, 9, 3], [151, 77, 12, 8, 3],
-    [182, 84, 11, 8, 3], [115, 94, 7, 5, 13], [213, 78, 8, 6, 13]];
+  const veins = course.veins;
   for (let y = 0; y < HEIGHT; y++) for (let x = 0; x < WIDTH; x++) {
     if (y < surface(x)) continue;
     let material = 1;
     for (const [vx, vy, rx, ry, m] of veins) if (((x - vx) / rx) ** 2 + ((y - vy) / ry) ** 2 < 1) material = m;
     cells[y * WIDTH + x] = material;
   }
-  return { cells, target: 65, shots: 3, score: 0, chain: 0, clock: 0, bomb: null, blasts: [], events: [],
-    barrels: [65, 94, 151, 181].map(x => ({ x, y: surface(x) + 12, due: null, depth: 0, spent: false })) };
+  return { course, cells, target: course.target, shots: 3, score: 0, chain: 0, clock: 0, bomb: null, blasts: [], events: [],
+    barrels: course.barrels.map(([x, depth]) => ({ x, y: surface(x) + depth, due: null, depth: 0, spent: false })) };
 }
 export const busy = s => !!s.bomb || s.barrels.some(b => b.due != null);
 export const finished = s => !s.shots && !busy(s);

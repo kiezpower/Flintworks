@@ -58,16 +58,19 @@ test('named worlds can be created, renamed, switched, exported and safely import
   expect(errors).toEqual([]);
 });
 
-test('a saved cooperative settlement reclaims inventory by identity after renaming and late joining', async ({ browser }) => {
-  const relay = startRelay(8802); await relay.ready;
+test('a saved cooperative settlement reclaims inventory by identity after renaming and late joining', async ({ browser }, testInfo) => {
+  const port = 19500 + testInfo.workerIndex;
+  const relay = startRelay(port); await relay.ready;
   const a = await browser.newPage(), b = await browser.newPage(), c = await browser.newPage();
   try {
-    await open(a, 'Gleicher Name', 8802); await open(b, 'Gleicher Name', 8802);
-    await a.evaluate(async () => (await import('/src/net/room.js')).createRoom());
-    await a.waitForFunction(async () => !!(await import('/src/net/room.js')).NET.room);
-    const code = await a.evaluate(async () => (await import('/src/net/room.js')).NET.room);
-    await b.evaluate(async code => (await import('/src/net/room.js')).joinRoom(code), code);
-    await a.waitForFunction(async () => (await import('/src/net/room.js')).NET.players.length === 2);
+    await open(a, 'Gleicher Name', port); await open(b, 'Gleicher Name', port);
+    await a.evaluate(() => window.__ww.room.createRoom());
+    await a.waitForFunction(() => window.__ww.room.NET.room && window.__ww.room.NET.status === 'waiting');
+    const code = await a.evaluate(() => window.__ww.room.NET.room);
+    await b.evaluate(code => window.__ww.room.joinRoom(code), code);
+    // Poll concrete state: an async predicate is a truthy Promise before the room is ready.
+    await b.waitForFunction(code => window.__ww.room.NET.room === code && window.__ww.room.NET.status === 'waiting', code);
+    await a.waitForFunction(() => window.__ww.room.NET.players.filter(p => p.online).length === 2);
     await a.evaluate(() => window.__ww.G.createWorld({ name: 'Freundesberg', biome: 'meadow' }));
     await b.waitForFunction(() => window.__ww.G.netClient && window.__ww.G.state === 'play');
     const ids = await a.evaluate(async () => {
@@ -81,11 +84,11 @@ test('a saved cooperative settlement reclaims inventory by identity after renami
     await b.reload(); await a.reload();
     await a.waitForFunction(() => window.__ww); await b.waitForFunction(() => window.__ww);
     await b.evaluate(async () => { const { P, saveProfile } = await import('/src/profile.js'); P.name = 'Neuer Name'; saveProfile(); });
-    await a.evaluate(async () => (await import('/src/net/room.js')).createRoom());
-    await a.waitForFunction(async () => !!(await import('/src/net/room.js')).NET.room);
-    const newCode = await a.evaluate(async () => (await import('/src/net/room.js')).NET.room);
+    await a.evaluate(() => window.__ww.room.createRoom());
+    await a.waitForFunction(() => window.__ww.room.NET.room && window.__ww.room.NET.status === 'waiting');
+    const newCode = await a.evaluate(() => window.__ww.room.NET.room);
     await a.evaluate(async id => { const { readWorld } = await import('/src/worldstore.js'); await window.__ww.G.loadWorld(await readWorld(id)); }, ids.world);
-    await b.evaluate(async code => (await import('/src/net/room.js')).joinRoom(code), newCode);
+    await b.evaluate(code => window.__ww.room.joinRoom(code), newCode);
     await b.waitForFunction(() => window.__ww.G.netClient && window.__ww.G.state === 'play');
     await a.waitForFunction(owner => window.__ww.crew.some(c => c.owner === owner && c.name === 'Neuer Name' && c.pid != null), ids.owner);
     const reclaimed = await a.evaluate(owner => {
@@ -93,9 +96,9 @@ test('a saved cooperative settlement reclaims inventory by identity after renami
       return { id: c.id, inv: c.inv, count: window.__ww.crew.filter(c => c.owner === owner).length };
     }, ids.owner);
     expect(reclaimed).toEqual({ id: ids.entity, inv: ['tnt', 'flint', 'tnt'], count: 1 });
-    await open(c, 'Dritter Freund', 8802);
-    await c.evaluate(async code => (await import('/src/net/room.js')).joinRoom(code), newCode);
+    await open(c, 'Dritter Freund', port);
+    await c.evaluate(code => window.__ww.room.joinRoom(code), newCode);
     await c.waitForFunction(() => window.__ww.G.netClient && window.__ww.G.worldName === 'Freundesberg');
     expect(await c.evaluate(() => window.__ww.G.mode)).toBe('settlement');
-  } finally { await a.close(); await b.close(); await c.close(); relay.relay.kill(); }
+  } finally { await Promise.allSettled([a.close(), b.close(), c.close()]); relay.relay.kill(); }
 });

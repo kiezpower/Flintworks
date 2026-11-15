@@ -1,4 +1,6 @@
 import { G } from './state.js';
+import { COURSES, MEDAL_NAMES, medalOf } from './blastrange-courses.js';
+import { readProgress, recordResult, saveProgress } from './blastrange-progress.js';
 import { tr } from './i18n.js';
 import { openPanel, panelEl } from './ui.js';
 import { audioInit, sfx } from './sound.js';
@@ -6,16 +8,23 @@ import { WIDTH, aim, busy, finished, fire, newRange, tick } from './blastrange-m
 import { rangePainter } from './blastrange-art.js';
 import './blastrange.css';
 
-const RECORD = 'flintworks-blast-range-v1';
-function readRecord() {
-  try { return Math.max(0, Math.min(1000000, Math.floor(Number(localStorage.getItem(RECORD))) || 0)); }
-  catch { return 0; }
-}
 export function openBlastRange() {
   const p = openPanel('Sprengplatz'), stamp = G.panelT;
   const root = document.createElement('section'); root.className = 'blast-range';
+  const progress = readProgress();
+  const courses = document.createElement('div'); courses.className = 'blast-courses';
+  courses.setAttribute('role', 'group'); courses.setAttribute('aria-label', tr('Übungsschacht wählen'));
+  const courseButtons = COURSES.map(c => {
+    const b = document.createElement('button'), name = document.createElement('b'), medal = document.createElement('small');
+    b.type = 'button'; b.className = 'small'; b.dataset.course = c.id;
+    name.textContent = tr(c.name); b.append(name, medal); courses.append(b);
+    b.onclick = () => {
+      if (!active() || state.course.id === c.id) return;
+      progress.selected = c.id; saveProgress(progress); reset();
+    };
+    return { c, b, medal };
+  });
   const hint = document.createElement('p'); hint.className = 'blast-hint';
-  hint.textContent = tr('Drei Ladungen. Lege Gold frei und triff die Pulverfässer für Kettenreaktionen.');
   const stats = document.createElement('div'); stats.className = 'blast-stats';
   const stat = (label, id) => {
     const box = document.createElement('div'), text = document.createElement('span'), value = document.createElement('b');
@@ -36,18 +45,31 @@ export function openBlastRange() {
   const help = document.createElement('p'); help.className = 'blast-hint';
   help.textContent = tr('Tippe auf ein Ziel oder verschiebe die Markierung. Die Punkte der Sprengkette zählen mehrfach.');
   const status = document.createElement('p'); status.id = 'blastStatus'; status.setAttribute('role', 'status');
+  const goal = document.createElement('p'); goal.id = 'blastGoal'; goal.className = 'blast-hint';
   const launch = button('blastThrow', 'Ladung werfen', 'go'), again = button('blastAgain', 'Nochmal versuchen');
-  root.append(hint, stats, canvas, controls, help, status, launch, again); p.append(root);
-  let state, paint, best = readRecord(), recorded = false, last = 0, acc = 0;
+  root.append(courses, hint, stats, canvas, controls, help, status, goal, launch, again); p.append(root);
+  let state, paint, recorded = false, last = 0, acc = 0;
   const active = () => !panelEl.hidden && G.panelT === stamp && root.isConnected;
   const text = (el, s) => { if (el.textContent !== String(s)) el.textContent = s; };
   function refresh() {
     const done = finished(state), waiting = busy(state);
     if (done && !recorded) {
       recorded = true;
-      if (state.score > best) { best = state.score; try { localStorage.setItem(RECORD, String(best)); } catch {} }
+      recordResult(progress, state.course.id, state.score);
     }
-    text(score, state.score); text(shots, state.shots); text(record, best);
+    text(score, state.score); text(shots, state.shots); text(record, progress.scores[state.course.id]);
+    root.dataset.course = state.course.id;
+    text(hint, tr(state.course.desc));
+    for (const { c, b, medal } of courseButtons) {
+      const badge = tr(MEDAL_NAMES[medalOf(c.id, progress.scores[c.id])]);
+      b.setAttribute('aria-pressed', String(c.id === state.course.id));
+      b.setAttribute('aria-label', `${tr(c.name)} · ${badge}`);
+      text(medal, badge);
+    }
+    const earned = medalOf(state.course.id, state.score), next = state.course.medals[earned];
+    goal.dataset.medal = String(earned);
+    text(goal, next ? tr('Noch {n} Punkte bis {medal}', { n: next - state.score, medal: tr(MEDAL_NAMES[earned + 1]) })
+      : tr('Goldmedaille erreicht!'));
     root.dataset.state = done ? 'finished' : waiting ? 'flying' : 'aiming';
     text(status, done ? tr('Schicht geschafft: {n} Punkte!', { n: state.score })
       : state.chain ? tr('Kettenreaktion ×{n}!', { n: state.chain + 1 })
@@ -58,7 +80,7 @@ export function openBlastRange() {
     slider.setAttribute('aria-valuetext', tr('Ziel bei {n} Metern', { n: state.target }));
   }
   function reset() {
-    state = newRange(); paint = rangePainter(canvas); recorded = false; last = 0; acc = 0;
+    state = newRange(progress.selected); paint = rangePainter(canvas); recorded = false; last = 0; acc = 0;
     refresh(); paint(state, !!G.reduceMotion);
   }
   function target(x) { if (active() && !busy(state) && !finished(state)) { aim(state, x); refresh(); paint(state, !!G.reduceMotion); } }
