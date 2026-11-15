@@ -21,6 +21,7 @@ const KINDS = {
     pack: c => ({
       id: c.id,
       pid: c.pid,
+      owner: c.owner || null,
       nm: c.name,
       cap: c.cap,
       hat: c.hat,
@@ -90,6 +91,7 @@ const KINDS = {
       c.lastDeep = d.ld || null;
       Object.assign(c, {
         pid: d.pid,
+        owner: d.owner || null,
         bot: !!d.bot,
         name: d.nm,
         cap: safeCap(d.cap),
@@ -310,6 +312,8 @@ function packGame() {
     beams: G.beams,
     mis: G.mis,
     settlement: G.settlement && structuredClone(G.settlement),
+    worldId: G.worldId || null,
+    worldName: G.worldName || null,
     gold: G.goldSold,
     chests: G.chests && G.chests.map(c => (c.open ? 1 : 0)),
     shrines: G.shrines && G.shrines.map(s => (s.used ? 1 : 0)), // (shrines.js)
@@ -350,6 +354,8 @@ function applyGame(d) {
     beams: d.beams,
     mis: d.mis,
     settlement: d.settlement || null,
+    worldId: d.worldId || null,
+    worldName: d.worldName || null,
     goldSold: d.gold,
     rainT: d.rainT,
     dayN: d.dayN || 0,

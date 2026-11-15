@@ -29,6 +29,7 @@ import {
 import { addPlayer, canAdd, openFriends } from './lobbyfriends.js';
 import { onlineCount } from './net/friends.js';
 import { netSaveInfo } from './net/netsave.js';
+import { openWorlds } from './worldui.js';
 import { setLocal } from './local.js';
 import { fromTag, kindName, modeName, rotation } from './net/rotation.js';
 import { P, saveProfile } from './profile.js';
@@ -201,6 +202,7 @@ function openInvite() {
       onClick: () => setWatch(!(mine && mine.watch)),
     });
   } else {
+    if (!NET.auto) opt(a, { title: tr('Meine Welten'), sub: tr('Eine gespeicherte Welt gemeinsam fortsetzen'), onClick: openWorlds });
     // a saved shared round: carry on with it
     const sv = netSaveInfo();
     if (sv)

@@ -20,7 +20,7 @@ test('a settlement has lasting milestones, survives loading, and never ends at a
     const { supportsKind } = await import('/src/playkind.js');
     w.G.frame = 30;
     w.G.store.plank = 6;
-    w.builds.push({ id: w.G.nextId++, type: 'saw', done: true, x: 300, y: 100, w: 24, h: 14 });
+    w.builds.push({ id: w.G.nextId++, type: 'saw', done: true, x: 300, gy: 100, w: 24, h: 14 });
     settlementTick();
     // Spending the planks never revokes an achieved milestone.
     w.G.store.plank = 0;

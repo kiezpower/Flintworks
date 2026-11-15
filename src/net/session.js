@@ -23,7 +23,7 @@ let online = new Set(); // players that were online at the last room update
 function startMessage(gmode) {
   const players = NET.players
     .filter(p => p.online)
-    .map(({ pid, name, cap, hat, skin, watch }) => ({ pid, name, cap, hat, skin, watch: !!watch }));
+    .map(({ pid, fid, name, cap, hat, skin, watch }) => ({ pid, fid, name, cap, hat, skin, watch: !!watch }));
   // (who only watches gets no Wühler, no team and no castle: net/watch.js)
   const n = players.filter(p => !p.watch).length;
   // "Jeder gegen jeden": a castle for every player, from three on and in generated worlds (the
@@ -62,8 +62,8 @@ function addPlayerDigger(p, self = false) {
   // (a castle a bot plays: the player takes over the bot's Wühler)
   if (takeOverBot(team, p)) return;
   const base = teamBase(team);
-  const c = addDigger(base.x + 8 + (p.pid % 4) * 6, base.gy - 10);
-  Object.assign(c, { pid: p.pid, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin, inv: [], team });
+  const c = (p.fid && crew.find(c => c.owner === p.fid && !c.bot)) || addDigger(base.x + 8 + (p.pid % 4) * 6, base.gy - 10);
+  Object.assign(c, { pid: p.pid, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin, owner: p.fid || null, team });
   // the castle takes the style of the first player of its team (the host sends it to the others)
   if (base && !base.skin) base.skin = parseSkin(p.skin).style;
 }
@@ -103,6 +103,7 @@ function beginNet(d) {
     }
     // the host's castle in the host's style (the other castles: addPlayerDigger)
     const self = d.players.find(p => p.pid === G.myId);
+    if (me && self?.fid) me.owner = self.fid;
     const own = teamBase(G.myTeam);
     if (self && own) own.skin = parseSkin(self.skin).style;
     for (const p of d.players) addPlayerDigger(p);
@@ -154,19 +155,24 @@ onRoomChange(() => {
 });
 
 // carry on with a saved round: the saved players' Wühler go to the players in the room with
-// the same name, everybody else gets a new one; the others receive the world like late joiners
+// the same device identity; legacy saves may use an unambiguous name match
 function resumeNet(s) {
   endNet();
   if (!s || !deserialize(s.data)) return false;
   const cur = NET.players.filter(p => p.online),
     used = new Set();
   for (const c of crew) {
-    if (c.pid == null || c.bot) continue; // (bots play on)
-    const p = cur.find(q => q.name === c.name && !used.has(q.pid));
+    if ((c.pid == null && !c.owner) || c.bot) continue;
+    // Only legacy saves without an owner may use an unambiguous name match.
+    const p = c.owner
+      ? cur.find(q => q.fid === c.owner && !q.watch && !used.has(q.pid))
+      : cur.filter(q => !q.watch && q.name === c.name).length === 1 &&
+        crew.filter(q => !q.owner && q.name === c.name).length === 1
+        ? cur.find(q => q.name === c.name && !q.watch && !used.has(q.pid)) : null;
     if (p) {
       used.add(p.pid);
-      Object.assign(c, { pid: p.pid, cap: p.cap, hat: p.hat, skin: p.skin });
-    } else delete c.pid; // that player is not here: the Wühler helps out
+      Object.assign(c, { pid: p.pid, owner: p.fid || c.owner || null, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin });
+    } else delete c.pid; // settlement figures with owners wait for their returning player
   }
   const teams = {};
   for (const c of crew) if (c.pid != null) teams[c.pid] = c.team || 0;

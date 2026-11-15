@@ -1,4 +1,5 @@
 import { PLAY_KINDS, supportsKind } from './playkind.js';
+import { openWorlds } from './worldui.js';
 import { setLocal } from './local.js';
 import { GAME_MODES, mode } from './modes.js';
 import { ALL_IDS, totalStars, unlocked } from './scenarios.js';
@@ -374,6 +375,7 @@ function tap(id, fn) {
   });
 }
 tap('lbWho', openWho);
+tap('lbWorlds', openWorlds);
 tap('lbNameTag', () => openName());
 tap('lbSlot1', openInvite);
 tap('lbSlot2', openInvite);
