@@ -88,3 +88,19 @@ test('missing action art falls back to the existing portrait without losing the 
   });
   expect(r).toEqual({ drawn: true, hand: { x: 5, y: 4 } });
 });
+
+test('every grapple grip stays on the upper body in both facing directions', async ({ page }) => {
+  await ready(page);
+  const hands = await page.evaluate(async () => {
+    const { minerHand } = await import('/src/minerart.js');
+    const out = [];
+    for (let id = 1; id <= 6; id++) for (const face of [-1, 1]) for (const [ph, age] of [['fly',0],['fly',10],['pull',0],['pull',8],['back',10]]) {
+      out.push({ face, ...minerHand({ pid:id, skin:'blue.wood.'+id, face, hook:{ ph, started:100-age } },100) });
+    }
+    return out;
+  });
+  for (const hand of hands) {
+    expect(hand.y).toBeGreaterThan(-1); expect(hand.y).toBeLessThan(5.5);
+    expect((hand.x - 3) * hand.face).toBeGreaterThan(0);
+  }
+});

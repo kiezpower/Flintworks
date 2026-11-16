@@ -276,8 +276,18 @@ test('on the desktop G aims the hook at the mouse pointer: held shows the rope, 
   await page.keyboard.down('KeyG');
   s = await state();
   expect([s.kind, s.drag]).toEqual(['hook', null]);
+  // Beside the wall this untargeted hook can catch and finish between browser
+  // tasks. Record the real assignment, rather than requiring it to remain live.
+  await page.evaluate(() => {
+    const c = window.__ww.crew[0]; let current = c.hook;
+    window.__testHookStarted = false;
+    Object.defineProperty(c, 'hook', { configurable: true, enumerable: true,
+      get: () => current,
+      set: value => { current = value; if (value) window.__testHookStarted = true; },
+    });
+  });
   await page.keyboard.up('KeyG');
-  expect((await state()).hook).toBe(true);
+  expect(await page.evaluate(() => window.__testHookStarted)).toBe(true);
   expect(errors).toEqual([]);
 });
 
