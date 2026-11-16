@@ -169,7 +169,10 @@ function drawDiggerHi(c, ox, oy, f, g, frame = G.frame) {
   const tool = digTool(c.digM);
   const action = dph >= 0 ? tool : walking || c.climb || c.hangle || c.airT > 3 ? 'walk' : 'idle';
   const spriteFrame = dph >= 0 ? Math.floor(dph * 6) : action === 'walk' ? Math.floor((c.anim || 0) * 6 / (Math.PI * 2)) : Math.floor(frame / 20);
-  const artHero = appearance.hero || (c.pid != null ? 'anna' : null);
+  // Neutral helpers share the illustrated art without changing their saved skin,
+  // role, equipment or hitbox. Old/missing sheets still use the procedural body.
+  const helperArt = ['bruno', 'mika', 'juna'][Math.abs(c.k ?? c.id ?? 0) % 3];
+  const artHero = appearance.hero || (c.pid != null ? 'anna' : helperArt);
   const sheet = artHero && drawMinerFrame(g, ox + 3, oy + 10, f, action, spriteFrame, cap, appearance.outfit, .25, c.dead ? 'dead' : hurt ? 'hurt' : '', artHero);
   const pickBehind = !sheet && tool === 'pick' && dph >= 0 && pickAngle(c, dph) < -0.7;
   if (pickBehind) drawPick(c, ox, oy, f, g, dph, lean, null);

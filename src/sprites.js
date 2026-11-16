@@ -432,7 +432,7 @@ function itemIcon(t) {
 function cactusSprite(stage) {
   const h = 8 + stage * 4,
     w = 9;
-  return sp(w, h, R => {
+  const sprite = sp(w, h, R => {
     R(3, 0, 3, h, '#4f8a3c');
     R(4, 0, 1, h, '#6fae4a');
     R(3, 0, 3, 1, '#79b955');
@@ -446,6 +446,8 @@ function cactusSprite(stage) {
     }
     if (stage > 3) R(4, 0, 1, 1, '#e86fa0');
   });
+  if (stage >= 2) sprite.artType = 'cactus';
+  return sprite;
 }
 function treeSprite(type, stage) {
   if (type === 'cactus') return cactusSprite(stage);
@@ -485,7 +487,7 @@ function treeSprite(type, stage) {
         }
     }
   });
-  if (stage >= 2 && !snowy) sprite.artType = pine ? 'pine' : 'oak';
+  if (stage >= 2) sprite.artType = snowy ? 'snowpine' : pine ? 'pine' : 'oak';
   return sprite;
 }
 
@@ -846,4 +848,6 @@ export {
   treeSprite,
 };
 
-for (const type of ['base', 'hut', 'saw', 'shop', 'furnace', 'lift']) SPR[type].artType = type;
+for (const type of ['base', 'hut', 'saw', 'shop', 'furnace', 'lift', 'pump', 'wind', 'chem', 'tower', 'mill', 'crate', 'brew', 'wall', 'lintel']) SPR[type].artType = type;
+
+SPR.cannon.artType = 'tower';

@@ -46,7 +46,7 @@ function drawLogo(text, size = 24) {
     sc = src.getContext('2d', { willReadFrequently: true });
   src.width = 20 * size;
   src.height = Math.round(size * 1.6);
-  sc.font = `700 ${size}px "Pixelify Sans", monospace`;
+  sc.font = `700 ${size}px "Bree Serif", monospace`;
   sc.textBaseline = 'top';
   sc.fillText(text, 0, 2);
   const d = sc.getImageData(0, 0, src.width, src.height);
@@ -111,7 +111,7 @@ function initUiArt() {
   document.documentElement.style.setProperty('--frame', `url(${frameUrl()})`);
   const title = document.getElementById('lbTitle');
   if (!title || !document.fonts) return;
-  document.fonts.load('700 24px "Pixelify Sans"').then(() => {
+  document.fonts.load('700 24px "Bree Serif"').then(() => {
     const cv = drawLogo(title.textContent);
     cv.className = 'lb-logo-art';
     cv.setAttribute('aria-hidden', 'true');

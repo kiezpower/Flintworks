@@ -1,3 +1,4 @@
+import { drawTerrainArt, invalidateTerrainArt } from './terrainart.js';
 import { drawSceneArt } from './sceneart.js';
 import { objectArtReady } from './objectart.js';
 // Lobby backdrop in the style of classic game menus: a cut through the landscape with
@@ -167,6 +168,8 @@ function dig(x, y) {
   const m = cells[y * LW + x];
   if (!m) return 0;
   cells[y * LW + x] = 0;
+  for (let b = Math.max(0, (y - 2) >> 5); b <= (y + 2) >> 5; b++)
+    for (let a = Math.max(0, (x - 2) >> 5); a <= (x + 2) >> 5; a++) invalidateTerrainArt(a, b);
   for (let b = y - 2; b <= y + 2; b++) for (let a = x - 2; a <= x + 2; a++) paintCell(a, b);
   dirty = true;
   return m;
@@ -179,10 +182,15 @@ function buildTerrain() {
   land.castleX = Math.round(LW * (HERO.x > 0.4 ? 0.04 : 0.1));
   land.heroX = Math.round(LW * HERO.x);
   land.cells = new Uint8Array(LW * LH);
+  land.artBg = new Uint8Array(LW * LH);
+  land.artShade = new Uint8Array(LW * LH);
   const blobs = mkBlobs();
   for (let y = 0; y < LH; y++)
     for (let x = 0; x < LW; x++) {
-      if (y < groundY(x) || tunnelAt(x, y)) continue;
+      if (y < groundY(x)) continue;
+      land.artBg[y * LW + x] = 1;
+      if (y - groundY(x) < 2) land.artShade[y * LW + x] = 4;
+      if (tunnelAt(x, y)) continue;
       let m = EARTH;
       for (const [bx, by, rx, ry, k] of blobs) if (((x - bx) / rx) ** 2 + ((y - by) / ry) ** 2 < 1) m = k;
       land.cells[y * LW + x] = m;
@@ -302,6 +310,7 @@ function drawScene(g, opts) {
   if (!drawSceneArt(g, biome, LW, LH)) drawSky(g, b, t);
   g.imageSmoothingEnabled = true;
   g.drawImage(paintedTerrain || terrain, 0, 0, LW, LH);
+  drawTerrainArt(g, 0, 0, LW, LH, { W: LW, H: LH, mat: land.cells, bg: land.artBg, shade: land.artShade, biome, patterns: false, tone: () => 0.93 });
   g.drawImage(overlay, 0, 0, LW, LH);
   drawWorkers(g, reducedMotion);
   // the hero on the hill: twice as big as in the game, bobbing and turning now and then

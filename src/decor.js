@@ -1,3 +1,4 @@
+import { drawNature } from './natureart.js';
 // Small details: grass tufts, flowers, dry bushes, pebbles on the surface, glowing mushrooms
 // and crystals on cave floors deep down (they cut small holes into the dark, render.js), and on
 // cave ceilings hanging roots near the surface, stalactites (icicles in winter) further down, some
@@ -71,11 +72,6 @@ function hangDecor() {
       y += 5;
     }
 }
-const STAL = {
-  meadow: ['#8a847c', '#a8a29a', '#cfc9c0'],
-  desert: ['#a08a68', '#bca684', '#d8c6a4'],
-  winter: ['#9fc4dc', '#c6e2f2', '#f2faff'],
-};
 // a drop falls from a dripping stalactite and bursts into a splash where it lands
 function drip(x, y) {
   if (parts.length < 1200) parts.push({ x, y, vx: 0, vy: 0.2, l: 80, c: '#b4d2f0', g: 0.06, drop: 1 });
@@ -106,70 +102,8 @@ function drawDecor(ctx, cx, cy) {
     const x = d.x - cx,
       y = d.y - cy;
     if (x < -2 || x > G.VW + 2 || y < -8 || y > G.VH + 4) continue;
-    if (d.kind === 'root') {
-      // a dark root, wandering to one side halfway down, with a short hair off it
-      for (let k = 1; k <= d.h; k++) {
-        ctx.fillStyle = k === d.h ? '#7a5230' : '#5a3a22';
-        ctx.fillRect(x + (k > d.h / 2 ? d.side : 0), y + k, 1, 1);
-      }
-      ctx.fillStyle = '#6a4526';
-      ctx.fillRect(x - d.side, y + 2, 1, 1);
-      continue;
-    }
-    if (d.kind === 'stal') {
-      // three pixels wide at the ceiling, two in the middle, one at the tip; lit on its left,
-      // the tip brightest
-      const pal = STAL[G.biome] || STAL.meadow;
-      for (let k = 1; k <= d.h; k++) {
-        const w = k <= d.h / 3 ? 3 : k <= (d.h * 2) / 3 ? 2 : 1;
-        ctx.fillStyle = k === d.h ? pal[2] : pal[0];
-        ctx.fillRect(x - (w === 3 ? 1 : 0), y + k, w, 1);
-        if (k < d.h && w > 1) {
-          ctx.fillStyle = pal[1];
-          ctx.fillRect(x - (w === 3 ? 1 : 0), y + k, 1, 1);
-        }
-      }
-      if (d.drip && (G.frame + d.t) % 240 === 0) drip(x + 0.5, y + d.h + 1);
-      continue;
-    }
-    if (d.kind === 'grass') {
-      ctx.fillStyle = '#4f8a34';
-      ctx.fillRect(x - 1, y - d.h + 1, 1, d.h - 1);
-      ctx.fillRect(x + 1, y - d.h + 1, 1, d.h - 1);
-      ctx.fillStyle = '#6fae4a';
-      ctx.fillRect(x, y - d.h, 1, d.h);
-    } else if (d.kind === 'flower') {
-      ctx.fillStyle = '#4f8a34';
-      ctx.fillRect(x, y - 2, 1, 2);
-      ctx.fillStyle = d.c;
-      ctx.fillRect(x, y - 3, 1, 1);
-    } else if (d.kind === 'bush') {
-      ctx.fillStyle = '#8a6a3a';
-      ctx.fillRect(x, y - 2, 1, 2);
-      ctx.fillRect(x - 1, y - 3, 1, 1);
-      ctx.fillRect(x + 1, y - 3, 1, 1);
-    } else if (d.kind === 'shroom') {
-      // a pale stem, a glowing cap with a brighter top
-      ctx.fillStyle = '#d8cfc0';
-      ctx.fillRect(x, y - d.h, 1, d.h);
-      ctx.fillStyle = '#3fb3a8';
-      ctx.fillRect(x - 1, y - d.h - 1, 3, 1);
-      ctx.fillStyle = '#9ff2e6';
-      ctx.fillRect(x, y - d.h - 2, 1, 1);
-    } else if (d.kind === 'crystal') {
-      ctx.fillStyle = '#7a4fc4';
-      ctx.fillRect(x, y - d.h - 1, 1, d.h + 1);
-      ctx.fillRect(x + 1, y - 2, 1, 2);
-      ctx.fillStyle = '#d6b8ff';
-      ctx.fillRect(x, y - d.h - 1, 1, 1);
-    } else if (d.kind === 'stalks') {
-      ctx.fillStyle = '#9a8a6a';
-      ctx.fillRect(x, y - d.h, 1, d.h);
-      ctx.fillRect(x + 1, y - 1, 1, 1);
-    } else {
-      ctx.fillStyle = '#8a847c';
-      ctx.fillRect(x, y - 1, 2, 1);
-    }
+    drawNature(ctx, d, x, y, G.biome);
+    if (d.kind === 'stal' && d.drip && (G.frame + d.t) % 240 === 0) drip(x + 0.5, y + d.h + 1);
   }
 }
 

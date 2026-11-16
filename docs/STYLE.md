@@ -1,5 +1,14 @@
 # Stil-Leitfaden
 
+> **Aktuelle Stilfreigabe ab v1.134.4/1.134.5 (16.11.2026):** Die freigegebene
+> Richtung ist eine gemalte Abenteuerwelt mit glatten Konturen, Bree Serif/Nunito
+> und warmen Holz-/Goldflächen. Die folgenden Pixelraster- und Pixelschrift-Vorgaben
+> dokumentieren den früheren Stil und gelten nur noch für verbleibende Fallbacks.
+> Die Simulationszelle und Kollisionsmaße bleiben unverändert; daraus folgt keine
+> Pflicht zu sichtbaren Grafikpixeln. Lesbarkeit, Materialerkennung und Bedienbarkeit
+> gelten weiterhin. Umsetzung: `terrainart.js`, `objectart.js`, `adventure.css` und
+> [Asset-Hinweise](../src/assets/scenes/README.md). Frühere Bewertungen sind historisch.
+
 Alles in Flintworks wird im Code gezeichnet. Diese Regeln halten neue Grafiken im selben Stil.
 
 **Ziel (freigegeben, Details in [ART_RUBRIC.md](ART_RUBRIC.md)):** Siedlungs- und Grabewelt im

@@ -30,7 +30,7 @@ function openVeil(go, again = false) {
   el.hidden = false;
   el.classList.remove('out');
   if (document.fonts && !logo.firstChild)
-    document.fonts.load('700 24px "Pixelify Sans"').then(() => {
+    document.fonts.load('700 24px "Bree Serif"').then(() => {
       if (logo.firstChild) return;
       const cv = drawLogo('Flintworks');
       cv.setAttribute('aria-hidden', 'true');

@@ -19,7 +19,7 @@ function updFloats() {
 }
 function drawFloats(ctx, cx, cy) {
   if (!floats.length) return;
-  ctx.font = '8px Silkscreen, monospace';
+  ctx.font = '8px "Nunito Sans", sans-serif';
   ctx.textBaseline = 'middle';
   for (const f of floats) {
     ctx.globalAlpha = Math.min(1, f.l / 20);
