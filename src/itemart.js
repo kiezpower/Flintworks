@@ -34,21 +34,26 @@ const paintedItem = t => frames[t] || null;
 
 // the picture stands on the bottom edge of the box (x, y, w, h), centred, `grow` times the
 // box's larger side (items in the world are only a few cells: the picture may overhang a little)
-function drawPainted(g, t, x, y, w, h, grow = 1, shine = false) {
+// o: { flip: mirrored, dy: shifted down (cells), cropTop: this share of the picture's top is left out }
+function drawPainted(g, t, x, y, w, h, grow = 1, shine = false, o = null) {
   const f = frames[t];
   if (!f) return false;
   const k = (Math.max(w, h) * grow) / Math.max(f.width, f.height),
     dw = f.width * k,
-    dh = f.height * k;
+    dh = f.height * k,
+    top = o?.cropTop ? Math.round(f.height * o.cropTop) : 0;
   g.save();
   g.imageSmoothingEnabled = true;
   g.imageSmoothingQuality = 'high';
-  g.drawImage(f, x + (w - dw) / 2, y + h - dh, dw, dh);
+  g.translate(x + w / 2, y + h + (o?.dy || 0));
+  if (o?.flip) g.scale(-1, 1);
+  const put = () => g.drawImage(f, 0, top, f.width, f.height - top, -dw / 2, -dh + top * k, dw, dh - top * k);
+  put();
   if (shine) {
     // (gold and gems glint: the same picture once more, added as light)
     g.globalCompositeOperation = 'lighter';
     g.globalAlpha = 0.45;
-    g.drawImage(f, x + (w - dw) / 2, y + h - dh, dw, dh);
+    put();
   }
   g.restore();
   return true;

@@ -1,5 +1,6 @@
 import { drawGate, drawSailRotor } from './mechanicalart.js';
 import { drawCreature, hasCreatureArt } from './creatureart.js';
+import { drawPainted } from './itemart.js';
 import { drawingDensity } from './graphicsquality.js';
 import { drawGoal } from './tapgo.js';
 import { drawCue } from './startcue.js';
@@ -764,6 +765,8 @@ function render() {
     const x = Math.floor(L.x - cx),
       y = Math.floor(L.y - cy);
     if (x < -14 || x > G.VW || y < -10 || y > G.VH) continue;
+    // painted (itemart.js): the cart, heaped while it is loaded
+    if (drawPainted(ctx, 'ui:train', x, y, 12, 7, 1.05, false, { cropTop: L.items.length ? 0 : 0.3, dy: 0.3 })) continue;
     // the load heaps up over the rim, in the colours of what is in it
     for (let k = 0; k < Math.min(10, L.items.length); k++) {
       ctx.fillStyle = ICOL[L.items[k]] || '#f2c230';

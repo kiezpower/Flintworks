@@ -1,4 +1,5 @@
 // Airship and cable car: getting over valleys, lakes and long distances.
+import { drawPainted } from '../itemart.js';
 import { moveBody, spawnItem } from '../entities.js';
 import { sfx } from '../sound.js';
 import { G, vehicles } from '../state.js';
@@ -49,6 +50,8 @@ defineVehicle('airship', {
     v.t += 0.1 + Math.abs(v.vx) * 0.3;
   },
   draw(ctx, v, x, y) {
+    // painted (itemart.js); the pictured airship looks left
+    if (!v.icon && drawPainted(ctx, 'ui:balloon', x, y, v.w, v.h, 1.12, false, { flip: v.face > 0, dy: 0.5 })) return;
     // balloon
     ctx.fillStyle = '#24160c';
     ctx.beginPath();
