@@ -15,8 +15,9 @@ All images and fonts are bundled locally and precached for web/PWA and Android.
 - `materials.png`: opaque 4×3 atlas (1448×1086): earth, rock, gold, sand; granite,
   loam, copper ore, coal; timber, cyan crystal, cave back wall, moss/turf.
 
-`terrainart.js` projects textures through the real material masks. A mirrored
-pattern removes seams at swatch edges. Only visible 32-cell chunks are painted at
+`terrainart.js` projects textures through the real material masks. Each swatch
+is cross-faded into itself shifted by half a tile, so it repeats without seams
+and without mirror symmetry. Only visible 32-cell chunks are painted at
 4 samples per cell, with a 192-chunk LRU (at most 12 MiB of chunk pixel storage).
 Digging, drying and flowing materials invalidate the same affected chunks as the
 existing renderer; palette changes, world switches and resizing clear the cache.
