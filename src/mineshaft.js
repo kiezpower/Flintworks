@@ -9,6 +9,8 @@
 import { BIOMES } from './biomes.js';
 import { drawPortrait } from './portrait.js';
 import { P } from './profile.js';
+import { drawSceneArt } from './sceneart.js';
+import { drawTerrainArt, resetTerrainArt } from './terrainart.js';
 
 const S = 3, // screen pixels per landscape pixel
   STEP = 150, // from station to station
@@ -56,7 +58,7 @@ const mix = (a, b, f) => {
 };
 
 // the ground of a chapter: deep0..deep1 is how deep it reaches (0 the surface, 1 the lava)
-function ground(g, w, h, deep0, deep1, surface) {
+function ground(g, w, h, deep0, deep1, surface, rec = null) {
   const sky = BIOMES.meadow.sky;
   for (let x = 0; x < w; x++) {
     const top = surface ? Math.round(9 + Math.sin(x / 11) * 1.2 + Math.sin(x / 4.3) * 0.5) : -1;
@@ -68,8 +70,13 @@ function ground(g, w, h, deep0, deep1, surface) {
         col = `rgb(${sky[0].map((v, k) => Math.round(v + (sky[1][k] - v) * f)).join(',')})`;
         const hill = top - 3 - Math.round(2.5 + 2.5 * Math.sin(x / 17 + 1));
         if (y >= hill) col = BIOMES.meadow.hills[(x >> 5) % 2];
-      } else if (surface && y < top + 2) col = GRASS[Math.floor(hash(x, y) * 4)];
-      else {
+      } else if (surface && y < top + 2) {
+        col = GRASS[Math.floor(hash(x, y) * 4)];
+        if (rec) {
+          rec.mat[y * w + x] = 1;
+          rec.shade[y * w + x] = 4;
+        }
+      } else {
         // how deep this cell is: down the picture and a little to the right (the tunnel goes
         // down that way), with wavy borders between the layers
         const d = deep0 + (deep1 - deep0) * (y / h * 0.8 + (x / w) * 0.2) + Math.sin(x / 9 + y / 23) * 0.025;
@@ -84,6 +91,25 @@ function ground(g, w, h, deep0, deep1, surface) {
         else if (r > 0.9965) col = d > 0.7 ? GEM[(x + y) & 1] : GOLD[(x + y) % 3];
         else if (r > 0.992) col = d > 0.45 ? ORE[(x + y) & 1] : GOLD[x % 3];
         else if (r > 0.986 && d > 0.2 && d < 0.6) col = COAL[(x + y) & 1];
+        if (rec) {
+          // (the same cut in the game's materials, for the painted picture: terrainart.js)
+          // layers with soft, wavy pockets instead of the pixel drawing's small blocks, and
+          // finds as little round lumps
+          const wave = Math.sin(x / 7 + y / 5) + Math.sin(x / 13 - y / 9 + 2) + Math.sin(y / 4 + x / 23),
+            pocket = wave > 0.9;
+          let m = d < 0.16 ? 1 : d < 0.27 ? (pocket ? 9 : 1) : d < 0.42 ? 1 : d < 0.62 ? 2 : d < 0.84 ? (pocket ? 6 : 2) : 6;
+          const lx = (x % 4) - 1.5,
+            ly = (y % 4) - 1.5,
+            lump = hash((x >> 2) * 7 + 3, (y >> 2) * 5 + 1);
+          if (lx * lx + ly * ly < 2.6) {
+            if (lump > 0.994) m = d > 0.7 ? 13 : 3;
+            else if (lump > 0.987) m = d > 0.45 ? 10 : 3;
+            else if (lump > 0.979 && d > 0.2 && d < 0.6) m = 11;
+            else if (lump < 0.018 && m === 1) m = 2;
+          }
+          rec.mat[y * w + x] = m;
+          rec.tone[y * w + x] = 1 - Math.min(0.45, Math.max(0, (d - 0.3) * 0.5));
+        }
         // darker the deeper
         col = mix(col, '#120a06', Math.min(0.45, Math.max(0, (d - 0.3) * 0.5)));
       }
@@ -144,7 +170,7 @@ function tunnel(g, pts, dug, to) {
   }
 }
 // a chamber round a station; open ones are lit by a lantern
-function chamber(g, cx, cy, lit) {
+function chamber(g, cx, cy, lit, plain = false) {
   const rx = 19,
     ry = 13;
   for (let y = -ry; y <= ry + 1; y++)
@@ -164,6 +190,7 @@ function chamber(g, cx, cy, lit) {
   g.fillRect(cx + rx - 5, cy - 2, 1, ry + 1);
   g.fillStyle = '#ffe066';
   g.fillRect(cx + rx - 6, cy - 4, 3, 2);
+  if (plain) return;
   const glow = g.createRadialGradient(cx + rx - 5, cy - 3, 1, cx + rx - 5, cy - 3, 22);
   glow.addColorStop(0, 'rgba(255,214,120,0.35)');
   glow.addColorStop(1, 'rgba(255,214,120,0)');
@@ -207,6 +234,83 @@ function lava(g, w, h) {
   g.fillRect(w - 90, h - 26, 90, 26);
 }
 
+// The same cut in the painted look. The pixel drawing above stays the source of truth for
+// where things are: the ground gives the materials, and whatever tunnel, chambers and headframe
+// change on top of it is read back – dark tunnel pixels become cave wall, the rest (beams,
+// rails, lanterns) small coloured blocks. Returns false while the paintings are not loaded.
+const K = 4; // canvas pixels per landscape pixel
+function paintShaft(cv, w, h, part, over, lanterns) {
+  const rec = { mat: new Uint8Array(w * h), shade: new Uint8Array(w * h), tone: new Float32Array(w * h).fill(1) },
+    bg = new Uint8Array(w * h);
+  const lo = document.createElement('canvas');
+  lo.width = w;
+  lo.height = h;
+  const lg = lo.getContext('2d', { willReadFrequently: true });
+  ground(lg, w, h, part ? 0.5 : 0, part ? 1 : 0.5, !part, rec);
+  const before = lg.getImageData(0, 0, w, h).data.slice();
+  over(lg);
+  const after = lg.getImageData(0, 0, w, h).data,
+    blocks = [];
+  for (let i = 0; i < w * h; i++) {
+    const r = after[i * 4],
+      gr = after[i * 4 + 1],
+      b = after[i * 4 + 2];
+    if (r === before[i * 4] && gr === before[i * 4 + 1] && b === before[i * 4 + 2]) continue;
+    if (r < 72 && gr < 46 && b < 32 && r >= gr && gr >= b) {
+      // tunnel and chamber: open, with the back wall; unlit chambers are darker
+      rec.mat[i] = 0;
+      rec.shade[i] = 0;
+      bg[i] = 1;
+      rec.tone[i] = r < 44 ? 0.62 : 0.9;
+    } else blocks.push(i, r, gr, b);
+  }
+  const g = cv.getContext('2d');
+  cv.width = w * K;
+  cv.height = h * K;
+  if (!part && !drawSceneArt(g, 'meadow', w * K, 14 * K)) return false;
+  g.save();
+  g.scale(K, K);
+  const ok = drawTerrainArt(g, 0, 0, w, h, { W: w, H: h, mat: rec.mat, bg, shade: rec.shade, biome: 'meadow', patterns: false, tone: i => rec.tone[i] });
+  resetTerrainArt(); // (the chunk cache belongs to the world again)
+  if (!ok) {
+    g.restore();
+    return false;
+  }
+  for (let k = 0; k < blocks.length; k += 4) {
+    g.fillStyle = `rgb(${blocks[k + 1]},${blocks[k + 2]},${blocks[k + 3]})`;
+    const i = blocks[k];
+    g.fillRect(i % w, Math.floor(i / w), 1.02, 1.02);
+  }
+  // warm light of the lanterns, and the lava far down in chapter 2
+  for (const [x, y] of lanterns) {
+    const glow = g.createRadialGradient(x, y, 1, x, y, 24);
+    glow.addColorStop(0, 'rgba(255,214,120,0.42)');
+    glow.addColorStop(1, 'rgba(255,214,120,0)');
+    g.fillStyle = glow;
+    g.fillRect(x - 26, y - 26, 52, 52);
+  }
+  if (part) {
+    const pool = g.createLinearGradient(0, h - 8, 0, h);
+    pool.addColorStop(0, '#ffb03a');
+    pool.addColorStop(1, '#e8501a');
+    g.fillStyle = pool;
+    g.beginPath();
+    g.moveTo(w - 70, h);
+    for (let x = w - 70; x <= w; x += 2) g.lineTo(x, h - 6 + Math.sin(x / 5) * 1.5);
+    g.lineTo(w, h);
+    g.closePath();
+    g.fill();
+    const glow = g.createLinearGradient(0, h - 26, 0, h);
+    glow.addColorStop(0, 'rgba(255,106,26,0)');
+    glow.addColorStop(1, 'rgba(255,106,26,0.35)');
+    g.fillStyle = glow;
+    g.fillRect(w - 90, h - 26, 90, 26);
+  }
+  g.restore();
+  cv.classList.add('painted');
+  return true;
+}
+
 // the shaft of a chapter. ids: its levels; card(id): a level card (levelselect.js); open(id),
 // next: which are open and where it goes on; part: 0 for chapter 1 (from the surface), 1 deeper
 function mineShaft(ids, { card, open, next, part }) {
@@ -231,15 +335,24 @@ function mineShaft(ids, { card, open, next, part }) {
   const g = cv.getContext('2d'),
     w = cv.width,
     h = cv.height;
-  ground(g, w, h, part ? 0.5 : 0, part ? 1 : 0.5, !part);
-  if (part) lava(g, w, h);
   let last = -1;
   ids.forEach((id, k) => open(id) && (last = k));
   const lead = [[part ? 0 : mid[0][0] - 14, mid[0][1]], ...mid];
-  // dug as far as the last open level; past it, a crack to the end
-  tunnel(g, lead, last < 0 ? lead[0][0] : mid[last][0], mid[mid.length - 1][0] + (part ? 20 : 8));
-  if (!part) headframe(g, mid[0][0] - 14, Math.round(9 + Math.sin((mid[0][0] - 14) / 11) * 1.2), mid[0][1]);
-  ids.forEach((id, k) => chamber(g, mid[k][0], mid[k][1], open(id)));
+  const over = (g, plain = true) => {
+    // dug as far as the last open level; past it, a crack to the end
+    tunnel(g, lead, last < 0 ? lead[0][0] : mid[last][0], mid[mid.length - 1][0] + (part ? 20 : 8));
+    if (!part) headframe(g, mid[0][0] - 14, Math.round(9 + Math.sin((mid[0][0] - 14) / 11) * 1.2), mid[0][1]);
+    ids.forEach((id, k) => chamber(g, mid[k][0], mid[k][1], open(id), plain));
+  };
+  const lanterns = ids.map((id, k) => open(id) && [mid[k][0] + 14, mid[k][1] - 3]).filter(Boolean);
+  if (!paintShaft(cv, w, h, part, over, lanterns)) {
+    // (the pixel drawing, while the paintings are missing)
+    cv.width = w;
+    cv.height = h;
+    ground(g, w, h, part ? 0.5 : 0, part ? 1 : 0.5, !part);
+    if (part) lava(g, w, h);
+    over(g, false);
+  }
   // the stations
   ids.forEach((id, k) => {
     const c = card(id, { next });

@@ -383,6 +383,12 @@
   image-rendering: pixelated;
   pointer-events: none;
 }
+.ls-mine .ls-ground.painted {
+  image-rendering: auto;
+}
+.ls-mine .ls-me {
+  image-rendering: auto !important;
+}
 .ls-mine .ls-me {
   position: absolute;
   width: 32px;
