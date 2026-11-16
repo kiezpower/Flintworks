@@ -1,4 +1,4 @@
-import { drawPainted, paintedIcon } from './itemart.js';
+import { drawPainted, paintedIcon, squareIcon } from './itemart.js';
 import { drawPaintedObject } from './objectart.js';
 // ---- Sprites ----
 function sp(w, h, fn) {
@@ -688,8 +688,9 @@ PAD_ICONS.balloon = R => {
 // (painted since v1.137, itemart.js; the pixel drawings above remain the fallback)
 const padIcon = kind => (paintedIcon('ui:' + kind) || bevel2x(sp(12, 12, PAD_ICONS[kind]))).toDataURL();
 const toolIcon = kind => {
+  // (a fresh canvas each time: callers put it straight into the page)
   const art = paintedIcon('ui:' + kind);
-  if (art) return art;
+  if (art) return squareIcon(art, art.width);
   const c = bevel2x(sp(12, 12, PAD_ICONS[kind]));
   c.hi = true;
   return c;

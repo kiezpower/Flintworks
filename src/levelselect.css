@@ -228,7 +228,7 @@
 }
 .ls-pv > canvas.ls-scape {
   object-fit: cover;
-  image-rendering: pixelated;
+  image-rendering: auto;
 }
 
 /* the detail view: big picture left, text right (stacked on low screens) */

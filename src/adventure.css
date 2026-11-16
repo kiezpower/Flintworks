@@ -42,3 +42,4 @@ button, input, select { font-family: var(--font-ui); }
 canvas.painted, img.painted, #storeRow img, .ico, #lobby .ico, .slot.weapon .wico, .slot.bag .bagico,
 .card .learned img, .store img, .ls-icon { image-rendering: auto !important; }
 .ico, .slot.weapon .wico, .slot.bag .bagico { background-size: contain; background-repeat: no-repeat; background-position: center; }
+#lbGModePv > canvas { image-rendering: auto !important; }
