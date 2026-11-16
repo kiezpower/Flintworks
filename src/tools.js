@@ -100,7 +100,7 @@ const hasTool = id => !!(G.tools && G.tools[id]);
 // the pick a team digs with: 0 bare hands' pick, 1 steel pick, 2 diamond pick
 const pickTier = () => (hasTool('dpick') ? 2 : hasTool('pick') ? 1 : 0);
 // a tool of the team, or gear this Wühler brought from the lobby (Heimatbergwerk, camp.js)
-const hasGear = (c, id) => hasTool(id) || brought(c, id);
+const hasGear = (c, id) => hasTool(id) || (!(G.daily || G.mode === 'daily' || G.teams || G.mp?.vs) && brought(c, id));
 // arrows in the quiver (kept with the tools: per team, saved and sent along)
 const arrowsOf = id => (G.tools && G.tools['q_' + id]) || 0;
 function addArrows(id, n) {

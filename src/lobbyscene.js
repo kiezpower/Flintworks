@@ -1,3 +1,4 @@
+import { tr } from './i18n.js';
 import { drawTerrainArt, invalidateTerrainArt } from './terrainart.js';
 import { drawSceneArt } from './sceneart.js';
 import { objectArtReady } from './objectart.js';
@@ -285,7 +286,7 @@ function drawSky(g, b, t) {
 }
 
 function drawScene(g, opts) {
-  const { biome, cap, hat, outfit, hero, jumpY, spin, sparks, friends = [], reducedMotion = false } = opts;
+  const { biome, cap, hat, outfit, hero, jumpY, spin, sparks, friends = [], reducedMotion = false, mastered = false, masterTitle = '' } = opts;
   const t = reducedMotion ? 0 : opts.t;
   const b = BIOMES[biome] || BIOMES.meadow;
   const key = `${land.LW}|${land.LH}`;
@@ -345,8 +346,12 @@ function drawScene(g, opts) {
   g.translate(hx, hy + bob + Math.round(jumpY));
   g.scale(heroScale * f, heroScale);
   g.imageSmoothingEnabled = true;
-  drawPortrait(g, -8, -20, 1, cap, hat, !reducedMotion && t % 240 < 6, outfit, hero);
+  drawPortrait(g, -8, -20, 1, cap, hat, !reducedMotion && t % 240 < 6, outfit, hero, mastered ? 'master' : null);
   g.restore();
+  if (mastered && masterTitle) {
+    g.save(); g.font = '600 4px "Nunito Sans", sans-serif'; g.textAlign = 'center';
+    g.fillStyle = '#fff0b8'; g.fillText('★ ' + tr(masterTitle), hx, hy + 8); g.restore();
+  }
   // friends in the room stand left and right of the hero, facing it
   friends.slice(0, 2).forEach((p, k) => {
     const fx = hx + friendDx()[k],

@@ -1,4 +1,4 @@
-import { capacity, heroEvent } from './heroskills.js';
+import { roleOf, activeSkill, capacity, heroEvent } from './heroskills.js';
 import { cam } from './render.js';
 import { buzz } from './sound.js';
 import { addFloat } from './floats.js';
@@ -187,7 +187,7 @@ function updItems() {
         const dx = c.x + 3 - (it.x + it.w / 2),
           dy = c.y + 5 - (it.y + it.h / 2);
         // (the "Goldmagnet" gift pulls from further off, shrines.js)
-        const mg = hasGift(c, 'magnet');
+        const mg = hasGift(c, 'magnet') || roleOf(c) === 'bruno' && activeSkill(c) && c.heroQuick;
         if (Math.abs(dx) < (mg ? 44 : 12) && Math.abs(dy) < (mg ? 28 : 10) && !overlap(it, c, 1)) {
           it.vx += Math.max(-0.25, Math.min(0.25, dx * 0.05));
           if (mg && dy < -2) it.vy = Math.min(it.vy, -0.6);
@@ -196,7 +196,8 @@ function updItems() {
         if (!overlap(it, c, 1)) continue;
         items.splice(k, 1);
         c.inv.push(it.t);
-        if (['nug', 'gem'].includes(it.t)) heroEvent(c, 'find');
+        heroEvent(c, 'gather');
+        if (['nug', 'gem'].includes(it.t)) heroEvent(c, 'find', 1, { item: it.t });
         sfx('pick', c.x, c.y);
         addFloat(c.x + 3, c.y - 4, '+1', '#ffffff', it.t);
         break;

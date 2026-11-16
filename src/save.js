@@ -172,6 +172,8 @@ function saveGame() {
   if (G.mode === 'geteilt') return;
   // a playback (replay.js) is no game of one's own
   if (G.replaying) return;
+  // A finished tutorial must not be recreated by the pagehide autosave.
+  if (G.mode === 'tut' && !G.tut) return;
   try {
     const data = serialize();
     archiveWorld({ data, start: null, players: [] });

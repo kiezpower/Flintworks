@@ -1,5 +1,7 @@
 // Shared, deterministic role rules. Identity stays in the existing skin tag.
 import { G, onNewWorld } from './state.js';
+import { missionDone, missionEvent } from './heromissions.js';
+import { projectEvent } from './heroprojects.js';
 import { parseSkin } from './skins.js';
 
 const ROLES = {
@@ -22,36 +24,41 @@ const heroId = c => {
   return identities.get(skin);
 };
 // Explicit allowlist: custom maps, campaign, daily, tutorial, replay and Versus stay unchanged.
-const skillsAllowed = () => !G.tut && !G.daily && !G.teams && !G.mp?.vs && !G.replayHook?.playing() &&
-  ['gold', 'build', 'treasure', 'settlement', 'fort'].includes(G.mode);
-const roleOf = c => c?.pid != null && !c.bot && skillsAllowed() ? heroId(c) : null;
+const competitive = () => !!(G.daily || G.mode === 'daily' || G.teams || G.mp?.vs);
+const skillsAllowed = () => !G.tut && (competitive() || ['gold', 'build', 'treasure', 'settlement', 'fort'].includes(G.mode));
+const ROLE_IDS = Object.keys(ROLES);
+const roleOf = c => c?.pid != null && skillsAllowed() ? (G.mode === 'daily' || G.daily ? ROLE_IDS[((G.daily?.n || 0) % 6 + 6) % 6] : competitive() ? (ROLES[c.matchRole] ? c.matchRole : 'anna') : !c.bot ? heroId(c) : null) : null;
 const activeSkill = c => !!roleOf(c) && (c.heroActive || 0) > 0 && !c.dead;
 const capacity = c => roleOf(c) === 'bruno' ? 20 : 16;
-const digFactor = (c, soft) => roleOf(c) === 'anna' ? (soft ? 1.1 : 1) * (activeSkill(c) ? 1.4 : 1) : 1;
-const hookFactor = c => roleOf(c) === 'juna' && activeSkill(c) ? 1.4 : 1;
-const buildFactor = c => roleOf(c) === 'toni' ? 1.15 : 1;
+const digFactor = (c, soft) => roleOf(c) === 'anna' ? (soft ? 1.1 : 1) * (activeSkill(c) ? c.heroQuick ? (soft ? 1 : 1.8) : 1.4 : 1) : 1;
+const hookFactor = c => roleOf(c) === 'juna' && activeSkill(c) && !c.heroQuick ? 1.4 : 1;
+const buildFactor = c => roleOf(c) === 'toni' ? activeSkill(c) && c.heroQuick ? 1.6 : 1.15 : 1;
 const progressOf = (profile, id) => profile.heroMastery?.[id] || {};
-const chapterDone = (p, id, chapter) => (p.work || 0) >= ROLES[id].goals[chapter] && (p.feats || 0) >= [0, 2, 8][chapter];
-const chapterCount = (p, id) => !ROLES[id] ? 0 : CHAPTERS.filter((_, i) => chapterDone(p, id, i)).length;
+const chapterDone = (p, id, chapter) => chapter < (p.rewarded || 0) || (p.work || 0) >= ROLES[id].goals[chapter] && (p.feats || 0) >= [0, 2, 8][chapter] && missionDone(p, id, chapter);
+const chapterCount = (p, id) => { let n = 0; while (ROLES[id] && n < 3 && chapterDone(p, id, n)) n++; return n; };
+const unlockMask = profile => Object.keys(ROLES).reduce((mask, id, i) => mask | (chapterCount(progressOf(profile, id), id) >= 2 ? 1 << i : 0), 0);
+const variantUnlocked = c => competitive() || !!((c.heroUnlocks || 0) & (1 << ROLE_IDS.indexOf(roleOf(c))));
 // Counters belong to the host's figure; snapshots relay them to the owning device.
 // No client can award progress to another player; prediction never increments counters.
-function heroEvent(c, event, n = 1) {
+function heroEvent(c, event, n = 1, meta = {}) {
   const id = roleOf(c);
-  if (!skillsAllowed() || c.pid == null || c.bot || G.netClient || c.dead || !Number.isFinite(n) || n <= 0) return;
+  if (!skillsAllowed() || G.replaying || c.pid == null || c.bot || G.netClient || c.dead || !Number.isFinite(n) || n <= 0) return;
+  const usefulEvent = !!id && (event === ROLES[id].event || id === 'toni' && ['production','construction'].includes(event) ||
+    id === 'bruno' && c.heroQuick && event === 'gather' || id === 'nora' && event === 'recover');
+  let productive = false;
+  if (usefulEvent && activeSkill(c) && !c.heroUseful) {
+    c.heroUseful = true; productive = true; c.heroUses ||= {};
+    c.heroUses[id] = Math.min(1e6, (c.heroUses[id] || 0) + 1);
+  }
+  if (competitive()) return;
   if (event === 'build' || event === 'find') {
-    c.heroCareer ||= {};
-    c.heroCareer[event] = Math.min(1e6, (c.heroCareer[event] || 0) + n);
+    c.heroCareer ||= {}; c.heroCareer[event] = Math.min(1e6, (c.heroCareer[event] || 0) + n);
   }
   if (!id) return;
   const p = (c.heroCounters ||= {})[id] ||= { work: 0, feats: 0 };
-  if (event === 'production' && id === 'toni') {
-    if (activeSkill(c) && !c.heroUseful) { p.feats++; c.heroUseful = true; contribute(id); }
-    return;
-  }
+  missionEvent(c, p, id, event, n, meta, activeSkill(c));
+  if (productive) { p.feats++; contribute(id); }
   if (event === ROLES[id].event) p.work = Math.min(1e6, p.work + n);
-  else return;
-  // One productive use per activation. Empty activations never count.
-  if (activeSkill(c) && !c.heroUseful) { p.feats++; c.heroUseful = true; contribute(id); }
 }
 function contribute(id) {
   if (G.mode !== 'settlement') return;
@@ -59,4 +66,4 @@ function contribute(id) {
   if (!G.heroProject.roles.includes(id)) G.heroProject.roles.push(id);
 }
 export { ROLES, CHAPTERS, heroId, skillsAllowed, roleOf, activeSkill, capacity, digFactor, hookFactor, buildFactor,
-  progressOf, chapterDone, chapterCount, heroEvent };
+  progressOf, chapterDone, chapterCount, heroEvent, competitive, unlockMask, variantUnlocked };

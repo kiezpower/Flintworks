@@ -89,6 +89,8 @@ function endTutorial(result, via = 'button') {
   tutHud();
   if (!result) return;
   P.tutorialDone = true;
+  if (!P.hero) P.heroChoicePending = true;
+  hooks.clearTutorialSave?.();
   if (result === 'skip') ev('onb_skip', { step: step ? step.id : '', sec: secs(), via });
   else {
     ev('onb_complete', { sec: secs(), hints: run ? run.hints : 0, skilled: skilled(run) });
@@ -154,10 +156,12 @@ function finishCard(result) {
          <p class="hint">${tr('Du findest es jederzeit in den Optionen')}</p>`;
   card.innerHTML += `<div class="btnrow"><button class="go" id="goBtn">${tr('Weiter graben')}</button>
     <button class="ghost" id="tutLobby">${tr('Zur Lobby')}</button></div>`;
+  hooks.renderHeroChoice?.(card);
   let left = false;
   const leave = choice => {
     if (left) return false; // a double tap starts only one round
     left = true;
+    hooks.commitHeroChoice?.();
     ev('onb_card', { choice, result });
     overlay.hidden = true;
     hooks.discard();

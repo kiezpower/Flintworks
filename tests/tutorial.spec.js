@@ -83,6 +83,7 @@ for (const lang of ['de', 'en'])
       'onb_step_done:sell',
       'onb_first_success',
       'onb_complete',
+      'hero_select',
       'onb_card',
       'core_round_start',
       'round_cue',

@@ -20,3 +20,12 @@
 @media (max-width: 600px) { #heroAbility { bottom: max(145px, env(safe-area-inset-bottom)); } }
 
 #heroReminder { display: block; font-size: 10px; line-height: 1.3; max-width: 100%; white-space: normal; }
+#firstHeroChoice { margin: 14px auto; max-width: 560px; }
+#firstHeroChoice h2 { margin: 5px; font-size: 20px; }
+.hero-intro-choice, .ha-match-role { min-height: 44px; padding: 8px; margin: 4px; border: 2px solid #997346; border-radius: 8px; background: #523827; color: #fff0ce; font: inherit; }
+.hero-intro-choice[aria-pressed="true"], .ha-match-role[aria-pressed="true"] { border-color: #ffe08a; background: #75532b; }
+#heroInsights { font-size: 14px; line-height: 1.5; }
+#heroInsights p { margin: 8px 0; }
+#overlay:has(#firstHeroChoice) { overflow: auto; padding: 12px; box-sizing: border-box; }
+#overlay:has(#firstHeroChoice) .card { max-height: calc(100dvh - 24px); overflow: auto; box-sizing: border-box; }
+@media (max-height: 500px) { #firstHeroChoice { margin: 8px auto; } .hero-intro-choice { font-size: 12px; margin: 2px; } }

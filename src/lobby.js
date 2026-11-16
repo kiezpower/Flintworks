@@ -1,3 +1,4 @@
+import { TITLES } from './heromissions.js';
 import { ROLES, chapterCount, progressOf } from './heroskills.js';
 import { lobbyIcon } from './lobbyicons.js';
 import { openHeroAlbum } from './heroalbum.js';
@@ -133,6 +134,7 @@ function drawStage() {
   if (!NET.room && G.local) friends.push({ cap: '#2f7fd0', hat: 'none', online: true });
   drawScene(g, {
     t, biome: stageBiome(), cap: P.cap, hat: P.hat, outfit: P.outfit, hero: P.hero,
+    mastered: chapterCount(progressOf(P, P.hero), P.hero) === 3, masterTitle: TITLES[P.hero],
     jumpY, spin, sparks, friends, reducedMotion: !!G.reduceMotion,
   });
 }
@@ -164,7 +166,7 @@ function refresh() {
     reminder = document.createElement('small'); reminder.id = 'heroReminder';
     $('lbWho').querySelector('.lb-dbox').appendChild(reminder);
   }
-  reminder.textContent = role ? chapters === 3 ? '★ ' + tr('Wühler-Meister') :
+  reminder.textContent = role ? chapters === 3 ? '★ ' + tr(TITLES[P.hero]) :
     tr(role.task, { n: role.goals[chapters] }) + ` · ${Math.floor(mastery.work || 0)}/${role.goals[chapters]}` : '';
 
   $('lbXp').style.width = Math.round((P.xp / xpNeed()) * 100) + '%';

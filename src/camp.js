@@ -96,11 +96,11 @@ function skinOf(id) {
 function owns(id) {
   const S = skinOf(id);
   camp();
-  return !!S && (S.k === 0 || P.owned.includes(id));
+  return !!S && (S.k === 0 && !S.master || P.owned.includes(id));
 }
 function buySkin(id) {
   const S = skinOf(id);
-  if (!S || owns(id) || !spend(S.k)) return false;
+  if (!S || S.master || owns(id) || !spend(S.k)) return false;
   P.owned.push(id);
   saveProfile();
   return true;

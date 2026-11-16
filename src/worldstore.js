@@ -86,15 +86,23 @@ export async function importWorld(text, allowedModes) {
 // Domain checks use the game's registries instead of a second list of building/vehicle ids.
 export async function validWorldObjects(save) {
   if (!validWorldSave(save)) return false;
-  const [{ BT }, { VK }, { ITEM }, { HEROES }] = await Promise.all([
-    import('./buildings.js'), import('./vehicles/core.js'), import('./sprites.js'), import('./heroes.js'),
+  const [{ BT }, { VK }, { ITEM }, { HEROES }, { PROJECTS }] = await Promise.all([
+    import('./buildings.js'), import('./vehicles/core.js'), import('./sprites.js'), import('./heroes.js'), import('./heroprojects.js'),
   ]);
   const d = save.data;
   const point = e => Number.isFinite(e.x) && Number.isFinite(e.y);
   const heroIds = new Set(HEROES.map(h => h.id));
   const count = n => Number.isFinite(n) && n >= 0 && n <= 1e6;
   const record = v => v && typeof v === 'object' && !Array.isArray(v);
-  const heroState = c =>
+  const missionState = o => o == null || record(o) && Object.entries(o).every(([id, run]) => heroIds.has(id) && record(run) &&
+    Object.entries(run).every(([key, value]) => key === 'deepDig' ? count(value) : ['sectors','ledges','buildTypes','workshops'].includes(key) &&
+      Array.isArray(value) && value.length <= 64 && value.every(v => typeof v === 'string' && v.length <= 40)));
+  const activityState = o => o == null || record(o) && Object.entries(o).every(([id, n]) => heroIds.has(id) && count(n));
+  const heroState = c => ['heroDepth','heroTripDepth','heroGuardRun','heroActive','heroCooldown'].every(key => c[key] == null || count(c[key])) &&
+    (c.heroHookStart == null || Number.isFinite(c.heroHookStart)) && activityState(c.heroCasts) && activityState(c.heroUses) &&
+    (c.heroUseful == null || typeof c.heroUseful === 'boolean') &&
+    (c.heroUnlocks == null || Number.isInteger(c.heroUnlocks) && c.heroUnlocks >= 0 && c.heroUnlocks <= 63) &&
+    (c.matchRole == null || heroIds.has(c.matchRole)) && missionState(c.heroMission) &&
     (c.heroCounters == null || record(c.heroCounters) && Object.entries(c.heroCounters).every(([id, v]) =>
       heroIds.has(id) && record(v) && count(v.work) && count(v.feats))) &&
     (c.heroCareer == null || record(c.heroCareer) && Object.entries(c.heroCareer).every(([id, n]) =>
@@ -105,6 +113,10 @@ export async function validWorldObjects(save) {
   const project = d.heroProject;
   if (project != null && (!record(project) || !Array.isArray(project.roles) || project.roles.length > HEROES.length ||
     !project.roles.every(id => heroIds.has(id)) || new Set(project.roles).size !== project.roles.length)) return false;
+  if (project?.done != null && (!Array.isArray(project.done) || !project.done.every(id => PROJECTS.some(q => q.id === id)) || new Set(project.done).size !== project.done.length)) return false;
+  if (project?.builds != null && (!Array.isArray(project.builds) || project.builds.length > 64 || !project.builds.every(id => Object.hasOwn(BT, id)))) return false;
+  const projectKeys = new Set(PROJECTS.flatMap(q => q.tasks.map(t => t[0])));
+  if (project?.values != null && (!record(project.values) || !Object.entries(project.values).every(([key, n]) => projectKeys.has(key) && count(n)))) return false;
   return ['meadow', 'desert', 'winter'].includes(d.biome) &&
     d.builds.every(b => (b.type === 'base' || Object.hasOwn(BT, b.type)) && Number.isFinite(b.x) && Number.isFinite(b.gy) &&
       Number.isFinite(b.w) && Number.isFinite(b.h) && (!b.cs || point(b.cs))) &&

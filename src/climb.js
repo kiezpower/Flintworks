@@ -1,3 +1,4 @@
+import { projectEvent } from './heroprojects.js';
 import { minerHand } from './minerart.js';
 import { hookFactor, heroEvent } from './heroskills.js';
 // Getting out of a pit or a cave without knowing the tricks: a ledge too high for a jump is
@@ -137,6 +138,7 @@ const handOf = c => [c.x + 3 + c.face * 2, c.y + 4];
 // pressed it). Always thrown: aimed with the stick, else at a ledge, else up and forward
 function fireHook(c, { ax = 0, ay = 0 } = {}) {
   if (!hasGear(c, 'hook') || c.hook || c.dead || c.ride != null || c.tumble || c.bridge) return;
+  c.heroHookStart = c.y;
   const aimed = Math.hypot(ax, ay) > 0.3;
   c.climb = c.hangle = false;
   if (!aimed) {
@@ -177,6 +179,7 @@ function hookPath(c, { ax, ay }) {
 // at a ledge found by itself: the hook flies there (lfly), then pulls the Wühler up under it and
 // over the edge (the safe way up out of a pit)
 function startHook(c, L) {
+  c.heroHookStart = c.y;
   const ax = L.col + (L.dir > 0 ? 1 : 0),
     ay = L.top;
   c.face = L.dir;
@@ -269,7 +272,7 @@ function updHook(c, I) {
       ey = k.ty - c.y,
       d = Math.hypot(ex, ey);
     if (d <= 2) {
-      heroEvent(c, 'hook');
+      heroEvent(c, 'hook'); projectEvent('hook');
       c.x = k.tx;
       c.y = k.ty;
       c.hook = null;
@@ -291,7 +294,7 @@ function updHook(c, I) {
     nx = Math.abs(k.tx - c.x) <= 2 ? k.tx : c.x + dx * 2;
   if (!free(nx, c.y, 6, 10)) return (c.hook = null), false;
   c.x = nx;
-  if (nx === k.tx) { heroEvent(c, 'hook'); c.hook = null; }
+  if (nx === k.tx) { heroEvent(c, 'hook'); projectEvent('hook'); c.hook = null; }
   return true;
 }
 

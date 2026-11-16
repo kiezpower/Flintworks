@@ -56,13 +56,13 @@ function hatRects(hat) {
 }
 
 // outfit: a skin from skins.js (jacket, belt and trousers)
-function drawPortrait(g, X, Y, f, cap, hat, blink, outfit, hero) {
+function drawPortrait(g, X, Y, f, cap, hat, blink, outfit, hero, pose = null) {
   const pal = { ...FIXED, ...heroPal(hero), ...outfitPal(outfit), C: cap, c: shade(cap, 0.72), h: shade(cap, 1.35) };
   const px = (x, y, w, h, col) => {
     g.fillStyle = col;
     g.fillRect(f > 0 ? X + x : X + 16 - x - w, Y + y, w, h);
   };
-  const sheet = drawMinerFrame(g, X + 8, Y + 20, f, 'idle', 0, cap, outfit, .5, '', hero || 'anna');
+  const sheet = drawMinerFrame(g, X + 8, Y + 20, f, pose === 'master' ? hero === 'juna' ? 'walk' : ['bruno','toni','nora'].includes(hero) ? 'pick' : 'shovel' : 'idle', pose === 'master' ? 2 : 0, cap, outfit, .5, '', hero || 'anna');
   for (let y = 0; !sheet && y < ART.length; y++) {
     const row = ART[y];
     for (let x = 0; x < row.length; x++) {

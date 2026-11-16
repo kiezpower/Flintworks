@@ -72,7 +72,7 @@ function hurt(c, a, silent) {
   if (isAbsent(c)) return;
   if (c.dead || c.puppet || G.netClient) return; // in multiplayer only the host deals damage
   if (hasGift(c, 'tough')) a *= 0.67; // (a gift of the shrines, shrines.js)
-  if (roleOf(c) === 'nora' && activeSkill(c)) { heroEvent(c, 'guard', a * 0.3); a *= 0.7; }
+  if (roleOf(c) === 'nora' && activeSkill(c)) { const reduction = c.heroQuick ? 0.1 : 0.3; heroEvent(c, 'guard', a * reduction); a *= 1 - reduction; }
   c.energy -= a;
   if (G.tut && c.energy < 20) c.energy = 20; // nobody gets exhausted in the tutorial
   if (a >= 5) {
@@ -742,7 +742,7 @@ function updBody(c, I) {
     if (Math.sign(I.ax) !== c.face) c.turnF = G.frame; // (a turn frame follows, diggerhi.js)
     c.face = Math.sign(I.ax);
   }
-  if (roleOf(c) === 'bruno' && activeSkill(c) && c.inv.length >= 4) tvx *= 1.25;
+  if (roleOf(c) === 'bruno' && activeSkill(c) && !c.heroQuick && c.inv.length >= 4) tvx *= 1.25;
   c.vx += (tvx - c.vx) * (onG ? 0.4 : inLiq ? 0.15 : 0.1);
   if (inLiq) {
     c.vy += 0.04;
@@ -796,7 +796,7 @@ function updBody(c, I) {
   if (by && fallV > 1.2) dust(c.x, c.y + 9, Math.max(2, Math.round(fallV * 2)), '#b89a76');
   if (by) {
     if (fallV > 3.9 && !hasGift(c, 'feather')) {
-      const d = (fallV - 3.9) * 22 * (roleOf(c) === 'juna' ? 0.8 : 1);
+      const d = (fallV - 3.9) * 22 * (roleOf(c) === 'juna' ? activeSkill(c) && c.heroQuick ? 0.4 : 0.8 : 1);
       hurt(c, d);
       if (fallV > 4.4) startTumble(c, c.vx, -0.8);
       else sfx('thud', c.x, c.y);

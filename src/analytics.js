@@ -16,8 +16,9 @@ const MAX = 300; // events kept on the device
 // name → allowed fields and their type ('n' number, 's' string, 'b' boolean); once: at most once
 // per session (true) or per tutorial run ('run')
 const EVENTS = {
+  hero_useful: { f: { hero: 's', amount: 'n' } },
   hero_select: { f: { hero: 's' } },
-  hero_ability: { f: { hero: 's', variant: 's' } },
+  hero_ability: { f: { hero: 's', variant: 's', amount: 'n' } },
   hero_chapter: { f: { hero: 's', chapter: 'n' } },
   app_open: { f: { first: 'b', days_since: 'n' }, once: true },
   onb_start: { f: { entry: 's' }, once: 'run' },
