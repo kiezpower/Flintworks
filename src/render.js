@@ -117,7 +117,7 @@ function resize() {
   G.VH = Math.min(H, Math.ceil(r.height / s));
   // the canvas has twice the landscape resolution; all drawing code keeps landscape units
   const quality = Math.min(2, window.devicePixelRatio || 1, Math.sqrt(2_000_000 / (r.width * r.height)));
-  const surfaceScale = Math.max(G.res, s * quality);
+  const surfaceScale = G.res === 1 ? 1 : Math.max(G.res, s * quality);
   cv.width = Math.round(G.VW * surfaceScale);
   cv.height = Math.round(G.VH * surfaceScale);
   cv.style.width = G.VW * s + 'px';

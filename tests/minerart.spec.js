@@ -132,3 +132,19 @@ test('all six portraits keep native detail and the lobby canvas matches display 
   await page.keyboard.press('Escape');
   await page.screenshot({ path: 'test-results/all-heroes-podium.png', animations: 'disabled' });
 });
+
+
+test('fast graphics still reduce the drawing buffer; fine graphics restore display detail', async ({ page }) => {
+  await lobby(page);
+  const sizes = await page.evaluate(async () => {
+    const { cv, resize } = await import('/src/render.js');
+    const { G } = window.__ww;
+    G.res = 1; resize();
+    const fast = [cv.width, cv.height], world = [G.VW, G.VH];
+    G.res = 2; resize();
+    return { fast, world, fine: [cv.width, cv.height] };
+  });
+  expect(sizes.fast).toEqual(sizes.world);
+  expect(sizes.fine[0]).toBeGreaterThan(sizes.fast[0]);
+  expect(sizes.fine[1]).toBeGreaterThan(sizes.fast[1]);
+});
