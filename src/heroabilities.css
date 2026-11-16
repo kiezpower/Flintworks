@@ -1,4 +1,4 @@
-#heroAbility { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); min-height: 44px; max-width: 44vw; padding: 8px 14px; border: 2px solid #edc774; border-radius: 8px; color: #fff0ca; background: #493221ee; font: bold 15px var(--font-display); pointer-events: auto; cursor: pointer; }
+#heroAbility { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); min-height: 44px; max-width: 44vw; padding: 8px 14px; border: 2px solid #edc774; border-radius: 8px; color: #fff0ca; background: #493221ee; font: bold 15px var(--font-display); pointer-events: auto; cursor: pointer; }
 #heroAbility:disabled { color: #c4b598; border-color: #867454; }
 #heroAbility[hidden] { display: none; }
 #heroAbility:focus-visible { outline: 3px solid white; outline-offset: 3px; }

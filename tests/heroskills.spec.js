@@ -199,3 +199,16 @@ test('Nora mitigates real damage only while active; Mika scan range changes with
   expect(result.active).toBe(93); expect(result.passive).toBe(83); expect(result.guard).toBeCloseTo(3);
   expect(result.nearby).toBe(0); expect(result.distant).toBeGreaterThan(0); expect(result.feats).toBe(0);
 });
+
+test('mobile ability button stays below the top HUD and inside the viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await start(page);
+  await expect(page.locator('#heroAbility')).toBeVisible();
+  const ability = await page.locator('#heroAbility').boundingBox();
+  const crew = await page.locator('#crew').boundingBox();
+  const inventory = await page.locator('#inv').boundingBox();
+  expect(ability.y).toBeGreaterThan(Math.max(crew.y + crew.height, inventory.y + inventory.height) + 8);
+  expect(ability.y + ability.height).toBeLessThanOrEqual(844);
+  expect(ability.x).toBeGreaterThanOrEqual(0);
+  expect(ability.x + ability.width).toBeLessThanOrEqual(390);
+});
