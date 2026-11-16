@@ -40,7 +40,9 @@ function variant(hero, row, col, cap, outfit, mode) {
   const { cellWidth: w, cellHeight: h } = metadata[hero];
   const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
   const ctx = canvas.getContext('2d');
-  ctx.drawImage(sources.get(hero), col * w, row * h, w, h, 0, 0, w, h);
+  // Measured bounds exclude detached alpha specks outside the actual figure/tool.
+  const [bx, by, bw, bh] = metadata[hero].bounds[row][col];
+  ctx.drawImage(sources.get(hero), col * w + bx, row * h + by, bw, bh, bx, by, bw, bh);
   const pixels = ctx.getImageData(0, 0, w, h), data = pixels.data;
   const capRgb = rgb(cap), shirt = outfitPal(outfit).T;
   const shirtRgb = shirt && rgb(shirt);
