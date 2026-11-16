@@ -30,6 +30,7 @@ function fall(v, I) {
   if (!I) v.vx *= grounded(v) ? 0.8 : 0.98;
 }
 
+const turned = new WeakMap();
 // ---- drill wagon: drives through earth and rock, burns coal ----
 defineVehicle('drill', {
   name: 'Bohrwagen',
@@ -71,6 +72,11 @@ defineVehicle('drill', {
     }
   },
   draw(ctx, v, x, y) {
+    // painted (itemart.js); it shudders while the drill turns
+    const last = turned.get(v),
+      works = last != null && last !== v.t && !G.reduceMotion;
+    turned.set(v, v.t);
+    if (!v.icon && drawPainted(ctx, 'prop:drillwagon', x, y, v.w + 4, v.h, 1.02, false, { flip: v.face < 0, dy: works ? 0.4 + Math.sin(G.frame * 1.7) * 0.25 : 0.4 })) return;
     drawDrill(ctx, v, x, y);
   },
 });

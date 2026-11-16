@@ -3,6 +3,7 @@
 // there for a while and goes again. At him the action button opens his stall: three offers that
 // change each visit (explosives, metal, coal, planks, a lucky bag, a tool for less). Only the host
 // moves him and sells (the "trade" command); the others get him with the game values (sync).
+import { drawPainted } from './itemart.js';
 import { announce, announceBanner } from './announce.js';
 import { register } from './commands.js';
 import { addFloat } from './floats.js';
@@ -145,19 +146,23 @@ function drawMerchant(ctx, cx, cy) {
     ctx.fillStyle = col;
     ctx.fillRect(px, py, w, h);
   };
-  part(x - f * 3 - 2, y - 11, 4, 7, '#8b5e34'); // the pack on the back
-  part(x - 1, y - 2, 1, 2 - step, '#3a2a1e'); // legs
-  part(x + 2, y - 2, 1, 1 + step, '#3a2a1e');
-  part(x - 2, y - 7, 5, 5, '#5a7a3a'); // coat
-  part(x - 1, y - 10, 4, 3, '#f0c49a'); // face
-  part(x - 3, y - 12, 7, 1, '#6a4526'); // wide hat
-  part(x - 1, y - 14, 4, 2, '#6a4526');
-  ctx.fillStyle = '#a0703f';
-  ctx.fillRect(x - f * 3 - 2, y - 11, 4, 1);
-  ctx.fillStyle = '#3f5a28';
-  ctx.fillRect(x - 2, y - 3, 5, 1);
-  ctx.fillStyle = '#1a120c';
-  ctx.fillRect(x + (f > 0 ? 2 : -1), y - 9, 1, 1);
+  // painted (itemart.js): standing at the stall, two steps while he walks
+  const walks = m.at == null || !atStall(m);
+  if (!drawPainted(ctx, walks ? (step ? 'prop:merchantA' : 'prop:merchantB') : 'prop:merchant', x - 4, y - 15, 9, 15, 1.05, false, { flip: f < 0, dy: 0.4 })) {
+    part(x - f * 3 - 2, y - 11, 4, 7, '#8b5e34'); // the pack on the back
+    part(x - 1, y - 2, 1, 2 - step, '#3a2a1e'); // legs
+    part(x + 2, y - 2, 1, 1 + step, '#3a2a1e');
+    part(x - 2, y - 7, 5, 5, '#5a7a3a'); // coat
+    part(x - 1, y - 10, 4, 3, '#f0c49a'); // face
+    part(x - 3, y - 12, 7, 1, '#6a4526'); // wide hat
+    part(x - 1, y - 14, 4, 2, '#6a4526');
+    ctx.fillStyle = '#a0703f';
+    ctx.fillRect(x - f * 3 - 2, y - 11, 4, 1);
+    ctx.fillStyle = '#3f5a28';
+    ctx.fillRect(x - 2, y - 3, 5, 1);
+    ctx.fillStyle = '#1a120c';
+    ctx.fillRect(x + (f > 0 ? 2 : -1), y - 9, 1, 1);
+  }
   if (atStall(m) && (G.frame >> 5) % 2) {
     ctx.fillStyle = '#ffe066';
     ctx.fillRect(x, y - 19, 1, 3);

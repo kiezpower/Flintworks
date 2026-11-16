@@ -7,6 +7,8 @@ import itemsUrl from './assets/items/atlas.png';
 import itemsMeta from './assets/items/atlas.json';
 import uiUrl from './assets/items/ui.png';
 import uiMeta from './assets/items/ui.json';
+import propsUrl from './assets/items/props.png';
+import propsMeta from './assets/items/props.json';
 
 const frames = {};
 const load = (url, meta, prefix) =>
@@ -26,8 +28,9 @@ const load = (url, meta, prefix) =>
     image.onerror = () => resolve(false);
     image.src = url;
   });
-// items by their type ('nug', 'chest', …), interface icons as 'ui:dig', 'ui:castle', …
-const itemArtReady = Promise.all([load(itemsUrl, itemsMeta, ''), load(uiUrl, uiMeta, 'ui:')]).then(r => r.every(Boolean));
+// items by their type ('nug', 'chest', …), interface icons as 'ui:dig', 'ui:castle', …,
+// larger things of the world as 'prop:tomb', 'prop:shrine', 'prop:merchant', …
+const itemArtReady = Promise.all([load(itemsUrl, itemsMeta, ''), load(uiUrl, uiMeta, 'ui:'), load(propsUrl, propsMeta, 'prop:')]).then(r => r.every(Boolean));
 await Promise.race([itemArtReady, new Promise(resolve => setTimeout(resolve, 4000))]);
 
 const paintedItem = t => frames[t] || null;

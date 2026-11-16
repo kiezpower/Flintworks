@@ -117,10 +117,10 @@ function drawVehicles(ctx, cx, cy) {
 }
 // small picture for the build menu
 const iconCache = {};
-const PAINTED = { drill: 'drill', train: 'train', raft: 'raft', catapult: 'catapult', target: 'target', airship: 'balloon' };
+const PAINTED = { mast: 'prop:mast', drill: 'drill', train: 'train', raft: 'raft', catapult: 'catapult', target: 'target', airship: 'balloon' };
 function vehicleIcon(kind) {
   if (iconCache[kind]) return iconCache[kind];
-  const art = PAINTED[kind] && paintedIcon('ui:' + PAINTED[kind]);
+  const art = PAINTED[kind] && paintedIcon(PAINTED[kind].includes(':') ? PAINTED[kind] : 'ui:' + PAINTED[kind]);
   if (art) return (iconCache[kind] = art);
   const beast = kind === 'mount' && creatureIcon('fluffel');
   if (beast) return (iconCache[kind] = beast);

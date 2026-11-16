@@ -4,6 +4,7 @@
 // the Wühler when saved): it rewards digging deep. Different shrines give different gifts, so it is
 // worth looking for a second one. Made with the world (on every device, from the seed, with its own
 // random numbers); which are taken goes with the game, the gifts with the Wühler.
+import { drawPainted } from './itemart.js';
 import { announce } from './announce.js';
 import { addFloat } from './floats.js';
 import { tr } from './i18n.js';
@@ -151,6 +152,40 @@ function drawShrines(ctx, cx, cy) {
         ctx.fillStyle = col;
         ctx.fillRect(x + px, y + py, w, h);
       };
+    if (drawPainted(ctx, 'prop:shrine', x - 11, y - 15, 22, 15, 1.08, false, { dy: 0.5 })) {
+      // the crystal over the altar: a cut gem in the gift's colour, glowing while unused
+      const pulse = s.used ? 0 : 0.5 + 0.5 * Math.sin(G.frame / 15 + s.x),
+        top = y - 13.5;
+      ctx.save();
+      if (!s.used) {
+        const halo = ctx.createRadialGradient(x, top + 2.5, 0, x, top + 2.5, 6);
+        halo.addColorStop(0, 'rgba(255,255,255,' + (0.25 + 0.3 * pulse) + ')');
+        halo.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = halo;
+        ctx.fillRect(x - 6, top - 4, 12, 12);
+      }
+      ctx.fillStyle = s.used ? '#4a4844' : g.col;
+      ctx.strokeStyle = '#24160c';
+      ctx.lineWidth = 0.5;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.lineTo(x + 1.8, top + 2);
+      ctx.lineTo(x, top + 5);
+      ctx.lineTo(x - 1.8, top + 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,' + (s.used ? 0.15 : 0.45 + 0.3 * pulse) + ')';
+      ctx.beginPath();
+      ctx.moveTo(x, top + 0.5);
+      ctx.lineTo(x - 1.3, top + 2);
+      ctx.lineTo(x, top + 2.4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      continue;
+    }
     for (const side of [-1, 1]) {
       R(side * 9 - 2, -14, 4, 14, '#24160c');
       R(side * 9 - 1, -13, 2, 13, '#8f8a84');

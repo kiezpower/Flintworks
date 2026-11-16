@@ -79,9 +79,11 @@ test('items, chests and interface icons are painted, smooth and cover their squa
       .map(t => ({ t, painted: !!toolIcon(t).painted, url: padIcon(t).length, ...filled(toolIcon(t)) }));
     const cv = document.createElement('canvas'); cv.width = cv.height = 64;
     const world = ['chest', 'chestOpen', 'hoard'].map(t => { const g = cv.getContext('2d'); g.clearRect(0, 0, 64, 64); return drawPainted(g, t, 8, 8, 48, 48) && filled(cv).share; });
-    return { ready: await itemArtReady, items, ui, world, distinct: new Set([...items, ...ui].map(i => paintedIcon(i.t)?.toDataURL() || i.t)).size, mount: filled(creatureIcon('fluffel')).share };
+    const props = ['merchant', 'merchantA', 'merchantB', 'tomb', 'shrine', 'mast', 'gondola', 'drillwagon'].every(t => paintedIcon('prop:' + t));
+    return { ready: await itemArtReady, props, items, ui, world, distinct: new Set([...items, ...ui].map(i => paintedIcon(i.t)?.toDataURL() || i.t)).size, mount: filled(creatureIcon('fluffel')).share };
   });
   expect(result.ready).toBe(true);
+  expect(result.props).toBe(true);
   for (const i of [...result.items, ...result.ui]) {
     expect(i.painted, i.t).toBe(true);
     expect(i.share, i.t).toBeGreaterThan(0.12);

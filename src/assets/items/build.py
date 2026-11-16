@@ -8,10 +8,10 @@ exec(open(os.path.join(here, '..', 'creatures', 'build.py')).read().split("A = c
 sheet, cols, rows, out = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), sys.argv[4]
 names = sys.argv[5:]
 figs = cut(sheet, cols, rows)
-CELL = 100; atlas = Image.new('RGBA', (cols * CELL, rows * CELL), (0, 0, 0, 0)); meta = {}
+CELL = int(os.environ.get('CELL', 100)); atlas = Image.new('RGBA', (cols * CELL, rows * CELL), (0, 0, 0, 0)); meta = {}
 for i, n in enumerate(names):
     im, _ = figs[(i // cols, i % cols)]
-    k = min(96 / im.width, 96 / im.height); im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
+    k = min((CELL - 4) / im.width, (CELL - 4) / im.height, 1); im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
     x = (i % cols) * CELL + (CELL - im.width) // 2; y = (i // cols) * CELL + (CELL - im.height) // 2
     atlas.paste(im, (x, y)); meta[n] = [x, y, im.width, im.height]
 atlas.save(out + '.png', optimize=True)
