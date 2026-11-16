@@ -6,7 +6,8 @@
 > dokumentieren den früheren Stil und gelten nur noch für verbleibende Fallbacks.
 > Die Simulationszelle und Kollisionsmaße bleiben unverändert; daraus folgt keine
 > Pflicht zu sichtbaren Grafikpixeln. Lesbarkeit, Materialerkennung und Bedienbarkeit
-> gelten weiterhin. Umsetzung: `terrainart.js`, `objectart.js`, `adventure.css` und
+> gelten weiterhin. Seit v1.137.0 sind auch Kreaturen, Bosse, Gegenstände, Truhen, Icons, Fahrzeuge und Requisiten
+> gemalt (`creatureart.js`, `itemart.js`, [Varianten](monster-varianten/README.md)). Umsetzung: `terrainart.js`, `objectart.js`, `adventure.css` und
 > [Asset-Hinweise](../src/assets/scenes/README.md). Frühere Bewertungen sind historisch.
 
 > **Stand: v1.52.0.** Gilt für alles, was Spieler sehen. Bewertung des heutigen Stands:
