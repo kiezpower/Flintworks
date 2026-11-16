@@ -1,3 +1,4 @@
+import { capacity } from './heroskills.js';
 import { drawSailRotor } from './mechanicalart.js';
 import { isAbsent } from './players.js';
 // Farming (like OpenClonk's wheat, mill and bread): on a field (a building) grain grows in four
@@ -40,7 +41,7 @@ function updFarm() {
 }
 // at the castle (store.js arriveAtBase): a loaf for the way, if there is one and none in the bag
 function takeBread(c) {
-  if (c.inv.includes('bread') || stock('bread') < 1 || c.inv.length >= 16) return;
+  if (c.inv.includes('bread') || stock('bread') < 1 || c.inv.length >= capacity(c)) return;
   takeStock('bread', 1);
   c.inv.push('bread');
 }

@@ -1,4 +1,5 @@
 import { minerHand } from './minerart.js';
+import { hookFactor, heroEvent } from './heroskills.js';
 // Getting out of a pit or a cave without knowing the tricks: a ledge too high for a jump is
 // found by itself (climbOut). In the modern controls the Wühler then digs a ramp up through
 // earth on his own (digger.js wantsDig); where that does not work the action button offers the
@@ -195,6 +196,7 @@ function standNear(ax, ay) {
 }
 // one frame of the hook; true while it moves the Wühler (the rest of the update is skipped)
 function updHook(c, I) {
+  const pull = HOOK_PULL * hookFactor(c);
   const k = c.hook;
   if (!k) return false;
   if (c.dead || c.tumble) return (c.hook = null), false;
@@ -246,9 +248,9 @@ function updHook(c, I) {
     const ex = k.ax - 3 - c.x,
       ey = k.ay - 4 - c.y,
       d = Math.hypot(ex, ey),
-      sx = d ? (ex / d) * HOOK_PULL : 0,
-      sy = d ? (ey / d) * HOOK_PULL : 0;
-    if (d > HOOK_PULL) {
+      sx = d ? (ex / d) * pull : 0,
+      sy = d ? (ey / d) * pull : 0;
+    if (d > pull) {
       if (free(c.x + sx, c.y + sy, 6, 10)) return (c.x += sx), (c.y += sy), true;
       if (Math.abs(sx) > 0.3 && free(c.x + sx, c.y, 6, 10)) return (c.x += sx), true;
       if (Math.abs(sy) > 0.3 && free(c.x, c.y + sy, 6, 10)) return (c.y += sy), true;
@@ -267,6 +269,7 @@ function updHook(c, I) {
       ey = k.ty - c.y,
       d = Math.hypot(ex, ey);
     if (d <= 2) {
+      heroEvent(c, 'hook');
       c.x = k.tx;
       c.y = k.ty;
       c.hook = null;
@@ -277,7 +280,7 @@ function updHook(c, I) {
     return true;
   }
   if (k.ph === 'up') {
-    const ny = Math.max(k.ty - 1, c.y - HOOK_PULL);
+    const ny = Math.max(k.ty - 1, c.y - pull);
     if (!free(c.x, ny, 6, 10)) return (c.hook = null), false;
     c.y = ny;
     if (c.y <= k.ty - 1) k.ph = 'over';
@@ -288,7 +291,7 @@ function updHook(c, I) {
     nx = Math.abs(k.tx - c.x) <= 2 ? k.tx : c.x + dx * 2;
   if (!free(nx, c.y, 6, 10)) return (c.hook = null), false;
   c.x = nx;
-  if (nx === k.tx) c.hook = null;
+  if (nx === k.tx) { heroEvent(c, 'hook'); c.hook = null; }
   return true;
 }
 

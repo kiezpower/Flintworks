@@ -1,3 +1,4 @@
+import { buildFactor, heroEvent } from './heroskills.js';
 import { arriveAtBase, stock, takeStock, unload, updProduction } from './store.js';
 import { parseSkin } from './skins.js';
 import { celebrate } from './effects.js';
@@ -462,7 +463,7 @@ function updBuilds() {
           !free(c.x, c.y + 1, 6, 10),
       );
       if (helpers.length) {
-        b.prog += helpers.length / 260;
+        b.prog += helpers.reduce((n, c) => n + buildFactor(c), 0) / 260;
         for (const c of helpers) {
           c.hammer = true;
           c.anim += 0.2;
@@ -494,6 +495,7 @@ function updBuilds() {
           b.done = true;
           foundation(b);
           track('build');
+          for (const c of helpers) heroEvent(c, 'build');
           toast('{name} fertig', { name: tr(BT[b.type].name) });
           sfx('done', b.x, b.gy);
           celebrate(b.x + b.w / 2, b.gy - b.h / 2);

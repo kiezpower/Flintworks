@@ -1,3 +1,4 @@
+import { ROLES, chapterCount, progressOf } from './heroskills.js';
 import { lobbyIcon } from './lobbyicons.js';
 import { openHeroAlbum } from './heroalbum.js';
 import { PLAY_KINDS, supportsKind } from './playkind.js';
@@ -157,6 +158,15 @@ function refresh() {
   setTxt('lbLvl', P.level);
   setTxt('lbProfileName', P.name);
   setTxt('lbProfileStats', `🏆 ${P.trophies} · ${tr('Level')} ${P.level}`);
+  const role = ROLES[P.hero], mastery = progressOf(P, P.hero), chapters = chapterCount(mastery, P.hero);
+  let reminder = document.getElementById('heroReminder');
+  if (!reminder) {
+    reminder = document.createElement('small'); reminder.id = 'heroReminder';
+    $('lbWho').querySelector('.lb-dbox').appendChild(reminder);
+  }
+  reminder.textContent = role ? chapters === 3 ? '★ ' + tr('Wühler-Meister') :
+    tr(role.task, { n: role.goals[chapters] }) + ` · ${Math.floor(mastery.work || 0)}/${role.goals[chapters]}` : '';
+
   $('lbXp').style.width = Math.round((P.xp / xpNeed()) * 100) + '%';
   setTxt('lbXpTxt', `${P.xp}/${xpNeed()}`);
   // Heimatbergwerk: crystals, and a dot while the home crew has something to collect

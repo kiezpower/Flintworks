@@ -1,3 +1,4 @@
+import { capacity } from './heroskills.js';
 // Torches (like Terraria's): the castle makes them from wood and coal (store.js AUTO), a player
 // passing by takes up to three along, and with one chosen in the bag the action button sets it
 // against a wall: a small fire that keeps lighting the place for good, shows on the map and
@@ -50,7 +51,7 @@ function torchTick() {
 function takeTorches(c) {
   if (c.pid == null || c.bot) return;
   let have = c.inv.filter(t => t === 'torch').length;
-  while (have < 3 && stock('torch') > 0 && c.inv.length < 16) {
+  while (have < 3 && stock('torch') > 0 && c.inv.length < capacity(c)) {
     takeStock('torch', 1);
     c.inv.push('torch');
     have++;

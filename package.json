@@ -1,7 +1,7 @@
 {
   "name": "flintworks",
   "private": true,
-  "version": "1.134.6",
+  "version": "1.135.1",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
