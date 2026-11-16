@@ -1,3 +1,4 @@
+import { slowRendering } from './graphicsquality.js';
 // (first: it reads an invitation in the address before anything else changes it)
 import './applink.js';
 import { ownWeb } from './platform.js';
@@ -740,7 +741,7 @@ function stepTail() {
 G.last = performance.now();
 G.acc = 0;
 G.tick = 0;
-// slow device: after several seconds of choppy frames switch to the lighter 1× canvas. Only
+// slow device: after several seconds of choppy frames switch to bounded fast graphics. Only
 // when the device really cannot keep up: a stall (app or tab in the background, loading a world,
 // garbage collection) is skipped, and a screen or battery saver that hands out only 30 frames a
 // second (iOS Low Power Mode, Android power saving) is no reason as long as each frame's own work
@@ -759,7 +760,7 @@ function perfGuard(dt) {
   if (perfT < 2000) return;
   const frame = perfT / perfN,
     work = perfW / perfN;
-  perfSlow = frame > 45 || (frame > 25 && work > 14) ? perfSlow + 1 : 0;
+  perfSlow = slowRendering(frame, work) ? perfSlow + 1 : 0;
   perfT = perfN = perfW = 0;
   if (perfSlow >= 3) {
     perfSlow = 0;
