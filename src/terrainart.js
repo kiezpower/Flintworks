@@ -112,5 +112,16 @@ function drawTerrainArt(g, cx, cy, vw, vh, world) {
     }
   g.restore(); return true;
 }
+// A picture of a whole small cut (menus, the blasting range): painted straight onto g, without
+// touching the world's chunk cache. False while the materials are not loaded.
+function paintTerrainOnce(g, world) {
+  if (!frames.size) return false;
+  g.save(); g.imageSmoothingEnabled = true;
+  for (let y = 0; y * CHUNK < world.H; y++) for (let x = 0; x * CHUNK < world.W; x++) {
+    const c = makeChunk(world, x, y);
+    g.drawImage(c, x * CHUNK, y * CHUNK, c.width / DENSITY, c.height / DENSITY);
+  }
+  g.restore(); return true;
+}
 const terrainArtStats = () => ({ chunks: cache.size, limit: LIMIT, density: DENSITY, materials: frames.size });
-export { drawTerrainArt, invalidateTerrainArt, resetTerrainArt, terrainArtReady, terrainArtStats };
+export { drawTerrainArt, paintTerrainOnce, invalidateTerrainArt, resetTerrainArt, terrainArtReady, terrainArtStats };

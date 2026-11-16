@@ -10,7 +10,7 @@ import { BIOMES } from './biomes.js';
 import { drawPortrait } from './portrait.js';
 import { P } from './profile.js';
 import { drawSceneArt } from './sceneart.js';
-import { drawTerrainArt, resetTerrainArt } from './terrainart.js';
+import { paintTerrainOnce } from './terrainart.js';
 
 const S = 3, // screen pixels per landscape pixel
   STEP = 150, // from station to station
@@ -270,8 +270,7 @@ function paintShaft(cv, w, h, part, over, lanterns) {
   if (!part && !drawSceneArt(g, 'meadow', w * K, 14 * K)) return false;
   g.save();
   g.scale(K, K);
-  const ok = drawTerrainArt(g, 0, 0, w, h, { W: w, H: h, mat: rec.mat, bg, shade: rec.shade, biome: 'meadow', patterns: false, tone: i => rec.tone[i] });
-  resetTerrainArt(); // (the chunk cache belongs to the world again)
+  const ok = paintTerrainOnce(g, { W: w, H: h, mat: rec.mat, bg, shade: rec.shade, biome: 'meadow', patterns: false, tone: i => rec.tone[i] });
   if (!ok) {
     g.restore();
     return false;

@@ -7,7 +7,7 @@
 // campaign chapters are drawn as a mine shaft going down level by level (mineshaft.js). Opened
 // from the lobby (mode button).
 import { drawSceneArt } from './sceneart.js';
-import { drawTerrainArt, resetTerrainArt } from './terrainart.js';
+import { paintTerrainOnce } from './terrainart.js';
 import { PLAY_KINDS, supportsKind } from './playkind.js';
 import { tr } from './i18n.js';
 import { MAP_IDS } from './levels/index.js';
@@ -84,9 +84,8 @@ function paintedLandscape(biome) {
   g.save();
   g.translate(0, h - H * 4);
   g.scale(4, 4);
-  const ok = drawTerrainArt(g, 0, 0, W, H, { W, H, mat, bg: new Uint8Array(W * H), shade, biome, patterns: false, tone: () => 1 });
+  const ok = paintTerrainOnce(g, { W, H, mat, bg: new Uint8Array(W * H), shade, biome, patterns: false, tone: () => 1 });
   g.restore();
-  resetTerrainArt(); // (the chunk cache belongs to the world again)
   return ok ? c : null;
 }
 // a small landscape of a world type for the cards of the game modes: sky, hills, the ground

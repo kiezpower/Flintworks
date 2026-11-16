@@ -35,12 +35,11 @@ Kreaturen und Bosse, Gegenstände, Truhen und Verstecke, Icons in HUD, Menüs un
 Knöpfen, Gebäude-Icons, Floß, Reitfluffel, Luftschiff, Grubenbahn, Lore, Bohrwagen, Seilbahn,
 Händler, Schreine, Grabsteine, Fackeln, das Logo, Boss-Leiste, Schilder, Namensschilder,
 Schadenszahlen, Crew-Gesichter und Tagesuhr im HUD, die Landschaftsbilder der Levelkarten und
-die Kapitel-Karte. Das Gelände kachelt ohne Spiegelmuster (`umgesetzt.png`, `umgesetzt-wurm.png`).
+die Kapitel-Karte und der Sprengplatz. Das Gelände kachelt ohne Spiegelmuster (`umgesetzt.png`, `umgesetzt-wurm.png`).
 
 ## Noch nicht gemalt
 
 - Katapult (der Arm zielt) und Zielscheibe: glatte Vektorzeichnung.
-- Sprengplatz: eigenes Pixelgelände und Fässer (`blastrange-art.js`).
 - Vorschaubilder der Level und Karten (`public/previews`): Übersichtskarten, an Prüfsummen gebunden.
 - Minimap, Flüssigkeiten, Partikel und Wettereffekte.
 - Kanten von Gelände und Höhlen folgen weiter den Simulationszellen.
