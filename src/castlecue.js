@@ -8,7 +8,7 @@ import { tr } from './i18n.js';
 import { G, INV_MAX } from './state.js';
 
 function sign(ctx, text, x, y) {
-  ctx.font = '5px monospace';
+  ctx.font = '600 5px "Nunito Sans", sans-serif';
   const w = Math.ceil(ctx.measureText(text).width) + 6;
   const l = Math.round(x - w / 2);
   ctx.fillStyle = '#24160c';

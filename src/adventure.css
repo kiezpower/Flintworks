@@ -33,3 +33,7 @@ button, input, select { font-family: var(--font-ui); }
 @media (prefers-reduced-motion: reduce) { .werkhof button { transition: none; } }
 #lobby .ico { image-rendering: auto; background-repeat: no-repeat; background-position: center; }
 @media (max-width: 600px) { .werkhof .lb-play { margin-top: 254px; } }
+
+@media (max-width: 600px) {
+  #toast { top: 156px; max-width: calc(100% - 32px); font-size: 12px; padding: 4px 9px; }
+}
