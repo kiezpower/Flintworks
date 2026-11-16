@@ -82,7 +82,7 @@ function frameCanvas(kind, pose, mode) {
 }
 
 // (x, y) is the hitbox's top-left corner in world cells, exactly as the pixel sprites took it.
-// o: { hurt, pet, squash: [kx, ky], angle, size (cells, overrides the kind's height) }
+// o: { hurt, pet, squash: [kx, ky], angle, dy (cells down), size (cells, overrides the kind's height) }
 function drawCreature(g, kind, pose, x, y, w, h, face = 1, o = {}) {
   if (!hasCreatureArt(kind)) return false;
   const base = baseOf(kind),
@@ -93,7 +93,7 @@ function drawCreature(g, kind, pose, x, y, w, h, face = 1, o = {}) {
     k = (o.size || look.h) / frames.idle[3]; // cells per source pixel, the same for every pose
   const c = frameCanvas(kind, pose, o.hurt ? 'hurt' : o.pet ? 'pet' : '');
   g.save();
-  g.translate(x + w / 2, look.fly ? y + h / 2 : y + h + 0.4);
+  g.translate(x + w / 2, (look.fly ? y + h / 2 : y + h + 0.4) + (o.dy || 0));
   if (o.angle) g.rotate(o.angle);
   g.scale((face < 0 ? -1 : 1) * (o.squash?.[0] || 1), (o.flipY ? -1 : 1) * (o.squash?.[1] || 1));
   g.imageSmoothingEnabled = true;

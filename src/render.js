@@ -320,8 +320,15 @@ function paintedAnimal(a, sx, sy, kind, f, hurtF, ph) {
   struck.set(a, last);
   const flying = kind === 'bat' || kind === 'fish',
     moving = flying || Math.abs(a.vx || 0) > 0.05;
+  // between its two pictures a creature keeps moving: it sways and bobs with its steps (the
+  // slime wobbles, flyers rise and sink), and breathes while it stands; still with reduced motion
+  const still = G.reduceMotion,
+    step = Math.sin((a.anim || 0) * 2),
+    soft = kind === 'slime' ? 0.07 : kind === 'golem' ? 0.015 : 0.03;
   let pose = moving && ph ? 'move' : 'idle',
-    squash = G.reduceMotion || moving ? null : [1, 1 + Math.sin(G.frame / 18) * 0.02];
+    squash = still ? null : moving ? [1 + step * soft, 1 - step * soft] : [1, 1 + Math.sin(G.frame / 18) * 0.02],
+    angle = still || !moving || flying || kind === 'slime' ? 0 : Math.sin(a.anim || 0) * (kind === 'golem' ? 0.03 : 0.05) * f,
+    dy = still ? 0 : flying ? Math.sin(G.frame / 9 + a.x * 0.3) * 0.35 : moving && kind !== 'slime' ? -Math.abs(step) * 0.3 : 0;
   if (kind === 'fluffel') {
     if (Math.abs(a.vy || 0) > 0.4) pose = 'attack';
   } else if (a.warn > 0 || G.frame - last.at < 14) pose = 'attack';
@@ -329,7 +336,7 @@ function paintedAnimal(a, sx, sy, kind, f, hurtF, ph) {
     pose = 'move';
     squash = [0.86, 1.2];
   }
-  return drawCreature(ctx, a.kind, pose, sx, sy, a.w, a.h, f, { hurt: hurtF, pet: a.pet != null, squash });
+  return drawCreature(ctx, a.kind, pose, sx, sy, a.w, a.h, f, { hurt: hurtF, pet: a.pet != null, squash, angle, dy });
 }
 // animal frames are painted once into small canvases (2px margin) and drawn smoothed at 2×
 const animalCache = {};
