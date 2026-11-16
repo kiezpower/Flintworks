@@ -271,11 +271,17 @@ function drawAnimal(a, sx, sy) {
   if (a.warn > 0 && G.frame % 10 < 7) {
     const wx = Math.round(sx + a.w / 2),
       wy = Math.round(sy - 7);
-    ctx.fillStyle = '#24160c';
-    ctx.fillRect(wx - 1, wy - 1, 3, 7);
+    ctx.save();
+    ctx.font = '400 8px "Bree Serif", Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#24160c';
+    ctx.lineWidth = 1.6;
+    ctx.strokeText('!', wx + 0.5, wy + 5);
     ctx.fillStyle = '#ffd23a';
-    ctx.fillRect(wx, wy, 1, 3);
-    ctx.fillRect(wx, wy + 4, 1, 1);
+    ctx.fillText('!', wx + 0.5, wy + 5);
+    ctx.restore();
   }
   if (paintedAnimal(a, sx, sy, kind, f, hurtF, ph)) {
     // (painted, creatureart.js)
@@ -293,9 +299,13 @@ function drawAnimal(a, sx, sy) {
       bx = Math.round(sx + a.w / 2 - bw / 2),
       by = Math.round(sy - (kind === 'golem' ? 5 : 4));
     ctx.fillStyle = 'rgba(26,18,12,0.85)';
-    ctx.fillRect(bx - 0.5, by - 0.5, bw + 1, 2);
+    ctx.beginPath();
+    ctx.roundRect(bx - 0.5, by - 0.5, bw + 1, 2, 1);
+    ctx.fill();
     ctx.fillStyle = a.hp / a.maxHp > 0.35 ? '#e8503a' : '#ffb03a';
-    ctx.fillRect(bx, by, Math.max(0.5, (bw * a.hp) / a.maxHp), 1);
+    ctx.beginPath();
+    ctx.roundRect(bx, by, Math.max(1, (bw * a.hp) / a.maxHp), 1, 0.5);
+    ctx.fill();
   }
 }
 // the painted picture: standing or stepping, the attack pose while it warns and just after it
@@ -496,16 +506,21 @@ function animalSprite(a, ph, hurtF, glowOn) {
 }
 
 function nameTag(text, x, y, col) {
-  ctx.font = '5px monospace';
-  const w = Math.ceil(ctx.measureText(text).width) + 3;
-  ctx.fillStyle = 'rgba(36,22,12,0.75)';
-  ctx.fillRect(Math.round(x - w / 2), y - 6, w, 6);
+  ctx.font = '600 4.5px "Nunito Sans", sans-serif';
+  const w = Math.ceil(ctx.measureText(text).width) + 4,
+    l = Math.round(x - w / 2);
+  ctx.fillStyle = 'rgba(36,22,12,0.78)';
+  ctx.beginPath();
+  ctx.roundRect(l, y - 6.5, w, 6.5, 1.6);
+  ctx.fill();
   ctx.fillStyle = col;
-  ctx.fillRect(Math.round(x - w / 2), y - 6, 1, 6);
+  ctx.beginPath();
+  ctx.roundRect(l + 0.8, y - 5.5, 1, 4.5, 0.5);
+  ctx.fill();
   ctx.fillStyle = '#fbf3dc';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText(text, x + 0.5, y - 1.5);
+  ctx.fillText(text, x + 1, y - 1.6);
 }
 const glows = [],
   lanterns = [],
@@ -915,9 +930,17 @@ function render() {
     // other players carry their name over the head
     if (G.net && isPlayer(c) && c !== mine) nameTag(c.name, x + 3, y - (c.bub ? 15 : 4), c.cap);
     if (c === mine && (G.frame >> 4) % 3) {
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(x + 2, y - 4, 3, 1);
-      ctx.fillRect(x + 3, y - 3, 1, 1);
+      ctx.fillStyle = '#fff6dc';
+      ctx.strokeStyle = 'rgba(36,22,12,0.7)';
+      ctx.lineWidth = 0.4;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x + 1.8, y - 4.6);
+      ctx.lineTo(x + 5.2, y - 4.6);
+      ctx.lineTo(x + 3.5, y - 2.4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
     }
     // on a touch screen, three dots in the face show which way the tunnel is going
     if (c === mine && c.digging && G.inputKind === 'touch') {
@@ -1002,6 +1025,13 @@ function render() {
       for (let k = 0; k < lanterns.length; k += 2) light(lanterns[k], lanterns[k + 1], 20, 0.85);
     }
     for (const m of meteors) light(m.x - cx, m.y - cy, 30, 0.9);
+    // creatures stay readable in the dark: a faint glimmer about each, a real glow about the molten ones
+    for (const a of animals) {
+      if (a.hp <= 0 || a.kind === 'fish') continue;
+      const hot = a.kind === 'slime' || a.kind === 'queen';
+      if (a.kind === 'worm' && a.seg) light(a.seg[0].x - cx, a.seg[0].y - cy, 14, 0.5);
+      else light(a.x + a.w / 2 - cx, a.y + a.h / 2 - cy, Math.max(a.w, a.h) * (hot ? 1.8 : 1.15), hot ? 0.8 : 0.5);
+    }
     if (G.bolt) light(G.VW / 2, G.VH / 2, G.VW, Math.min(1, G.bolt.l / 6));
     for (const it of items) if (it.fuse > 0) light(it.x - cx, it.y - cy, 10, 0.6);
     for (const t of trees) if (t.burn > 0) light(t.x - cx, t.gy - t.spr.height / 2 - cy, 36, 0.9);

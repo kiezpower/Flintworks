@@ -4,6 +4,8 @@
 // the map and a red arrow at the screen edge points the way. Digging down to it, the action button
 // opens it: a heap of gold and gems. Made with the world (on every device, from the seed, with its
 // own random numbers); which are known and opened goes with the game.
+import { drawPainted } from './itemart.js';
+import { glint } from './treasure.js';
 import { announce, announceBanner } from './announce.js';
 import { celebrate } from './effects.js';
 import { spawnItem } from './entities.js';
@@ -121,6 +123,10 @@ function drawHoards(ctx, cx, cy) {
     const x = Math.round(h.x - HW / 2 - 2 - cx),
       y = Math.round(h.y - HH - 2 - cy);
     if (x < -20 || y < -20 || x > G.VW + 4 || y > G.VH + 4) continue;
+    if (drawPainted(ctx, h.open ? 'chestOpen' : 'hoard', x, y, HW + 4, HH + 2, 1.05)) {
+      if (!h.open && (G.frame + h.x * 5) % 90 < 10) glint(ctx, x + 8, y - 2, 3);
+      continue;
+    }
     drawHi(ctx, h.open ? OPENED : HOARD, x, y);
     if (!h.open && (G.frame + h.x * 5) % 90 < 10) {
       ctx.fillStyle = '#ffffff';

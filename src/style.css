@@ -85,7 +85,6 @@ button:focus-visible {
 }
 .lb-logo-art {
   display: block;
-  image-rendering: pixelated;
 }
 .sr {
   position: absolute;
@@ -146,7 +145,7 @@ button:focus-visible {
   width: 13px;
   height: 13px;
   background: #fbf3dc center / 10px no-repeat;
-  image-rendering: pixelated;
+  image-rendering: auto;
   border: 1px solid #24160c;
   border-radius: 3px;
   font: bold 10px/11px monospace;

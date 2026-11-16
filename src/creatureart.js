@@ -103,4 +103,21 @@ function drawCreature(g, kind, pose, x, y, w, h, face = 1, o = {}) {
   return true;
 }
 
-export { creatureArtReady, drawCreature, hasCreatureArt };
+// a square menu icon of a creature (null until the atlas is there)
+const iconCache = {};
+function creatureIcon(kind, size = 48) {
+  if (!hasCreatureArt(kind)) return null;
+  if (iconCache[kind + size]) return iconCache[kind + size];
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  c.painted = true;
+  c.className = 'painted';
+  const f = meta.frames[baseOf(kind)].idle,
+    cells = LOOK[baseOf(kind)].h * Math.max(1, f[2] / f[3]),
+    g = c.getContext('2d');
+  g.scale((size - 2) / cells, (size - 2) / cells);
+  drawCreature(g, kind, 'idle', 0, 0, cells + 2 / size, LOOK[baseOf(kind)].h + (cells - LOOK[baseOf(kind)].h) / 2 - 0.4, 1);
+  return (iconCache[kind + size] = c);
+}
+
+export { creatureArtReady, creatureIcon, drawCreature, hasCreatureArt };

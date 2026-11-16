@@ -272,8 +272,10 @@ function hud() {
       b.title = t ? `${resName(t)} (${s + off + 1})` : '';
       if (t) {
         const cvs = document.createElement('canvas');
-        cvs.width = cvs.height = 10;
-        cvs.getContext('2d').drawImage(itemIcon(t), 0, 0);
+        const art = itemIcon(t);
+        cvs.width = cvs.height = art.width;
+        if (art.painted) cvs.className = 'painted';
+        cvs.getContext('2d').drawImage(art, 0, 0);
         b.appendChild(cvs);
         if (s + off < 9) b.insertAdjacentHTML('beforeend', `<i class="key">${s + off + 1}</i>`);
       }
@@ -592,7 +594,19 @@ function opt(parent, { icon, title, sub, cost, short, disabled, onClick, state, 
   state ||= short ? 'poor' : 'ok';
   b.className = 'opt st-' + state + (short || state === 'poor' ? ' short' : '') + (icon ? '' : ' noico');
   if (disabled) b.disabled = true;
-  if (icon) {
+  if (icon && icon.painted) {
+    // painted art (itemart.js): shown smoothly in the same 48×40 box
+    const c = document.createElement('canvas'),
+      k = Math.min(48 / icon.width, 40 / icon.height);
+    c.width = icon.width;
+    c.height = icon.height;
+    c.className = 'painted';
+    c.getContext('2d').drawImage(icon, 0, 0);
+    c.style.width = icon.width * k + 'px';
+    c.style.height = icon.height * k + 'px';
+    c.style.justifySelf = 'center';
+    b.appendChild(c);
+  } else if (icon) {
     // shown through its double-resolution copy (lit from above, outlined) at a whole multiple
     // of its size; small icons on screens without fine pixels keep the simple version
     const w = icon.hi ? icon.width / 2 : icon.width,

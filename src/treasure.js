@@ -1,4 +1,5 @@
 // Buried treasure chests: small caves deep underground, opened with the action button.
+import { drawPainted } from './itemart.js';
 import { celebrate } from './effects.js';
 import { spawnItem } from './entities.js';
 import { addFloat } from './floats.js';
@@ -38,6 +39,20 @@ const OPEN = sp(CW, CH + 3, R => {
   R(1, 4, 6, 1, '#2a1a10');
 });
 
+// a soft four-pointed sparkle so that chests are spotted in the dark
+function glint(ctx, x, y, r = 2.4) {
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.beginPath();
+  for (let k = 0; k < 8; k++) {
+    const a = (k * Math.PI) / 4,
+      d = k % 2 ? r * 0.28 : r;
+    ctx.lineTo(x + Math.cos(a) * d, y + Math.sin(a) * d);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
 // carve a little cave with a rock floor for each chest; called by gen() before the world is painted
 function placeChests(n = 6) {
   G.chests = [];
@@ -98,7 +113,10 @@ function drawChests(ctx, cx, cy) {
     const sx = Math.round(ch.x - cx),
       sy = Math.round(ch.y - cy);
     if (sx < -12 || sy < -12 || sx > G.VW || sy > G.VH) continue;
-    if (ch.open) drawHi(ctx, OPEN, sx, sy - 3);
+    // painted (itemart.js): the same 8×6 footprint, a little larger so that it reads as a chest
+    if (drawPainted(ctx, ch.open ? 'chestOpen' : 'chest', sx, sy, CW, CH, 1.35)) {
+      if (!ch.open && (G.frame + ch.x * 7) % 120 < 8) glint(ctx, sx + 4, sy - 3);
+    } else if (ch.open) drawHi(ctx, OPEN, sx, sy - 3);
     else {
       drawHi(ctx, CLOSED, sx, sy);
       // a glint now and then so chests are spotted in the dark
@@ -111,4 +129,4 @@ function drawChests(ctx, cx, cy) {
   }
 }
 
-export { chestNear, drawChests, openChest, placeChests };
+export { chestNear, drawChests, glint, openChest, placeChests };

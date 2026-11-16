@@ -200,17 +200,38 @@ function drawBossBar(ctx) {
   const w = Math.round(Math.min(110, G.VW * 0.36)),
     x = Math.round((G.VW - w) / 2),
     y = G.VH - 12;
-  ctx.fillStyle = 'rgba(20,12,6,0.75)';
-  ctx.fillRect(x - 2, y - 9, w + 4, 14);
-  ctx.fillStyle = '#5a3442';
-  ctx.fillRect(x, y, w, 3);
-  ctx.fillStyle = '#e8504a';
-  ctx.fillRect(x, y, Math.ceil((w * Math.max(0, a.hp)) / (a.maxHp || 900)), 3);
-  ctx.font = '7px sans-serif';
+  // a rounded wooden plate with a gold rim, the name in the display font
+  ctx.save();
+  const plate = ctx.createLinearGradient(0, y - 10, 0, y + 6);
+  plate.addColorStop(0, 'rgba(70,48,32,0.92)');
+  plate.addColorStop(1, 'rgba(30,24,22,0.94)');
+  ctx.fillStyle = plate;
+  ctx.strokeStyle = '#b88b51';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  ctx.roundRect(x - 4, y - 10.5, w + 8, 16.5, 3);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = '#3a2420';
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, 3, 1.5);
+  ctx.fill();
+  const left = (w * Math.max(0, a.hp)) / (a.maxHp || 900);
+  if (left > 0.5) {
+    const blood = ctx.createLinearGradient(0, y, 0, y + 3);
+    blood.addColorStop(0, '#ff8a6a');
+    blood.addColorStop(1, '#c8302c');
+    ctx.fillStyle = blood;
+    ctx.beginPath();
+    ctx.roundRect(x, y, Math.max(3, left), 3, 1.5);
+    ctx.fill();
+  }
+  ctx.font = '400 6.5px "Bree Serif", Georgia, serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = '#fbf3dc';
-  ctx.fillText(tr(a === q ? 'Lavakönigin' : a === k ? 'Eiskönig' : 'Riesenwurm'), x + w / 2, y - 2);
+  ctx.fillStyle = '#ffe4a1';
+  ctx.fillText(tr(a === q ? 'Lavakönigin' : a === k ? 'Eiskönig' : 'Riesenwurm'), x + w / 2, y - 2.5);
+  ctx.restore();
 }
 
 export { bossTick, drawBossBar, drawWorms, spawnWorm, wormOf, wormUpd };

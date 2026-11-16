@@ -37,3 +37,8 @@ button, input, select { font-family: var(--font-ui); }
 @media (max-width: 600px) {
   #toast { top: 156px; max-width: calc(100% - 32px); font-size: 12px; padding: 4px 9px; }
 }
+
+/* Painted item art (itemart.js) is never shown with hard pixels. */
+canvas.painted, img.painted, #storeRow img, .ico, #lobby .ico, .slot.weapon .wico, .slot.bag .bagico,
+.card .learned img, .store img, .ls-icon { image-rendering: auto !important; }
+.ico, .slot.weapon .wico, .slot.bag .bagico { background-size: contain; background-repeat: no-repeat; background-position: center; }

@@ -61,3 +61,33 @@ test('hurt flashes, pets wear a collar and the world draws the painted monster',
   expect(result.hurt).toBeGreaterThan(result.plain + 0.3);
   expect(result.pet).toBeGreaterThan(result.fluffel + 0.01);
 });
+
+test('items, chests and interface icons are painted, smooth and cover their square', async ({ page }) => {
+  await ready(page);
+  const result = await page.evaluate(async () => {
+    const { itemArtReady, paintedIcon, drawPainted } = await import('/src/itemart.js');
+    const { ITEM, itemIcon, padIcon, toolIcon } = await import('/src/sprites.js');
+    const { creatureIcon } = await import('/src/creatureart.js');
+    const filled = c => {
+      const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+      let n = 0, soft = 0;
+      for (let i = 3; i < d.length; i += 4) { if (d[i] > 128) n++; if (d[i] > 0 && d[i] < 255) soft++; }
+      return { share: n / (c.width * c.height), soft };
+    };
+    const items = Object.keys(ITEM).map(t => ({ t, painted: !!itemIcon(t).painted, ...filled(itemIcon(t)) }));
+    const ui = ['dig', 'jump', 'throw', 'act', 'crew', 'quest', 'crystal', 'trophy', 'gear', 'stairs', 'rod', 'hook', 'bag', 'hammer', 'castle', 'chest', 'lamp', 'sword', 'bow', 'arrow', 'farrow', 'shield', 'helm', 'rails', 'balloon']
+      .map(t => ({ t, painted: !!toolIcon(t).painted, url: padIcon(t).length, ...filled(toolIcon(t)) }));
+    const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+    const world = ['chest', 'chestOpen', 'hoard'].map(t => { const g = cv.getContext('2d'); g.clearRect(0, 0, 64, 64); return drawPainted(g, t, 8, 8, 48, 48) && filled(cv).share; });
+    return { ready: await itemArtReady, items, ui, world, distinct: new Set([...items, ...ui].map(i => paintedIcon(i.t)?.toDataURL() || i.t)).size, mount: filled(creatureIcon('fluffel')).share };
+  });
+  expect(result.ready).toBe(true);
+  for (const i of [...result.items, ...result.ui]) {
+    expect(i.painted, i.t).toBe(true);
+    expect(i.share, i.t).toBeGreaterThan(0.12);
+    expect(i.soft, i.t).toBeGreaterThan(20);
+  }
+  for (const share of result.world) expect(share).toBeGreaterThan(0.2);
+  expect(result.distinct).toBeGreaterThan(40);
+  expect(result.mount).toBeGreaterThan(0.2);
+});
