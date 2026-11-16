@@ -53,9 +53,9 @@ function treeLook(t) {
   if (!m) dress.set(t.spr, (m = {}));
   const result = m[s] || (m[s] = recolour(t.spr, s));
   const painted = paintedObject(t.spr);
-  // Keep the seasonal dress at the painting's resolution. Bare winter trees
-  // retain their branch silhouette until there is a matching painted asset.
-  if (painted && s !== 3 && !result.artFrame) result.artFrame = recolour(painted, s);
+  // Seasonal dress stays at the painting's resolution, including bare winter oaks.
+  if (s === 3 && t.stage >= 2) result.artType = 'bareoak';
+  else if (painted && !result.artFrame) result.artFrame = recolour(painted, s);
   return result;
 }
 const AUTUMN = [

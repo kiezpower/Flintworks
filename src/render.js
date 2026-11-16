@@ -1,3 +1,4 @@
+import { drawGate, drawSailRotor } from './mechanicalart.js';
 import { drawingDensity } from './graphicsquality.js';
 import { drawGoal } from './tapgo.js';
 import { drawCue } from './startcue.js';
@@ -629,35 +630,8 @@ function render() {
           ctx.fillRect(sx + 16, sy + 7, 4, 2);
         }
       }
-      if (b.done && b.type === 'wind') {
-        const hx = sx + 7,
-          hy = sy + 6;
-        for (let k = 0; k < 4; k++) {
-          const a = b.rot + (k * Math.PI) / 2,
-            ca = Math.cos(a),
-            sa = Math.sin(a);
-          for (let r = 2; r <= 11; r++) {
-            ctx.fillStyle = '#e8dcc6';
-            ctx.fillRect(Math.round(hx + ca * r), Math.round(hy + sa * r), 1, 1);
-            if (r > 4) {
-              ctx.fillStyle = '#cdbb9a';
-              ctx.fillRect(Math.round(hx + ca * r - sa * 1.4), Math.round(hy + sa * r + ca * 1.4), 1, 1);
-            }
-          }
-        }
-        ctx.fillStyle = '#4a3a2a';
-        ctx.fillRect(hx - 1, hy - 1, 2, 2);
-      }
-      if (b.done && b.type === 'gate') {
-        const o = Math.round((b.open || 0) * 12);
-        ctx.drawImage(spr, 0, 0, 8, 2, sx, sy, 8, 2);
-        ctx.fillStyle = '#4a3a2a';
-        ctx.fillRect(sx + 2, sy + 2, 4, 14);
-        ctx.drawImage(SPR.gate, 2, 2, 4, 14 - o, sx + 2, sy + 2, 4, 14 - o);
-        ctx.fillStyle = '#a69e92';
-        ctx.fillRect(sx, sy, 2, 16);
-        ctx.fillRect(sx + 6, sy, 2, 16);
-      }
+      if (b.done && b.type === 'wind') drawSailRotor(ctx, sx + 7, sy + 6, b.rot, 11);
+      if (b.done && b.type === 'gate') drawGate(ctx, sx, sy, b.open);
       if (b.done && b.type === 'flag') {
         drawFlag(sx, sy, 18, 6);
       }
@@ -1070,13 +1044,16 @@ function render() {
 // a stable per-wühler phase so lamp flicker is not in lockstep
 const n0 = c => (c.x * 0 + (c.name ? c.name.length : 0)) * 1.7;
 function drawFlag(x, y, pole, len, col = '#c8402c') {
-  ctx.fillStyle = '#4a3a2a';
-  ctx.fillRect(x, y, 1, pole);
-  for (let k = 0; k < len; k++) {
-    const o = Math.round(Math.sin(G.frame * 0.12 + k * 0.8));
-    ctx.fillStyle = k % 2 ? col : shade(col, 1.12);
-    ctx.fillRect(x + 1 + k, y + 1 + o, 1, 4);
-  }
+  ctx.save(); ctx.lineCap = 'round';
+  const timber = ctx.createLinearGradient(x - 0.3, 0, x + 0.7, 0); timber.addColorStop(0, '#d3ad6d'); timber.addColorStop(1, '#64452f');
+  ctx.strokeStyle = timber; ctx.lineWidth = 0.8;
+  ctx.beginPath(); ctx.moveTo(x + 0.4, y + pole); ctx.lineTo(x + 0.4, y); ctx.stroke();
+  const wave = G.reduceMotion ? 0 : Math.sin(G.frame * 0.12) * 0.7;
+  const cloth = ctx.createLinearGradient(0, y, 0, y + 5); cloth.addColorStop(0, shade(col, 1.2)); cloth.addColorStop(1, col);
+  ctx.fillStyle = cloth; ctx.beginPath(); ctx.moveTo(x + 1, y + 1);
+  ctx.bezierCurveTo(x + len * 0.4, y - 0.2 + wave, x + len * 0.6, y + 3 - wave, x + len + 1, y + 1 + wave);
+  ctx.lineTo(x + len, y + 4 + wave); ctx.bezierCurveTo(x + len * 0.6, y + 6 - wave, x + len * 0.4, y + 3.2 + wave, x + 1, y + 5); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#e1ba70'; ctx.beginPath(); ctx.arc(x + 0.4, y, 0.65, 0, Math.PI * 2); ctx.fill(); ctx.restore();
 }
 
 export { calcTerr, cam, ctx, cv, drawAnimal, drawHat, shade, drawFlag, lc, lctx, render, resize, stars };

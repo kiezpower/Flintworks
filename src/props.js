@@ -92,13 +92,10 @@ function drawWires(ctx, cx, cy) {
       by = best.gy - best.h + 1,
       n = Math.ceil(Math.abs(bx - ax));
     if (Math.max(ax, bx) - cx < 0 || Math.min(ax, bx) - cx > G.VW) continue;
-    ctx.fillStyle = '#2a2420';
-    for (let k = 0; k <= n; k++) {
-      const t = k / n,
-        x = ax + (bx - ax) * t,
-        y = ay + (by - ay) * t + Math.sin(Math.PI * t) * Math.min(8, n / 10);
-      ctx.fillRect(Math.round(x - cx), Math.round(y - cy), 1, 1);
-    }
+    ctx.save(); ctx.strokeStyle = '#302e29'; ctx.lineWidth = 0.35;
+    ctx.beginPath(); ctx.moveTo(ax - cx, ay - cy);
+    ctx.quadraticCurveTo((ax + bx) / 2 - cx, (ay + by) / 2 - cy + Math.min(16, n / 5), bx - cx, by - cy);
+    ctx.stroke(); ctx.restore();
   }
 }
 function drawProps(ctx, cx, cy) {
@@ -116,50 +113,35 @@ function drawProps(ctx, cx, cy) {
   }
 }
 // one prop standing on row sy (the first solid row), drawn in landscape pixels, outline #24160c
-function drawProp(ctx, kind, x, y) {
-  const r = (dx, dy, w, h, c) => {
-    ctx.fillStyle = c;
-    ctx.fillRect(x + dx, y + dy, w, h);
-  };
+function drawProp(g, kind, x, y) {
+  g.save(); g.translate(x, y); g.lineCap = 'round'; g.lineJoin = 'round';
+  const wood = g.createLinearGradient(0, -6, 5, 0); wood.addColorStop(0, '#c4975e'); wood.addColorStop(1, '#62482f');
+  const box = (x, y, w, h, radius = 0.3) => { g.beginPath(); g.roundRect(x, y, w, h, radius); g.fill(); };
+  const line = (x1, y1, x2, y2, color, width = 0.4) => { g.strokeStyle = color; g.lineWidth = width; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); };
+  g.fillStyle = wood;
   if (kind === 'barrel') {
-    r(0, -5, 4, 5, '#24160c');
-    r(1, -4, 2, 3, '#9a6a3a');
-    r(1, -4, 2, 1, '#b8824a');
-    r(0, -3, 4, 1, '#5a5650');
+    box(0, -4, 3, 4, 0.7); g.fillStyle = '#dfba7d'; g.beginPath(); g.ellipse(1.5, -3.8, 1.4, 0.45, 0, 0, Math.PI * 2); g.fill();
+    for (const dy of [-3, -1]) line(0.15, dy, 2.85, dy, '#687171', 0.4);
   } else if (kind === 'crate') {
-    r(0, -4, 4, 4, '#24160c');
-    r(1, -3, 2, 2, '#b08a52');
-    r(1, -3, 2, 1, '#caa46a');
+    box(0, -3.8, 3.5, 3.8); line(0.3, -3.5, 3.2, -0.3, '#e5bc7c'); line(0.3, -0.3, 3.2, -3.5, '#e5bc7c');
+    g.strokeStyle = '#4d3b2b'; g.lineWidth = 0.2; g.strokeRect(0, -3.8, 3.5, 3.8);
   } else if (kind === 'woodpile') {
-    // three logs below, two above, end grain light
-    r(0, -4, 7, 4, '#24160c');
-    for (const [lx, ly] of [[0, -2], [2, -2], [4, -2], [1, -4], [3, -4]]) {
-      r(lx + 0, ly, 2, 2, '#8a5a2e');
-      r(lx + 1, ly, 1, 1, '#d8b07a');
-    }
+    for (let k = 0; k < 5; k++) { const px = (k % 3) * 2.1, py = -1.1 - Math.floor(k / 3) * 1.7; g.fillStyle = wood; box(px, py - 1, 2, 1.8, 0.65); g.fillStyle = '#e2bf84'; g.beginPath(); g.ellipse(px + 1.5, py - 0.1, 0.6, 0.8, 0, 0, Math.PI * 2); g.fill(); }
   } else if (kind === 'cart') {
-    r(0, -5, 6, 3, '#24160c');
-    r(1, -4, 4, 1, '#a0703f');
-    r(5, -6, 2, 1, '#6a4a2a');
-    r(1, -2, 3, 2, '#24160c');
-    r(2, -2, 1, 1, '#8a847c');
+    for (const px of [1.3, 4.7]) { g.fillStyle = '#444b49'; g.beginPath(); g.arc(px, -0.7, 0.9, 0, Math.PI * 2); g.fill(); g.fillStyle = '#aab0a5'; g.beginPath(); g.arc(px, -0.7, 0.3, 0, Math.PI * 2); g.fill(); }
+    g.fillStyle = wood; box(0, -4.8, 6, 3, 0.5); line(1, -2, 1, -4.6, '#797c70'); line(5, -2, 5, -4.6, '#797c70'); line(5, -5, 7, -5.8, '#a38353');
   } else if (kind === 'sign') {
-    // the board points towards the nearest gold (G.signDir from startcue.js)
     const d = G.signDir || 1;
-    r(1, -7, 1, 7, '#5a3c22');
-    r(d > 0 ? 0 : -2, -8, 5, 3, '#24160c');
-    r(d > 0 ? 1 : -1, -7, 3, 1, '#c8a46a');
-    r(d > 0 ? 4 : -2, -7, 1, 1, '#c8a46a');
+    box(1, -7, 0.7, 7); g.beginPath(); g.moveTo(d > 0 ? 0 : -2, -8); g.lineTo(d > 0 ? 4 : 2, -8); g.lineTo(d > 0 ? 5 : 3, -6.5); g.lineTo(d > 0 ? 4 : 2, -5); g.lineTo(d > 0 ? 0 : -2, -5); g.closePath(); g.fill();
+    line(d > 0 ? 1 : 2, -6.5, d > 0 ? 3.6 : -0.8, -6.5, '#efcf8a', 0.35);
   } else if (kind === 'fence') {
-    r(0, -4, 1, 4, '#6a4a2a');
-    r(3, -4, 1, 4, '#6a4a2a');
-    r(0, -3, 4, 1, '#8a643a');
+    box(0, -4, 0.7, 4); box(3.3, -4, 0.7, 4); line(0, -2.8, 4, -2.8, '#bb9461', 0.7);
   } else {
-    // lantern post: a pole, an arm, a lamp that is warm at night
-    r(1, -8, 1, 8, '#4a3a2a');
-    r(1, -8, 3, 1, '#4a3a2a');
-    r(3, -7, 1, 2, darkness() > 0.2 ? '#ffd27a' : '#c8b07a');
+    box(1, -8, 0.6, 8); line(1, -8, 3.5, -8, '#705a3a');
+    g.fillStyle = '#4a4f46'; box(2.7, -7.6, 1.6, 2.5);
+    g.fillStyle = darkness() > 0.2 ? '#ffe3a0' : '#ceb77d'; box(3, -7.2, 1, 1.7, 0.2);
   }
+  g.restore();
 }
 // screen positions of the lanterns in view (for night light, render.js)
 function lanternSpots(cx, cy, out) {

@@ -1,23 +1,34 @@
 # Painted adventure artwork
 
-Generated for Flintworks from the approved storybook lobby concept, November 2026.
-These are local game assets, bundled and precached for web/PWA and Android; there
-is no runtime image-generation service or external font/image dependency.
+Generated for Flintworks from the approved storybook art direction, November 2026.
+All images and fonts are bundled locally and precached for web/PWA and Android.
 
-- `valley.png`, `desert.png`, `winter.png`: scenery plates without baked controls
-  or characters. Used by `sceneart.js` in both lobby and game. Autumn reuses the
-  golden valley plate; seasonal foreground trees still change independently.
-- `objects.png`: transparent 4×2 atlas (1774×887). Castle, hut, sawmill, shop;
-  furnace, lift tower, pine, oak. Tight frame bounds live in `objectart.js`.
+- `valley.png`, `desert.png`, `winter.png`: scenery without baked controls or
+  characters. Autumn reuses the golden valley; foreground trees change seasonally.
+- `objects.png`: transparent 4×2 atlas (1774×887): castle, hut, sawmill, shop,
+  furnace, lift, pine and oak.
+- `details.png`: transparent 4×4 atlas (1278×1230): pump, windmill body, chemistry
+  workshop, tower; gate, field, grain-mill body, chest; cauldron, wall, lintel,
+  cannon carriage; flag, bare winter oak, snow pine and cactus. Measured cutouts
+  live in `objectart.js`. Gate/field/flag/carriage frames are reserved: their live
+  variants retain procedural geometry so opening, growth and aiming remain clear.
+- `materials.png`: opaque 4×3 atlas (1448×1086): earth, rock, gold, sand; granite,
+  loam, copper ore, coal; timber, cyan crystal, cave back wall, moss/turf.
 
-The eight cutouts are rendered into the existing sprite footprints: placement,
-collision, growth stages and building interactions keep their existing geometry.
-Building styles recolour the high-resolution wood while retaining warm lights.
-Spring/autumn oaks use the high-resolution seasonal palette. Snow pines, bare
-winter trees, cacti, seedlings and buildings absent from this atlas retain the
-procedural artwork. Missing images also fall back to the procedural renderer.
+`terrainart.js` projects textures through the real material masks. A mirrored
+pattern removes seams at swatch edges. Only visible 32-cell chunks are painted at
+4 samples per cell, with a 192-chunk LRU (at most 12 MiB of chunk pixel storage).
+Digging, drying and flowing materials invalidate the same affected chunks as the
+existing renderer; palette changes, world switches and resizing clear the cache.
+The old tiled buffer remains for liquids/glass and missing-file fallback. Existing
+lighting, vein rims, wetness and depth shading transfer onto the painted materials;
+optional accessibility marks distinguish the four find types. This is a rendering
+layer: it does not alter physics, maps, seeds, saves, networking or tool rules.
 
-The editable ore/tunnel map and working lobby miners remain live. The lobby's
-soil and podium use native-resolution vector shading over that same map. In-game
-diggable terrain and some smaller effects/UI pictograms still use the existing
-material renderer; this release does not replace every game asset.
+Building and tree cutouts keep the original footprints and growth-stage sizes.
+Wood styles preserve lights/fire. Seasonal oaks, snow pines and grown cacti now
+use the painted art; seedlings keep the procedural fallback. NPC helpers use the
+existing illustrated character sheets without changing saved identities or roles.
+Native canvas curves draw small plants, cave decor, props, wires, flags, gate
+leaves and rotating sails. The game still includes procedural item/HUD icons,
+creatures, fluids and effects; this release does not replace every visual asset.
