@@ -938,6 +938,7 @@ function throwItem(c, vx, vy) {
   const it = spawnItem(t, c.x + 2 + c.face * 3, c.y + 1, vx, vy, 40, c);
   if (t === 'flint') it.armed = true;
   if (t === 'tnt') it.fuse = 110;
+  c.throwF = G.frame; // visual release/follow-through; the item already follows its original flight
   sfx('throw', c.x, c.y);
 }
 // An aimed throw (the "Wurf" button dragged like an aiming stick, see input.js): the thing in
