@@ -1,3 +1,4 @@
+import { drawingDensity } from './graphicsquality.js';
 import { drawGoal } from './tapgo.js';
 import { drawCue } from './startcue.js';
 import { drawCastleCue } from './castlecue.js';
@@ -105,7 +106,7 @@ G.zoomAdj = 0;
 try {
   G.zoomAdj = +(localStorage.getItem('wuehlwelt-zoom') || 0) || 0;
 } catch {}
-// canvas pixels per landscape pixel: 2 for the detailed look, 1 on slow devices
+// Effect detail tier; framebuffer density is chosen separately from the world grid.
 G.res = 2;
 function resize() {
   const r = game.getBoundingClientRect();
@@ -115,9 +116,9 @@ function resize() {
   );
   G.VW = Math.min(W, Math.ceil(r.width / s));
   G.VH = Math.min(H, Math.ceil(r.height / s));
-  // the canvas has twice the landscape resolution; all drawing code keeps landscape units
-  const quality = Math.min(2, window.devicePixelRatio || 1, Math.sqrt(2_000_000 / (r.width * r.height)));
-  const surfaceScale = G.res === 1 ? 1 : Math.max(G.res, s * quality);
+  // Drawing code keeps landscape units; the framebuffer follows bounded display density.
+  const quality = drawingDensity(r.width, r.height, G.res === 1, window.devicePixelRatio || 1);
+  const surfaceScale = Math.max(1, s * quality);
   cv.width = Math.round(G.VW * surfaceScale);
   cv.height = Math.round(G.VH * surfaceScale);
   cv.style.width = G.VW * s + 'px';

@@ -134,7 +134,8 @@ test('all six portraits keep native detail and the lobby canvas matches display 
 });
 
 
-test('fast graphics still reduce the drawing buffer; fine graphics restore display detail', async ({ page }) => {
+test('fast graphics bound the buffer without dropping to the world grid', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 1000 });
   await lobby(page);
   const sizes = await page.evaluate(async () => {
     const { cv, resize } = await import('/src/render.js');
@@ -144,7 +145,9 @@ test('fast graphics still reduce the drawing buffer; fine graphics restore displ
     G.res = 2; resize();
     return { fast, world, fine: [cv.width, cv.height] };
   });
-  expect(sizes.fast).toEqual(sizes.world);
+  expect(sizes.fast[0]).toBeGreaterThan(sizes.world[0] * 2);
+  expect(sizes.fast[1]).toBeGreaterThan(sizes.world[1] * 2);
+  expect(sizes.fast[0] * sizes.fast[1]).toBeLessThan(1_010_000);
   expect(sizes.fine[0]).toBeGreaterThan(sizes.fast[0]);
   expect(sizes.fine[1]).toBeGreaterThan(sizes.fast[1]);
 });
