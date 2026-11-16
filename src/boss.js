@@ -5,6 +5,7 @@
 // It comes once per world in free play after ten minutes (now and then, not in the relaxed
 // setting), and in the third night of "Festung" (siege.js). Only the host moves it; the others get
 // its body with the creatures (net/sync.js).
+import { drawCreature } from './creatureart.js';
 import { announceBanner, quake } from './announce.js';
 import { hurt, startTumble } from './digger.js';
 import { mkAnimal } from './entities.js';
@@ -163,6 +164,11 @@ function drawWorms(ctx, cx, cy) {
         y = Math.round(s[k].y - cy);
       if (x < -12 || x > G.VW + 12 || y < -12 || y > G.VH + 12) continue;
       const r = k === 0 ? 5 : k > s.length - 4 ? 3 + (s.length - k) * 0.4 : 4.5;
+      // painted (creatureart.js): the head turns the way it burrows, the plates overlap behind it
+      const dx = k === 0 && s[1] ? s[0].x - s[1].x : 1,
+        dy = k === 0 && s[1] ? s[0].y - s[1].y : 0;
+      const look = { size: r * 2 + (k === 0 ? 3 : 2.5), hurt: a.hurt > 0 && a.hurt & 2, angle: k === 0 ? Math.atan2(dy, dx) : k * 0.9, flipY: k === 0 && dx < 0 };
+      if (drawCreature(ctx, 'worm', k === 0 ? 'idle' : 'body', x - r, y - r, r * 2, r * 2, 1, look)) continue;
       // a dark outline, a plate in two shades, a light rim on top
       ctx.fillStyle = '#24160c';
       ctx.fillRect(x - r - 1, y - r - 1, r * 2 + 2, r * 2 + 2);

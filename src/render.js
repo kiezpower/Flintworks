@@ -1,4 +1,5 @@
 import { drawGate, drawSailRotor } from './mechanicalart.js';
+import { drawCreature, hasCreatureArt } from './creatureart.js';
 import { drawingDensity } from './graphicsquality.js';
 import { drawGoal } from './tapgo.js';
 import { drawCue } from './startcue.js';
@@ -263,7 +264,7 @@ function drawAnimal(a, sx, sy) {
   a.air = kind === 'slime' && Math.abs(a.vy || 0) > 0.6;
   const key = `${a.kind}${ph}${hurtF}${glow}${a.air ? 1 : 0}`;
   let spr = animalCache[key];
-  if (!spr) {
+  if (!spr && !hasCreatureArt(a.kind)) {
     spr = animalCache[key] = VARIANT[a.kind] ? variantSprite(a, ph, hurtF, glow) : animalSprite(a, ph, hurtF, glow);
   }
   // a monster about to strike: a blinking "!" over its head
@@ -276,7 +277,9 @@ function drawAnimal(a, sx, sy) {
     ctx.fillRect(wx, wy, 1, 3);
     ctx.fillRect(wx, wy + 4, 1, 1);
   }
-  if (f > 0) drawHi(ctx, spr, sx - 2, sy - 2);
+  if (paintedAnimal(a, sx, sy, kind, f, hurtF, ph)) {
+    // (painted, creatureart.js)
+  } else if (f > 0) drawHi(ctx, spr, sx - 2, sy - 2);
   else {
     ctx.save();
     ctx.translate(sx - 2 + spr.width, 0);
@@ -294,6 +297,28 @@ function drawAnimal(a, sx, sy) {
     ctx.fillStyle = a.hp / a.maxHp > 0.35 ? '#e8503a' : '#ffb03a';
     ctx.fillRect(bx, by, Math.max(0.5, (bw * a.hp) / a.maxHp), 1);
   }
+}
+// the painted picture: standing or stepping, the attack pose while it warns and just after it
+// struck; the slime stretches in the air, the Fluffel leaps when it is off the ground
+const struck = new WeakMap();
+function paintedAnimal(a, sx, sy, kind, f, hurtF, ph) {
+  if (!hasCreatureArt(a.kind)) return false;
+  const last = struck.get(a) || { atk: 0, at: -99 };
+  if ((a.atk || 0) > last.atk) last.at = G.frame;
+  last.atk = a.atk || 0;
+  struck.set(a, last);
+  const flying = kind === 'bat' || kind === 'fish',
+    moving = flying || Math.abs(a.vx || 0) > 0.05;
+  let pose = moving && ph ? 'move' : 'idle',
+    squash = G.reduceMotion || moving ? null : [1, 1 + Math.sin(G.frame / 18) * 0.02];
+  if (kind === 'fluffel') {
+    if (Math.abs(a.vy || 0) > 0.4) pose = 'attack';
+  } else if (a.warn > 0 || G.frame - last.at < 14) pose = 'attack';
+  else if (a.air) {
+    pose = 'move';
+    squash = [0.86, 1.2];
+  }
+  return drawCreature(ctx, a.kind, pose, sx, sy, a.w, a.h, f, { hurt: hurtF, pet: a.pet != null, squash });
 }
 // animal frames are painted once into small canvases (2px margin) and drawn smoothed at 2×
 const animalCache = {};

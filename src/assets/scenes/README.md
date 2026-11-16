@@ -30,5 +30,5 @@ Wood styles preserve lights/fire. Seasonal oaks, snow pines and grown cacti now
 use the painted art; seedlings keep the procedural fallback. NPC helpers use the
 existing illustrated character sheets without changing saved identities or roles.
 Native canvas curves draw small plants, cave decor, props, wires, flags, gate
-leaves and rotating sails. The game still includes procedural item/HUD icons,
-creatures, fluids and effects; this release does not replace every visual asset.
+leaves and rotating sails. Creatures and bosses are painted since v1.137.0 (`../creatures/README.md`). The
+game still includes procedural item/HUD icons, fluids and effects.
