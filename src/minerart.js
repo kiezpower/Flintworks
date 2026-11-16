@@ -6,16 +6,25 @@ import mika from './assets/miners/mika.png';
 import juna from './assets/miners/juna.png';
 import toni from './assets/miners/toni.png';
 import nora from './assets/miners/nora.png';
+import actionAnna from './assets/miners/actions/anna.png';
+import actionBruno from './assets/miners/actions/bruno.png';
+import actionMika from './assets/miners/actions/mika.png';
+import actionJuna from './assets/miners/actions/juna.png';
+import actionToni from './assets/miners/actions/toni.png';
+import actionNora from './assets/miners/actions/nora.png';
+import actionMetadata from './assets/miners/actions/atlas.json';
 import metadata from './assets/miners/atlas.json';
-import { outfitPal } from './skins.js';
-const urls = { anna, bruno, mika, juna, toni, nora };
+import { minerAction, minerIdentity } from './mineractions.js';
+import { outfitPal, parseSkin } from './skins.js';
+const urls = { anna, bruno, mika, juna, toni, nora, 'anna:actions': actionAnna, 'bruno:actions': actionBruno, 'mika:actions': actionMika, 'juna:actions': actionJuna, 'toni:actions': actionToni, 'nora:actions': actionNora };
+const atlases = { ...metadata, ...Object.fromEntries(Object.entries(actionMetadata).map(([hero, meta]) => [hero + ':actions', meta])) };
 const ROW = { idle: 0, walk: 1, shovel: 2, pick: 3 };
 const sources = new Map(), variants = new Map();
 let minerArtLoaded = 0; // generation counter also invalidates partially loaded lobby portraits
 const loads = Object.entries(urls).map(([hero, url]) => new Promise(resolve => {
   const image = new Image();
   image.onload = () => {
-    const meta = metadata[hero];
+    const meta = atlases[hero];
     if (image.naturalWidth !== meta.width || image.naturalHeight !== meta.height) return resolve(false);
     const canvas = document.createElement('canvas');
     canvas.width = meta.width; canvas.height = meta.height;
@@ -37,11 +46,11 @@ const rgb = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
 function variant(hero, row, col, cap, outfit, mode) {
   const key = `${hero}|${row}|${col}|${cap}|${outfit}|${mode}`;
   if (variants.has(key)) return variants.get(key);
-  const { cellWidth: w, cellHeight: h } = metadata[hero];
+  const { cellWidth: w, cellHeight: h } = atlases[hero];
   const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
   const ctx = canvas.getContext('2d');
   // Measured bounds exclude detached alpha specks outside the actual figure/tool.
-  const [bx, by, bw, bh] = metadata[hero].bounds[row][col];
+  const [bx, by, bw, bh] = atlases[hero].bounds[row][col];
   ctx.drawImage(sources.get(hero), col * w + bx, row * h + by, bw, bh, bx, by, bw, bh);
   const pixels = ctx.getImageData(0, 0, w, h), data = pixels.data;
   const capRgb = rgb(cap), shirt = outfitPal(outfit).T;
@@ -68,9 +77,12 @@ function variant(hero, row, col, cap, outfit, mode) {
 // Original scale contract: .5 is a 16×20 portrait; .25 is an 8×10 game
 // character. Native source pixels survive larger canvas transforms and DPRs.
 function drawMinerFrame(g, x, y, f, action, frame, cap, outfit, scale = .25, mode = '', hero = 'bruno') {
+  const special = action === 'throw' || action === 'hook';
+  if (special && !sources.has(hero + ':actions')) return drawMinerFrame(g, x, y, f, 'idle', frame, cap, outfit, scale, mode, hero);
+  if (special) hero += ':actions';
   if (!sources.has(hero)) return false;
-  const row = ROW[action] ?? 0, col = ((Math.floor(frame) % 6) + 6) % 6;
-  const meta = metadata[hero], [px, py] = meta.pivots[row][col];
+  const row = special ? (action === 'hook' ? 1 : 0) : ROW[action] ?? 0, col = ((Math.floor(frame) % 6) + 6) % 6;
+  const meta = atlases[hero], [px, py] = meta.pivots[row][col];
   g.save();
   g.translate(x, y); g.scale(f > 0 ? scale : -scale, scale);
   g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
@@ -79,4 +91,12 @@ function drawMinerFrame(g, x, y, f, action, frame, cap, outfit, scale = .25, mod
   g.restore();
   return true;
 }
-export { drawMinerFrame, minerArtReady, minerArtLoaded };
+function minerHand(c, frame, reducedMotion = false) {
+  const hero = minerIdentity(c, parseSkin(c.skin).hero), key = hero + ':actions';
+  const pose = minerAction(c, frame, null, null, reducedMotion);
+  if (!sources.has(key) || pose?.action !== 'hook') return { x: 3 + c.face * 2, y: 4 };
+  const meta = atlases[key], col = pose.frame;
+  const [px, py] = meta.pivots[1][col], [hx, hy] = meta.hands[col], k = meta.unitScale * .25;
+  return { x: 3 + (hx - px) * k * c.face, y: 10 + (hy - py) * k };
+}
+export { drawMinerFrame, minerHand, minerArtReady, minerArtLoaded };

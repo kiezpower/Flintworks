@@ -1,3 +1,4 @@
+import { minerHand } from './minerart.js';
 // Getting out of a pit or a cave without knowing the tricks: a ledge too high for a jump is
 // found by itself (climbOut). In the modern controls the Wühler then digs a ramp up through
 // earth on his own (digger.js wantsDig); where that does not work the action button offers the
@@ -150,7 +151,7 @@ function fireHook(c, { ax = 0, ay = 0 } = {}) {
     if (Math.abs(dx) > 0.2) c.face = Math.sign(dx);
   }
   const [hx, hy] = handOf(c);
-  c.hook = { ph: 'fly', hx, hy, dx, dy, d: 0 };
+  c.hook = { ph: 'fly', started: G.frame, hx, hy, dx, dy, d: 0 };
   sfx('throw', c.x, c.y);
 }
 register('hook', fireHook);
@@ -179,7 +180,7 @@ function startHook(c, L) {
     ay = L.top;
   c.face = L.dir;
   const [hx, hy] = handOf(c);
-  c.hook = { ax, ay, hx, hy, t: 0, ph: 'lfly', tx: L.dir > 0 ? L.col : L.col - 5, ty: L.top - 10 };
+  c.hook = { ax, ay, hx, hy, t: 0, ph: 'lfly', started: G.frame, tx: L.dir > 0 ? L.col : L.col - 5, ty: L.top - 10 };
   sfx('throw', c.x, c.y);
 }
 // a place to stand right at the anchor (on the ledge it caught, or just below it): the body's
@@ -296,17 +297,16 @@ function updHook(c, I) {
 function drawHook(ctx, c, x, y, cx, cy) {
   const k = c.hook || c.hookV;
   if (!k) return;
-  const hx = x + 3 + c.face * 2,
-    hy = y + 4,
-    ex = k.hx - cx,
-    ey = k.hy - cy,
-    n = Math.max(1, Math.round(Math.hypot(ex - hx, ey - hy)));
-  ctx.fillStyle = '#c9a46a';
-  for (let s = 0; s <= n; s++) ctx.fillRect(Math.round(hx + ((ex - hx) * s) / n), Math.round(hy + ((ey - hy) * s) / n), 1, 1);
-  ctx.fillStyle = '#9aa4ae';
-  ctx.fillRect(Math.round(ex) - 1, Math.round(ey) - 1, 3, 2);
-  ctx.fillStyle = '#d4dbe2';
-  ctx.fillRect(Math.round(ex), Math.round(ey) - 1, 1, 1);
+  const hand = minerHand(c, G.frame, G.reduceMotion);
+  const hx = x + hand.x, hy = y + hand.y, ex = k.hx - cx, ey = k.hy - cy;
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#59452e'; ctx.lineWidth = 0.75;
+  ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(ex, ey); ctx.stroke();
+  ctx.strokeStyle = '#dbc08b'; ctx.lineWidth = 0.3; ctx.stroke();
+  const angle = Math.atan2(ey - hy, ex - hx);
+  ctx.translate(ex, ey); ctx.rotate(angle);
+  ctx.strokeStyle = '#ced9d7'; ctx.lineWidth = 0.6;
+  ctx.beginPath(); ctx.moveTo(-1.5, 0); ctx.lineTo(1, 0); ctx.moveTo(0, 0); ctx.quadraticCurveTo(2, -2, -0.5, -1.7); ctx.moveTo(0, 0); ctx.quadraticCurveTo(2, 2, -0.5, 1.7); ctx.stroke(); ctx.restore();
 }
 
 // ---- the action button ----
