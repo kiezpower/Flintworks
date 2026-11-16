@@ -219,7 +219,6 @@ button:focus-visible {
 .clock canvas {
   width: 33px;
   height: 18px;
-  image-rendering: pixelated;
 }
 .clock span {
   font-size: 12px;
