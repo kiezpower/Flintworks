@@ -1,5 +1,14 @@
 # UI-Leitfaden: Menüs, HUD, Knöpfe
 
+> **Aktuelle Stilfreigabe ab v1.134.4/1.134.5 (16.11.2026):** Die freigegebene
+> Richtung ist eine gemalte Abenteuerwelt mit glatten Konturen, Bree Serif/Nunito
+> und warmen Holz-/Goldflächen. Die folgenden Pixelraster- und Pixelschrift-Vorgaben
+> dokumentieren den früheren Stil und gelten nur noch für verbleibende Fallbacks.
+> Die Simulationszelle und Kollisionsmaße bleiben unverändert; daraus folgt keine
+> Pflicht zu sichtbaren Grafikpixeln. Lesbarkeit, Materialerkennung und Bedienbarkeit
+> gelten weiterhin. Umsetzung: `terrainart.js`, `objectart.js`, `adventure.css` und
+> [Asset-Hinweise](../src/assets/scenes/README.md). Frühere Bewertungen sind historisch.
+
 > **Stand: v1.52.0.** Gilt für alles, was Spieler sehen. Bewertung des heutigen Stands:
 > [ART_RUBRIC.md](ART_RUBRIC.md) (Kategorien 8–10). Grafikregeln: [STYLE.md](STYLE.md).
 > Ziel: so knapp und klar wie SteamWorld Dig 2, im Holz- und Gold-Stil von Flintworks.

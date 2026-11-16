@@ -1,3 +1,4 @@
+import { drawTerrainArt, invalidateTerrainArt, resetTerrainArt } from './terrainart.js';
 import { G, builds } from './state.js';
 import { T, TEX, setTopSoil, topTex, worldShade } from './tex.js';
 import { prepareUnder, setGround, underTexel, wallTexel } from './under.js';
@@ -142,6 +143,7 @@ const getDeepGate = () => deepGate;
 function setPatterns(on) {
   if (patterns === !!on) return false;
   patterns = !!on;
+  resetTerrainArt();
   return true;
 }
 function patternTint(c, m, x, y) {
@@ -284,6 +286,7 @@ const colorOf = i => {
 const TILE = 1024;
 let img, px, tiles;
 function makeImage() {
+  resetTerrainArt();
   const tw = W * RES,
     th = H * RES;
   img = new ImageData(tw, th);
@@ -310,6 +313,7 @@ function upload(x, y, w, h) {
   }
 }
 function paintAll() {
+  resetTerrainArt();
   prepareUnder(mat);
   for (let i = 0; i < W * H; i++) paintCell(i);
   upload(0, 0, W * RES, H * RES);
@@ -329,6 +333,21 @@ function drawWorld(ctx, cx, cy, vw, vh) {
     const [dx, dy, dw, dh] = [x0 - sx0, y0 - sy0, x1 - x0, y1 - y0].map(v => v / RES);
     ctx.drawImage(t.cv, x0 - t.x, y0 - t.y, x1 - x0, y1 - y0, dx, dy, dw, dh);
   }
+  drawTerrainArt(ctx, cx, cy, vw, vh, { W, H, mat, bg, shade, biome: G.biome, patterns, tone: paintedTone });
+}
+// Transfer the existing lighting, wet edges, vein rims and depth gate onto the
+// painted material, without enlarging the simulation or the world pixel buffer.
+function paintedTone(i) {
+  const x = i % W, y = (i / W) | 0, m = mat[i];
+  if (!m) {
+    const n = Number(solidAt(i - 1)) + Number(solidAt(i + 1)) + Number(solidAt(i - W)) + Number(solidAt(i + W));
+    return Math.max(0.4, 0.9 - n * 0.12 - fresh[i] * 0.0005);
+  }
+  const tex = m === EARTH && (shade[i] & 4) ? topTex() : TEX[m];
+  if (!tex) return 1;
+  const a = px[y * RES * PW + x * RES], b = tex[((y * 2) & (T - 1)) * T + ((x * 2) & (T - 1))];
+  const lum = c => (c & 255) * 0.3 + ((c >>> 8) & 255) * 0.59 + ((c >>> 16) & 255) * 0.11;
+  return Math.max(0.25, Math.min(1.7, lum(a) / Math.max(1, lum(b))));
 }
 // changed chunks of the world image, uploaded once per frame
 const CS = 32;
@@ -369,6 +388,7 @@ function markDirty(x, y, r) {
   for (let cy = cy0; cy <= cy1; cy++)
     for (let cx = cx0; cx <= cx1; cx++) {
       const c = cy * CWn + cx;
+      invalidateTerrainArt(cx, cy);
       netDirty[c] = 1;
       if (!dirty[c]) {
         dirty[c] = 1;

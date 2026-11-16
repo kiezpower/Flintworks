@@ -166,6 +166,7 @@ test('reduced motion keeps the lobby scene still', async ({ page }) => {
     (await import('/src/minerart.js')).minerArtReady,
     (await import('/src/sceneart.js')).sceneArtReady,
     (await import('/src/objectart.js')).objectArtReady,
+    (await import('/src/terrainart.js')).terrainArtReady,
   ]));
   // Wait for the first paint and overlay placement before comparing the canvas.
   await page.waitForFunction(() => {
