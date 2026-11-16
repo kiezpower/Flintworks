@@ -116,8 +116,10 @@ function resize() {
   G.VW = Math.min(W, Math.ceil(r.width / s));
   G.VH = Math.min(H, Math.ceil(r.height / s));
   // the canvas has twice the landscape resolution; all drawing code keeps landscape units
-  cv.width = G.VW * G.res;
-  cv.height = G.VH * G.res;
+  const quality = Math.min(2, window.devicePixelRatio || 1, Math.sqrt(2_000_000 / (r.width * r.height)));
+  const surfaceScale = Math.max(G.res, s * quality);
+  cv.width = Math.round(G.VW * surfaceScale);
+  cv.height = Math.round(G.VH * surfaceScale);
   cv.style.width = G.VW * s + 'px';
   cv.style.height = G.VH * s + 'px';
   lc.width = G.VW;
@@ -483,7 +485,7 @@ const glows = [],
   fires = [];
 function render() {
   flush();
-  ctx.setTransform(G.res, 0, 0, G.res, 0, 0);
+  ctx.setTransform(cv.width / G.VW, 0, 0, cv.height / G.VH, 0, 0);
   ctx.imageSmoothingEnabled = false;
   // (watching a shared round: the player the camera follows, net/watch.js; two at one screen: the
   // middle between both, local.js)

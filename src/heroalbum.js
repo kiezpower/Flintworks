@@ -21,10 +21,11 @@ function condition(hero) {
 }
 function portrait(hero, current = false) {
   const canvas = document.createElement('canvas');
-  canvas.width = 24;
-  canvas.height = 32;
+  canvas.width = 192;
+  canvas.height = 256;
   canvas.setAttribute('aria-hidden', 'true');
-  drawPortrait(canvas.getContext('2d'), 4, 10, 1, current ? P.cap : hero.cap, P.hat, false, P.outfit, hero.id);
+  const ctx = canvas.getContext('2d'); ctx.scale(8, 8);
+  drawPortrait(ctx, 4, 10, 1, current ? P.cap : hero.cap, P.hat, false, P.outfit, hero.id);
   return canvas;
 }
 function openHeroAlbum({ onAppearance, onOutfits, onAchievements, onSelected } = {}) {
@@ -131,7 +132,7 @@ function openHeroAlbum({ onAppearance, onOutfits, onAchievements, onSelected } =
   });
   update();
   minerArtReady.then(ready => {
-    if (!ready || !album.isConnected) return;
+    if (!album.isConnected) return;
     for (const hero of HEROES) cards.get(hero.id).querySelector('canvas').replaceWith(portrait(hero, P.hero === hero.id));
     update();
   });
