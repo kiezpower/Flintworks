@@ -118,6 +118,9 @@ test('unfinished hero selection survives closing the tutorial card and reloading
   await page.goto('/');await page.waitForFunction(()=>window.__ww);await page.click('#veilGo');
   await page.evaluate(async()=> (await import('/src/tutorial.js')).endTutorial('skip'));
   await page.reload();await page.waitForFunction(()=>window.__ww);await page.click('#lbPlay');
+  if (await page.locator('.ls-kind[data-kind="solo"]').isVisible()) {
+    await page.click('.ls-kind[data-kind="solo"]');await page.locator('.ls-card[data-id="gold"]').first().click();await page.click('.ls-go');await page.click('#lbPlay');
+  }
   await expect(page.locator('#firstHeroChoice')).toBeVisible();await page.locator('#firstHeroChoice [data-hero="bruno"]').click();await page.click('#confirmHeroChoice');
   await expect(page.locator('#heroAbility')).toBeVisible();expect(await page.evaluate(async()=> (await import('/src/profile.js')).P.hero)).toBe('bruno');
 });
@@ -134,4 +137,11 @@ test('Mika keeps gold and gem discoveries across worlds and precision picks the 
     for(let x=145;x<255;x+=3)mat[45*W+x]=GOLD;mat[99*W+199]=GOLD;heroTick(c);
     return {found,nearest:c.heroScan[0],count:c.heroScan.length};
   });expect(r).toEqual({found:2,nearest:[199,99],count:4});
+});
+test('autosave cannot resurrect a completed tutorial during the completion animation',async({page})=>{
+  await page.goto('/');await page.waitForFunction(()=>window.__ww);await page.click('#veilGo');
+  const r=await page.evaluate(async()=>{
+    const {endTutorial}=await import('/src/tutorial.js');const {saveGame,hasSave}=await import('/src/save.js');
+    endTutorial('done');saveGame();return {saved:hasSave(),pending:(await import('/src/profile.js')).P.heroChoicePending};
+  });expect(r).toEqual({saved:false,pending:true});
 });
