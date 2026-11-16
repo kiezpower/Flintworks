@@ -3,7 +3,7 @@
 Der erste Wühler wird auf der vorhandenen Abschlusskarte des Tutorials ausgewählt. Anna
 ist sichtbar vorausgewählt; die vier sofort verfügbaren Rollen stehen daneben. Erst beim
 Weitergehen wird die Wahl gespeichert. Vor dem Tutorial erscheint kein neues Menü.
-Alte Profile und ausdrücklich ausgewählte Figuren behalten ihr Aussehen.
+Eine noch offene Auswahl bleibt nach einem Neuladen vorgemerkt; vor der nächsten echten Runde wird sie nachgeholt. Alte Profile und ausdrücklich ausgewählte Figuren behalten ihr Aussehen.
 
 ## Rollen und Varianten
 

@@ -114,3 +114,24 @@ test('completed master title is visible on the podium without browser rendering 
   await page.goto('/');await page.waitForFunction(()=>window.__ww);await expect(page.locator('#heroReminder')).toContainText('Stollenmeisterin');
   await page.screenshot({path:'test-results/hero-master-podium.png'});expect(errors).toEqual([]);
 });
+test('unfinished hero selection survives closing the tutorial card and reloading',async({page})=>{
+  await page.goto('/');await page.waitForFunction(()=>window.__ww);await page.click('#veilGo');
+  await page.evaluate(async()=> (await import('/src/tutorial.js')).endTutorial('skip'));
+  await page.reload();await page.waitForFunction(()=>window.__ww);await page.click('#lbPlay');
+  await expect(page.locator('#firstHeroChoice')).toBeVisible();await page.locator('#firstHeroChoice [data-hero="bruno"]').click();await page.click('#confirmHeroChoice');
+  await expect(page.locator('#heroAbility')).toBeVisible();expect(await page.evaluate(async()=> (await import('/src/profile.js')).P.hero)).toBe('bruno');
+});
+test('Mika keeps gold and gem discoveries across worlds and precision picks the actual nearest find',async({page})=>{
+  await start(page,{hero:'mika'});
+  const r=await page.evaluate(async()=>{
+    const {G,crew}=window.__ww,c=crew.find(c=>c.pid===G.myId);
+    const {heroEvent}=await import('/src/heroskills.js');const {collectMastery,heroTick}=await import('/src/heroabilities.js');const {P}=await import('/src/profile.js');
+    collectMastery(c);heroEvent(c,'find',1,{item:'nug'});collectMastery(c);
+    const next={...c,heroCounters:{},heroMission:{}};collectMastery(next);heroEvent(next,'find',1,{item:'gem'});collectMastery(next);
+    const found=P.heroMastery.mika.findTypes;
+    const {W,mat,AIR,GOLD}=await import('/src/world.js');c.x=200;c.y=100;G.frame=30;c.heroActive=300;c.heroQuick=true;
+    for(let y=45;y<155;y++)for(let x=145;x<255;x++)mat[y*W+x]=AIR;
+    for(let x=145;x<255;x+=3)mat[45*W+x]=GOLD;mat[99*W+199]=GOLD;heroTick(c);
+    return {found,nearest:c.heroScan[0],count:c.heroScan.length};
+  });expect(r).toEqual({found:2,nearest:[199,99],count:4});
+});

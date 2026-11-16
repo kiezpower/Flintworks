@@ -54,7 +54,7 @@ function heroTick(c) {
     let shown = 0;
     for (let y = Math.max(0, (c.y - radius) | 0); y < Math.min(H, c.y + radius); y += 3)
       for (let x = Math.max(0, (c.x - radius) | 0); x < Math.min(W, c.x + radius); x += 3) {
-        if (shown >= 24) break;
+        if (shown >= 24 && !(activeSkill(c) && c.heroQuick)) break;
         if (!(activeSkill(c) && c.heroQuick ? [GOLD, GEM] : [GOLD, GEM, ORE, COAL]).includes(mat[y * W + x])) continue;
         // Scan results are relayed as compact positions, then drawn locally on each device.
         (c.heroScan ||= []).push([x, y]); shown++;
@@ -116,7 +116,9 @@ function collectMastery(c) {
     if (!delta.work && !delta.feats && !objectiveMoved) continue;
     P.heroMastery ||= {};
     const p = P.heroMastery[id] ||= { work: 0, feats: 0, rewarded: 0 };
-    for (const key of objectiveKeys) if (Number.isFinite(value[key])) p[key] = Math.max(p[key] || 0, value[key]);
+    for (const key of objectiveKeys) if (key !== 'findMask' && Number.isFinite(value[key])) p[key] = Math.max(p[key] || 0, value[key]);
+    p.findMask = (p.findMask || 0) | (Number.isFinite(value.findMask) ? value.findMask : 0);
+    p.findTypes = Math.max(p.findTypes || 0, (p.findMask & 1 ? 1 : 0) + (p.findMask & 2 ? 1 : 0));
     p.work = Math.min(1e6, (p.work || 0) + delta.work);
     p.feats = Math.min(1e6, (p.feats || 0) + delta.feats);
 

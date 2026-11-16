@@ -89,6 +89,8 @@ function endTutorial(result, via = 'button') {
   tutHud();
   if (!result) return;
   P.tutorialDone = true;
+  if (!P.hero) P.heroChoicePending = true;
+  hooks.clearTutorialSave?.();
   if (result === 'skip') ev('onb_skip', { step: step ? step.id : '', sec: secs(), via });
   else {
     ev('onb_complete', { sec: secs(), hints: run ? run.hints : 0, skilled: skilled(run) });

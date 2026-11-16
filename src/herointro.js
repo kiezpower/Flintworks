@@ -3,6 +3,7 @@ import { HEROES, selectHero } from './heroes.js';
 import { ROLES } from './heroskills.js';
 import { P, saveProfile } from './profile.js';
 import { tr } from './i18n.js';
+import { openPanel, closePanel } from './ui.js';
 import { ev } from './analytics.js';
 function renderHeroChoice(card) {
   if (P.hero) return;
@@ -17,8 +18,14 @@ function renderHeroChoice(card) {
     section.append(b);
   }
   card.insertBefore(section, card.querySelector('.btnrow'));
-  GChoice = () => { if (selectHero(P, selected)) { saveProfile(); ev('hero_select', { hero: selected }); } };
+  GChoice = () => { if (selectHero(P, selected)) { P.heroChoicePending = false; saveProfile(); ev('hero_select', { hero: selected }); } };
 }
 let GChoice = null;
 const commitHeroChoice = () => { GChoice?.(); GChoice = null; };
-export { renderHeroChoice, commitHeroChoice };
+function chooseFirstHero(done) {
+  const body = openPanel('Wähle deinen ersten Wühler'), card = document.createElement('div');
+  const actions = document.createElement('div'); actions.className = 'btnrow';
+  const confirm = document.createElement('button'); confirm.id = 'confirmHeroChoice'; confirm.className = 'go'; confirm.textContent = tr('Weiter graben');
+  confirm.onclick = () => { commitHeroChoice(); closePanel(); done(); }; actions.append(confirm); card.append(actions); body.append(card); renderHeroChoice(card);
+}
+export { renderHeroChoice, commitHeroChoice, chooseFirstHero };

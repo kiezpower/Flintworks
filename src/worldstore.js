@@ -98,7 +98,8 @@ export async function validWorldObjects(save) {
     Object.entries(run).every(([key, value]) => key === 'deepDig' ? count(value) : ['sectors','ledges','buildTypes','workshops'].includes(key) &&
       Array.isArray(value) && value.length <= 64 && value.every(v => typeof v === 'string' && v.length <= 40)));
   const activityState = o => o == null || record(o) && Object.entries(o).every(([id, n]) => heroIds.has(id) && count(n));
-  const heroState = c => activityState(c.heroCasts) && activityState(c.heroUses) &&
+  const heroState = c => ['heroDepth','heroTripDepth','heroGuardRun','heroActive','heroCooldown'].every(key => c[key] == null || count(c[key])) &&
+    (c.heroHookStart == null || Number.isFinite(c.heroHookStart)) && activityState(c.heroCasts) && activityState(c.heroUses) &&
     (c.heroUseful == null || typeof c.heroUseful === 'boolean') &&
     (c.heroUnlocks == null || Number.isInteger(c.heroUnlocks) && c.heroUnlocks >= 0 && c.heroUnlocks <= 63) &&
     (c.matchRole == null || heroIds.has(c.matchRole)) && missionState(c.heroMission) &&

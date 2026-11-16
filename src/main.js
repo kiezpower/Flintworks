@@ -102,7 +102,7 @@ import { addButtonsHtml, wireAddButtons } from './lobbyfriends.js';
 import { dayNo, endCard, shareAndTell } from './daily.js';
 import { H, H0, W, W0, clamp, dryFresh, getSeed, setSeed, surf } from './world.js';
 import { grantMasterOutfits } from './heromissions.js';
-import { renderHeroChoice, commitHeroChoice } from './herointro.js';
+import { renderHeroChoice, commitHeroChoice, chooseFirstHero } from './herointro.js';
 import { unlockMask } from './heroskills.js';
 import { recordVisit } from './heroinsights.js';
 import { heroTick, heroHud } from './heroabilities.js';
@@ -134,6 +134,7 @@ const keysHtml = () => `${keyList('touchonly', TOUCH_KEYS)}${keyList('keyonly', 
 // A run is in progress when a world is loaded or a save is waiting
 const hasRun = () => G.inRun || hasSave();
 function play(withTutorial, level = null, veil = false) {
+  if (!withTutorial && !G.inRun && P.heroChoicePending && !P.hero) return chooseFirstHero(() => play(withTutorial, level, veil));
   // in a room: the host starts the round for everybody, the others wait for the host
   if (inRoom() && !G.inRun) {
     if (!NET.host) return toast('Warte auf den Host');
@@ -299,7 +300,7 @@ G.loadWorld = async w => {
   return true;
 };
 const lobbyHooks = { play, discard, hasRun, keysHtml };
-setTutHooks({ play, menu, discard, save: saveGame, renderHeroChoice, commitHeroChoice });
+setTutHooks({ play, menu, discard, save: saveGame, clearTutorialSave: clearSave, renderHeroChoice, commitHeroChoice, chooseFirstHero });
 recordVisit();
 if (grantMasterOutfits(P)) saveProfile();
 function menu() {
