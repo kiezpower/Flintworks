@@ -1,0 +1,35 @@
+/* Illustrated adventure: real controls over the living scene. */
+:root { --gold: #f4c454; }
+button, input, select { font-family: var(--font-ui); }
+.panel { border-image: none; border: 2px solid #b88b51; border-radius: 18px; background: linear-gradient(135deg, #342b25f5, #1d2528fa); box-shadow: 0 18px 70px #071b2b99, inset 0 1px #ffeacb45; }
+#lobby.werkhof { --parch: #fff0ce; --line: #432c21; --wood-hi: #99704b; --wood: #65452e; --wood-lo: #392b22; }
+.lb-brand { position: absolute; z-index: 1; top: 20px; left: 50%; transform: translateX(-50%); font: 400 clamp(24px, 3vw, 42px)/1 var(--font-display); letter-spacing: .035em; color: #ffe4a1; text-shadow: 0 2px #684328, 0 4px 12px #163b4c; pointer-events: none; }
+.werkhof .lb-logo { border: 1px solid #dfb66b; border-radius: 16px 5px 16px 5px; background: linear-gradient(130deg, #795334f5, #382b23f5); box-shadow: inset 0 1px #ffe3a34d, 0 6px 18px #17323a50; }
+.werkhof .lb-logo b { font-weight: 400; letter-spacing: 0; text-shadow: 0 2px 3px #35251b; }
+.werkhof .lb-logo small { font-family: var(--font-ui); }
+.werkhof .lb-side .lb-b, .werkhof .lb-modes button {
+  border: 2px solid #c69a58; border-radius: 18px 7px 18px 7px;
+  background: radial-gradient(ellipse at 20% 0, #c49a583b, transparent 70%), linear-gradient(110deg, #795336f5, #3b2d24f8);
+  box-shadow: inset 0 1px #ffe3aa70, inset 0 -3px #291c17, 0 6px 14px #142e3e55;
+  color: #fff0ce; font-weight: 400; text-shadow: 0 2px 3px #231c17;
+  transition: border-color .18s, box-shadow .18s;
+}
+.werkhof .lb-side .lb-b:hover, .werkhof .lb-modes button:hover { border-color: #ffe2a2; box-shadow: inset 0 1px #fff0bc, 0 5px 24px #efc86e45; }
+.werkhof .lb-opt { border: 1px solid #c39350; border-radius: 12px; background: linear-gradient(135deg, #fff0c9, #dbb675); color: #49321f; text-shadow: none; box-shadow: inset 0 1px #fff9e6, 0 4px 12px #16313a50; }
+.werkhof .lb-go { border: 2px solid #ffe7a3; border-radius: 17px; background: radial-gradient(ellipse at 50% 0, #fff2a8, transparent 80%), linear-gradient(#f8d66b, #d89a24); color: #513114; text-shadow: 0 1px #fff4c4; box-shadow: inset 0 2px #fff3bb, inset 0 -5px #b87b1c, 0 6px 0 #51371d, 0 10px 28px #f4bf4750; letter-spacing: .035em; }
+.werkhof .lb-go:hover { filter: brightness(1.08); }
+.werkhof .lb-sel { border: 1px solid #c79d61; border-radius: 12px; background: linear-gradient(120deg, #fff1ce, #e6c995); box-shadow: inset 0 1px #fff7df, 0 3px 8px #261c1b30; }
+.werkhof .lb-name { border: 1px solid #b88b4c; border-radius: 9px; background: linear-gradient(#fff1cf, #e9c98e); box-shadow: 0 4px 14px #162e3d50; text-shadow: none; }
+.werkhof .lb-slot { border: 2px solid #fce2a0; box-shadow: inset 0 2px #fff4c6, 0 4px 0 #6a4828, 0 5px 20px #ebbb5a65; animation: none; }
+.werkhof .lb-crew-heading { color: #fff7df; text-shadow: 0 2px 6px #163238; }
+.werkhof .lb-crew-heading span { font-size: 13px; }
+.werkhof .lb-play { scrollbar-color: #d7ae68 #3b3027; }
+@media (max-width: 900px) { .lb-brand { display: none; } }
+@media (max-width: 600px) {
+  #lobby.werkhof { background: linear-gradient(#274a48, #23322f 50%, #1a2525); }
+  .werkhof .lb-side .lb-b, .werkhof .lb-modes button { border-radius: 12px; }
+  .werkhof .lb-go { border-radius: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { .werkhof button { transition: none; } }
+#lobby .ico { image-rendering: auto; background-repeat: no-repeat; background-position: center; }
+@media (max-width: 600px) { .werkhof .lb-play { margin-top: 254px; } }

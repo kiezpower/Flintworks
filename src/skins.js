@@ -124,6 +124,8 @@ function restyle(spr, style) {
         break;
       }
   g.putImageData(id, 0, 0);
+  out.artType = spr.artType;
+  out.artStyle = style;
   return (byStyle[style] = out);
 }
 // the sprite of a building in its owner's style

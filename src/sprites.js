@@ -1,3 +1,4 @@
+import { drawPaintedObject } from './objectart.js';
 // ---- Sprites ----
 function sp(w, h, fn) {
   const c = document.createElement('canvas');
@@ -452,7 +453,7 @@ function treeSprite(type, stage) {
   const pine = type === 'pine' || snowy;
   const h = pine ? 12 + stage * 6 : 11 + stage * 5,
     w = pine ? 5 + stage * 3 : 7 + stage * 3;
-  return sp(w, h, R => {
+  const sprite = sp(w, h, R => {
     const tx = Math.floor(w / 2);
     if (pine) {
       R(tx - 1, h - 6, 2, 6, '#6a4526');
@@ -484,6 +485,8 @@ function treeSprite(type, stage) {
         }
     }
   });
+  if (stage >= 2 && !snowy) sprite.artType = pine ? 'pine' : 'oak';
+  return sprite;
 }
 
 // 12×12 pixel icons for the touch buttons
@@ -757,6 +760,7 @@ function hiRes(spr, col = '#24160c') {
 }
 // draw a 1× sprite through its smoothed double-resolution copy (ctx is in landscape units)
 function drawHi(ctx, spr, x, y) {
+  if (drawPaintedObject(ctx, spr, x, y)) return;
   const o = hiRes(spr);
   ctx.drawImage(o, x - 0.5, y - 0.5, o.width / 2, o.height / 2);
 }
@@ -841,3 +845,5 @@ export {
   sp,
   treeSprite,
 };
+
+for (const type of ['base', 'hut', 'saw', 'shop', 'furnace', 'lift']) SPR[type].artType = type;

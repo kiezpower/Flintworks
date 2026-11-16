@@ -1,3 +1,5 @@
+import { drawPaintedObject } from './objectart.js';
+import { restyle } from './skins.js';
 // Buildings at double resolution with real material detail. The 1× sprites (sprites.js, recoloured
 // for building styles in skins.js) say WHAT is where; here every source pixel is read as a
 // material – stone, wood, roof, window – and its 2×2 texels are painted with that material's
@@ -130,6 +132,7 @@ function craftedIcon(spr) {
   return o;
 }
 function drawCrafted(ctx, spr, x, y, variant = 1) {
+  if (drawPaintedObject(ctx, spr, x, y, restyle)) return;
   const o = crafted(spr, variant);
   ctx.drawImage(o, x - 0.5, y - 0.5, o.width / 2, o.height / 2);
 }

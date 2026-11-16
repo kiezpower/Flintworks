@@ -162,7 +162,11 @@ test('the crew uses live room members, readiness and additional player counts', 
 test('reduced motion keeps the lobby scene still', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await lobby(page);
-  await page.evaluate(async () => (await import('/src/minerart.js')).minerArtReady);
+  await page.evaluate(async () => Promise.all([
+    (await import('/src/minerart.js')).minerArtReady,
+    (await import('/src/sceneart.js')).sceneArtReady,
+    (await import('/src/objectart.js')).objectArtReady,
+  ]));
   // Wait for the first paint and overlay placement before comparing the canvas.
   await page.waitForFunction(() => {
     const c = document.querySelector('#lbCv');

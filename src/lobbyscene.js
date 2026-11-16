@@ -1,3 +1,5 @@
+import { drawSceneArt } from './sceneart.js';
+import { objectArtReady } from './objectart.js';
 // Lobby backdrop in the style of classic game menus: a cut through the landscape with
 // sky, mountains, the castle on a hill, tunnels and ore in the ground. The ground is a real
 // little world: the lobby workers (lobbyworkers.js) dig through it and carry the ore home.
@@ -24,9 +26,11 @@ let terrain = null, // ground with tunnels (repainted where the workers dig)
   terrainKey = '',
   biomeName = 'meadow',
   dirty = false,
-  topCols = [];
+  topCols = [],
+  paintedTerrain = null;
 const HERO = { x: 0.5 };
 let heroScale = 2;
+objectArtReady.then(() => { terrainKey = ''; });
 const podiumTop = () => groundY(land.heroX) - 3;
 // Friends stand on either side of the hero, in landscape pixels.
 const friendDx = () => [-Math.max(20, heroScale * 11), Math.max(20, heroScale * 11)];
@@ -112,6 +116,51 @@ function paintCell(x, y) {
       px[Y * W2 + X] = col;
     }
 }
+function paintSoftTerrain() {
+  const { LW, LH, cells } = land;
+  const c = paintedTerrain || document.createElement('canvas');
+  if (c.width !== LW * 8 || c.height !== LH * 8) { c.width = LW * 8; c.height = LH * 8; }
+  const g = c.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); g.scale(8, 8);
+  const soil = g.createLinearGradient(0, LH * 0.55, 0, LH);
+  soil.addColorStop(0, biomeName === 'winter' ? '#827b69' : biomeName === 'desert' ? '#bc8551' : '#87633f');
+  soil.addColorStop(1, '#382d27');
+  const contour = () => {
+    g.beginPath(); g.moveTo(0, groundY(0));
+    for (let x = 0; x <= LW; x += 2) g.lineTo(x, groundY(x));
+    g.lineTo(LW, LH); g.lineTo(0, LH); g.closePath();
+  };
+  contour(); g.fillStyle = soil; g.fill();
+  g.save(); contour(); g.clip();
+  // Low-contrast rounded mineral inclusions, deterministic across frames.
+  for (let k = 0; k < LW * LH / 40; k++) {
+    const x = (k * 47.73) % LW, y = (k * 31.17) % LH;
+    g.fillStyle = k % 3 ? '#e5ce9a16' : '#191c2025';
+    g.beginPath(); g.ellipse(x, y, 0.3 + (k % 4) * 0.13, 0.2 + (k % 3) * 0.12, k, 0, Math.PI * 2); g.fill();
+  }
+  const colors = { 3: '#e7b942', 10: '#b87452', 11: '#30373a', 13: '#65c9d3' };
+  for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
+    if (y < groundY(x)) continue;
+    const m = cells[y * LW + x];
+    if (!m) {
+      g.fillStyle = '#251e1b'; g.beginPath(); g.roundRect(x - 0.15, y - 0.15, 1.3, 1.3, 0.35); g.fill();
+    } else if (colors[m]) {
+      g.fillStyle = colors[m];
+      g.beginPath(); g.ellipse(x + 0.5, y + 0.5, 0.65, 0.55, (x + y) * 0.7, 0, Math.PI * 2); g.fill();
+      if ((x * 3 + y * 7) % 4 === 0) { g.fillStyle = '#fff5cf65'; g.beginPath(); g.arc(x + 0.35, y + 0.25, 0.2, 0, Math.PI * 2); g.fill(); }
+    }
+  }
+  g.restore();
+  // Flowing turf edge, with fine blades rather than enlarged green squares.
+  g.strokeStyle = biomeName === 'winter' ? '#e9f3ee' : biomeName === 'desert' ? '#cdb978' : '#6f9d46';
+  g.lineWidth = 1.6; g.lineJoin = 'round';
+  g.beginPath(); for (let x = 0; x <= LW; x++) { if (!x) g.moveTo(x, groundY(x)); else g.lineTo(x, groundY(x)); } g.stroke();
+  if (biomeName === 'meadow') {
+    g.strokeStyle = '#a3bc69'; g.lineWidth = 0.18;
+    g.beginPath(); for (let x = 0; x < LW; x += 0.9) { const y = groundY(x); g.moveTo(x, y); g.lineTo(x + 0.2, y - 0.4 - (x * 7 % 1)); } g.stroke();
+  }
+  paintedTerrain = c;
+}
+
 function dig(x, y) {
   const { LW, LH, cells } = land;
   if (x < 0 || y < 0 || x >= LW || y >= LH) return 0;
@@ -152,13 +201,14 @@ function paintTerrain() {
   px = new Uint32Array(img.data.buffer);
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) paintCell(x, y);
   g.putImageData(img, 0, 0);
+  paintSoftTerrain();
   // surface objects at landscape scale
   overlay = document.createElement('canvas');
-  overlay.width = LW * 2;
-  overlay.height = LH * 2;
+  overlay.width = LW * 8;
+  overlay.height = LH * 8;
   const o = overlay.getContext('2d');
-  o.setTransform(2, 0, 0, 2, 0, 0);
-  o.imageSmoothingEnabled = false;
+  o.setTransform(8, 0, 0, 8, 0, 0);
+  o.imageSmoothingEnabled = true;
   drawCrafted(o, SPR.base, land.castleX, groundY(land.castleX + 18) - SPR.base.height + 1);
   // Real building artwork keeps the lobby a place in the game, rather than a menu backdrop.
   for (const [type, fx] of [['saw', 0.23], ['lift', 0.88]]) {
@@ -243,13 +293,15 @@ function drawScene(g, opts) {
   if (!reducedMotion) updWorkers(land, t);
   if (dirty) {
     terrain.getContext('2d').putImageData(img, 0, 0);
+    paintSoftTerrain();
     dirty = false;
   }
   const { LW, LH } = land;
   g.setTransform(g.canvas.width / land.LW, 0, 0, g.canvas.height / land.LH, 0, 0);
   g.imageSmoothingEnabled = false;
-  drawSky(g, b, t);
-  g.drawImage(terrain, 0, 0, LW, LH);
+  if (!drawSceneArt(g, biome, LW, LH)) drawSky(g, b, t);
+  g.imageSmoothingEnabled = true;
+  g.drawImage(paintedTerrain || terrain, 0, 0, LW, LH);
   g.drawImage(overlay, 0, 0, LW, LH);
   drawWorkers(g, reducedMotion);
   // the hero on the hill: twice as big as in the game, bobbing and turning now and then
@@ -261,18 +313,20 @@ function drawScene(g, opts) {
   halo.addColorStop(1, 'rgba(255,239,163,0)');
   g.fillStyle = halo;
   g.fillRect(hx - 22 * heroScale, hy - 34 * heroScale, 44 * heroScale, 36 * heroScale);
-  // Stepped stone plinth with a grassy crown.
-  for (let step = 2; step >= 0; step--) {
-    const half = 10 * heroScale + step * 3;
-    g.fillStyle = '#382d25';
-    g.fillRect(hx - half, hy + step * 2, half * 2, 3);
-    g.fillStyle = step % 2 ? '#8e8979' : '#b0aa92';
-    g.fillRect(hx - half + 1, hy + step * 2, half * 2 - 2, 2);
-    g.fillStyle = '#625f53';
-    for (let x = hx - half + 5; x < hx + half; x += 9) g.fillRect(x, hy + step * 2, 1, 2);
-  }
+  // A smooth carved stone podium with a living grass edge.
+  const half = 10 * heroScale;
+  g.save();
+  const stone = g.createLinearGradient(0, hy, 0, hy + 6);
+  stone.addColorStop(0, '#c8c5a6'); stone.addColorStop(0.3, '#91917b'); stone.addColorStop(1, '#4c594d');
+  g.fillStyle = '#283d32';
+  g.beginPath(); g.roundRect(hx - half - 3, hy + 2, half * 2 + 6, 5, 2); g.fill();
+  g.fillStyle = stone;
+  g.beginPath(); g.roundRect(hx - half - 2, hy, half * 2 + 4, 5, 1.5); g.fill();
+  g.strokeStyle = '#e6ddae'; g.lineWidth = 0.3;
+  g.beginPath(); g.moveTo(hx - half, hy + 1); g.lineTo(hx + half, hy + 1); g.stroke();
   g.fillStyle = b.top[0];
-  g.fillRect(hx - 10 * heroScale, hy - 1, 20 * heroScale, 2);
+  g.beginPath(); g.roundRect(hx - half - 1, hy - 1, half * 2 + 2, 1.7, 0.8); g.fill();
+  g.restore();
   const bob = jumpY < 0 ? 0 : Math.floor(t / 30) % 2;
   const f = spin > 0 ? (Math.floor(spin / 6) % 2 ? 1 : -1) : 1;
   // portrait texels at one landscape pixel each: 16×20, double the in-game size
