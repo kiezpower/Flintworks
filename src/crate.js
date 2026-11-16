@@ -1,3 +1,4 @@
+import { capacity } from './heroskills.js';
 // A storage chest deep down (like Terraria's chests): a small building that can only stand more
 // than 15 m under the surface. Standing at it, the action button puts the finds from the bag into
 // it (everything the castle would take: not flint, TNT, loam, bread, potions or torches), up to 30;
@@ -37,7 +38,7 @@ function putIn(c, b) {
   }
 }
 // into a bag (a player's, or a helper's that fetches them): as many as fit
-function takeOut(c, b, max = 16) {
+function takeOut(c, b, max = capacity(c)) {
   let n = 0;
   while (b.items && b.items.length && c.inv.length < max) {
     c.inv.push(b.items.pop());

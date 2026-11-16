@@ -97,7 +97,9 @@ test('Bruno collects beyond sixteen and exports a valid world', async ({ page })
     const { serialize } = await import('/src/save.js');
     const { validWorldObjects } = await import('/src/worldstore.js');
     c.x = G.base.x + G.base.w + 50;
-    c.inv = Array(20).fill('rock');
+    c.inv = [];
+    const { takeOut } = await import('/src/crate.js');
+    takeOut(c, { items: Array(20).fill('rock'), x: c.x, gy: c.y, w: 10, h: 10 });
     return { capacity: capacity(c), valid: await validWorldObjects({ data: serialize() }) };
   });
   expect(result).toEqual({ capacity: 20, valid: true });
