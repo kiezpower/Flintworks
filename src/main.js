@@ -101,6 +101,10 @@ import { statsHtml } from './stats.js';
 import { addButtonsHtml, wireAddButtons } from './lobbyfriends.js';
 import { dayNo, endCard, shareAndTell } from './daily.js';
 import { H, H0, W, W0, clamp, dryFresh, getSeed, setSeed, surf } from './world.js';
+import { grantMasterOutfits } from './heromissions.js';
+import { renderHeroChoice, commitHeroChoice } from './herointro.js';
+import { unlockMask } from './heroskills.js';
+import { recordVisit } from './heroinsights.js';
 import { heroTick, heroHud } from './heroabilities.js';
 
 // ---- Screens & loop ----
@@ -295,7 +299,9 @@ G.loadWorld = async w => {
   return true;
 };
 const lobbyHooks = { play, discard, hasRun, keysHtml };
-setTutHooks({ play, menu, discard, save: saveGame });
+setTutHooks({ play, menu, discard, save: saveGame, renderHeroChoice, commitHeroChoice });
+recordVisit();
+if (grantMasterOutfits(P)) saveProfile();
 function menu() {
   // leaving a running real round for the lobby (analytics: where rounds are given up)
   if (G.state === 'play' && G.inRun && !G.tut)
@@ -323,7 +329,7 @@ function startGame(withTutorial = false) {
   audioInit();
   if (G.AC && G.AC.state === 'suspended') G.AC.resume();
   const mine = sel_();
-  if (mine) Object.assign(mine, { hat: P.hat, cap: P.cap, skin: skinTag(P.outfit, P.bstyle, P.gear, P.hero), name: P.name || mine.name });
+  if (mine) Object.assign(mine, { hat: P.hat, cap: P.cap, skin: skinTag(P.outfit, P.bstyle, P.gear, P.hero), heroUnlocks: unlockMask(P), matchRole: P.matchRole || 'anna', name: P.name || mine.name });
   // your castle in your building style (alone; in a room the host sets it, net/session.js)
   if (!G.net && G.base && !G.tut) G.base.skin = P.bstyle;
   setDigBoost();

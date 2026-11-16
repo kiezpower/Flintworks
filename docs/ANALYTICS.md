@@ -136,3 +136,13 @@ kommt, sind `onb_hint`, `onb_rescue` und `onb_recover`.
 Auch diese Ereignisse bleiben lokal. Koop-Clients erhalten ihren Meisterschaftsfortschritt
 vom Host und erfassen ihre Kapitel selbst; Aktivierungen fremder Spieler werden nicht als
 eigene Analyseereignisse erfasst. `app_open.days_since` bleibt die lokale Rückkehrmessung.
+
+### Ergänzung 1.136.0
+
+`hero_useful` hat die Felder `hero` (s) und `amount` (n) und zählt tatsächlich wirksame
+Aktivierungen. Album → Spielverlauf wertet die lokalen Ereignisse aus. Der zusätzliche
+Schlüssel `flintworks-hero-visits` speichert den ersten lokalen Kalendertag, höchstens 90
+Besuchstage und D1-/D7-Rückkehrflags. Vor Ablauf des jeweiligen Beobachtungstags wird kein
+negatives Ergebnis behauptet. Die Anzeige umfasst nur dieses Gerät und ist keine Statistik
+über alle Spieler. Externer Versand bleibt deaktiviert; eine externe Analyse braucht weiterhin
+ein separat entworfenes Verfahren mit Einwilligung.

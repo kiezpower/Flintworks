@@ -20,7 +20,7 @@ test('all six roles have distinct rules; every restricted mode disables all bonu
     const c = id => ({ pid: 0, skin: `blue.wood.${id}`, heroActive: 300 });
     const free = [s.digFactor(c('1'), true), s.capacity(c('2')), s.hookFactor(c('4')), s.buildFactor(c('5'))];
     const blocked = [];
-    for (const change of [{ tut: true }, { daily: {} }, { teams: [{}] }, { mode: 'daily' }, { mode: 'camp1' }, { mode: 'custom' }]) {
+    for (const change of [{ tut: true }, { mode: 'camp1' }, { mode: 'custom' }]) {
       Object.assign(G, { tut: false, daily: null, teams: null, mode: 'gold' }, change);
       blocked.push([s.digFactor(c('1'), true), s.capacity(c('2')), s.hookFactor(c('4')), s.buildFactor(c('5'))]);
     }
@@ -55,7 +55,7 @@ test('productive actions advance chapters once, unlock a variant and preserve co
     const { collectMastery } = await import('/src/heroabilities.js');
     const { P } = await import('/src/profile.js');
     collectMastery(c);
-    c.heroActive = 480; c.heroUseful = false;
+    c.heroDepth = 30; c.heroActive = 480; c.heroUseful = false;
     heroEvent(c, 'dig', 2500); heroEvent(c, 'dig', 10);
     collectMastery(c);
     const once = P.heroMastery.anna.feats;
@@ -136,7 +136,7 @@ test('alternative unlocks and English mastery descriptions work without wins', a
     (await import('/src/heroalbum.js')).openHeroAlbum();
   });
   await expect(page.locator('#heroSkills')).toContainText('Tunnel building');
-  await expect(page.locator('#heroSkills')).toContainText('Quick: 5 s duration');
+  await expect(page.locator('#heroSkills')).toContainText('Precision strike');
   await expect(page.locator('#heroSkills')).toContainText('Optional today: use an ability productively');
 });
 
@@ -168,7 +168,7 @@ test('mastery variant, optional daily goal and cosmetic reward persist without d
     const { P, dayNumber } = await import('/src/profile.js');
     collectMastery(c);
     for (let i = 0; i < 8; i++) {
-      c.heroActive = 300; c.heroUseful = false; heroEvent(c, 'dig', 1250); collectMastery(c);
+      c.heroDepth = 30; c.heroActive = 300; c.heroUseful = false; heroEvent(c, 'dig', 1250); collectMastery(c);
     }
     const level = P.level, xp = P.xp;
     c.heroUseful = false; heroEvent(c, 'dig', 1); collectMastery(c);

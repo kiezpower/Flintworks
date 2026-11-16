@@ -2,6 +2,7 @@
 // with space (or opens one), and the list shows the open rooms. See who is in, get ready, start
 // together.
 // The relay hands out the codes and player ids; the game messages go through sendTo().
+import { unlockMask } from '../heroskills.js';
 import { skinTag } from '../skins.js';
 import { Share } from '@capacitor/share';
 import { tr } from '../i18n.js';
@@ -62,7 +63,8 @@ function randomToken() {
   const b = crypto.getRandomValues(new Uint8Array(16));
   return Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
 }
-const me = () => ({ name: P.name || 'Kurt', cap: P.cap, hat: P.hat, skin: skinTag(P.outfit, P.bstyle, P.gear, P.hero), token: token() });
+const me = () => ({ name: P.name || 'Kurt', cap: P.cap, hat: P.hat, skin: skinTag(P.outfit, P.bstyle, P.gear, P.hero), mastery: unlockMask(P), role: P.matchRole || 'anna', token: token() });
+G.shareHeroProgress = () => { if (inRoom()) send({ t: 'join', code: NET.room, ...me() }); };
 
 // the players as the relay reports them, with what others chose made safe to show
 const cleanPlayers = list =>

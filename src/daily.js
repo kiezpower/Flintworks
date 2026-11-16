@@ -1,3 +1,5 @@
+import { ROLES } from './heroskills.js';
+import { VARIANTS } from './herovariants.js';
 // Tagesschicht: one world a day, the same for everybody (seed, world type and a twist come from the
 // date). Eight minutes to earn as much as possible; the best result of the day, medals and the
 // streak of days in a row are kept in the profile, and the result can be shared like a Wordle grid
@@ -135,7 +137,7 @@ GAME_MODES.daily = {
     return cur().twist.store;
   },
   get tools() {
-    return cur().twist.tools;
+    return [...(cur().twist.tools || []), ...((((G.replayDay ?? dayNo()) % 6 + 6) % 6) === 3 ? ['hook'] : [])];
   },
   get money() {
     return cur().twist.money;
@@ -291,6 +293,7 @@ function openDaily(hooks) {
   box.className = 'dl-box';
   box.innerHTML = `<p class="dl-world">${BIOME_ICON[D.biome]} <b>${tr(BIOMES[D.biome].name)}</b> · <b>${tr(D.twist.name)}</b></p>
     <p>${tr(D.twist.intro)}</p>
+    <p>${tr('Tagesrolle für alle')}: ${tr(ROLES[Object.keys(ROLES)[((n % 6) + 6) % 6]].role)} · ${tr(n % 2 ? VARIANTS[Object.keys(ROLES)[((n % 6) + 6) % 6]].name : 'Ausdauer')}</p>
     <p class="hint">${tr('Jeden Tag eine neue Welt – für alle gleich. 8 Minuten: verdiene so viel du kannst.')}</p>
     <p class="dl-medals">${MEDALS.map((m, k) => `${MEDAL_ICON[k + 1]} ${m}`).join('  ')}</p>
     <div class="dl-stats">

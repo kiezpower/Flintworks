@@ -1,3 +1,4 @@
+import { projectEvent } from './heroprojects.js';
 import { heroEvent, roleOf, activeSkill } from './heroskills.js';
 import { crew } from './state.js';
 // Shared store at the home base. Walking into the base sells gold and gems and drops raw
@@ -63,9 +64,12 @@ function unload(list, x, y, all = false) {
 }
 function arriveAtBase(c) {
   if (isAbsent(c)) return;
-  const was = G.money, carried = c.inv.length;
+  const was = G.money, carried = c.inv.length, goods = c.inv.filter(t => !KEEP.includes(t));
+  heroEvent(c, 'return');
   if (unload(c.inv, G.base.x + G.base.w / 2, G.base.gy - G.base.h - 4, !isPlayer(c))) {
-    heroEvent(c, 'deliver', carried - c.inv.length);
+    heroEvent(c, 'deliver', carried - c.inv.length, { load: carried });
+    projectEvent('deliver', carried - c.inv.length, { items: goods });
+    c.heroTripDepth = 0; c.heroGuardRun = 0;
     if (isPlayer(c)) addStat(c.pid, 'sold', G.money - was);
     c.isel = Math.min(c.isel, Math.max(0, c.inv.length - 1));
     G.invKey = '';
@@ -105,11 +109,12 @@ function updProduction(b) {
     const worker = b.heroBoost > 0 && crew.find(c => c.id === b.heroWorker);
     const boost = b.heroBoost > 0 && worker && roleOf(worker) === 'toni' && activeSkill(worker) &&
       !worker.dead && Math.hypot(b.x + b.w / 2 - worker.x, b.gy - worker.y) < 50;
-    if (boost) heroEvent(worker, 'production');
+    if (boost) heroEvent(worker, 'production', 1, { type: b.type });
     if (b.heroBoost > 0) b.heroBoost--;
     b.busy -= boost ? 1.5 : 1;
     if (b.busy > 0) return;
     addStock(b.out, b.n);
+    projectEvent('made', b.n, { item: b.out });
     addFloat(b.x + b.w / 2, b.gy - b.h - 3, `+${b.n}`, '#ffffff', b.out);
     sfx('done', b.x, b.gy);
     b.busy = 0;

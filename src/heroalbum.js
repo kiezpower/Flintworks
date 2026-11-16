@@ -1,6 +1,9 @@
 // The Wühler button opens a collection book. Browsing never changes the profile;
 // only the explicit selection commits an unlocked identity and its role.
 import './heroalbum.css';
+import { challenges, TITLES, OUTFIT_REWARDS } from './heromissions.js';
+import { VARIANTS } from './herovariants.js';
+import { insightsPanel } from './heroinsights.js';
 import { ROLES, CHAPTERS, chapterCount, progressOf } from './heroskills.js';
 import { ev } from './analytics.js';
 import { minerArtReady } from './minerart.js';
@@ -44,6 +47,8 @@ function openHeroAlbum({ onAppearance, onOutfits, onAchievements, onSelected } =
     achievements.addEventListener('click', onAchievements);
     tabs.appendChild(achievements);
   }
+  const insights = element('button', '', tr('Spielverlauf'));
+  insights.onclick = () => insightsPanel(openPanel('Spielverlauf')); tabs.append(insights);
   book.appendChild(tabs);
   book.appendChild(element('h3', '', tr('Deine Sammlung')));
   const grid = element('div', 'ha-grid');
@@ -82,7 +87,7 @@ function openHeroAlbum({ onAppearance, onOutfits, onAchievements, onSelected } =
   const skills = element('section', 'ha-skills');
   skills.id = 'heroSkills';
   preview.append(name, stage, desc, status, select, appearance, skills);
-  const note = element('p', 'ha-note', tr('Fähigkeiten gelten im freien Spiel und Koop. Kampagne, Tagesschicht und Wettkampf bleiben ohne Rollenboni.'));
+  const note = element('p', 'ha-note', tr('Freies Spiel und Koop: deine Rolle. Tagesschicht: feste Tagesrolle. Wettkampf: alle Rollen und Varianten für alle. Kampagne und Tutorial bleiben unverändert.'));
   album.append(book, preview, note);
   body.appendChild(album);
 
@@ -96,7 +101,7 @@ function openHeroAlbum({ onAppearance, onOutfits, onAchievements, onSelected } =
     card.setAttribute('aria-controls', 'heroPreviewName heroStatus');
     card.appendChild(portrait(hero, P.hero === hero.id));
     card.appendChild(element('b', 'ha-card-name', hero.name));
-    if (chapterCount(progressOf(P, hero.id), hero.id) === 3) card.appendChild(element('small', '', '★ ' + tr('Wühler-Meister')));
+    if (chapterCount(progressOf(P, hero.id), hero.id) === 3) card.appendChild(element('small', '', '★ ' + tr(TITLES[hero.id])));
     const badge = element('span', 'ha-stamp', available ? '✓' : '🔒');
     badge.setAttribute('aria-hidden', 'true');
     card.appendChild(badge);
@@ -139,10 +144,11 @@ function openHeroAlbum({ onAppearance, onOutfits, onAchievements, onSelected } =
       bar.setAttribute('aria-label', tr(role.task, { n: role.goals[chapters] })); skills.append(bar);
       if (chapters) skills.append(element('p', '', tr('Nutze deine Fähigkeit {n}-mal mit Wirkung: {have}/{n}',
         { n: [0, 2, 8][chapters], have: Math.min([0, 2, 8][chapters], p.feats || 0) })));
-    } else skills.append(element('p', '', '★ ' + tr('Wühler-Meister') + ' · ' + tr('Königsrobe freigeschaltet')));
-    skills.append(element('p', '', tr('Kapitelbelohnungen: 60 XP · 120 XP und Variante · 200 XP und Königsrobe')));
+      for (const o of challenges(hero.id, chapters)) skills.append(element('p', '', tr(o.text) + ` · ${Math.min(o.goal, Math.floor(p[o.key] || 0))}/${o.goal}`));
+    } else skills.append(element('p', '', '★ ' + tr(TITLES[hero.id]) + ' · ' + tr('Persönliches Meisteroutfit und Podest-Pose freigeschaltet')));
+    skills.append(element('p', '', tr('Kapitelbelohnungen: 60 XP · 120 XP und Rollenvariante · 200 XP, persönliches Outfit, Titel und Podest-Pose')));
     const variants = element('div', 'ha-variants');
-    for (const [id, label] of [['steady', 'Ausdauer: 8 s Wirkung · 40 s Abklingzeit'], ['quick', 'Tempo: 5 s Wirkung · 25 s Abklingzeit']]) {
+    for (const [id, label] of [['steady', 'Ausdauer: 8 s Wirkung · 40 s Abklingzeit'], ['quick', VARIANTS[hero.id].name]]) {
       const button = element('button', '', tr(label));
       button.disabled = !available || (id === 'quick' && chapters < 2);
       button.setAttribute('aria-pressed', String((P.heroVariants?.[hero.id] || 'steady') === id));
@@ -151,7 +157,12 @@ function openHeroAlbum({ onAppearance, onOutfits, onAchievements, onSelected } =
       });
       variants.append(button);
     }
-    skills.append(variants);
+    skills.append(variants, element('p', '', tr(VARIANTS[hero.id].desc)));
+    const match = element('button', 'ha-match-role', tr('Wettkampfrolle wählen: {name}', { name: hero.name }));
+    match.setAttribute('aria-pressed', String((P.matchRole || 'anna') === hero.id));
+    match.onclick = () => { P.matchRole = hero.id; saveProfile(); updateMe(); update(); }; skills.append(match);
+    const matchVariant = element('button', 'ha-match-role', tr('Wettkampfvariante') + ': ' + tr(P.matchVariant === 'quick' ? VARIANTS[hero.id].name : 'Ausdauer'));
+    matchVariant.onclick = () => { P.matchVariant = P.matchVariant === 'quick' ? 'steady' : 'quick'; saveProfile(); update(); }; skills.append(matchVariant);
     if (available) skills.append(element('p', '', tr(P.heroDaily === dayNumber() ? 'Heute erledigt · +30 XP' : 'Optional heute: eine Fähigkeit mit Wirkung einsetzen')));
   }
   select.addEventListener('click', () => {

@@ -26,6 +26,8 @@ const KINDS = {
       cap: c.cap,
       hat: c.hat,
       sk: c.skin,
+      hca: c.heroCasts && { ...c.heroCasts }, hua: c.heroUses && { ...c.heroUses },
+      hu: !!c.heroUseful, hx: c.heroUnlocks || 0, mr: c.matchRole, hmi: c.heroMission && structuredClone(c.heroMission), hd: c.heroDepth || 0, ht: c.heroTripDepth || 0, hg: c.heroGuardRun || 0, hh: c.heroHookStart,
       ha: c.heroActive || 0, hq: !!c.heroQuick, hc: c.heroCooldown || 0, hp: c.heroCounters && structuredClone(c.heroCounters), hj: c.heroCareer && { ...c.heroCareer }, hs: c.heroScan,
       x: r4(c.x),
       y: r4(c.y),
@@ -99,6 +101,8 @@ const KINDS = {
         cap: safeCap(d.cap),
         hat: d.hat,
         skin: d.sk,
+        heroCasts: d.hca || {}, heroUses: d.hua || {},
+        heroUseful: !!d.hu, heroUnlocks: d.hx || 0, matchRole: d.mr, heroMission: d.hmi || {}, heroDepth: d.hd || 0, heroTripDepth: d.ht || 0, heroGuardRun: d.hg || 0, heroHookStart: d.hh,
         heroActive: d.ha || 0, heroQuick: !!d.hq, heroCooldown: d.hc || 0, heroCounters: d.hp || {}, heroCareer: d.hj || {}, heroScan: d.hs || [],
         face: d.f,
         vx: d.vx,
@@ -194,7 +198,7 @@ const KINDS = {
       h: b.h,
       pr: r2(b.prog),
       dn: b.done ? 1 : 0,
-      bs: b.busy > 0 ? 1 : 0,
+      bs: b.busy || 0, bn: b.n || 0, hb: b.heroBoost || 0, hw: b.heroWorker ?? null,
       out: b.out,
       lv: b.lvl,
       op: r2(b.open || 0),
@@ -219,7 +223,7 @@ const KINDS = {
       return b;
     },
     apply: (b, d) => {
-      Object.assign(b, { prog: d.pr, done: !!d.dn, busy: d.bs, out: d.out, lvl: d.lv, open: d.op, moving: d.mv });
+      Object.assign(b, { prog: d.pr, done: !!d.dn, busy: d.bs, n: d.bn || 0, heroBoost: d.hb || 0, heroWorker: d.hw, out: d.out, lvl: d.lv, open: d.op, moving: d.mv });
       Object.assign(b, { on: !!d.on, pipe: d.pp, skin: d.sk });
       b.fhp = d.fh;
       if (b.type === 'crate') b.items = d.bi || [];

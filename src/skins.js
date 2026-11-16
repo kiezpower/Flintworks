@@ -29,6 +29,8 @@ const OUTFITS = {
     pal: { T: '#6a3a9a', t: '#4a2672', L: '#9a6ad0', b: '#e0b844', g: '#fff2a0', p: '#4a2672', P: '#36184f' },
   },
 };
+const MASTER_PALETTES = { amber: ['Bernsteinkittel','#bc7424','#f4ce6a'], slate: ['Schieferwams','#426479','#9bbbc6'], copper: ['Kupfermantel','#a55d42','#edb87c'], teal: ['Gipfeljacke','#267e77','#9eddd0'], smith: ['Meisterschurz','#4e6350','#bbc78e'], violet: ['Tiefenmantel','#68487b','#d5a7dc'] };
+for (const [id, [name, dark, light]] of Object.entries(MASTER_PALETTES)) OUTFITS[id] = { name, k: 0, master: true, pal: { T: dark, t: dark, L: light, b: '#322c27', g: '#ffe096' } };
 const BSTYLES = {
   wood: { name: 'Holzbau', k: 0 },
   stone: { name: 'Steinbau', k: 100 },

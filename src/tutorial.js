@@ -154,10 +154,12 @@ function finishCard(result) {
          <p class="hint">${tr('Du findest es jederzeit in den Optionen')}</p>`;
   card.innerHTML += `<div class="btnrow"><button class="go" id="goBtn">${tr('Weiter graben')}</button>
     <button class="ghost" id="tutLobby">${tr('Zur Lobby')}</button></div>`;
+  hooks.renderHeroChoice?.(card);
   let left = false;
   const leave = choice => {
     if (left) return false; // a double tap starts only one round
     left = true;
+    hooks.commitHeroChoice?.();
     ev('onb_card', { choice, result });
     overlay.hidden = true;
     hooks.discard();

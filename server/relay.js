@@ -403,7 +403,7 @@ function newCode() {
     if (!rooms.has(c)) return c;
   }
 }
-const pubP = p => ({ serverHost: !!p.serverHost, pid: p.pid, fid: p.token ? fidOf(p.token) : undefined, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin, ready: p.ready, watch: !!p.watch, online: !!p.ws });
+const pubP = p => ({ serverHost: !!p.serverHost, pid: p.pid, fid: p.token ? fidOf(p.token) : undefined, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin, mastery: p.mastery || 0, role: p.role || 'anna', ready: p.ready, watch: !!p.watch, online: !!p.ws });
 function send(ws, m) {
   if (ws && ws.readyState === 1) ws.send(JSON.stringify(m));
 }
@@ -448,7 +448,7 @@ function join(ws, room, m) {
   }
   if (ws.room && ws.room !== room && ws.player) leave(ws.room, ws.player, true);
   if (p.ws && p.ws !== ws) p.ws.close(4000, 'replaced');
-  Object.assign(p, { ws, name: clean(m.name, 16), cap: clean(m.cap, 9), hat: clean(m.hat, 12), skin: clean(m.skin, 20), gone: 0 });
+  Object.assign(p, { ws, name: clean(m.name, 16), cap: clean(m.cap, 9), hat: clean(m.hat, 12), skin: clean(m.skin, 20), mastery: Number.isInteger(m.mastery) ? m.mastery & 63 : 0, role: ['anna','bruno','mika','juna','toni','nora'].includes(m.role) ? m.role : 'anna', gone: 0 });
   ws.room = room;
   ws.player = p;
   room.empty = 0;

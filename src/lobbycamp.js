@@ -1,5 +1,7 @@
 // The Heimatbergwerk panel in the lobby: collect what the home crew mined, upgrades bought with
 // crystals and the skins (outfits and building styles). The rules live in camp.js and skins.js.
+import { projectStatus } from './heroprojects.js';
+import { TITLES } from './heromissions.js';
 import { ROLES, chapterCount, progressOf } from './heroskills.js';
 import { HEROES } from './heroes.js';
 import { G } from './state.js';
@@ -128,15 +130,18 @@ function openCamp(hooks = {}) {
     const showcase = sec(p, 'Meisterschaftsabzeichen');
     for (const hero of badges) {
       const badge = document.createElement('p');
-      badge.textContent = '★ ' + hero.name + ' · ' + tr(ROLES[hero.id].role);
+      badge.textContent = '★ ' + hero.name + ' · ' + tr(TITLES[hero.id]);
       showcase.appendChild(badge);
     }
   }
   if (G.mode === 'settlement') {
     const project = sec(p, 'Gemeinsames Projekt');
     const text = document.createElement('p');
-    const n = Math.min(3, G.heroProject?.roles?.length || 0);
-    text.textContent = tr(n >= 3 ? 'Wühler-Teamprojekt geschafft!' : 'Gemeinsames Projekt: {n}/3 Rollen', { n });
+    const status = projectStatus();
+    text.textContent = tr(status.title);
+    for (const [key, goal, label] of status.tasks) {
+      const row = document.createElement('p'); row.textContent = tr(label) + ` · ${Math.min(goal, status.values[key] || 0)}/${goal}`; project.append(row);
+    }
     project.appendChild(text);
   }
   // 4. skins: outfits and building styles (seen by everybody, also in multiplayer)
@@ -158,8 +163,8 @@ function openCamp(hooks = {}) {
       icon: outfitIcon(id),
       title: tr(O.name),
       short: true,
-      cost: P.outfit === id ? '✓' : own ? '' : kTxt(O.k),
-      disabled: !own && C.k < O.k,
+      cost: P.outfit === id ? '✓' : own ? '' : O.master ? tr('Meisterschaft') : kTxt(O.k),
+      disabled: !own && (O.master || C.k < O.k),
       onClick: () => choose('o', id, v => (P.outfit = v)),
     });
   }

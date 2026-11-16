@@ -23,7 +23,7 @@ let online = new Set(); // players that were online at the last room update
 function startMessage(gmode) {
   const players = NET.players
     .filter(p => p.online)
-    .map(({ pid, fid, name, cap, hat, skin, watch }) => ({ pid, fid, name, cap, hat, skin, watch: !!watch }));
+    .map(({ pid, fid, name, cap, hat, skin, mastery, role, watch }) => ({ pid, fid, name, cap, hat, skin, mastery, role, watch: !!watch }));
   // (who only watches gets no Wühler, no team and no castle: net/watch.js)
   const n = players.filter(p => !p.watch).length;
   // "Jeder gegen jeden": a castle for every player, from three on and in generated worlds (the
@@ -63,7 +63,7 @@ function addPlayerDigger(p, self = false) {
   if (takeOverBot(team, p)) return;
   const base = teamBase(team);
   const c = (p.fid && crew.find(c => c.owner === p.fid && !c.bot)) || addDigger(base.x + 8 + (p.pid % 4) * 6, base.gy - 10);
-  Object.assign(c, { pid: p.pid, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin, owner: p.fid || null, team });
+  Object.assign(c, { pid: p.pid, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin, heroUnlocks: p.mastery || 0, matchRole: p.role || 'anna', owner: p.fid || null, team });
   // the castle takes the style of the first player of its team (the host sends it to the others)
   if (base && !base.skin) base.skin = parseSkin(p.skin).style;
 }
@@ -103,6 +103,7 @@ function beginNet(d) {
     }
     // the host's castle in the host's style (the other castles: addPlayerDigger)
     const self = d.players.find(p => p.pid === G.myId);
+    if (me && self) { me.heroUnlocks = self.mastery || 0; me.matchRole = self.role || 'anna'; }
     if (me && self?.fid) me.owner = self.fid;
     if (me && self?.watch) crew.splice(crew.indexOf(me), 1);
     const own = teamBase(G.myTeam);
@@ -140,6 +141,8 @@ onRoomChange(() => {
         if (c?.owner && G.mode === 'settlement') delete c.pid;
         continue;
       }
+      const figure = diggerOf(p.pid);
+      if (figure) figure.heroUnlocks = (figure.heroUnlocks || 0) | (p.mastery || 0);
       if (p.pid === G.myId) continue;
       if (!online.has(p.pid)) {
         if (!p.watch) teamFor(p.pid);
@@ -178,7 +181,7 @@ function resumeNet(s) {
         ? cur.find(q => q.name === c.name && !q.watch && !used.has(q.pid)) : null;
     if (p) {
       used.add(p.pid);
-      Object.assign(c, { pid: p.pid, owner: p.fid || c.owner || null, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin });
+      Object.assign(c, { pid: p.pid, owner: p.fid || c.owner || null, name: p.name, cap: p.cap, hat: p.hat, skin: p.skin, heroUnlocks: p.mastery || 0, matchRole: p.role || 'anna' });
     } else delete c.pid; // settlement figures with owners wait for their returning player
   }
   const teams = {};

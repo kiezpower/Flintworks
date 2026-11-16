@@ -1,8 +1,9 @@
 // The tasks on screen: a small tracker under the money during a round (the round's task and the
 // three daily quests, each with icon, bar and count) and the task board (pinned notes) that
 // opens from the game menu (tab "Aufgaben") and from the level chip in the lobby.
+import { projectStatus } from './heroprojects.js';
 import { missionNow } from './missions.js';
-import { P, QUESTS, claimQuest, rollQuests, saveProfile } from './profile.js';
+import { P, QUESTS, dayNumber, claimQuest, rollQuests, saveProfile } from './profile.js';
 import { sfx } from './sound.js';
 import { itemIcon, padIcon } from './sprites.js';
 import { G } from './state.js';
@@ -56,6 +57,12 @@ function rows() {
     const Q = QUESTS[q.id];
     if (!Q || q.done) continue;
     out.push({ id: q.id, ico: QUEST_ICON[q.id](), text: tr(Q.text, { n: q.goal }), have: q.have, goal: q.goal, tip: `+${Q.xp} XP` });
+  }
+  if (P.hero && P.heroDaily !== dayNumber()) out.splice(m ? 1 : 0, 0, { id: 'heroDaily', ico: QUEST_ICON.build(), text: tr('Rollenherausforderung: Nutze deine Fähigkeit mit Wirkung'), have: P.heroDaily === dayNumber() ? 1 : 0, goal: 1, tip: '+30 XP' });
+  const project = projectStatus();
+  if (project && !project.done) {
+    const task = project.tasks.find(([key, goal]) => (project.values[key] || 0) < goal);
+    if (task) out.splice(m ? 1 : 0, 0, { id: 'crewProject', ico: QUEST_ICON.build(), text: tr(project.title) + ': ' + tr(task[2]), have: project.values[task[0]] || 0, goal: task[1], tip: `+${project.pay} ` + tr('Taler') });
   }
   return out.slice(0, 3);
 }
@@ -145,6 +152,13 @@ function questBoard(parent, reopen, onClaim) {
     }
     b.appendChild(n);
   });
+  const roleNote = document.createElement('div'); roleNote.className = 'qnote';
+  roleNote.textContent = tr('Rollenherausforderung: Nutze deine Fähigkeit mit Wirkung') + ' · ' + (P.heroDaily === dayNumber() ? tr('Erledigt') : '+30 XP'); b.append(roleNote);
+  const project = projectStatus();
+  if (project) {
+    const title = document.createElement('h3'); title.textContent = tr(project.title); b.append(title);
+    for (const [key, goal, label] of project.tasks) { const row = document.createElement('div'); row.className = 'qnote'; row.textContent = tr(label) + ` · ${Math.min(goal, project.values[key] || 0)}/${goal}`; b.append(row); }
+  }
   parent.appendChild(b);
   const f = document.createElement('div');
   f.className = 'qfoot';
