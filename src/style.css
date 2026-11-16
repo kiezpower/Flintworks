@@ -8,8 +8,8 @@
   --ember: #e0572f;
   --leaf: #7cbf52;
   --water: #6fb7ff;
-  --font-display: 'Pixelify Sans', ui-monospace, 'Courier New', monospace;
-  --font-ui: 'Silkscreen', ui-monospace, 'Courier New', monospace;
+  --font-display: 'Bree Serif', Georgia, serif;
+  --font-ui: 'Nunito Sans', system-ui, sans-serif;
   color-scheme: dark;
 }
 [hidden] {

@@ -1,3 +1,4 @@
+import { lobbyIcon } from './lobbyicons.js';
 import { openHeroAlbum } from './heroalbum.js';
 import { PLAY_KINDS, supportsKind } from './playkind.js';
 import { openWorlds } from './worldui.js';
@@ -525,7 +526,7 @@ cv.addEventListener('pointerdown', e => {
   sfx('jump');
   burst(8, ['#f4ead2', '#f2c230']);
 });
-for (const e of el.querySelectorAll('[data-ico]')) e.style.backgroundImage = `url(${padIcon(e.dataset.ico)})`;
+for (const e of el.querySelectorAll('[data-ico]')) e.style.backgroundImage = `url("${lobbyIcon(e.dataset.ico) || padIcon(e.dataset.ico)}")`;
 
 function showLobby(h) {
   if (h) hooks = h;

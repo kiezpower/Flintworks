@@ -1,3 +1,4 @@
+import { paintedObject } from './objectart.js';
 // Seasons (like the year in Terraria's and Stardew's farms): in the green worlds of free play every
 // day of the game (10 minutes) is a season – spring, summer, autumn, winter, then spring again.
 // The fields grow fast in spring, hardly at all in winter (farm.js), so bread is best put by before
@@ -50,7 +51,12 @@ function treeLook(t) {
   if (t.type !== 'oak') return t.spr;
   let m = dress.get(t.spr);
   if (!m) dress.set(t.spr, (m = {}));
-  return m[s] || (m[s] = recolour(t.spr, s));
+  const result = m[s] || (m[s] = recolour(t.spr, s));
+  const painted = paintedObject(t.spr);
+  // Keep the seasonal dress at the painting's resolution. Bare winter trees
+  // retain their branch silhouette until there is a matching painted asset.
+  if (painted && s !== 3 && !result.artFrame) result.artFrame = recolour(painted, s);
+  return result;
 }
 const AUTUMN = [
   [216, 134, 44],

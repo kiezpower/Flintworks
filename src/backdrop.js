@@ -1,3 +1,5 @@
+import { drawSceneArt } from './sceneart.js';
+import { darkness } from './weather.js';
 // Painted parallax background: three layers per world type (far peaks, hills with forest, near hills),
 // generated once at double resolution and tiled seamlessly.
 import { season } from './seasons.js';
@@ -164,6 +166,15 @@ function backdropName() {
 }
 // draws all layers; ctx is in landscape units (canvas transform ×2)
 function drawBackdrop(ctx, cx, cy) {
+  const top = -cy * 0.85;
+  if (drawSceneArt(ctx, backdropName(), G.VW, Math.max(180, G.VH - top), cx, top)) {
+    // The illustration receives the same day/night and storm mood as the world.
+    ctx.save();
+    ctx.fillStyle = `rgba(12,25,50,${Math.min(0.82, darkness() * 0.8 + (G.rainT > 0 ? 0.12 : 0))})`;
+    ctx.fillRect(0, 0, G.VW, G.VH);
+    ctx.restore();
+    return;
+  }
   const tw = TW / 2;
   // (the green world changes with the season, seasons.js)
   for (const L of layersFor(backdropName())) {
