@@ -94,6 +94,6 @@ export async function validWorldObjects(save) {
   return ['meadow', 'desert', 'winter'].includes(d.biome) &&
     d.builds.every(b => (b.type === 'base' || Object.hasOwn(BT, b.type)) && Number.isFinite(b.x) && Number.isFinite(b.gy) &&
       Number.isFinite(b.w) && Number.isFinite(b.h) && (!b.cs || point(b.cs))) &&
-    d.crew.every(c => point(c) && Array.isArray(c.inv) && c.inv.length <= 16 && c.inv.every(t => Object.hasOwn(ITEM, t))) &&
+    d.crew.every(c => point(c) && Array.isArray(c.inv) && c.inv.length <= 20 && c.inv.every(t => Object.hasOwn(ITEM, t))) &&
     (d.vehicles || []).every(v => point(v) && Object.hasOwn(VK, v.kind));
 }

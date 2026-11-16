@@ -1,3 +1,4 @@
+import { roleOf, activeSkill, digFactor, heroEvent } from './heroskills.js';
 import { wallContext } from './fort.js';
 import { hasGift, shrineContext } from './shrines.js';
 import { hoardContext } from './hoards.js';
@@ -71,6 +72,7 @@ function hurt(c, a, silent) {
   if (isAbsent(c)) return;
   if (c.dead || c.puppet || G.netClient) return; // in multiplayer only the host deals damage
   if (hasGift(c, 'tough')) a *= 0.67; // (a gift of the shrines, shrines.js)
+  if (roleOf(c) === 'nora' && activeSkill(c)) { heroEvent(c, 'guard', a * 0.3); a *= 0.7; }
   c.energy -= a;
   if (G.tut && c.energy < 20) c.energy = 20; // nobody gets exhausted in the tutorial
   if (a >= 5) {
@@ -345,6 +347,7 @@ function digCell(x, y, paced = false, acc = G) {
   else if (m === ORE) acc.oreDug = (acc.oreDug || 0) + 1;
   else if (m === COAL) acc.coalDug = (acc.coalDug || 0) + 1;
   else if (m === GEM) acc.gemDug = (acc.gemDug || 0) + 1;
+  heroEvent(acc, 'dig');
   mat[i] = AIR;
   bg[i] = 1;
   markFresh(i);
@@ -532,7 +535,7 @@ function updBody(c, I) {
   // a burning Wühler in oil sets it alight (fire.js)
   if (c.burn > 0 && (mBody === OIL || mFeet === OIL)) igniteNear(c.x + 3, c.y + 9, 2);
   if (c.burn > 0) {
-    c.burn--;
+    c.burn -= roleOf(c) === 'nora' ? 1.25 : 1;
     hurt(c, 0.12, true);
     if (rnd() < 0.5)
       parts.push({
@@ -555,7 +558,7 @@ function updBody(c, I) {
   }
   // a spider's poison (objects.js): costs about ten energy over three seconds (bubbles: render.js)
   if (c.poison > 0) {
-    c.poison--;
+    c.poison -= roleOf(c) === 'nora' ? 1.25 : 1;
     hurt(c, 0.055, true);
   }
   // frost from the ice king's shards (iceking.js): slower for three seconds
@@ -699,7 +702,7 @@ function updBody(c, I) {
     // (G.digBoost: sharper picks from the Heimatbergwerk, free play alone only)
     // (the diamond pick: hard ground – rock, ore, coal, gems – half as fast again, tools.js)
     const tier = pickTier() === 2 && c.digH > 1.1 ? 1.5 : 1;
-    c.digPh += ((G.digBoost || 1) * tier * (hasGift(c, 'dig') ? 1.4 : 1) * (c.digT > 0 ? 1.5 : 1)) / (11 * c.digH);
+    c.digPh += (digFactor(c, c.digH <= 1.1) * (G.digBoost || 1) * tier * (hasGift(c, 'dig') ? 1.4 : 1) * (c.digT > 0 ? 1.5 : 1)) / (11 * c.digH);
     if (c.digPh >= 1) c.digPh -= 1;
     if (ph0 < STRIKE && c.digPh >= STRIKE) digHit(c, slope);
     // gold and gems just ahead glitter in the face before the pick gets there
@@ -710,7 +713,7 @@ function updBody(c, I) {
       if (gm === GOLD || gm === GEM) parts.push({ x: gx, y: gy, vx: 0, vy: 0, l: 10, c: '#fffbe0', g: 0 });
     }
     const surge = c.digPh >= STRIKE && c.digPh < STRIKE + 0.25 ? 1.9 : 0.7;
-    const sp = (((hasTool('pick') ? 0.8 : 0.55) * tier) / c.digH) * surge * (G.digBoost || 1);
+    const sp = (((hasTool('pick') ? 0.8 : 0.55) * tier) / c.digH) * surge * (G.digBoost || 1) * digFactor(c, c.digH <= 1.1);
     moveBody(c, (c.face * sp) / len, (slope * sp) / len, 3);
     c.anim += 0.3;
     return;
@@ -739,6 +742,7 @@ function updBody(c, I) {
     if (Math.sign(I.ax) !== c.face) c.turnF = G.frame; // (a turn frame follows, diggerhi.js)
     c.face = Math.sign(I.ax);
   }
+  if (roleOf(c) === 'bruno' && activeSkill(c) && c.inv.length >= 4) tvx *= 1.25;
   c.vx += (tvx - c.vx) * (onG ? 0.4 : inLiq ? 0.15 : 0.1);
   if (inLiq) {
     c.vy += 0.04;
@@ -792,7 +796,7 @@ function updBody(c, I) {
   if (by && fallV > 1.2) dust(c.x, c.y + 9, Math.max(2, Math.round(fallV * 2)), '#b89a76');
   if (by) {
     if (fallV > 3.9 && !hasGift(c, 'feather')) {
-      const d = (fallV - 3.9) * 22;
+      const d = (fallV - 3.9) * 22 * (roleOf(c) === 'juna' ? 0.8 : 1);
       hurt(c, d);
       if (fallV > 4.4) startTumble(c, c.vx, -0.8);
       else sfx('thud', c.x, c.y);

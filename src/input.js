@@ -75,6 +75,7 @@ addEventListener('keydown', e => {
   if (code === 'KeyM') toggleMap();
   if (code === 'KeyI') openBag();
   // quick heal: the first healing potion in the bag (potions.js)
+  if (code === 'KeyR' && G.state === 'play') G.useHeroAbility?.();
   if (code === 'KeyH') send('quickheal', {});
   // the score in a shared round (scoreboard.js; through G to keep the modules apart)
   if (code === 'KeyP') G.openScore?.();
@@ -417,6 +418,7 @@ function readPad() {
   if (P.hookUp) hookKeyUp(true);
   if (P.menu) G.openMenu?.();
   if (P.map) toggleMap();
+  if (P.ability) G.useHeroAbility?.();
   if (P.heal) send('quickheal', {});
 }
 function readInput() {

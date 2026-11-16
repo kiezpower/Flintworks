@@ -6,6 +6,7 @@
 //   tip     the text: a string or { touch, keys }
 //   task    the mission { text, goal, pay, prog | count }; tasks run in the order of this table
 //   urgent  shown even right after another tip or while in danger
+import { roleOf } from './heroskills.js';
 import { countRes, terrOK, terrOn } from './buildings.js';
 import { nearTree } from './digger.js';
 import { sel_ } from './entities.js';
@@ -30,6 +31,11 @@ const deepest = () => {
 const built = t => (builds.some(b => b.type === t && b.done) ? 1 : 0);
 
 const LESSONS = [
+  {
+    id: 'heroskill', name: 'Wühler-Fähigkeiten',
+    when: c => !!roleOf(c) && G.frame > 900,
+    tip: 'Dein Wühler hat eine eigene Fähigkeit: tippe auf den Fähigkeitsknopf, drücke R oder den linken Gamepad-Stick. Im Heldenalbum findest du deine Meisterschaftsziele.',
+  },
   {
     id: 'crew',
     crew: true, // (needs helpers: left out when they are switched off)

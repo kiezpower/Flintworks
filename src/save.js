@@ -109,6 +109,7 @@ function serialize() {
       biome: G.biome,
       mode: G.mode,
       settlement: G.settlement || null,
+      heroProject: G.heroProject || null,
       fire: fireCells(),
       fireState: saveFire(),
       tombs: G.tombs || [],
@@ -241,6 +242,7 @@ function deserialize(d) {
     G.mode = d.mode === 'wipfrettung' ? 'fluffelrettung' : d.mode || 'gold';
     G.tut = d.tut || null;
     G.settlement = d.settlement || null;
+    G.heroProject = d.heroProject || null;
     G.tombs = d.tombs || [];
     G.tombN = d.tombN || Math.max(0, ...G.tombs.map(t => t.id));
     G.merchant = d.merchant || null;

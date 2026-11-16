@@ -1,3 +1,4 @@
+import { capacity } from './heroskills.js';
 import { markTorches } from './torches.js';
 import { descendOffer } from './descend.js';
 import { markTombs } from './tombs.js';
@@ -225,7 +226,7 @@ function hud() {
     });
   }
   const k = c
-    ? c.inv.join() + '|' + c.isel + '|' + (c.wield || '') + '|' + weaponsOf().join() + '|' + arrowsOf('arrow') + '|' + arrowsOf('farrow')
+    ? capacity(c) + '|' + c.inv.join() + '|' + c.isel + '|' + (c.wield || '') + '|' + weaponsOf().join() + '|' + arrowsOf('arrow') + '|' + arrowsOf('farrow')
     : '';
   if (k !== G.invKey) {
     // a new thing in the bag: the bag button lights up for a moment, so the eye finds it
@@ -285,11 +286,11 @@ function hud() {
     // the bag: always there, with how full it is
     const n = c ? c.inv.length : 0;
     const bag = document.createElement('button');
-    bag.className = 'slot bag' + (n >= INV_MAX ? ' full' : '') + (grew ? ' grew' : '');
+    bag.className = 'slot bag' + (n >= capacity(c) ? ' full' : '') + (grew ? ' grew' : '');
     bag.id = 'bagBtn';
-    bag.setAttribute('aria-label', tr('Tasche') + ` ${n}/${INV_MAX}`);
+    bag.setAttribute('aria-label', tr('Tasche') + ` ${n}/${capacity(c)}`);
     bag.title = tr('Tasche') + ' (I)';
-    bag.innerHTML = `<span class="bagico" style="background-image:url(${padIcon('bag')})"></span><b>${n}/${INV_MAX}</b>`;
+    bag.innerHTML = `<span class="bagico" style="background-image:url(${padIcon('bag')})"></span><b>${n}/${capacity(c)}</b>`;
     bag.addEventListener('pointerdown', e => {
       e.stopPropagation();
       openBag();
@@ -302,12 +303,12 @@ function openBag() {
   const c = sel_();
   if (!c || c.dead) return;
   const p = openPanel('Tasche');
-  const l = sec(p, tr('{n} von {max} Plätzen', { n: c.inv.length, max: INV_MAX }));
+  const l = sec(p, tr('{n} von {max} Plätzen', { n: c.inv.length, max: capacity(c) }));
   l.classList.add('bagGrid');
   if (!c.inv.length) {
     const e = document.createElement('p');
     e.className = 'hint';
-    e.textContent = tr('Noch leer. Sammle auf, was du findest – bis zu {max} Sachen passen hinein.', { max: INV_MAX });
+    e.textContent = tr('Noch leer. Sammle auf, was du findest – bis zu {max} Sachen passen hinein.', { max: capacity(c) });
     l.appendChild(e);
   }
   c.inv.forEach((t, k) =>
@@ -814,7 +815,7 @@ function openBase() {
       sub: tr('{n} im Lager', { n: stock(t) }),
       cost: tr('Nehmen'),
       short: true,
-      disabled: c.inv.length >= INV_MAX,
+      disabled: c.inv.length >= capacity(c),
       onClick: () => {
         send('take', { t });
         openBase();
@@ -878,7 +879,7 @@ register('wield', (c, { id }) => {
 });
 register('stairs', c => buildStairs(c));
 register('take', (c, { t }) => {
-  if (c.inv.length >= INV_MAX || !takeStock(t)) return;
+  if (c.inv.length >= capacity(c) || !takeStock(t)) return;
   c.inv.push(t);
   c.isel = c.inv.length - 1;
   G.invKey = '';
@@ -896,7 +897,7 @@ register('buy', (c, { t }) => {
   } else if (t === 'lorry') {
     lorries.push(mkLorry(G.base.x + 12, G.base.gy - 8));
     toast('Lore steht bereit');
-  } else if (c.inv.length < INV_MAX) c.inv.push(t);
+  } else if (c.inv.length < capacity(c)) c.inv.push(t);
   else spawnItem(t, G.base.x + 16, G.base.gy - 6, 0, 0, 20);
 });
 

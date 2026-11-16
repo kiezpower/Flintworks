@@ -124,3 +124,15 @@ kommt, sind `onb_hint`, `onb_rescue` und `onb_recover`.
 2. Erst danach `setSink(e => anbieter.send(e))` aufrufen; ohne Einwilligung bleibt alles lokal.
 3. Die Datenschutzseite (`public/privacy.html`) um Anbieter, Zweck und Felder ergänzen.
 4. Gesammelte lokale Ereignisse ggf. einmalig nachsenden (`events()`), danach `clearEvents()`.
+
+## Wühler und Meisterschaft
+
+| Ereignis | Felder | Auslöser |
+|---|---|---|
+| `hero_select` | `hero` (s) | Eine freigeschaltete Figur ausdrücklich auswählen |
+| `hero_ability` | `hero` (s), `variant` (s) | Erfolgreiche Aktivierung des lokalen Host-Spielers |
+| `hero_chapter` | `hero` (s), `chapter` (n, 1–3) | Ein bisher nicht belohntes Kapitel abschließen |
+
+Auch diese Ereignisse bleiben lokal. Koop-Clients erhalten ihren Meisterschaftsfortschritt
+vom Host und erfassen ihre Kapitel selbst; Aktivierungen fremder Spieler werden nicht als
+eigene Analyseereignisse erfasst. `app_open.days_since` bleibt die lokale Rückkehrmessung.
