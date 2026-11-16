@@ -162,6 +162,7 @@ test('the crew uses live room members, readiness and additional player counts', 
 test('reduced motion keeps the lobby scene still', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await lobby(page);
+  await page.evaluate(async () => (await import('/src/minerart.js')).minerArtReady);
   // Wait for the first paint and overlay placement before comparing the canvas.
   await page.waitForFunction(() => {
     const c = document.querySelector('#lbCv');
@@ -183,8 +184,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 844, height: 390 
     await lobby(page);
     await page.waitForFunction(() => {
       const cv = document.querySelector('#lbCv');
-      const width = Math.max(150, Math.min(260, Math.round(cv.getBoundingClientRect().width / 5)));
-      return cv.width === width * 2 && cv.getContext('2d').getImageData(0, 0, 1, 1).data[3] === 255;
+      const width = Math.round(cv.getBoundingClientRect().width * Math.min(2, devicePixelRatio));
+      return cv.width === width && cv.getContext('2d').getImageData(0, 0, 1, 1).data[3] === 255;
     });
     const hero = await page.evaluate(async () => {
       const { heroScreen } = await import('/src/lobbyscene.js');

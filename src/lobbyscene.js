@@ -2,7 +2,6 @@
 // sky, mountains, the castle on a hill, tunnels and ore in the ground. The ground is a real
 // little world: the lobby workers (lobbyworkers.js) dig through it and carry the ore home.
 // The canvas fills the whole lobby; it has double resolution like the game view.
-import { minerArtLoaded } from './minerart.js';
 import { parseSkin } from './skins.js';
 import { BIOMES } from './biomes.js';
 import { drawPortrait } from './portrait.js';
@@ -28,22 +27,6 @@ let terrain = null, // ground with tunnels (repainted where the workers dig)
   topCols = [];
 const HERO = { x: 0.5 };
 let heroScale = 2;
-let heroArt;
-let heroArtKey = '';
-function heroPortrait(cap, hat, outfit, blink, hero) {
-  const key = JSON.stringify([cap, hat, outfit, blink, hero, minerArtLoaded]);
-  if (!heroArt) {
-    heroArt = document.createElement('canvas');
-    heroArt.width = 24; heroArt.height = 32;
-  }
-  if (key !== heroArtKey) {
-    const ctx = heroArt.getContext('2d');
-    ctx.clearRect(0, 0, 24, 32);
-    drawPortrait(ctx, 4, 10, 1, cap, hat, blink, outfit, hero);
-    heroArtKey = key;
-  }
-  return heroArt;
-}
 const podiumTop = () => groundY(land.heroX) - 3;
 // Friends stand on either side of the hero, in landscape pixels.
 const friendDx = () => [-Math.max(20, heroScale * 11), Math.max(20, heroScale * 11)];
@@ -263,7 +246,7 @@ function drawScene(g, opts) {
     dirty = false;
   }
   const { LW, LH } = land;
-  g.setTransform(2, 0, 0, 2, 0, 0);
+  g.setTransform(g.canvas.width / land.LW, 0, 0, g.canvas.height / land.LH, 0, 0);
   g.imageSmoothingEnabled = false;
   drawSky(g, b, t);
   g.drawImage(terrain, 0, 0, LW, LH);
@@ -298,7 +281,8 @@ function drawScene(g, opts) {
   g.save();
   g.translate(hx, hy + bob + Math.round(jumpY));
   g.scale(heroScale * f, heroScale);
-  g.drawImage(heroPortrait(cap, hat, outfit, !reducedMotion && t % 240 < 6, hero), -12, -30);
+  g.imageSmoothingEnabled = true;
+  drawPortrait(g, -8, -20, 1, cap, hat, !reducedMotion && t % 240 < 6, outfit, hero);
   g.restore();
   // friends in the room stand left and right of the hero, facing it
   friends.slice(0, 2).forEach((p, k) => {
@@ -344,12 +328,14 @@ function sizeScene(cv) {
   heroScale = Math.max(1, Math.min(3.4, (h * 0.43) / 20, (feet - safeTop * w / r.width) / 20));
   const moved = HERO.x !== heroX;
   HERO.x = heroX;
-  if (!moved && w === land.LW && h === land.LH) return false;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const pw = Math.round(r.width * dpr), ph = Math.round(r.height * dpr);
+  if (!moved && w === land.LW && h === land.LH && cv.width === pw && cv.height === ph) return false;
   if (moved) terrainKey = '';
   land.LW = w;
   land.LH = h;
-  cv.width = w * 2;
-  cv.height = h * 2;
+  cv.width = pw;
+  cv.height = ph;
   return true;
 }
 // where the hero stands, in screen pixels relative to the canvas (for the invite slots and the name tag)

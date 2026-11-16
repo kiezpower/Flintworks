@@ -291,10 +291,10 @@ function frame() {
 // ---- Panels ----
 function hatIcon(hat, cap = P.cap, outfit = P.outfit) {
   const c = document.createElement('canvas');
-  c.width = 40;
-  c.height = 56;
+  c.width = 160;
+  c.height = 224;
   const x = c.getContext('2d');
-  x.scale(2, 2);
+  x.scale(8, 8);
   drawPortrait(x, 2, 7, 1, cap, hat, false, outfit, P.hero);
   return c;
 }
