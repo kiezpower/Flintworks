@@ -1,3 +1,4 @@
+import { capacity } from './heroskills.js';
 // Potions (like Terraria's and Noita's flasks): the glowing mushrooms on cave floors deep down
 // (decor.js) can be picked with the action button. Brought to the castle they go into the store, and
 // a brewing cauldron (a building) brews potions from them by itself (store.js AUTO). A player
@@ -29,12 +30,12 @@ const key = d => d.x + ',' + d.y;
 const shroomNear = c =>
   decor.find(d => d.kind === 'shroom' && !d.picked && Math.abs(d.x - (c.x + 3)) < 7 && Math.abs(d.y - (c.y + 10)) < 4) || null;
 function shroomContext(c) {
-  if (c.pid == null || c.inv.length >= 16) return null;
+  if (c.pid == null || c.inv.length >= capacity(c)) return null;
   const d = shroomNear(c);
   return d ? { label: 'Pflücken', fn: () => pick(c, d) } : null;
 }
 function pick(c, d) {
-  if (d.picked || c.inv.length >= 16) return;
+  if (d.picked || c.inv.length >= capacity(c)) return;
   d.picked = true;
   (G.picked ||= []).push(key(d));
   c.inv.push('shroom');
@@ -58,7 +59,7 @@ function applyPicked(list) {
 function takePotions(c) {
   if (c.pid == null || c.bot) return;
   for (const t of Object.keys(POTIONS))
-    if (!c.inv.includes(t) && stock(t) > 0 && c.inv.length < 16) {
+    if (!c.inv.includes(t) && stock(t) > 0 && c.inv.length < capacity(c)) {
       takeStock(t, 1);
       c.inv.push(t);
     }

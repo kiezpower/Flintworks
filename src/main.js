@@ -101,6 +101,7 @@ import { statsHtml } from './stats.js';
 import { addButtonsHtml, wireAddButtons } from './lobbyfriends.js';
 import { dayNo, endCard, shareAndTell } from './daily.js';
 import { H, H0, W, W0, clamp, dryFresh, getSeed, setSeed, surf } from './world.js';
+import { heroTick, heroHud } from './heroabilities.js';
 
 // ---- Screens & loop ----
 const overlay = $('overlay'),
@@ -630,6 +631,7 @@ function step() {
       if (isAbsent(c)) return;
       useTeam(teamOf(c)); // Versus: castle, cash and store of this Wühler's team
       const I = c.dead ? (isPlayer(c) ? inputOf(c.pid) : NOIN) : c.bot ? botAI(c, n) : isPlayer(c) ? inputOf(c.pid) : helperAI(c, n);
+      heroTick(c);
       updDigger(c, I);
       if (isPlayer(c)) playerVehicleTick(c);
       if (isPlayer(c) && !c.dead) {
@@ -831,6 +833,7 @@ function loop(t) {
   G.tick++;
   if (G.tick % 5 === 0) {
     hud();
+    heroHud();
     tutHud();
     updEmoBtn();
     updScoreBtn();

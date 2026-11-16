@@ -1,10 +1,12 @@
 // The Wühler button opens a collection book. Browsing never changes the profile;
-// only the explicit selection commits an unlocked cosmetic identity.
+// only the explicit selection commits an unlocked identity and its role.
 import './heroalbum.css';
+import { ROLES, CHAPTERS, chapterCount, progressOf } from './heroskills.js';
+import { ev } from './analytics.js';
 import { minerArtReady } from './minerart.js';
 import { HEROES, heroAvailable, heroOf, selectHero } from './heroes.js';
 import { tr } from './i18n.js';
-import { P, saveProfile } from './profile.js';
+import { P, dayNumber, saveProfile } from './profile.js';
 import { drawPortrait } from './portrait.js';
 import { updateMe } from './net/room.js';
 import { closePanel, openPanel } from './ui.js';
@@ -77,8 +79,10 @@ function openHeroAlbum({ onAppearance, onOutfits, onAchievements, onSelected } =
     button.addEventListener('click', action);
     appearance.appendChild(button);
   }
-  preview.append(name, stage, desc, status, select, appearance);
-  const note = element('p', 'ha-note', tr('Alle Helden haben dieselben Fähigkeiten. Hüte und Outfits bleiben erhalten.'));
+  const skills = element('section', 'ha-skills');
+  skills.id = 'heroSkills';
+  preview.append(name, stage, desc, status, select, appearance, skills);
+  const note = element('p', 'ha-note', tr('Fähigkeiten gelten im freien Spiel und Koop. Kampagne, Tagesschicht und Wettkampf bleiben ohne Rollenboni.'));
   album.append(book, preview, note);
   body.appendChild(album);
 
@@ -92,6 +96,7 @@ function openHeroAlbum({ onAppearance, onOutfits, onAchievements, onSelected } =
     card.setAttribute('aria-controls', 'heroPreviewName heroStatus');
     card.appendChild(portrait(hero, P.hero === hero.id));
     card.appendChild(element('b', 'ha-card-name', hero.name));
+    if (chapterCount(progressOf(P, hero.id), hero.id) === 3) card.appendChild(element('small', '', '★ ' + tr('Wühler-Meister')));
     const badge = element('span', 'ha-stamp', available ? '✓' : '🔒');
     badge.setAttribute('aria-hidden', 'true');
     card.appendChild(badge);
@@ -114,17 +119,46 @@ function openHeroAlbum({ onAppearance, onOutfits, onAchievements, onSelected } =
     name.textContent = hero.name;
     art.replaceChildren(portrait(hero, selected));
     stage.classList.toggle('locked', !available);
-    desc.textContent = available ? tr(hero.desc) : tr('Spiele weiter, um diesen Helden zu entdecken.');
+    desc.textContent = available ? tr(ROLES[hero.id].role) + ' · ' + tr(ROLES[hero.id].passive) : tr('Spiele weiter, um diesen Helden zu entdecken.');
     status.textContent = selected ? tr('Ausgewählt') : available ? tr('Freigeschaltet') :
       hero.level ? tr('Level {have}/{need}', { have: P.level, need: hero.level }) :
         tr('Siege {have}/{need}', { have: P.wins || 0, need: hero.wins });
     select.textContent = selected ? tr('Ausgewählt') : available ? tr('Auswählen') : condition(hero);
     select.disabled = !available || selected;
+    const role = ROLES[hero.id], p = progressOf(P, hero.id), chapters = chapterCount(p, hero.id);
+    skills.replaceChildren();
+    skills.append(element('b', '', tr(role.role)), element('p', '', tr(role.passive)),
+      element('p', '', tr(role.skill) + ': ' + tr(role.active)));
+    if (!available && hero.id === 'toni') skills.append(element('p', '', tr('Oder hilf bei 12 Gebäuden: {n}/12', { n: Math.min(12, P.heroCareer?.build || 0) })));
+    if (!available && hero.id === 'nora') skills.append(element('p', '', tr('Oder sammle 60 Goldnuggets oder Edelsteine: {n}/60', { n: Math.min(60, P.heroCareer?.find || 0) })));
+    skills.append(element('b', '', tr('Meisterschaft') + ` · ${chapters}/3`));
+    if (chapters < 3) {
+      skills.append(element('p', '', tr(CHAPTERS[chapters]) + ': ' + tr(role.task, { n: role.goals[chapters] }) +
+        ` (${Math.min(role.goals[chapters], Math.floor(p.work || 0))}/${role.goals[chapters]})`));
+      const bar = element('progress', 'ha-progress'); bar.max = role.goals[chapters]; bar.value = p.work || 0;
+      bar.setAttribute('aria-label', tr(role.task, { n: role.goals[chapters] })); skills.append(bar);
+      if (chapters) skills.append(element('p', '', tr('Nutze deine Fähigkeit {n}-mal mit Wirkung: {have}/{n}',
+        { n: [0, 2, 8][chapters], have: Math.min([0, 2, 8][chapters], p.feats || 0) })));
+    } else skills.append(element('p', '', '★ ' + tr('Wühler-Meister') + ' · ' + tr('Königsrobe freigeschaltet')));
+    skills.append(element('p', '', tr('Kapitelbelohnungen: 60 XP · 120 XP und Variante · 200 XP und Königsrobe')));
+    const variants = element('div', 'ha-variants');
+    for (const [id, label] of [['steady', 'Ausdauer: 8 s Wirkung · 40 s Abklingzeit'], ['quick', 'Tempo: 5 s Wirkung · 25 s Abklingzeit']]) {
+      const button = element('button', '', tr(label));
+      button.disabled = !available || (id === 'quick' && chapters < 2);
+      button.setAttribute('aria-pressed', String((P.heroVariants?.[hero.id] || 'steady') === id));
+      button.addEventListener('click', () => {
+        P.heroVariants ||= {}; P.heroVariants[hero.id] = id; saveProfile(); update();
+      });
+      variants.append(button);
+    }
+    skills.append(variants);
+    if (available) skills.append(element('p', '', tr(P.heroDaily === dayNumber() ? 'Heute erledigt · +30 XP' : 'Optional heute: eine Fähigkeit mit Wirkung einsetzen')));
   }
   select.addEventListener('click', () => {
     // Recheck unlocks at commit time; previews of locked cards never grant access.
     if (!selectHero(P, previewId)) return;
     saveProfile();
+    ev('hero_select', { hero: previewId });
     updateMe();
     onSelected?.();
     closePanel();

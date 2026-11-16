@@ -1,4 +1,4 @@
-// Cosmetic identities shared by the album, portraits and in-game miners.
+// Wühler identities shared by the album, portraits and in-game miners.
 // One digit fits inside the existing 20-character multiplayer skin tag.
 const HEROES = [
   { id: 'anna', code: '1', name: 'Anna', cap: '#c8402c', desc: 'Mit Mut ins Bergwerk', pal: {} },
@@ -16,8 +16,10 @@ const HEROES = [
 const heroOf = id => HEROES.find(hero => hero.id === id);
 const heroPal = id => heroOf(id)?.pal || {};
 const heroAvailable = (hero, profile) => !!hero &&
-  (!hero.level || profile.level >= hero.level) && (!hero.wins || profile.wins >= hero.wins);
-// Selecting a hero changes identity and cap, never gameplay, name or owned cosmetics.
+  ((!hero.level || profile.level >= hero.level) && (!hero.wins || profile.wins >= hero.wins) ||
+    hero.id === 'toni' && (profile.heroCareer?.build || 0) >= 12 ||
+    hero.id === 'nora' && (profile.heroCareer?.find || 0) >= 60);
+// Selection keeps name and owned cosmetics; the skin identity determines the role in eligible modes.
 function selectHero(profile, id) {
   const hero = heroOf(id);
   if (!heroAvailable(hero, profile)) return false;

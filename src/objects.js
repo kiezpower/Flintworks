@@ -1,3 +1,4 @@
+import { capacity, heroEvent } from './heroskills.js';
 import { cam } from './render.js';
 import { buzz } from './sound.js';
 import { addFloat } from './floats.js';
@@ -168,7 +169,7 @@ function updItems() {
     if (it.pd <= 0 && sp < 1.5 && it.fuse < 0) {
       for (const c of crew) {
         if (c.dead || c.tumble || c.puppet) continue;
-        if (c.inv.length >= INV_MAX) {
+        if (c.inv.length >= capacity(c)) {
           // a player walking over a find with a full bag hears about it now and then (and the bag
           // button blinks, ui.js)
           if (c.pid != null && !c.bot && overlap(it, c, 1)) {
@@ -195,6 +196,7 @@ function updItems() {
         if (!overlap(it, c, 1)) continue;
         items.splice(k, 1);
         c.inv.push(it.t);
+        if (['nug', 'gem'].includes(it.t)) heroEvent(c, 'find');
         sfx('pick', c.x, c.y);
         addFloat(c.x + 3, c.y - 4, '+1', '#ffffff', it.t);
         break;

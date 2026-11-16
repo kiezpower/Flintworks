@@ -1,5 +1,8 @@
 // The Heimatbergwerk panel in the lobby: collect what the home crew mined, upgrades bought with
 // crystals and the skins (outfits and building styles). The rules live in camp.js and skins.js.
+import { ROLES, chapterCount, progressOf } from './heroskills.js';
+import { HEROES } from './heroes.js';
+import { G } from './state.js';
 import { GEAR, UPGRADES, buyGear, buySkin, hasGearForGood, buyUpgrade, camp, collect, level, owns, pending, price, rate, vaultHours } from './camp.js';
 import { tr } from './i18n.js';
 import { drawPortrait } from './portrait.js';
@@ -119,6 +122,22 @@ function openCamp(hooks = {}) {
         reopen();
       },
     }).dataset.gear = id;
+  }
+  const badges = HEROES.filter(h => chapterCount(progressOf(P, h.id), h.id) === 3);
+  if (badges.length) {
+    const showcase = sec(p, 'Meisterschaftsabzeichen');
+    for (const hero of badges) {
+      const badge = document.createElement('p');
+      badge.textContent = '★ ' + hero.name + ' · ' + tr(ROLES[hero.id].role);
+      showcase.appendChild(badge);
+    }
+  }
+  if (G.mode === 'settlement') {
+    const project = sec(p, 'Gemeinsames Projekt');
+    const text = document.createElement('p');
+    const n = Math.min(3, G.heroProject?.roles?.length || 0);
+    text.textContent = tr(n >= 3 ? 'Wühler-Teamprojekt geschafft!' : 'Gemeinsames Projekt: {n}/3 Rollen', { n });
+    project.appendChild(text);
   }
   // 4. skins: outfits and building styles (seen by everybody, also in multiplayer)
   const choose = (kind, id, set) => {

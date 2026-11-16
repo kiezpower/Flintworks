@@ -1,3 +1,4 @@
+import { capacity } from './heroskills.js';
 // The castle shows itself as the place to shop: a small sign over the gate while your Wühler is
 // close ("Burg · Laden"), inside it says which button opens the castle panel, and with a full bag
 // the yellow arrow points home. Only pictures; the glowing action button and the first-time hint
@@ -44,7 +45,7 @@ function drawCastleCue(ctx, cx, cy) {
     sign(ctx, tr('Burg · Laden'), Math.round(gx - cx), Math.round(top - cy) - 8 + bob);
     // a small arrow down to the gate
     drawArrow(ctx, Math.round(gx - cx), Math.round(top - cy) + 4);
-  } else if (c.inv.length >= INV_MAX) {
+  } else if (c.inv.length >= capacity(c)) {
     // a full bag: home is where it empties
     drawArrow(ctx, gx - cx, top - cy);
   }
