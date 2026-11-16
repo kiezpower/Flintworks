@@ -86,14 +86,28 @@ export async function importWorld(text, allowedModes) {
 // Domain checks use the game's registries instead of a second list of building/vehicle ids.
 export async function validWorldObjects(save) {
   if (!validWorldSave(save)) return false;
-  const [{ BT }, { VK }, { ITEM }] = await Promise.all([
-    import('./buildings.js'), import('./vehicles/core.js'), import('./sprites.js'),
+  const [{ BT }, { VK }, { ITEM }, { HEROES }] = await Promise.all([
+    import('./buildings.js'), import('./vehicles/core.js'), import('./sprites.js'), import('./heroes.js'),
   ]);
   const d = save.data;
   const point = e => Number.isFinite(e.x) && Number.isFinite(e.y);
+  const heroIds = new Set(HEROES.map(h => h.id));
+  const count = n => Number.isFinite(n) && n >= 0 && n <= 1e6;
+  const record = v => v && typeof v === 'object' && !Array.isArray(v);
+  const heroState = c =>
+    (c.heroCounters == null || record(c.heroCounters) && Object.entries(c.heroCounters).every(([id, v]) =>
+      heroIds.has(id) && record(v) && count(v.work) && count(v.feats))) &&
+    (c.heroCareer == null || record(c.heroCareer) && Object.entries(c.heroCareer).every(([id, n]) =>
+      ['build', 'find'].includes(id) && count(n))) &&
+    (c.heroScan == null || Array.isArray(c.heroScan) && c.heroScan.length <= 24 && c.heroScan.every(p =>
+      Array.isArray(p) && p.length === 2 && Number.isFinite(p[0]) && Number.isFinite(p[1]) &&
+      p[0] >= 0 && p[0] < (d.w || 1400) && p[1] >= 0 && p[1] < (d.h || 400)));
+  const project = d.heroProject;
+  if (project != null && (!record(project) || !Array.isArray(project.roles) || project.roles.length > HEROES.length ||
+    !project.roles.every(id => heroIds.has(id)) || new Set(project.roles).size !== project.roles.length)) return false;
   return ['meadow', 'desert', 'winter'].includes(d.biome) &&
     d.builds.every(b => (b.type === 'base' || Object.hasOwn(BT, b.type)) && Number.isFinite(b.x) && Number.isFinite(b.gy) &&
       Number.isFinite(b.w) && Number.isFinite(b.h) && (!b.cs || point(b.cs))) &&
-    d.crew.every(c => point(c) && Array.isArray(c.inv) && c.inv.length <= 20 && c.inv.every(t => Object.hasOwn(ITEM, t))) &&
+    d.crew.every(c => point(c) && heroState(c) && Array.isArray(c.inv) && c.inv.length <= 20 && c.inv.every(t => Object.hasOwn(ITEM, t))) &&
     (d.vehicles || []).every(v => point(v) && Object.hasOwn(VK, v.kind));
 }

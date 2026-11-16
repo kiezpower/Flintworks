@@ -212,3 +212,29 @@ test('mobile ability button stays below the top HUD and inside the viewport', as
   expect(ability.x).toBeGreaterThanOrEqual(0);
   expect(ability.x + ability.width).toBeLessThanOrEqual(390);
 });
+
+test('world import rejects malformed role counters, scan results and project contributions', async ({ page }) => {
+  await start(page, 'bruno');
+  const result = await page.evaluate(async () => {
+    const { serialize } = await import('/src/save.js');
+    const { validWorldObjects } = await import('/src/worldstore.js');
+    const data = serialize();
+    const valid = await validWorldObjects({ data });
+    const checks = [];
+    for (const fields of [
+      { heroCounters: { anna: null } }, { heroCounters: [] },
+      { heroCounters: { anna: { work: 'broken', feats: 0 } } },
+      { heroCareer: { find: -1 } }, { heroScan: {} }, { heroScan: [[-10, 0]] },
+    ]) {
+      const copy = structuredClone(data); Object.assign(copy.crew[0], fields);
+      checks.push(await validWorldObjects({ data: copy }));
+    }
+    for (const roles of ['anna', ['unknown'], ['anna', 'anna']]) {
+      const copy = structuredClone(data); copy.heroProject = { roles };
+      checks.push(await validWorldObjects({ data: copy }));
+    }
+    return { valid, checks };
+  });
+  expect(result.valid).toBe(true);
+  expect(result.checks).toEqual(Array(9).fill(false));
+});
