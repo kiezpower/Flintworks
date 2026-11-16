@@ -148,3 +148,18 @@ test('fast graphics still reduce the drawing buffer; fine graphics restore displ
   expect(sizes.fine[0]).toBeGreaterThan(sizes.fast[0]);
   expect(sizes.fine[1]).toBeGreaterThan(sizes.fast[1]);
 });
+
+
+test('the unselected starter uses illustrated Anna without changing saved identity', async ({ page }) => {
+  await lobby(page);
+  const pictures = await page.evaluate(async () => {
+    const { drawPortrait } = await import('/src/portrait.js');
+    return [null, 'anna'].map(hero => {
+      const cv = document.createElement('canvas'); cv.width = 192; cv.height = 256;
+      const ctx = cv.getContext('2d'); ctx.scale(8, 8);
+      drawPortrait(ctx, 4, 10, 1, '#c8402c', 'none', false, 'blue', hero);
+      return cv.toDataURL();
+    });
+  });
+  expect(pictures[0]).toBe(pictures[1]);
+});
