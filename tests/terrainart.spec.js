@@ -26,7 +26,8 @@ test('painted masks follow digging, tunnels and liquids without changing simulat
     return { unchanged, solid, air, tunnel, water, seam, changed, gold, stats: terrainArtStats() };
   });
   expect(r.unchanged).toBe(true); expect(r.solid[3]).toBe(255); expect(r.air[3]).toBe(0);
-  expect(r.tunnel[3]).toBe(255); expect(r.tunnel).not.toEqual(r.solid); expect(r.water[3]).toBe(0);
+  expect(r.tunnel[3]).toBe(255); expect(r.tunnel).not.toEqual(r.solid);
+  expect(r.water[3]).toBeGreaterThan(150); expect(r.water[2]).toBeGreaterThan(r.water[0]); // (water is painted blue, terrainart.js)
   expect(r.seam).toBe(true); expect(r.changed).toBe(true); expect(r.gold[0]).toBeGreaterThan(r.gold[2]);
   expect(r.stats.materials).toBe(12);
 });

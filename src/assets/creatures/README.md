@@ -19,3 +19,12 @@ toadstool and shrine guardian recolour the spider, slime and golem. A hurt
 flash and the companion's red collar are cached frame variants. If the atlas is
 missing, the earlier pixel sprites are drawn. This is a rendering layer: sizes,
 hit points, behaviour, saves and networking are unchanged.
+
+## Walk cycles
+
+`cycles.png` / `cycles.json` (1536×488): four phases (`walk0`…`walk3`) of the monster,
+bat, spider, slime, golem and Fluffel, cut from `docs/monster-varianten/A-zusatz-laufzyklen.png`
+by `build_cycles.py` and scaled to the idle picture's body size. Ground creatures step
+through the phases with their distance (`a.anim`), the bat flaps with time, the slime
+stretches in the air (`walk1` rising, `walk2` falling). Without the cycle atlas the two-phase
+sway of the main atlas is used.

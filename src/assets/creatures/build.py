@@ -48,7 +48,8 @@ def cut(path, cols, rows, thresh=34):
         cx, cy = xs.mean(), ys.mean()
         col, row = int(cx * cols / W), int(cy * rows / H)
         assert (row, col) not in figs, (path, row, col)
-        figs[(row, col)] = Image.fromarray(np.dstack([rgb[y0:y1, x0:x1], am[y0:y1, x0:x1]])), cx - x0
+        fig = Image.fromarray(np.dstack([rgb[y0:y1, x0:x1], am[y0:y1, x0:x1]])); fig.origin = (int(x0), int(y0))  # (its place on the sheet)
+        figs[(row, col)] = fig, cx - x0
     return figs
 A = cut(SRC, 6, 3); E = cut(EXTRA, 4, 2)
 frames = {}

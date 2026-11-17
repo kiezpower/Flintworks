@@ -3,6 +3,8 @@
 // centre for flyers and swimmers). Missing art falls back to the pixel sprites.
 import url from './assets/creatures/atlas.png';
 import meta from './assets/creatures/atlas.json';
+import cyclesUrl from './assets/creatures/cycles.png';
+import cycles from './assets/creatures/cycles.json';
 
 // height of the idle frame in world cells; fly: centred on the hitbox instead of standing on it
 const LOOK = {
@@ -24,21 +26,34 @@ const VARIANT = {
   guardian: ['golem', (r, g, b) => [r * 0.75 + 30, g * 0.6 + 5, b * 0.9 + 55]],
 };
 // where a companion's red collar sits, as a fraction of each Fluffel frame
-const COLLAR = { idle: [0.68, 0.56], move: [0.64, 0.53], attack: [0.61, 0.62] };
+const COLLAR = { idle: [0.68, 0.56], move: [0.64, 0.53], attack: [0.61, 0.62], walk0: [0.72, 0.5], walk1: [0.72, 0.5], walk2: [0.72, 0.5], walk3: [0.72, 0.5] };
 const HURT = [255, 106, 90];
 
-let source = null;
+let source = null,
+  cycleSource = null;
 const cache = new Map();
-const creatureArtReady = new Promise(resolve => {
-  const image = new Image();
-  image.onload = () => {
-    if (image.naturalWidth !== meta.width || image.naturalHeight !== meta.height) return resolve(false);
-    source = image;
-    resolve(true);
-  };
-  image.onerror = () => resolve(false);
-  image.src = url;
-});
+const load = (src, m, set) =>
+  new Promise(resolve => {
+    const image = new Image();
+    image.onload = () => {
+      if (image.naturalWidth !== m.width || image.naturalHeight !== m.height) return resolve(false);
+      set(image);
+      resolve(true);
+    };
+    image.onerror = () => resolve(false);
+    image.src = src;
+  });
+// the main atlas is required; the cycle atlas (walk0…walk3 of the common creatures) is a bonus
+const creatureArtReady = Promise.all([load(url, meta, i => (source = i)), load(cyclesUrl, cycles, i => (cycleSource = i))]).then(([ok]) => ok);
+// a creature's frame by pose: [x, y, w, h, anchorX] and the picture it lies in
+const rectOf = (base, pose) => {
+  const own = meta.frames[base]?.[pose];
+  if (own) return [own, source];
+  const walk = cycleSource && cycles.frames[base]?.[pose];
+  return walk ? [walk, cycleSource] : null;
+};
+// how many walking phases a creature has (0: it only has idle, move and attack)
+const phasesOf = kind => (cycleSource && cycles.frames[baseOf(kind)] ? 4 : 0);
 const baseOf = kind => (VARIANT[kind] ? VARIANT[kind][0] : kind);
 const hasCreatureArt = kind => !!source && !!LOOK[baseOf(kind)];
 
@@ -47,12 +62,12 @@ function frameCanvas(kind, pose, mode) {
   let c = cache.get(key);
   if (c) return c;
   const base = baseOf(kind);
-  const [x, y, w, h] = meta.frames[base][pose];
+  const [[x, y, w, h], img] = rectOf(base, pose);
   c = document.createElement('canvas');
   c.width = w;
   c.height = h;
   const g = c.getContext('2d');
-  g.drawImage(source, x, y, w, h, 0, 0, w, h);
+  g.drawImage(img, x, y, w, h, 0, 0, w, h);
   const tint = VARIANT[kind]?.[1],
     flash = mode === 'hurt' ? LOOK[base].flash || HURT : null;
   if (tint || flash) {
@@ -87,10 +102,10 @@ function drawCreature(g, kind, pose, x, y, w, h, face = 1, o = {}) {
   if (!hasCreatureArt(kind)) return false;
   const base = baseOf(kind),
     look = LOOK[base],
-    frames = meta.frames[base];
-  if (!frames[pose]) pose = 'idle';
-  const f = frames[pose],
-    k = (o.size || look.h) / frames.idle[3]; // cells per source pixel, the same for every pose
+    idle = meta.frames[base].idle;
+  if (!rectOf(base, pose)) pose = 'idle';
+  const f = rectOf(base, pose)[0],
+    k = (o.size || look.h) / idle[3]; // cells per source pixel, the same for every pose
   const c = frameCanvas(kind, pose, o.hurt ? 'hurt' : o.pet ? 'pet' : '');
   g.save();
   g.translate(x + w / 2, (look.fly ? y + h / 2 : y + h + 0.4) + (o.dy || 0));
@@ -120,4 +135,4 @@ function creatureIcon(kind, size = 48) {
   return (iconCache[kind + size] = c);
 }
 
-export { creatureArtReady, creatureIcon, drawCreature, hasCreatureArt };
+export { creatureArtReady, creatureIcon, drawCreature, hasCreatureArt, phasesOf };

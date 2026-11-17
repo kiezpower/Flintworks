@@ -47,3 +47,9 @@ canvas.painted, img.painted, #storeRow img, .ico, #lobby .ico, .slot.weapon .wic
 .cbtn.sel { border-color: var(--gold); }
 .cbtn .cface { width: 28px; height: 28px; display: block; border-radius: 6px; background: radial-gradient(circle at 50% 35%, #6f8f9a, #2c3a40); }
 .cbtn .hp { border-radius: 2px; overflow: hidden; }
+
+/* Overview maps are shown softly scaled, in the painted look: the minimap, the level previews
+   and the picture of a world in the detail view. */
+#mini { image-rendering: auto; border-radius: 6px; }
+.ls-pv > canvas, .ls-pv > img, .ls-st .ls-pv > canvas:not(.ls-badge):not(.ls-icon), .ls-st .ls-pv > img { image-rendering: auto !important; }
+.ls-pv { border-radius: 6px; overflow: hidden; }

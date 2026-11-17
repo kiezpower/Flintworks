@@ -51,6 +51,62 @@ function tokenAt(world, x, y) {
   if (m === 1 && (world.shade[i] & 4)) return world.biome === 'desert' ? 4 : 16;
   return frames.has(m) ? m : -1; // liquids and glass keep their specialised renderer
 }
+// Liquids are painted here as well (they used to be pixel texels in world.js): a body in the
+// liquid's colour, soft blobs of light and shadow that hide the cell grid, and a bright band on
+// open surfaces. body/light/dark are CSS colours, alpha how much the ground behind shows.
+const LIQUID = {
+  5: { body: '#3a7dc2', light: '#8fd0ff', dark: '#1f4f8c', alpha: 0.9, rim: '#d5efff' },
+  7: { body: '#e8501a', light: '#ffd25a', dark: '#a82a10', alpha: 1, rim: '#fff0a8' },
+  8: { body: '#6fcf48', light: '#c9ff9a', dark: '#3d8a2a', alpha: 0.9, rim: '#e8ffd0' },
+  14: { body: '#2a2016', light: '#6b5238', dark: '#120c08', alpha: 0.92, rim: '#8a6a48' },
+};
+const blobs = new Map();
+function blob(color) {
+  let c = blobs.get(color);
+  if (c) return c;
+  c = document.createElement('canvas'); c.width = c.height = 32;
+  const g = c.getContext('2d'), gr = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+  gr.addColorStop(0, color); gr.addColorStop(1, color.replace(/[\d.]+\)$/, '0)'));
+  g.fillStyle = gr; g.fillRect(0, 0, 32, 32);
+  blobs.set(color, c); return c;
+}
+const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+function hash2(x, y) {
+  let h = Math.imul(x, 374761393) + Math.imul(y, 668265263);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+function paintLiquids(g, world, x0, y0, w, h) {
+  const paths = new Map();
+  for (let y = 0; y < h; y++) for (let x = 0; x < w;) {
+    const m = world.mat[(y0 + y) * world.W + x0 + x]; let end = x + 1;
+    if (LIQUID[m]) {
+      while (end < w && world.mat[(y0 + y) * world.W + x0 + end] === m) end++;
+      let path = paths.get(m); if (!path) paths.set(m, path = new Path2D());
+      path.rect(x, y, end - x, 1);
+    }
+    x = end;
+  }
+  for (const [m, path] of paths) {
+    const L = LIQUID[m];
+    g.save(); g.globalAlpha = L.alpha; g.fillStyle = L.body; g.fill(path); g.restore();
+    g.save(); g.clip(path);
+    const light = blob(rgba(L.light, 0.55)), dark = blob(rgba(L.dark, 0.5));
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      if (world.mat[(y0 + y) * world.W + x0 + x] !== m) continue;
+      const r = hash2(x0 + x, y0 + y), wx = x0 + x, wy = y0 + y;
+      if (r < 0.34) { g.globalAlpha = 0.5 + r; g.drawImage(light, x - 1.4 + hash2(wx, wy + 7) * 1.2, y - 1.4 + hash2(wx + 3, wy) * 1.2, 3.4, 3.4); }
+      else if (r > 0.62) { g.globalAlpha = 0.45 + (r - 0.62); g.drawImage(dark, x - 1.4 + hash2(wx + 5, wy) * 1.2, y - 1.4 + hash2(wx, wy + 11) * 1.2, 3.4, 3.4); }
+      // open surface: a bright band that undulates a little
+      if (y0 + y > 0 && world.mat[(y0 + y - 1) * world.W + x0 + x] === 0) {
+        g.globalAlpha = 0.7; g.fillStyle = L.rim;
+        g.fillRect(x, y + Math.sin(wx * 0.9) * 0.06, 1.02, 0.34);
+        g.globalAlpha = 0.25; g.fillRect(x, y + 0.34, 1.02, 0.3);
+      }
+    }
+    g.restore();
+  }
+}
 function makeChunk(world, cx, cy) {
   const x0 = cx * CHUNK, y0 = cy * CHUNK;
   const w = Math.min(CHUNK, world.W - x0), h = Math.min(CHUNK, world.H - y0);
@@ -73,6 +129,7 @@ function makeChunk(world, cx, cy) {
     if (tint) { g.fillStyle = tint; g.fill(path); }
     if (id === 16 && world.biome === 'winter') { g.fillStyle = '#ecf4eeed'; g.fill(path); }
   }
+  paintLiquids(g, world, x0, y0, w, h);
   const lighting = document.createElement('canvas'); lighting.width = w; lighting.height = h;
   const light = lighting.getContext('2d');
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
@@ -123,5 +180,6 @@ function paintTerrainOnce(g, world) {
   }
   g.restore(); return true;
 }
+const terrainArtLoaded = () => frames.size > 0;
 const terrainArtStats = () => ({ chunks: cache.size, limit: LIMIT, density: DENSITY, materials: frames.size });
-export { drawTerrainArt, paintTerrainOnce, invalidateTerrainArt, resetTerrainArt, terrainArtReady, terrainArtStats };
+export { drawTerrainArt, paintTerrainOnce, invalidateTerrainArt, resetTerrainArt, terrainArtLoaded, terrainArtReady, terrainArtStats };

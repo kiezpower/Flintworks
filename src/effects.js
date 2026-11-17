@@ -126,15 +126,31 @@ function drawWaterGlints(ctx) {
   for (let k = 0; k < waterSpots.length; k += 2)
     if ((waterSpots[k] + t * 3) % 17 < 2) ctx.fillRect(waterSpots[k], waterSpots[k + 1], 2, 1);
 }
+// one soft orange spot, stamped over every few lava cells
+const lavaSpr = document.createElement('canvas');
+lavaSpr.width = lavaSpr.height = 32;
+{
+  const g = lavaSpr.getContext('2d'),
+    gr = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+  gr.addColorStop(0, 'rgba(255,150,50,1)');
+  gr.addColorStop(1, 'rgba(255,110,30,0)');
+  g.fillStyle = gr;
+  g.fillRect(0, 0, 32, 32);
+}
 function drawLavaGlow(ctx) {
-  const pulse = 0.09 + Math.sin(G.frame * 0.08) * 0.03;
+  const pulse = 0.13 + Math.sin(G.frame * 0.08) * 0.04;
   ctx.globalCompositeOperation = 'lighter';
-  ctx.fillStyle = `rgba(255,110,30,${pulse})`;
-  for (let k = 0; k < lavaSpots.length; k += 2) ctx.fillRect(lavaSpots[k] - 3, lavaSpots[k + 1] - 3, 7, 7);
+  ctx.globalAlpha = pulse;
+  ctx.imageSmoothingEnabled = true;
+  for (let k = 0; k < lavaSpots.length; k += 2) ctx.drawImage(lavaSpr, lavaSpots[k] - 5, lavaSpots[k + 1] - 5, 10, 10);
+  ctx.globalAlpha = 1;
+  ctx.imageSmoothingEnabled = false;
   ctx.fillStyle = '#ffe08a';
   for (let k = 0; k < 4 && lavaSpots.length; k++) {
     const j = (Math.floor(rnd() * lavaSpots.length) >> 1) << 1;
-    ctx.fillRect(lavaSpots[j], lavaSpots[j + 1], 1, 1);
+    ctx.beginPath();
+    ctx.arc(lavaSpots[j] + 0.5, lavaSpots[j + 1] + 0.5, 0.7, 0, 6.3);
+    ctx.fill();
   }
   ctx.globalCompositeOperation = 'source-over';
 }
@@ -322,6 +338,21 @@ function drawPart(ctx, p, x, y) {
     const sl = p.vy > 0.3 ? p.vx / p.vy : 0,
       n = p.vy > 1.6 ? 3 : 2,
       fx = p.x - Math.floor(p.x);
+    if (G.res === 2) {
+      // (high detail: one slender slanted streak, bright at its head, fading to the tail)
+      const len = n + 0.8,
+        grad = ctx.createLinearGradient(x + fx, y, x + fx - sl * len, y - len);
+      grad.addColorStop(0, FX_PAL.rainHead);
+      grad.addColorStop(1, FX_PAL.rainTail);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 0.55;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x + fx, y);
+      ctx.lineTo(x + fx - sl * len, y - len);
+      ctx.stroke();
+      return;
+    }
     for (let i = 0; i < n; i++) {
       ctx.fillStyle = i ? FX_PAL.rainTail : FX_PAL.rainHead;
       ctx.fillRect(x + Math.round((fx - sl * i) / u) * u, y - i, u, 1);
@@ -330,6 +361,13 @@ function drawPart(ctx, p, x, y) {
   }
   if (p.snow) {
     ctx.fillStyle = p.c;
+    if (G.res === 2) {
+      // (high detail: soft round flakes)
+      ctx.beginPath();
+      ctx.arc(x + 0.5, y + 0.5, p.big ? 0.95 : 0.6, 0, 6.3);
+      ctx.fill();
+      return;
+    }
     if (p.big && u < 1) {
       ctx.fillRect(x, y - u, u, u * 3);
       ctx.fillRect(x - u, y, u * 3, u);
@@ -342,7 +380,7 @@ function drawPart(ctx, p, x, y) {
   if (G.res === 2 && s >= 1) {
     // (high detail: round specks and puffs; fast graphics keep the cheap squares)
     ctx.beginPath();
-    ctx.arc(x + (p.grow ? 0 : s / 2), y + (p.grow ? 0 : s / 2), s * 0.56, 0, 6.3);
+    ctx.arc(x + (p.grow ? 0 : s / 2), y + (p.grow ? 0 : s / 2), s * 0.5, 0, 6.3);
     ctx.fill();
   } else if (p.grow) ctx.fillRect(x - Math.floor(s / 2), y - Math.floor(s / 2), s, s);
   else ctx.fillRect(x, y, s, s);

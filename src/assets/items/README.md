@@ -24,3 +24,12 @@ the cut-outs of `objectart.js`, the riding Fluffel the creature atlas. Without
 the atlases the pixel icons of `sprites.js` are drawn. Raft, riding Fluffel, airship, mine train, lorry, drill wagon, mast and gondola
 are painted in the world too. Still procedural: the catapult (its arm aims) and
 the archery target, fluids and effects.
+
+## Catapult
+
+`catapult.png` / `catapult.json` (711×220): the wheeled frame and the throwing arm as
+separate pictures, cut from `docs/monster-varianten/A-zusatz-katapult.png` by
+`build_catapult.py`. `catapultart.js` draws the frame on the vehicle's box and turns the arm
+about the frame's axle (`axle`, `pivot` in stored pixels), so aiming and throwing stay visible;
+the vector drawing in `vehicles/ground.js` is the fallback. The archery target is the painted
+`ui:target` icon, scaled so that its bullseye and rim match the scored rings (combat.js).
