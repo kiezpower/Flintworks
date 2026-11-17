@@ -99,7 +99,7 @@ const ARROWS = {
 const hasTool = id => !!(G.tools && G.tools[id]);
 // the pick a team digs with: 0 bare hands' pick, 1 steel pick, 2 diamond pick
 const pickTier = () => (hasTool('dpick') ? 2 : hasTool('pick') ? 1 : 0);
-// a tool of the team, or gear this Wühler brought from the lobby (Heimatbergwerk, camp.js)
+// a tool of the team, or gear this Wühler brought from the lobby (Kristallstollen, camp.js)
 const hasGear = (c, id) => hasTool(id) || (!(G.daily || G.mode === 'daily' || G.teams || G.mp?.vs) && brought(c, id));
 // arrows in the quiver (kept with the tools: per team, saved and sent along)
 const arrowsOf = id => (G.tools && G.tools['q_' + id]) || 0;
@@ -129,7 +129,7 @@ function toolSection(p, c, { opt, sec, toast, reopen, lacking }) {
         icon: toolIcon(T.icon),
         title: tr(T.name),
         // (hook and lamp can also be bought for good in the lobby)
-        sub: tr(T.sub) + (T.lobby ? ' · ' + tr('Für immer: Heimatbergwerk in der Lobby') : ''),
+        sub: tr(T.sub) + (T.lobby ? ' · ' + tr('Für immer: Kristallstollen in der Lobby') : ''),
         cost: tr('{m} Taler + {cost}', { m: T.money, cost: costTxt(T.need) }),
         state: !known ? 'locked' : ok ? 'ok' : 'poor',
         why: !known ? needText(T.res) : ok ? '' : lacking(c, T.need, T.money),

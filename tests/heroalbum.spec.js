@@ -119,7 +119,7 @@ test('appearance, outfits and achievements remain available and album texts tran
   await page.getByText('Back to album', { exact: true }).click();
   await expect(page.locator('#heroAlbum')).toBeVisible();
   await page.getByRole('button', { name: 'Outfits', exact: true }).click();
-  await expect(page.locator('#pTitle')).toHaveText('Home mine');
+  await expect(page.locator('#pTitle')).toHaveText('Crystal mine');
   await page.keyboard.press('Escape');
   await page.click('#lbWho');
   await page.getByRole('button', { name: 'Achievements', exact: true }).click();

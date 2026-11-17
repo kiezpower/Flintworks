@@ -115,7 +115,7 @@ const TOUCH_KEYS = [
   ['Tippen rechts', 'dein Wühler läuft dorthin'],
   ['Aktion', 'Fällen, Burg (Laden), Truhe, Brücke, Bauen'],
   ['Wurf', 'erscheint mit etwas in der Hand; tippen wirft (Stick hoch = Bogen, runter = ablegen), Knopf ziehen zielt'],
-  ['Haken', 'mit dem Enterhaken (Burg oder für immer im Heimatbergwerk): wirft ihn in Stick-Richtung, sonst an die nächste Kante'],
+  ['Haken', 'mit dem Enterhaken (Burg oder für immer im Kristallstollen): wirft ihn in Stick-Richtung, sonst an die nächste Kante'],
 ];
 const DESK_KEYS = [
   ['Pfeile / WASD', 'laufen, klettern, hangeln, schwimmen'],
@@ -124,7 +124,7 @@ const DESK_KEYS = [
   ['E', 'werfen (Q wechselt, 1–9 wählt)'],
   ['F', 'Aktion: Fällen, Burg (Laden), Lore, Brücke'],
   ['I', 'Tasche öffnen'],
-  ['G', 'Enterhaken: G halten zielt zum Mauszeiger, loslassen wirft (oder Pfeiltaste + G; Burg oder für immer im Heimatbergwerk)'],
+  ['G', 'Enterhaken: G halten zielt zum Mauszeiger, loslassen wirft (oder Pfeiltaste + G; Burg oder für immer im Kristallstollen)'],
   ['B · Tab · M', 'Bauen · Wühler wechseln · Karte'],
   ['Esc', 'Menü'],
 ];
@@ -192,7 +192,7 @@ function play(withTutorial, level = null, veil = false) {
       G.nextNp = G.local && !withTutorial && !L ? 2 : 1;
       gen();
       G.nextSeed = G.nextSize = null;
-      // Heimatbergwerk upgrades (free play alone only, camp.js)
+      // Kristallstollen upgrades (free play alone only, camp.js)
       if (!withTutorial) boost = applyStartBoosts();
       if (bonus) {
         G.money += bonus;
@@ -214,7 +214,7 @@ function play(withTutorial, level = null, veil = false) {
     }
     startGame(withTutorial);
     if (bonus) toast('Startgeld aus dem Tutorial: +{n} Taler', { n: bonus });
-    else if (boost) toast('Startkasse aus dem Heimatbergwerk: +{n} Taler', { n: boost });
+    else if (boost) toast('Startkasse aus dem Kristallstollen: +{n} Taler', { n: boost });
     return;
   }
   G.startT += performance.now() - (G.pauseAt || performance.now());
@@ -441,7 +441,7 @@ function endScreen(won, why, winner = null) {
   if (won && stars === 3 && !G.net) track('stars3');
   const tro = finishGame(won, G.earned || 0, stars);
   ev('round_end', { mode: String(G.mode), won: !!won, sec: s, earned: G.earned || 0, games: P.games || 0, net: !!G.net });
-  // crystals for the Heimatbergwerk: in every mode (Tagesschicht: the medal counts, not the win)
+  // crystals for the Kristallstollen: in every mode (Tagesschicht: the medal counts, not the win)
   const kri = addCrystals(roundCrystals(G.earned, D ? false : won, D ? D.stars : 0));
   const time = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   if (D) card.innerHTML = D.html;

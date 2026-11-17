@@ -61,7 +61,7 @@ unterstützen dasselbe Weltziel. Abgegebene Materialien werden gezählt, nicht e
 3. **Tiefenexpedition:** 24 Nuggets und vier Edelsteine abgeben, 25 m erschließen, drei Hakenankünfte; 180 Taler.
 
 Stand, Beiträge und bereits bezahlte Projekte werden mit der Welt gespeichert und an Mitspieler
-übertragen. Aufgaben-HUD, Aufgabentafel und Heimatbergwerk zeigen die nächsten Anforderungen.
+übertragen. Aufgaben-HUD, Aufgabentafel und Kristallstollen zeigen die nächsten Anforderungen.
 
 ## Tagesschicht, Versus, Wiederholungen
 
