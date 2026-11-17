@@ -322,6 +322,21 @@ function drawPart(ctx, p, x, y) {
     const sl = p.vy > 0.3 ? p.vx / p.vy : 0,
       n = p.vy > 1.6 ? 3 : 2,
       fx = p.x - Math.floor(p.x);
+    if (G.res === 2) {
+      // (high detail: one slender slanted streak, bright at its head, fading to the tail)
+      const len = n + 0.8,
+        grad = ctx.createLinearGradient(x + fx, y, x + fx - sl * len, y - len);
+      grad.addColorStop(0, FX_PAL.rainHead);
+      grad.addColorStop(1, FX_PAL.rainTail);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 0.55;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x + fx, y);
+      ctx.lineTo(x + fx - sl * len, y - len);
+      ctx.stroke();
+      return;
+    }
     for (let i = 0; i < n; i++) {
       ctx.fillStyle = i ? FX_PAL.rainTail : FX_PAL.rainHead;
       ctx.fillRect(x + Math.round((fx - sl * i) / u) * u, y - i, u, 1);

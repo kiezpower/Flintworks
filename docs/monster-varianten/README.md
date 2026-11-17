@@ -41,6 +41,6 @@ die Kapitel-Karte und der Sprengplatz. Das Gelände kachelt ohne Spiegelmuster (
 
 - Katapult (der Arm zielt) und Zielscheibe: glatte Vektorzeichnung.
 - Vorschaubilder der Level und Karten (`public/previews`): Übersichtskarten, an Prüfsummen gebunden.
-- Minimap, Flüssigkeiten und Wettereffekte (Regen, Schnee). Lichtpfützen, Explosionen und Funken sind weich.
+- Minimap, Flüssigkeiten (Zellflächen mit Pixelrauschen) und Schnee. Lichtpfützen, Explosionen, Funken und Regen sind weich.
 - Kanten von Gelände und Höhlen folgen weiter den Simulationszellen.
 - Kreaturen haben zwei Bewegungsphasen und eine Angriffspose, die Helden sechs Phasen je Aktion.
