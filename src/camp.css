@@ -1,0 +1,82 @@
+/* The Kristallstollen window (lobbycamp.js): a painted banner, a vault bar, level dots and large skin cards. */
+.camp { display: grid; gap: 10px; }
+.camp .psec { font: 400 17px/1.1 var(--font-display); color: #ffe4a1; margin: 8px 2px 0; letter-spacing: .02em; text-shadow: 0 2px 0 #24160c; }
+.camp .plist { gap: 8px; }
+
+.camp-hero {
+  position: relative; display: flex; flex-direction: column; justify-content: flex-end; min-height: 172px;
+  padding: 12px 14px; border-radius: 16px; overflow: hidden;
+  background: #2a1a10 center / cover no-repeat;
+  box-shadow: inset 0 0 0 2px #b88b51, inset 0 -60px 50px -20px rgba(16, 8, 4, .82), 0 6px 18px rgba(0, 0, 0, .45);
+}
+.camp-k {
+  position: absolute; top: 12px; left: 12px; display: flex; align-items: center; gap: 8px;
+  padding: 4px 18px 4px 8px; border-radius: 999px; background: rgba(22, 12, 8, .78);
+  border: 2px solid #e0b844; box-shadow: 0 3px 10px rgba(0, 0, 0, .5), inset 0 1px #fff2a055;
+}
+.camp-k .camp-gem { width: 34px; height: 34px; image-rendering: auto; filter: drop-shadow(0 0 6px #6fd8ff); }
+.camp-k b { font: 400 30px/1 var(--font-display); color: #ffe9a0; text-shadow: 0 2px 0 #3a2410; }
+.camp-hero .camp-head { position: relative; margin: 0; max-width: 62%; font-size: 13px; line-height: 1.35; color: #f6e8cc; text-shadow: 0 1px 3px #000; }
+.camp-hero .camp-me {
+  position: absolute; right: 12px; bottom: 0; width: 110px; height: 150px; image-rendering: auto;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, .6)); pointer-events: none;
+}
+
+/* the collect button: wide, with the vault as a bar of cyan light */
+.camp .opt.camp-collect { grid-template-columns: 48px 1fr; border-color: #7a5a38; }
+.camp .opt.camp-collect.ready {
+  border-color: #ffe27a; background: linear-gradient(#5b4220, #33220f);
+  box-shadow: inset 0 0 0 1px #fff2a066, 0 0 14px rgba(255, 214, 90, .45);
+}
+.camp .opt.camp-collect .camp-vault { grid-column: 1 / -1; height: 10px; border-radius: 6px; background: #150d08; border: 1px solid #5a3a22; overflow: hidden; margin-top: 4px; }
+.camp .opt.camp-collect .camp-vault i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #2f8fb0, #6fe0ff 70%, #d8fbff); box-shadow: 0 0 8px #5fd3e8; }
+.camp .opt.camp-collect.brim .camp-vault i { animation: camp-pulse 1.4s ease-in-out infinite; }
+@keyframes camp-pulse { 50% { filter: brightness(1.4); } }
+
+/* upgrades and gear read as shop shelves */
+.camp .opt { border-radius: 12px; border-color: #6a4a30; background: linear-gradient(#3a281d, #241810); box-shadow: inset 0 1px #ffeacb22; }
+.camp .opt:hover { border-color: var(--gold); }
+.camp .opt canvas, .camp .opt img { image-rendering: auto; }
+.camp-pips { grid-column: 2; display: flex; gap: 3px; margin-top: 3px; }
+.camp-pips i { width: 9px; height: 9px; border-radius: 50%; background: #1d130d; border: 1px solid #6a4a30; }
+.camp-pips i.on { background: radial-gradient(circle at 35% 30%, #e8fdff, #3fb5d6 70%); border-color: #bfefff; box-shadow: 0 0 5px #6fd8ff; }
+
+/* skins: large cards with the Wühler in the outfit, or the hut in the style */
+.camp .skin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(146px, 1fr)); gap: 10px; }
+.skin-card {
+  position: relative; display: grid; grid-template-rows: auto auto auto; padding: 0; overflow: hidden; text-align: left; cursor: pointer;
+  color: #fff0ce; font: inherit; border-radius: 14px; border: 2px solid #6a4a30;
+  background: linear-gradient(#3a2a22, #1f150f); box-shadow: inset 0 1px #ffeacb25, 0 3px 8px rgba(0, 0, 0, .35);
+  transition: transform .12s, border-color .15s, box-shadow .15s;
+}
+.skin-card:hover { transform: translateY(-2px); border-color: var(--gold); }
+.skin-card:active { transform: none; }
+.skin-art {
+  display: block; width: 100%; height: 150px; object-fit: cover; object-position: center top; image-rendering: auto;
+  background: radial-gradient(ellipse at 50% 32%, #8a6a4a 0%, #4a3626 55%, #2a1c14 100%);
+}
+.style-grid .skin-art { height: 112px; object-fit: contain; background: linear-gradient(#a9d3ec 0%, #dff0f6 62%, #6f9a48 62%, #4f7a34 100%); }
+.skin-name { display: flex; align-items: center; gap: 6px; padding: 7px 10px 0; font: 400 15px/1.15 var(--font-display); }
+.skin-dot { flex: none; width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid #fff3d0; box-shadow: 0 1px 3px #000; }
+.skin-state { padding: 1px 10px 9px; font-size: 12px; color: #d9c7a4; }
+.skin-card.own .skin-state { color: #bfe8a8; }
+.skin-card:not(.own):not(.locked) .skin-state { color: #ffe08a; }
+.skin-card.poor:not(.own) .skin-state { color: #f09070; }
+.skin-card.poor:not(.own) .skin-art { filter: saturate(.7) brightness(.82); }
+.skin-card.locked { border-color: #4a382a; }
+.skin-card.locked .skin-art { filter: grayscale(1) brightness(.62) contrast(.9); }
+.skin-card.locked .skin-state, .skin-card.locked .skin-name { color: #9a8870; }
+.skin-card.worn { border-color: #ffe27a; box-shadow: inset 0 0 0 1px #fff2a066, 0 0 16px rgba(255, 214, 90, .5); }
+.skin-card.worn .skin-state { color: #ffe27a; font-weight: 700; }
+.skin-card.worn::after {
+  content: '✓'; position: absolute; top: 7px; right: 7px; width: 24px; height: 24px; border-radius: 50%;
+  display: grid; place-items: center; font: 700 15px/1 var(--font-ui); color: #3a2410;
+  background: linear-gradient(#fff2a8, #e0a020); box-shadow: 0 2px 4px rgba(0, 0, 0, .5);
+}
+@media (max-width: 480px) {
+  .camp-hero { min-height: 178px; }
+  .camp-hero .camp-head { max-width: 58%; font-size: 12px; }
+  .camp-hero .camp-me { width: 96px; height: 132px; right: 4px; }
+  .camp-k b { font-size: 26px; }
+}
+@media (prefers-reduced-motion: reduce) { .camp .opt.camp-collect.brim .camp-vault i { animation: none; } .skin-card { transition: none; } }

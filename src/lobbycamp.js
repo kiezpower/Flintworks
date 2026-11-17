@@ -1,4 +1,4 @@
-// The Heimatbergwerk panel in the lobby: collect what the home crew mined, upgrades bought with
+// The Kristallstollen panel in the lobby: collect what the tunnel crew mined, upgrades bought with
 // crystals and the skins (outfits and building styles). The rules live in camp.js and skins.js.
 import { projectStatus } from './heroprojects.js';
 import { TITLES } from './heromissions.js';
@@ -10,6 +10,10 @@ import { tr } from './i18n.js';
 import { drawPortrait } from './portrait.js';
 import { P, saveProfile } from './profile.js';
 import { BSTYLES, OUTFITS, restyle } from './skins.js';
+import { drawMinerFrame } from './minerart.js';
+import { paintedObject } from './objectart.js';
+import bannerUrl from './assets/scenes/stollen.jpg';
+import './camp.css';
 import { sfx } from './sound.js';
 import { SPR, itemIcon, toolIcon } from './sprites.js';
 import { openPanel, opt, sec, toast } from './ui.js';
@@ -59,25 +63,84 @@ const UP_ICON = {
 };
 const kTxt = n => tr('{n} Kristalle', { n });
 
+// a Wühler in an outfit, painted from the hero's sheet (minerart.js), as a canvas of w×h layout
+// pixels: scale sizes the figure, foot is where its feet stand (below h: the picture cuts off)
+function minerCanvas(outfit, { w = 150, h = 150, scale = 6, foot = 255, mode = '' } = {}) {
+  const c = document.createElement('canvas');
+  c.width = w * 2;
+  c.height = h * 2;
+  c.style.width = w + 'px';
+  c.style.height = h + 'px';
+  c.className = 'painted';
+  const g = c.getContext('2d');
+  g.scale(2, 2);
+  if (!drawMinerFrame(g, w * 0.44, foot, 1, 'idle', 0, P.cap || '#c8402c', outfit, scale, mode, P.hero || 'anna')) {
+    // (the pixel portrait while the sheets are missing)
+    g.imageSmoothingEnabled = false;
+    drawPortrait(g, Math.round(w / 2 - 8 * (scale / 6) * 1.5), Math.max(0, h - 20 * (scale / 6) * 1.5), 1, P.cap, P.hat, false, outfit, P.hero);
+  }
+  return c;
+}
+// a building in a style: the painted hut with the style's colours (skins.js restyle)
+function styleCanvas(id) {
+  const c = document.createElement('canvas');
+  c.width = 300;
+  c.height = 200;
+  c.className = 'painted';
+  const g = c.getContext('2d'),
+    frame = paintedObject(SPR.hut),
+    pic = frame ? (id === 'wood' ? frame : restyle(frame, id)) : id === 'wood' ? SPR.hut : restyle(SPR.hut, id),
+    k = Math.min(280 / pic.width, 184 / pic.height);
+  g.imageSmoothingEnabled = !!frame;
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(pic, (300 - pic.width * k) / 2, 196 - pic.height * k, pic.width * k, pic.height * k);
+  return c;
+}
+
 function openCamp(hooks = {}) {
-  const reopen = () => openCamp(hooks);
+  const panelEl = document.getElementById('panel'),
+    top = panelEl ? panelEl.scrollTop : 0;
+  const reopen = () => {
+    const y = panelEl ? panelEl.scrollTop : 0;
+    openCamp(hooks);
+    if (panelEl) panelEl.scrollTop = y;
+  };
   const C = camp(),
     n = pending();
-  const p = openPanel('Heimatbergwerk');
+  const body = openPanel('Kristallstollen'),
+    p = document.createElement('div');
+  p.className = 'camp';
+  body.appendChild(p);
+  // the banner: the crystals in the vault of the purse, the crew's yield, and your own Wühler
+  const hero = document.createElement('div');
+  hero.className = 'camp-hero';
+  hero.style.backgroundImage = `url(${bannerUrl})`;
+  const chip = document.createElement('div');
+  chip.className = 'camp-k';
+  const gem = crystalIcon();
+  gem.classList.add('camp-gem');
+  const count = document.createElement('b');
+  count.textContent = C.k;
+  count.title = kTxt(C.k);
+  chip.append(gem, count);
   const head = document.createElement('p');
   head.className = 'hint camp-head';
-  head.textContent = tr('Deine Kristalle: {n} · Die Heim-Crew schürft {r} pro Stunde, der Tresor fasst {h} Stunden.', {
+  head.textContent = tr('Deine Kristalle: {n} · Die Stollen-Crew schürft {r} pro Stunde, der Tresor fasst {h} Stunden.', {
     n: C.k,
     r: rate(),
     h: vaultHours(),
   });
-  p.appendChild(head);
+  const me = minerCanvas(P.outfit, { w: 110, h: 150, scale: 3.7, foot: 148 });
+  me.classList.add('camp-me');
+  hero.append(chip, head, me);
+  p.appendChild(hero);
   // 1. collect
-  const hours = Math.min(vaultHours(), (Date.now() - C.t) / 3600000);
-  opt(sec(p, 'Kassieren'), {
+  const hours = Math.min(vaultHours(), (Date.now() - C.t) / 3600000),
+    full = Math.round((hours / vaultHours()) * 100);
+  const take = opt(sec(p, 'Kassieren'), {
     icon: crystalIcon(),
     title: n ? tr('Deine Crew hat {n} Kristalle geschürft', { n }) : tr('Die Crew schürft gerade'),
-    sub: tr('Tresor {p} % voll', { p: Math.round((hours / vaultHours()) * 100) }),
+    sub: tr('Tresor {p} % voll', { p: full }),
     cost: n ? tr('Kassieren') : '',
     disabled: !n,
     onClick: () => {
@@ -89,12 +152,16 @@ function openCamp(hooks = {}) {
       reopen();
     },
   });
-  // 2. upgrades
+  take.classList.add('camp-collect');
+  if (n) take.classList.add('ready');
+  if (full >= 100) take.classList.add('brim');
+  take.insertAdjacentHTML('beforeend', `<span class="camp-vault" aria-hidden="true"><i style="width:${Math.min(100, full)}%"></i></span>`);
+  // 2. upgrades, with a dot for every level
   const up = sec(p, 'Ausbau');
   for (const id in UPGRADES) {
     const U = UPGRADES[id],
       cost = price(id);
-    opt(up, {
+    const b = opt(up, {
       icon: UP_ICON[id](),
       title: `${tr(U.name)} · ${tr('Stufe {n}/{m}', { n: level(id), m: U.max })}`,
       sub: tr(U.sub) + (U.home ? '' : ' · ' + tr('Nur im Solo-Spiel')),
@@ -105,6 +172,11 @@ function openCamp(hooks = {}) {
         reopen();
       },
     });
+    const pips = document.createElement('span');
+    pips.className = 'camp-pips';
+    pips.setAttribute('aria-hidden', 'true');
+    for (let k = 0; k < U.max; k++) pips.insertAdjacentHTML('beforeend', `<i class="${k < level(id) ? 'on' : ''}"></i>`);
+    b.appendChild(pips);
   }
   // 3. gear for good: bought once, there in every game (no need to buy it at the castle)
   const gl = sec(p, 'Ausrüstung · Einmal kaufen, in jedem Spiel dabei');
@@ -146,7 +218,7 @@ function openCamp(hooks = {}) {
     }
     project.appendChild(text);
   }
-  // 4. skins: outfits and building styles (seen by everybody, also in multiplayer)
+  // 4. skins: outfits and building styles (seen by everybody, also in multiplayer), as large cards
   const choose = (kind, id, set) => {
     const key = `${kind}:${id}`;
     if (!owns(key)) {
@@ -157,32 +229,66 @@ function openCamp(hooks = {}) {
     saveProfile();
     reopen();
   };
+  const card = (grid, { art, name, swatch, worn, own, cost, locked, poor, wornText, ownText, lockText, onPick }) => {
+    const b = document.createElement('button');
+    b.className = 'skin-card' + (worn ? ' worn' : '') + (locked ? ' locked' : '') + (!own && !locked && poor ? ' poor' : '') + (own ? ' own' : '');
+    b.setAttribute('aria-label', `${name} · ${worn ? wornText : own ? ownText : locked ? lockText : kTxt(cost)}`);
+    b.setAttribute('aria-pressed', worn ? 'true' : 'false');
+    art.classList.add('skin-art');
+    b.appendChild(art);
+    const t = document.createElement('b');
+    t.className = 'skin-name';
+    if (swatch) t.insertAdjacentHTML('beforeend', `<i class="skin-dot" style="background:${swatch}"></i>`);
+    t.append(name);
+    const st = document.createElement('span');
+    st.className = 'skin-state';
+    st.textContent = worn ? '✓ ' + wornText : own ? ownText : locked ? '🔒 ' + lockText : kTxt(cost);
+    b.append(t, st);
+    b.addEventListener('click', () => {
+      if (locked) return toast('Wird mit der Meisterschaft des Wühlers freigeschaltet');
+      onPick();
+    });
+    grid.appendChild(b);
+    return b;
+  };
   const ol = sec(p, 'Outfit');
+  ol.className = 'skin-grid';
   for (const id in OUTFITS) {
     const O = OUTFITS[id],
       own = owns('o:' + id);
-    opt(ol, {
-      icon: outfitIcon(id),
-      title: tr(O.name),
-      short: true,
-      cost: P.outfit === id ? '✓' : own ? '' : O.master ? tr('Meisterschaft') : kTxt(O.k),
-      disabled: !own && (O.master || C.k < O.k),
-      onClick: () => choose('o', id, v => (P.outfit = v)),
+    card(ol, {
+      art: minerCanvas(id, { w: 200, h: 150, scale: 6, foot: 255 }),
+      name: tr(O.name),
+      swatch: O.pal.T || '#4f7fc0',
+      worn: P.outfit === id,
+      own,
+      cost: O.k,
+      locked: !own && !!O.master,
+      poor: C.k < O.k,
+      wornText: tr('Angezogen'),
+      ownText: tr('Anziehen'),
+      lockText: tr('Meisterschaft'),
+      onPick: () => choose('o', id, v => (P.outfit = v)),
     });
   }
   const bl = sec(p, 'Baustil');
+  bl.className = 'skin-grid style-grid';
   for (const id in BSTYLES) {
     const S = BSTYLES[id],
       own = owns('b:' + id);
-    opt(bl, {
-      icon: styleIcon(id),
-      title: tr(S.name),
-      short: true,
-      cost: P.bstyle === id ? '✓' : own ? '' : kTxt(S.k),
-      disabled: !own && C.k < S.k,
-      onClick: () => choose('b', id, v => (P.bstyle = v)),
+    card(bl, {
+      art: styleCanvas(id),
+      name: tr(S.name),
+      worn: P.bstyle === id,
+      own,
+      cost: S.k,
+      poor: C.k < S.k,
+      wornText: tr('Aktiv'),
+      ownText: tr('Verwenden'),
+      onPick: () => choose('b', id, v => (P.bstyle = v)),
     });
   }
+  if (panelEl) panelEl.scrollTop = top;
 }
 
 export { crystalIcon, openCamp };

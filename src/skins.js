@@ -102,13 +102,16 @@ function restyle(spr, style) {
   g.drawImage(spr, 0, 0);
   const id = g.getImageData(0, 0, w, h),
     d = id.data,
-    f = RECOLOR[style];
+    f = RECOLOR[style],
+    painted = w > 120;
   for (let i = 0; i < d.length; i += 4) {
     if (!d[i + 3]) continue;
     const [hh, ss, ll] = hsl(d[i], d[i + 1], d[i + 2]);
     // wood: orange-brown hues, not too bright (windows and lamps stay as they are); fire, embers,
     // gold and lit windows are far more saturated than any wood (wood up to about 0.65)
-    if (hh < 12 || hh > 48 || ss < 0.18 || ss > 0.7 || ll < 0.12 || ll > 0.72) continue;
+    // (a large painted picture: its timber is more saturated and darker than the pixel sprites'
+    // wood, while gold and lit windows sit at yellower hues, which stay as they are)
+    if (painted ? hh < 8 || hh > 39 || ss < 0.2 || ss > 0.93 || ll < 0.09 || ll > 0.8 : hh < 12 || hh > 48 || ss < 0.18 || ss > 0.7 || ll < 0.12 || ll > 0.72) continue;
     const [r, gg, b] = rgb(...f(hh, ss, ll));
     d[i] = r;
     d[i + 1] = gg;

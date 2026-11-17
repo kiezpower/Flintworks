@@ -1,7 +1,7 @@
 // Seasons for Versus (and "Jeder gegen jeden"): every calendar month is a season. A round brings
 // season points – a win 25, a draw 10, a lost round 5 for taking part – and the points make a rank:
 // Bronze, Silber (100), Gold (250), Diamant (500). When a new month begins, the rank reached in the
-// last one pays crystals for the Heimatbergwerk (camp.js) and the points start again from nought.
+// last one pays crystals for the Kristallstollen (camp.js) and the points start again from nought.
 // Kept on this device in the profile (P.season); the relay keeps nothing, so there is no list of
 // all players – only the own rank, like a personal ladder.
 import { addCrystals } from './camp.js';

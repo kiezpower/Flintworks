@@ -76,7 +76,7 @@ KAMPAGNE UND FREIES SPIEL
 Zwei Kapitel mit handgebauten Leveln (rette die Fluffel aus ihren Höhlen, erkunde eine alte Mine, erklimm den Gipfel), dazu Goldrausch, Siedler und Schatzsucher in Wiese, Wüste und Winter.
 
 HEIMATBERGWERK
-Deine Heim-Crew schürft Kristalle, auch wenn das Spiel zu ist. Gib sie für mehr Crew, kleine Boni und Skins für deinen Wühler und deine Gebäude aus.
+Deine Stollen-Crew schürft Kristalle, auch wenn das Spiel zu ist. Gib sie für mehr Crew, kleine Boni und Skins für deinen Wühler und deine Gebäude aus.
 
 Ohne Werbung, ohne Käufe, ohne Konto. Auf Deutsch und Englisch.
 
@@ -94,7 +94,7 @@ CAMPAIGN AND FREE PLAY
 Two chapters of hand-built levels (rescue the fluffels from their caves, explore an old mine, climb the summit), plus Gold Rush, Settlers and Treasure Hunt in meadow, desert and winter.
 
 HOME MINE
-Your home crew mines crystals even while the game is closed. Spend them on more crew, small boosts and skins for your digger and your buildings.
+Your tunnel crew mines crystals even while the game is closed. Spend them on more crew, small boosts and skins for your digger and your buildings.
 
 No ads, no purchases, no account. In English and German.
 

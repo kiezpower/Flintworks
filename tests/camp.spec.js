@@ -1,4 +1,4 @@
-// Heimatbergwerk (camp.js, lobbycamp.js): crystals mined while the game is closed up to the vault,
+// Kristallstollen (camp.js, lobbycamp.js): crystals mined while the game is closed up to the vault,
 // upgrades and solo boosts, skins that travel with the player, and the production chain in the
 // castle panel (store.js chainStatus): npm test
 import { expect, test } from '@playwright/test';
@@ -22,7 +22,7 @@ const play = async page => {
   await page.waitForFunction(() => window.__ww.state === 'play');
 };
 
-test('the home crew mines crystals while away, capped by the vault, collected in the lobby', async ({ page }) => {
+test('the tunnel crew mines crystals while away, capped by the vault, collected in the lobby', async ({ page }) => {
   const errors = await lobby(page, { camp: { t: Date.now() - 3 * HOUR - 60000, k: 5, lv: {} } });
   await expect(page.locator('#lbKri')).toHaveText('5');
   await expect(page.locator('#lbCamp')).toHaveClass(/alert/);
@@ -167,6 +167,6 @@ test('gear bought for good in the lobby: the grappling hook is there in every ga
   // the castle panel does not offer the hook any more, the lamp still (with the lobby hint)
   await page.evaluate(() => window.__ww.openBase());
   await expect(page.locator('#panel')).not.toContainText('Enterhaken');
-  await expect(page.locator('#panel .opt', { hasText: 'Grubenlampe' })).toContainText('Heimatbergwerk');
+  await expect(page.locator('#panel .opt', { hasText: 'Grubenlampe' })).toContainText('Kristallstollen');
   expect(errors).toEqual([]);
 });

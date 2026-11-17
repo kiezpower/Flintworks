@@ -25,6 +25,7 @@ Dieselben sechs Kreaturen in drei Posen; `groessentest.png` zeigt sie in Spielgr
 | `A-zusatz-icons.png` | 30 Knopf-, Werkzeug- und Fahrzeug-Icons | `src/assets/items/ui.png` |
 | `A-zusatz-laufzyklen.png` | Laufzyklen (4 Phasen) von Monster, Fledermaus, Spinne, Schleim, Golem, Fluffel | `src/assets/creatures/cycles.png` |
 | `A-zusatz-katapult.png` | Katapult: Rahmen und Wurfarm getrennt | `src/assets/items/catapult.png` |
+| `A-zusatz-stollen-kopf.png` | Kopfbild des Kristallstollen-Fensters | `src/assets/scenes/stollen.jpg` |
 | `A-zusatz-requisiten.png` | Händler (3 Posen), Grabstein, Schrein, Mast, Gondel, Bohrwagen | `src/assets/items/props.png` |
 
 Alle Bögen wurden mit einem Bildgenerator aus Textbeschreibungen erzeugt (gleiche
@@ -45,3 +46,13 @@ die Kapitel-Karte und der Sprengplatz. Wasser, Lava, Säure und Öl werden im Ge
 - Minimap und Level-Vorschaubilder sind Übersichtskarten: sie werden weich skaliert und mit gerundeten Rahmen gezeigt, ihre Pixel stammen aber weiter aus den Zellen (`public/previews`, an Prüfsummen gebunden). Lichtpfützen, Explosionen, Funken und Regen sind weich.
 - Kanten von Gelände und Höhlen folgen weiter den Simulationszellen.
 - Fisch, Würmer und Bosse haben weiter nur Ruhe- und Angriffsbild; die Helden haben sechs Phasen je Aktion, die Kreaturen vier.
+
+## Kristallstollen (früher „Heimatbergwerk“)
+
+Umbenannt in v1.138.0: Lobby-Knopf, Fenster und Texte heißen „Kristallstollen“ (englisch
+„Crystal mine“), die Helfer „Stollen-Crew“ („Tunnel crew“). Das Fenster hat ein gemaltes
+Kopfbild mit Kristallzähler und dem eigenen Wühler im getragenen Outfit, einen Tresor-Balken am
+Kassieren-Knopf, Stufenpunkte an den Ausbauten und große Karten für Outfits (der Wühler im Outfit,
+mit Farbpunkt) und Baustile (die gemalte Hütte im Stil). Gesperrte Meisterschafts-Outfits sind
+ausgegraut. Die Umfärbung der Baustile erkennt bei gemalten Bildern auch die satteren Brauntöne
+(`skins.js`, `restyle`).

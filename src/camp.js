@@ -1,6 +1,6 @@
-// Heimatbergwerk: crystals, the one currency that stays between rounds. The home crew mines them
+// Kristallstollen: crystals, the one currency that stays between rounds. The tunnel crew mines them
 // while the game is closed (up to what the vault holds), every round adds some, and they buy
-// upgrades for the home mine, small boosts for free play alone and skins (skins.js).
+// upgrades for the crystal mine, small boosts for free play alone and skins (skins.js).
 import { P, saveProfile } from './profile.js';
 import { BSTYLES, OUTFITS } from './skins.js';
 import { mode } from './modes.js';
@@ -10,7 +10,7 @@ const HOUR = 3600 * 1000;
 const VAULT_H = [4, 8, 12, 24];
 // base price, growing by 1.6 with every level
 const UPGRADES = {
-  crew: { name: 'Heim-Crew', sub: '+6 Kristalle pro Stunde', base: 30, max: 10, home: true },
+  crew: { name: 'Stollen-Crew', sub: '+6 Kristalle pro Stunde', base: 30, max: 10, home: true },
   vault: { name: 'Tresor', sub: 'Sammelt länger: 4, 8, 12, 24 Stunden', base: 60, max: 3, home: true },
   cash: { name: 'Startkasse', sub: '+20 Taler zu Beginn', base: 25, max: 5 },
   pick: { name: 'Scharfe Hacken', sub: '+4 % Grabtempo', base: 35, max: 5 },
@@ -30,7 +30,7 @@ const rate = () => 6 * (1 + level('crew')); // crystals per hour
 const vaultHours = () => VAULT_H[level('vault')];
 const price = id => (level(id) >= UPGRADES[id].max ? null : Math.round(UPGRADES[id].base * 1.6 ** level(id)));
 
-// what the home crew has mined since the last collect (whole crystals, capped by the vault)
+// what the tunnel crew has mined since the last collect (whole crystals, capped by the vault)
 function pending(now = Date.now()) {
   const c = camp();
   // a clock set back: start counting again from now

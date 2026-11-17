@@ -699,7 +699,7 @@ function updBody(c, I) {
     // the pick swings in a beat (longer in hard ground): wind up, strike, and after the strike
     // the Wühler pushes on into the loosened earth; on average as fast as the material allows
     const ph0 = c.digPh;
-    // (G.digBoost: sharper picks from the Heimatbergwerk, free play alone only)
+    // (G.digBoost: sharper picks from the Kristallstollen, free play alone only)
     // (the diamond pick: hard ground – rock, ore, coal, gems – half as fast again, tools.js)
     const tier = pickTier() === 2 && c.digH > 1.1 ? 1.5 : 1;
     c.digPh += (digFactor(c, c.digH <= 1.1) * (G.digBoost || 1) * tier * (hasGift(c, 'dig') ? 1.4 : 1) * (c.digT > 0 ? 1.5 : 1)) / (11 * c.digH);

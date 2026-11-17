@@ -73,7 +73,7 @@ wählen den Modus → `gen.js` (oder `levels/loader.js`) baut die Welt → pro T
 | `merchant.js` | Wandernder Händler |
 | `villagers.js` | Siedler, die in fertige Hütten ziehen, Miete nach Zufriedenheit |
 | `vehicles/` | Bohrwagen, Floß, Katapult, Luftschiff, Seilbahn, Schienen und Loren, Fahrstuhl |
-| `camp.js`, `lobbycamp.js` | Heimatbergwerk: Kristalle zwischen den Runden |
+| `camp.js`, `lobbycamp.js` | Kristallstollen: Kristalle zwischen den Runden |
 | `skins.js` | Outfits und Baustile |
 
 ### Welt, Gefahren und Entdecken

@@ -171,7 +171,7 @@ function refresh() {
 
   $('lbXp').style.width = Math.round((P.xp / xpNeed()) * 100) + '%';
   setTxt('lbXpTxt', `${P.xp}/${xpNeed()}`);
-  // Heimatbergwerk: crystals, and a dot while the home crew has something to collect
+  // Kristallstollen: crystals, and a dot while the tunnel crew has something to collect
   setTxt('lbKri', campState().k);
   setTxt('lbKriTxt', tr('Kristalle'));
   $('lbCamp').classList.toggle('alert', pending() > 0);
@@ -556,10 +556,10 @@ function showLobby(h) {
   if (P.questNew && P.tutorialDone) toast('Neue Tagesaufgaben!');
   offerInstall();
   dailyFromLink(hooks);
-  // once per visit: the vault is full, the home crew waits
+  // once per visit: the vault is full, the tunnel crew waits
   if (vaultFull() && !campTold) {
     campTold = true;
-    toast('Der Tresor im Heimatbergwerk ist voll – kassieren!');
+    toast('Der Tresor im Kristallstollen ist voll – kassieren!');
   }
 }
 let campTold = false;

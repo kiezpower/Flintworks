@@ -72,13 +72,13 @@ const P = {
   playKind: null, // fresh profiles choose a play kind before their first level
   games: 0,
   wins: 0,
-  // Heimatbergwerk (camp.js) and skins (skins.js); old crystals (P.crystals) are not these
+  // Kristallstollen (camp.js) and skins (skins.js); old crystals (P.crystals) are not these
   camp: null,
   owned: [],
   outfit: 'blue',
   hero: null, // older profiles keep their exact appearance until a hero is chosen
   bstyle: 'wood',
-  // gear bought for good in the Heimatbergwerk (camp.js GEAR)
+  // gear bought for good in the Kristallstollen (camp.js GEAR)
   gear: [],
 };
 try {

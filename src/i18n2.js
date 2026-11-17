@@ -1,5 +1,5 @@
 // More English texts (i18n.js holds the rest; split to keep every file under 1000 lines).
-// Heimatbergwerk, crystals and skins (camp.js, lobbycamp.js, skins.js), production chain (ui.js)
+// Kristallstollen, crystals and skins (camp.js, lobbycamp.js, skins.js), production chain (ui.js)
 const EN2 = {
   'Tagesrolle für alle': 'Daily role for everyone',
   "Wähle deinen ersten Wühler": "Choose your first digger",
@@ -161,18 +161,23 @@ const EN2 = {
   'Gemeinsam starten ({n})': 'Start together ({n})',
   'Eure Auswahl': 'Your selection',
 
-  Heimatbergwerk: 'Home mine',
+  Kristallstollen: 'Crystal mine',
+  Angezogen: 'Wearing',
+  Anziehen: 'Put on',
+  Aktiv: 'Active',
+  Verwenden: 'Use',
+  'Wird mit der Meisterschaft des Wühlers freigeschaltet': 'Unlocked by mastering this digger',
   '{n} Kristalle': '{n} crystals',
   '+{n} Kristalle': '+{n} crystals',
-  'Deine Kristalle: {n} · Die Heim-Crew schürft {r} pro Stunde, der Tresor fasst {h} Stunden.':
-    'Your crystals: {n} · The home crew mines {r} an hour, the vault holds {h} hours.',
+  'Deine Kristalle: {n} · Die Stollen-Crew schürft {r} pro Stunde, der Tresor fasst {h} Stunden.':
+    'Your crystals: {n} · The tunnel crew mines {r} an hour, the vault holds {h} hours.',
   Kassieren: 'Collect',
   'Deine Crew hat {n} Kristalle geschürft': 'Your crew mined {n} crystals',
   'Die Crew schürft gerade': 'The crew is mining',
   'Tresor {p} % voll': 'Vault {p} % full',
   'Stufe {n}/{m}': 'Level {n}/{m}',
   'Nur im Solo-Spiel': 'Free play alone only',
-  'Heim-Crew': 'Home crew',
+  'Stollen-Crew': 'Tunnel crew',
   '+6 Kristalle pro Stunde': '+6 crystals an hour',
   Tresor: 'Vault',
   'Sammelt länger: 4, 8, 12, 24 Stunden': 'Collects longer: 4, 8, 12, 24 hours',
@@ -195,8 +200,8 @@ const EN2 = {
   Winterkleid: 'Snowy',
   Goldglanz: 'Gold leaf',
   'Zu wenig Kristalle': 'Not enough crystals',
-  'Der Tresor im Heimatbergwerk ist voll – kassieren!': 'The vault of your home mine is full – collect!',
-  'Startkasse aus dem Heimatbergwerk: +{n} Taler': 'Starting cash from your home mine: +{n} Taler',
+  'Der Tresor im Kristallstollen ist voll – kassieren!': 'The vault of your crystal mine is full – collect!',
+  'Startkasse aus dem Kristallstollen: +{n} Taler': 'Starting cash from your crystal mine: +{n} Taler',
   Produktion: 'Production',
   läuft: 'running',
   'Lager voll: {item}': 'Store full: {item}',
@@ -338,11 +343,11 @@ const EN2 = {
   'Aktion: Fällen, Burg (Laden), Lore, Brücke': 'Action: chop, castle (shop), lorry, bridge',
   'Tasche öffnen': 'Open the bag',
   'werfen (Q wechselt, 1–9 wählt)': 'throw (Q switches, 1–9 picks)',
-  'mit dem Enterhaken (Burg oder für immer im Heimatbergwerk): wirft ihn in Stick-Richtung, sonst an die nächste Kante':
-    'with the grappling hook (castle, or for good in the home mine): throws it where the stick points, otherwise to the nearest ledge',
-  'Enterhaken: G halten zielt zum Mauszeiger, loslassen wirft (oder Pfeiltaste + G; Burg oder für immer im Heimatbergwerk)':
-    'Grappling hook: hold G to aim at the mouse pointer, let go to throw (or arrow key + G; castle, or for good in the home mine)',
-  'Für immer: Heimatbergwerk in der Lobby': 'For good: home mine in the lobby',
+  'mit dem Enterhaken (Burg oder für immer im Kristallstollen): wirft ihn in Stick-Richtung, sonst an die nächste Kante':
+    'with the grappling hook (castle, or for good in the crystal mine): throws it where the stick points, otherwise to the nearest ledge',
+  'Enterhaken: G halten zielt zum Mauszeiger, loslassen wirft (oder Pfeiltaste + G; Burg oder für immer im Kristallstollen)':
+    'Grappling hook: hold G to aim at the mouse pointer, let go to throw (or arrow key + G; castle, or for good in the crystal mine)',
+  'Für immer: Kristallstollen in der Lobby': 'For good: crystal mine in the lobby',
   'Ausrüstung · Einmal kaufen, in jedem Spiel dabei': 'Gear · Buy once, there in every game',
   'Eigener Knopf (G) in jedem Spiel – auch im Mehrspieler': 'Its own button (G) in every game – multiplayer too',
   'Helleres Licht und Warnung vor Grubengas in jedem Spiel': 'Brighter light and firedamp warnings in every game',

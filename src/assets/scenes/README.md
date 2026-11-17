@@ -33,3 +33,6 @@ existing illustrated character sheets without changing saved identities or roles
 Native canvas curves draw small plants, cave decor, props, wires, flags, gate
 leaves and rotating sails. Creatures and bosses are painted since v1.137.0 (`../creatures/README.md`). The
 game still includes procedural item/HUD icons, fluids and effects.
+
+- `stollen.jpg` (960×320): the painted banner of the Kristallstollen window (`camp.css`,
+  `lobbycamp.js`), made from `docs/monster-varianten/A-zusatz-stollen-kopf.png`.
