@@ -92,23 +92,14 @@ function ground(g, w, h, deep0, deep1, surface, rec = null) {
         else if (r > 0.992) col = d > 0.45 ? ORE[(x + y) & 1] : GOLD[x % 3];
         else if (r > 0.986 && d > 0.2 && d < 0.6) col = COAL[(x + y) & 1];
         if (rec) {
-          // (the same cut in the game's materials, for the painted picture: terrainart.js)
-          // layers with soft, wavy pockets instead of the pixel drawing's small blocks, and
-          // finds as little round lumps
-          const wave = Math.sin(x / 7 + y / 5) + Math.sin(x / 13 - y / 9 + 2) + Math.sin(y / 4 + x / 23),
-            pocket = wave > 0.9;
-          let m = d < 0.16 ? 1 : d < 0.27 ? (pocket ? 9 : 1) : d < 0.42 ? 1 : d < 0.62 ? 2 : d < 0.84 ? (pocket ? 6 : 2) : 6;
-          const lx = (x % 4) - 1.5,
-            ly = (y % 4) - 1.5,
-            lump = hash((x >> 2) * 7 + 3, (y >> 2) * 5 + 1);
-          if (lx * lx + ly * ly < 2.6) {
-            if (lump > 0.994) m = d > 0.7 ? 13 : 3;
-            else if (lump > 0.987) m = d > 0.45 ? 10 : 3;
-            else if (lump > 0.979 && d > 0.2 && d < 0.6) m = 11;
-            else if (lump < 0.018 && m === 1) m = 2;
-          }
-          rec.mat[y * w + x] = m;
+          // (the same cut in the game's materials, for the painted picture: terrainart.js: only
+          // the layers; finds and soft patches are drawn over them in paintShaft)
+          rec.mat[y * w + x] = d < 0.42 ? 1 : d < 0.62 ? 2 : 6;
           rec.tone[y * w + x] = 1 - Math.min(0.45, Math.max(0, (d - 0.3) * 0.5));
+          if (r > 0.9965) rec.finds.push([x, y, d > 0.7 ? 3 : 0]);
+          else if (r > 0.992) rec.finds.push([x, y, d > 0.45 ? 1 : 0]);
+          else if (r > 0.986 && d > 0.2 && d < 0.6) rec.finds.push([x, y, 2]);
+          else if (hash(x * 3 + 1, y * 7 + 5) > 0.992) rec.finds.push([x, y, 4]);
         }
         // darker the deeper
         col = mix(col, '#120a06', Math.min(0.45, Math.max(0, (d - 0.3) * 0.5)));
@@ -240,7 +231,7 @@ function lava(g, w, h) {
 // rails, lanterns) small coloured blocks. Returns false while the paintings are not loaded.
 const K = 4; // canvas pixels per landscape pixel
 function paintShaft(cv, w, h, part, over, lanterns) {
-  const rec = { mat: new Uint8Array(w * h), shade: new Uint8Array(w * h), tone: new Float32Array(w * h).fill(1) },
+  const rec = { mat: new Uint8Array(w * h), shade: new Uint8Array(w * h), tone: new Float32Array(w * h).fill(1), finds: [] },
     bg = new Uint8Array(w * h);
   const lo = document.createElement('canvas');
   lo.width = w;
@@ -274,6 +265,28 @@ function paintShaft(cv, w, h, part, over, lanterns) {
   if (!ok) {
     g.restore();
     return false;
+  }
+  // finds as little round lumps with a lit edge, and soft patches of light and shade
+  const LUMP = [['#f5cf3d', '#ffe9a0', '#b8860b'], ['#b5654a', '#e9a085', '#6e3a2c'], ['#35312f', '#6a6560', '#161414'], ['#46c5e3', '#c6fbff', '#1f7fa0']];
+  for (const [fx, fy, kind] of rec.finds) {
+    if (bg[fy * w + fx]) continue;
+    if (kind === 4) {
+      const patch = g.createRadialGradient(fx, fy, 0, fx, fy, 5);
+      patch.addColorStop(0, 'rgba(30,16,8,0.22)');
+      patch.addColorStop(1, 'rgba(30,16,8,0)');
+      g.fillStyle = patch;
+      g.fillRect(fx - 5, fy - 5, 10, 10);
+      continue;
+    }
+    const [c0, c1, c2] = LUMP[kind],
+      lump = g.createRadialGradient(fx + 0.5 - 0.4, fy + 0.5 - 0.4, 0.1, fx + 0.5, fy + 0.5, 1.6);
+    lump.addColorStop(0, c1);
+    lump.addColorStop(0.5, c0);
+    lump.addColorStop(1, c2);
+    g.fillStyle = lump;
+    g.beginPath();
+    g.ellipse(fx + 0.5, fy + 0.5, 1.5, 1.2, hash(fx, fy) * 3, 0, 6.3);
+    g.fill();
   }
   for (let k = 0; k < blocks.length; k += 4) {
     g.fillStyle = `rgb(${blocks[k + 1]},${blocks[k + 2]},${blocks[k + 3]})`;

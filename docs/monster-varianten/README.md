@@ -42,6 +42,6 @@ die Kapitel-Karte und der Sprengplatz. Wasser, Lava, Säure und Öl werden im Ge
 ## Noch nicht gemalt
 
 - Vorschaubilder der Level und Karten (`public/previews`): Übersichtskarten, an Prüfsummen gebunden.
-- Minimap. Lichtpfützen, Explosionen, Funken und Regen sind weich.
+- Minimap und Level-Vorschaubilder sind Übersichtskarten: sie werden weich skaliert und mit gerundeten Rahmen gezeigt, ihre Pixel stammen aber weiter aus den Zellen (`public/previews`, an Prüfsummen gebunden). Lichtpfützen, Explosionen, Funken und Regen sind weich.
 - Kanten von Gelände und Höhlen folgen weiter den Simulationszellen.
 - Fisch, Würmer und Bosse haben weiter nur Ruhe- und Angriffsbild; die Helden haben sechs Phasen je Aktion, die Kreaturen vier.
