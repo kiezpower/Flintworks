@@ -41,6 +41,6 @@ die Kapitel-Karte und der Sprengplatz. Wasser, Lava, Säure und Öl werden im Ge
 
 - Katapult (der Arm zielt) und Zielscheibe: glatte Vektorzeichnung.
 - Vorschaubilder der Level und Karten (`public/previews`): Übersichtskarten, an Prüfsummen gebunden.
-- Minimap und Schnee. Lichtpfützen, Explosionen, Funken und Regen sind weich.
+- Minimap. Lichtpfützen, Explosionen, Funken und Regen sind weich.
 - Kanten von Gelände und Höhlen folgen weiter den Simulationszellen.
 - Kreaturen haben zwei Bewegungsphasen und eine Angriffspose, die Helden sechs Phasen je Aktion.

@@ -361,6 +361,13 @@ function drawPart(ctx, p, x, y) {
   }
   if (p.snow) {
     ctx.fillStyle = p.c;
+    if (G.res === 2) {
+      // (high detail: soft round flakes)
+      ctx.beginPath();
+      ctx.arc(x + 0.5, y + 0.5, p.big ? 0.95 : 0.6, 0, 6.3);
+      ctx.fill();
+      return;
+    }
     if (p.big && u < 1) {
       ctx.fillRect(x, y - u, u, u * 3);
       ctx.fillRect(x - u, y, u * 3, u);
