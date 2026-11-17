@@ -339,22 +339,22 @@ function drawPart(ctx, p, x, y) {
   let s = p.s || 1;
   if (p.grow) s += Math.round((1 - p.l / p.l0) * p.grow * 2) / 2;
   ctx.fillStyle = p.pal ? p.pal[Math.min(p.pal.length - 1, ((1 - p.l / p.l0) * p.pal.length) | 0)] : p.c;
-  if (p.grow) ctx.fillRect(x - Math.floor(s / 2), y - Math.floor(s / 2), s, s);
+  if (G.res === 2 && s >= 1) {
+    // (high detail: round specks and puffs; fast graphics keep the cheap squares)
+    ctx.beginPath();
+    ctx.arc(x + (p.grow ? 0 : s / 2), y + (p.grow ? 0 : s / 2), s * 0.56, 0, 6.3);
+    ctx.fill();
+  } else if (p.grow) ctx.fillRect(x - Math.floor(s / 2), y - Math.floor(s / 2), s, s);
   else ctx.fillRect(x, y, s, s);
 }
 
 // a pixel disc, row by row (no anti-aliased arc)
+// a filled disc for flashes and blasts (once stepped by hand; now a smooth circle)
 function pixelDisc(ctx, x, y, r) {
-  x = Math.round(x);
-  y = Math.round(y);
-  r = Math.round(r);
-  for (let dy = -r; dy <= r; dy++) {
-    const w = Math.floor(Math.sqrt(r * r - dy * dy) + 0.3);
-    ctx.fillRect(x - w, y + dy, w * 2 + 1, 1);
-  }
+  ctx.beginPath();
+  ctx.arc(x + 0.5, y + 0.5, Math.max(0.5, r + 0.3), 0, Math.PI * 2);
+  ctx.fill();
 }
-
-// a crisp line from point to point (Bresenham), dot by dot
 function pixelLine(ctx, x0, y0, x1, y1, w = 1) {
   x0 = Math.round(x0);
   y0 = Math.round(y0);

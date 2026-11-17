@@ -106,24 +106,19 @@ function lightHole(lctx, x, y, r, a) {
   lctx.globalAlpha = 1;
 }
 
-// warm light that adds up on top of the dimmed picture: three hard rings, from a yellow core to a
-// faint orange rim (pixel-art light pools instead of a smooth blur; drawn without smoothing)
+// warm light that adds up on top of the dimmed picture: a soft pool from a yellow core to a
+// faint orange rim (painted look: a smooth falloff, drawn with smoothing)
 const glowSpr = document.createElement('canvas');
-glowSpr.width = glowSpr.height = 64;
+glowSpr.width = glowSpr.height = 128;
 {
   const g = glowSpr.getContext('2d'),
-    rings = [
-      [32, 'rgba(255,120,40,0.16)'],
-      [22, 'rgba(255,150,70,0.34)'],
-      [12, 'rgba(255,200,120,0.7)'],
-    ];
-  for (const [r, c] of rings) {
-    g.fillStyle = c;
-    for (let dy = -r; dy < r; dy++) {
-      const w = Math.floor(Math.sqrt(r * r - (dy + 0.5) * (dy + 0.5)));
-      g.fillRect(32 - w, 32 + dy, w * 2, 1);
-    }
-  }
+    gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  gr.addColorStop(0, 'rgba(255,205,130,0.78)');
+  gr.addColorStop(0.3, 'rgba(255,165,85,0.42)');
+  gr.addColorStop(0.65, 'rgba(255,125,45,0.16)');
+  gr.addColorStop(1, 'rgba(255,110,30,0)');
+  g.fillStyle = gr;
+  g.fillRect(0, 0, 128, 128);
 }
 function warmGlow(ctx, x, y, r, a) {
   if (x < -r || x > G.VW + r || y < -r || y > G.VH + r) return;
@@ -132,6 +127,7 @@ function warmGlow(ctx, x, y, r, a) {
 }
 function beginGlow(ctx) {
   ctx.globalCompositeOperation = 'lighter';
+  ctx.imageSmoothingEnabled = true;
 }
 function endGlow(ctx) {
   ctx.globalCompositeOperation = 'source-over';
