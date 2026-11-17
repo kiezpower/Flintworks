@@ -342,7 +342,7 @@ function drawPart(ctx, p, x, y) {
   if (G.res === 2 && s >= 1) {
     // (high detail: round specks and puffs; fast graphics keep the cheap squares)
     ctx.beginPath();
-    ctx.arc(x + (p.grow ? 0 : s / 2), y + (p.grow ? 0 : s / 2), s * 0.56, 0, 6.3);
+    ctx.arc(x + (p.grow ? 0 : s / 2), y + (p.grow ? 0 : s / 2), s * 0.5, 0, 6.3);
     ctx.fill();
   } else if (p.grow) ctx.fillRect(x - Math.floor(s / 2), y - Math.floor(s / 2), s, s);
   else ctx.fillRect(x, y, s, s);
