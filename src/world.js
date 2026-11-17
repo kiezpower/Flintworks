@@ -1,4 +1,4 @@
-import { drawTerrainArt, invalidateTerrainArt, resetTerrainArt } from './terrainart.js';
+import { drawTerrainArt, invalidateTerrainArt, resetTerrainArt, terrainArtLoaded } from './terrainart.js';
 import { G, builds } from './state.js';
 import { T, TEX, setTopSoil, topTex, worldShade } from './tex.js';
 import { prepareUnder, setGround, underTexel, wallTexel } from './under.js';
@@ -185,6 +185,8 @@ function texel(i, sx, sy) {
   // glass: a gleam along the diagonals
   if (m === GLASS && (x + y) % 9 < 2) c = tint(c, 1.25);
   if (LIQ[m]) {
+    // painted by terrainart.js once its materials are loaded: nothing here
+    if (terrainArtLoaded()) return 0;
     // a bright line on open liquid surfaces
     if (sy === 0 && i >= W && mat[i - W] === AIR) c = tint(c, 1.35);
     return c;

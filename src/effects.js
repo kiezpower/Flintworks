@@ -126,15 +126,31 @@ function drawWaterGlints(ctx) {
   for (let k = 0; k < waterSpots.length; k += 2)
     if ((waterSpots[k] + t * 3) % 17 < 2) ctx.fillRect(waterSpots[k], waterSpots[k + 1], 2, 1);
 }
+// one soft orange spot, stamped over every few lava cells
+const lavaSpr = document.createElement('canvas');
+lavaSpr.width = lavaSpr.height = 32;
+{
+  const g = lavaSpr.getContext('2d'),
+    gr = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+  gr.addColorStop(0, 'rgba(255,150,50,1)');
+  gr.addColorStop(1, 'rgba(255,110,30,0)');
+  g.fillStyle = gr;
+  g.fillRect(0, 0, 32, 32);
+}
 function drawLavaGlow(ctx) {
-  const pulse = 0.09 + Math.sin(G.frame * 0.08) * 0.03;
+  const pulse = 0.13 + Math.sin(G.frame * 0.08) * 0.04;
   ctx.globalCompositeOperation = 'lighter';
-  ctx.fillStyle = `rgba(255,110,30,${pulse})`;
-  for (let k = 0; k < lavaSpots.length; k += 2) ctx.fillRect(lavaSpots[k] - 3, lavaSpots[k + 1] - 3, 7, 7);
+  ctx.globalAlpha = pulse;
+  ctx.imageSmoothingEnabled = true;
+  for (let k = 0; k < lavaSpots.length; k += 2) ctx.drawImage(lavaSpr, lavaSpots[k] - 5, lavaSpots[k + 1] - 5, 10, 10);
+  ctx.globalAlpha = 1;
+  ctx.imageSmoothingEnabled = false;
   ctx.fillStyle = '#ffe08a';
   for (let k = 0; k < 4 && lavaSpots.length; k++) {
     const j = (Math.floor(rnd() * lavaSpots.length) >> 1) << 1;
-    ctx.fillRect(lavaSpots[j], lavaSpots[j + 1], 1, 1);
+    ctx.beginPath();
+    ctx.arc(lavaSpots[j] + 0.5, lavaSpots[j + 1] + 0.5, 0.7, 0, 6.3);
+    ctx.fill();
   }
   ctx.globalCompositeOperation = 'source-over';
 }
