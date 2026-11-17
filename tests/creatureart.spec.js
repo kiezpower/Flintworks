@@ -39,6 +39,29 @@ test('every creature has painted poses that cover its hitbox and stand on its fe
     if (!['fish', 'bat', 'worm'].includes(kind)) expect(Math.abs(s.maxY - 112), `${key}: bottom ${s.maxY}`).toBeLessThanOrEqual(4);
   }
   for (const kind of ['fluffel', 'bat', 'monster', 'spider', 'slime', 'golem']) expect(new Set(['idle', 'move', 'attack'].map(p => shots[kind + '/' + p].image)).size, kind).toBe(3);
+  // the common creatures have four distinct walking phases, as large as their idle picture
+  const walk = await page.evaluate(async SIZE => {
+    const { drawCreature, phasesOf } = await import('/src/creatureart.js');
+    const out = {};
+    for (const kind of ['fluffel', 'bat', 'monster', 'spider', 'slime', 'golem', 'crawler', 'spore', 'guardian']) {
+      const [w, h] = SIZE[kind], images = [], areas = [];
+      for (const pose of ['idle', 'walk0', 'walk1', 'walk2', 'walk3']) {
+        const cv = document.createElement('canvas'); cv.width = cv.height = 160;
+        const g = cv.getContext('2d'); g.scale(4, 4);
+        drawCreature(g, kind, pose, 20 - w / 2, 28 - h, w, h, 1);
+        const d = g.getImageData(0, 0, 160, 160).data; let n = 0;
+        for (let i = 3; i < d.length; i += 4) if (d[i] > 128) n++;
+        images.push(cv.toDataURL()); areas.push(n);
+      }
+      out[kind] = { phases: phasesOf(kind), distinct: new Set(images.slice(1)).size, ratio: Math.max(...areas.slice(1)) / areas[0], low: Math.min(...areas.slice(1)) / areas[0] };
+    }
+    return out;
+  }, SIZE);
+  for (const [kind, r] of Object.entries(walk)) {
+    expect(r.phases, kind).toBe(4);
+    expect(r.distinct, kind).toBe(4);
+    expect(r.ratio, kind).toBeLessThan(1.6); expect(r.low, kind).toBeGreaterThan(0.45);
+  }
   // recoloured relatives differ from the creature whose shape they wear
   for (const [a, b] of [['crawler', 'spider'], ['spore', 'slime'], ['guardian', 'golem']]) expect(shots[a + '/idle'].image).not.toBe(shots[b + '/idle'].image);
 });

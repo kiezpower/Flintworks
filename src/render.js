@@ -1,5 +1,5 @@
 import { drawGate, drawSailRotor } from './mechanicalart.js';
-import { drawCreature, hasCreatureArt } from './creatureart.js';
+import { drawCreature, hasCreatureArt, phasesOf } from './creatureart.js';
 import { drawPainted } from './itemart.js';
 import { drawingDensity } from './graphicsquality.js';
 import { drawGoal } from './tapgo.js';
@@ -329,12 +329,27 @@ function paintedAnimal(a, sx, sy, kind, f, hurtF, ph) {
     squash = still ? null : moving ? [1 + step * soft, 1 - step * soft] : [1, 1 + Math.sin(G.frame / 18) * 0.02],
     angle = still || !moving || flying || kind === 'slime' ? 0 : Math.sin(a.anim || 0) * (kind === 'golem' ? 0.03 : 0.05) * f,
     dy = still ? 0 : flying ? Math.sin(G.frame / 9 + a.x * 0.3) * 0.35 : moving && kind !== 'slime' ? -Math.abs(step) * 0.3 : 0;
+  // four painted phases per cycle where the creature has them (creatureart.js): stepping with
+  // its distance, the bat's wings with time, the slime's hop with its flight
+  const phases = phasesOf(a.kind),
+    cycle = Math.floor((((a.anim || 0) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI / 2)) % 4;
+  if (phases && moving && kind !== 'slime') {
+    pose = 'walk' + cycle;
+    squash = null;
+    angle = 0;
+    dy = flying && !still ? Math.sin(G.frame / 9 + a.x * 0.3) * 0.3 : 0;
+  }
   if (kind === 'fluffel') {
     if (Math.abs(a.vy || 0) > 0.4) pose = 'attack';
   } else if (a.warn > 0 || G.frame - last.at < 14) pose = 'attack';
   else if (a.air) {
-    pose = 'move';
-    squash = [0.86, 1.2];
+    if (phases && kind === 'slime') {
+      pose = (a.vy || 0) < 0 ? 'walk1' : 'walk2';
+      squash = null;
+    } else {
+      pose = 'move';
+      squash = [0.86, 1.2];
+    }
   }
   return drawCreature(ctx, a.kind, pose, sx, sy, a.w, a.h, f, { hurt: hurtF, pet: a.pet != null, squash, angle, dy });
 }

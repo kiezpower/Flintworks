@@ -23,6 +23,7 @@ Dieselben sechs Kreaturen in drei Posen; `groessentest.png` zeigt sie in Spielgr
 | `A-zusatz-bosse.png` | Fisch, Lavakönigin, Eiskönig, Riesenwurm | `src/assets/creatures/atlas.png` |
 | `A-zusatz-gegenstaende.png` | 21 Gegenstände, Truhe (zu/offen), großes Versteck | `src/assets/items/atlas.png` |
 | `A-zusatz-icons.png` | 30 Knopf-, Werkzeug- und Fahrzeug-Icons | `src/assets/items/ui.png` |
+| `A-zusatz-laufzyklen.png` | Laufzyklen (4 Phasen) von Monster, Fledermaus, Spinne, Schleim, Golem, Fluffel | `src/assets/creatures/cycles.png` |
 | `A-zusatz-requisiten.png` | Händler (3 Posen), Grabstein, Schrein, Mast, Gondel, Bohrwagen | `src/assets/items/props.png` |
 
 Alle Bögen wurden mit einem Bildgenerator aus Textbeschreibungen erzeugt (gleiche
@@ -43,4 +44,4 @@ die Kapitel-Karte und der Sprengplatz. Wasser, Lava, Säure und Öl werden im Ge
 - Vorschaubilder der Level und Karten (`public/previews`): Übersichtskarten, an Prüfsummen gebunden.
 - Minimap. Lichtpfützen, Explosionen, Funken und Regen sind weich.
 - Kanten von Gelände und Höhlen folgen weiter den Simulationszellen.
-- Kreaturen haben zwei Bewegungsphasen und eine Angriffspose, die Helden sechs Phasen je Aktion.
+- Fisch, Würmer und Bosse haben weiter nur Ruhe- und Angriffsbild; die Helden haben sechs Phasen je Aktion, die Kreaturen vier.
