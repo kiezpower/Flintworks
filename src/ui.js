@@ -1,3 +1,6 @@
+import { parseSkin } from './skins.js';
+import { drawMinerFrame } from './minerart.js';
+import { minerIdentity } from './mineractions.js';
 import { capacity } from './heroskills.js';
 import { markTorches } from './torches.js';
 import { descendOffer } from './descend.js';
@@ -219,7 +222,9 @@ function hud() {
       b.className = 'cbtn' + (o === c ? ' sel' : '') + (o.dead ? ' dead' : '') + (o.energy < 30 ? ' low' : '');
       b.setAttribute('aria-label', o.name);
       b.title = o.name;
-      b.innerHTML = `<span class="cap" style="background:${safeCap(o.cap)}"></span><span class="face"></span><span class="hp"><b style="width:${Math.max(0, Number(o.energy) || 0)}%"></b></span>${isPlayer(o) ? '' : focusBadge(o)}`;
+      const face = crewFace(o);
+      b.innerHTML = `${face ? '' : `<span class="cap" style="background:${safeCap(o.cap)}"></span><span class="face"></span>`}<span class="hp"><b style="width:${Math.max(0, Number(o.energy) || 0)}%"></b></span>${isPlayer(o) ? '' : focusBadge(o)}`;
+      if (face) b.prepend(face);
       // tap a Wühler: give out jobs (your own one: for everybody)
       b.addEventListener('click', () => openCrew(n));
       crewEl.appendChild(b);
@@ -272,8 +277,10 @@ function hud() {
       b.title = t ? `${resName(t)} (${s + off + 1})` : '';
       if (t) {
         const cvs = document.createElement('canvas');
-        cvs.width = cvs.height = 10;
-        cvs.getContext('2d').drawImage(itemIcon(t), 0, 0);
+        const art = itemIcon(t);
+        cvs.width = cvs.height = art.width;
+        if (art.painted) cvs.className = 'painted';
+        cvs.getContext('2d').drawImage(art, 0, 0);
         b.appendChild(cvs);
         if (s + off < 9) b.insertAdjacentHTML('beforeend', `<i class="key">${s + off + 1}</i>`);
       }
@@ -330,6 +337,26 @@ const WEAPONS = ['bow', 'sword'];
 const WEAPON_NAME = { bow: 'Langbogen', sword: 'Schwert' };
 const USE_LABEL = { bow: 'Schießen', sword: 'Schlagen', throw: 'Wurf', catapult: 'Schleudern' };
 const weaponsOf = () => WEAPONS.filter(hasTool);
+// the head of a crew member from its painted sheet (minerart.js), for the crew bar; null
+// while the sheets are missing (then the cap colour and a face stand in)
+const faces = new Map();
+function crewFace(o) {
+  const look = parseSkin(o.skin),
+    hero = minerIdentity(o, look.hero),
+    key = `${hero}|${o.cap}|${look.outfit}`;
+  let src = faces.get(key);
+  if (!src) {
+    src = document.createElement('canvas');
+    src.width = src.height = 56;
+    if (!drawMinerFrame(src.getContext('2d'), 26, 150, 1, 'idle', 0, safeCap(o.cap), look.outfit, 3.2, '', hero)) return null;
+    faces.set(key, src);
+  }
+  const c = document.createElement('canvas');
+  c.width = c.height = 56;
+  c.className = 'cface painted';
+  c.getContext('2d').drawImage(src, 0, 0);
+  return c;
+}
 const iconCache2 = {};
 const padUrl = k => (iconCache2[k] ??= padIcon(k));
 const throwPad = document.querySelector('.pad.throw'),
@@ -385,25 +412,50 @@ function drawClock() {
     day = G.dayT < 0.5,
     f = day ? G.dayT / 0.5 : (G.dayT - 0.5) / 0.5,
     a = Math.PI * (1 - f);
-  g.clearRect(0, 0, 22, 12);
-  g.fillStyle = '#24160c';
-  g.beginPath();
-  g.arc(11, 11.5, 11, Math.PI, 0);
-  g.fill();
-  g.fillStyle = day ? '#8fc3ea' : '#1e2a52';
-  g.beginPath();
-  g.arc(11, 11.5, 10, Math.PI, 0);
-  g.fill();
-  g.fillStyle = '#5a8a3a';
-  g.fillRect(0, 10, 22, 2);
-  const x = Math.round(11 + Math.cos(a) * 7),
-    y = Math.round(10.5 - Math.sin(a) * 7);
-  g.fillStyle = day ? '#ffe066' : G.bloodMoon ? '#e8483a' : '#e8eef4';
-  g.fillRect(x - 1, y - 1, 3, 3);
-  if (!day) {
-    g.fillStyle = '#1e2a52';
-    g.fillRect(x + 1, y - 1, 1, 2);
+  // drawn at four times its layout size, with soft shapes: a half dome of sky over a strip of
+  // meadow, the sun or the moon on its arc
+  if (clockCv.width !== 88) {
+    clockCv.width = 88;
+    clockCv.height = 48;
   }
+  g.setTransform(4, 0, 0, 4, 0, 0);
+  g.clearRect(0, 0, 22, 12);
+  g.save();
+  g.beginPath();
+  g.arc(11, 11.5, 10.6, Math.PI, 0);
+  g.closePath();
+  g.fillStyle = '#b88b51';
+  g.fill();
+  g.beginPath();
+  g.arc(11, 11.5, 9.8, Math.PI, 0);
+  g.closePath();
+  g.clip();
+  const sky = g.createLinearGradient(0, 1, 0, 12);
+  sky.addColorStop(0, day ? '#6fb2e4' : '#141d3e');
+  sky.addColorStop(1, day ? '#cfe8f6' : '#33407a');
+  g.fillStyle = sky;
+  g.fillRect(0, 0, 22, 12);
+  const x = 11 + Math.cos(a) * 7,
+    y = 10.5 - Math.sin(a) * 7;
+  g.fillStyle = day ? 'rgba(255,236,150,0.45)' : 'rgba(220,232,255,0.25)';
+  g.beginPath();
+  g.arc(x, y, 3, 0, 7);
+  g.fill();
+  g.fillStyle = day ? '#ffe066' : G.bloodMoon ? '#e8483a' : '#e8eef4';
+  g.beginPath();
+  g.arc(x, y, 1.7, 0, 7);
+  g.fill();
+  if (!day) {
+    g.fillStyle = '#1b2550';
+    g.beginPath();
+    g.arc(x + 0.9, y - 0.5, 1.4, 0, 7);
+    g.fill();
+  }
+  g.fillStyle = '#5f9a3c';
+  g.beginPath();
+  g.ellipse(11, 12.6, 12, 2.6, 0, 0, 7);
+  g.fill();
+  g.restore();
   // (G.season: set with the weather, seasons.js; null where there are none)
   const s = G.season;
   const t = s == null ? '' : SEASON_ICON[s];
@@ -592,7 +644,19 @@ function opt(parent, { icon, title, sub, cost, short, disabled, onClick, state, 
   state ||= short ? 'poor' : 'ok';
   b.className = 'opt st-' + state + (short || state === 'poor' ? ' short' : '') + (icon ? '' : ' noico');
   if (disabled) b.disabled = true;
-  if (icon) {
+  if (icon && icon.painted) {
+    // painted art (itemart.js): shown smoothly in the same 48×40 box
+    const c = document.createElement('canvas'),
+      k = Math.min(48 / icon.width, 40 / icon.height);
+    c.width = icon.width;
+    c.height = icon.height;
+    c.className = 'painted';
+    c.getContext('2d').drawImage(icon, 0, 0);
+    c.style.width = icon.width * k + 'px';
+    c.style.height = icon.height * k + 'px';
+    c.style.justifySelf = 'center';
+    b.appendChild(c);
+  } else if (icon) {
     // shown through its double-resolution copy (lit from above, outlined) at a whole multiple
     // of its size; small icons on screens without fine pixels keep the simple version
     const w = icon.hi ? icon.width / 2 : icon.width,

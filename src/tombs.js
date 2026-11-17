@@ -3,6 +3,7 @@
 // shows it, and its player gets a grey arrow at the screen edge pointing back. When nothing of it
 // is left lying there (picked up again, by anybody), or after five minutes, the stone is gone.
 // Only for players' Wühler; the host keeps them, everybody gets them with the game.
+import { drawPainted } from './itemart.js';
 import { G, crew, items } from './state.js';
 
 const LIFE = 5 * 3600;
@@ -28,6 +29,7 @@ function drawTombs(ctx, cx, cy) {
     const x = Math.round(t.x - cx),
       y = Math.round(t.y - cy);
     if (x < -10 || x > G.VW + 10 || y < -16 || y > G.VH + 4) continue;
+    if (drawPainted(ctx, 'prop:tomb', x - 3, y - 9, 7, 9, 1.2, false, { dy: 0.4 })) continue;
     ctx.fillStyle = '#24160c';
     ctx.fillRect(x - 3, y - 9, 7, 9);
     ctx.fillRect(x - 2, y - 10, 5, 1);

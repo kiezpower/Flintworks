@@ -1,4 +1,6 @@
 // Ground and water vehicles: drill wagon, raft, catapult and the riding fluffel.
+import { drawPainted } from '../itemart.js';
+import { drawCreature } from '../creatureart.js';
 import { digCell, spawnFromDig } from '../digger.js';
 import { moveBody, spawnItem, unstuck } from '../entities.js';
 import { onDig } from '../hazards.js';
@@ -28,6 +30,7 @@ function fall(v, I) {
   if (!I) v.vx *= grounded(v) ? 0.8 : 0.98;
 }
 
+const turned = new WeakMap();
 // ---- drill wagon: drives through earth and rock, burns coal ----
 defineVehicle('drill', {
   name: 'Bohrwagen',
@@ -69,6 +72,11 @@ defineVehicle('drill', {
     }
   },
   draw(ctx, v, x, y) {
+    // painted (itemart.js); it shudders while the drill turns
+    const last = turned.get(v),
+      works = last != null && last !== v.t && !G.reduceMotion;
+    turned.set(v, v.t);
+    if (!v.icon && drawPainted(ctx, 'prop:drillwagon', x, y, v.w + 4, v.h, 1.02, false, { flip: v.face < 0, dy: works ? 0.4 + Math.sin(G.frame * 1.7) * 0.25 : 0.4 })) return;
     drawDrill(ctx, v, x, y);
   },
 });
@@ -271,6 +279,8 @@ defineVehicle('raft', {
     v.t += 0.05;
   },
   draw(ctx, v, x, y) {
+    // painted (itemart.js): the bundle of logs lies low in the water
+    if (!v.icon && drawPainted(ctx, 'ui:raft', x, y, v.w, v.h, 1.15, false, { dy: 4.5, flip: v.face < 0 })) return;
     for (let k = 0; k < 4; k++) box(ctx, x + k * 4.5, y, 4, v.h, k % 2 ? '#9a6a3a' : '#b07a45');
     box(ctx, x + 2, y + 1, v.w - 4, 1, '#6e4420');
   },
@@ -541,6 +551,9 @@ defineVehicle('mount', {
     v.t += Math.abs(v.vx) * 0.4;
   },
   draw(ctx, v, x, y) {
+    // painted: a large Fluffel with a red collar, stepping while it runs
+    const run = Math.abs(v.vx || 0) > 0.05 && Math.sin(v.t) > 0;
+    if (!v.icon && drawCreature(ctx, 'fluffel', Math.abs(v.vy || 0) > 0.5 ? 'attack' : run ? 'move' : 'idle', x, y, v.w, v.h, v.face, { pet: true, size: 9.5 })) return;
     const f = v.face,
       leg = Math.sin(v.t) > 0 ? 1 : 0;
     box(ctx, x + 1, y + 1, 8, 4, '#f2e6d0');

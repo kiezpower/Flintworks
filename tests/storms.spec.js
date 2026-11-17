@@ -72,7 +72,7 @@ test('a blood moon: warned of, twice the monsters, a red moon on the clock, twic
   await page.waitForTimeout(700);
   // the moon on the clock is red
   const red = await page.evaluate(() => {
-    const d = document.getElementById('clockCv').getContext('2d').getImageData(0, 0, 22, 12).data;
+    const cv = document.getElementById('clockCv'), d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data;
     for (let i = 0; i < d.length; i += 4) if (d[i] > 200 && d[i + 1] < 100 && d[i + 2] < 100) return true;
     return false;
   });

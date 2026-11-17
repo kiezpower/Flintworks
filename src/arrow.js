@@ -14,17 +14,21 @@ function drawArrow(ctx, tx, ty) {
   ctx.save();
   ctx.translate(Math.round(x), Math.round(y));
   ctx.rotate(ang);
-  ctx.fillStyle = '#1a120c';
+  // a rounded golden arrowhead with a dark-brown contour and a lit upper edge
+  ctx.lineJoin = 'round';
   ctx.beginPath();
-  ctx.moveTo(5, 0);
-  ctx.lineTo(-4, -5);
-  ctx.lineTo(-4, 5);
-  ctx.fill();
-  ctx.fillStyle = '#f2c230';
-  ctx.beginPath();
-  ctx.moveTo(3.5, 0);
-  ctx.lineTo(-3, -3.5);
-  ctx.lineTo(-3, 3.5);
+  ctx.moveTo(4.2, 0);
+  ctx.lineTo(-3.4, -4);
+  ctx.lineTo(-1.6, 0);
+  ctx.lineTo(-3.4, 4);
+  ctx.closePath();
+  ctx.strokeStyle = '#24160c';
+  ctx.lineWidth = 2.2;
+  ctx.stroke();
+  const gold = ctx.createLinearGradient(0, -4, 0, 4);
+  gold.addColorStop(0, '#ffe27a');
+  gold.addColorStop(1, '#e0a020');
+  ctx.fillStyle = gold;
   ctx.fill();
   ctx.restore();
 }

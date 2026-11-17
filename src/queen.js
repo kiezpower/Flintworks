@@ -4,6 +4,7 @@
 // lava bombs at him (events.js), calls lava slimes out of the lake and burns whoever touches her.
 // Lava does her no harm; arrows, blasts and the sword do. Beaten, she leaves gold and gems
 // (objects.js LOOT). Only the host moves her; the others get her with the creatures.
+import { drawCreature } from './creatureart.js';
 import { announceBanner, quake } from './announce.js';
 import { hurt } from './digger.js';
 import { mkAnimal } from './entities.js';
@@ -135,6 +136,7 @@ function queenUpd(a) {
 
 // ---- the picture: a glowing body of molten rock with a crown ----
 function drawQueen(ctx, a, x, y) {
+  if (drawCreature(ctx, a.kind, a.throwT < 24 ? 'attack' : 'idle', x, y, a.w, a.h, a.face, { hurt: a.hurt > 0 && a.hurt & 2 })) return;
   const w = a.w,
     hh = a.h,
     hot = a.hurt > 0;

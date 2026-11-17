@@ -1,4 +1,5 @@
 // Airship and cable car: getting over valleys, lakes and long distances.
+import { drawPainted } from '../itemart.js';
 import { moveBody, spawnItem } from '../entities.js';
 import { sfx } from '../sound.js';
 import { G, vehicles } from '../state.js';
@@ -49,6 +50,8 @@ defineVehicle('airship', {
     v.t += 0.1 + Math.abs(v.vx) * 0.3;
   },
   draw(ctx, v, x, y) {
+    // painted (itemart.js); the pictured airship looks left
+    if (!v.icon && drawPainted(ctx, 'ui:balloon', x, y, v.w, v.h, 1.12, false, { flip: v.face > 0, dy: 0.5 })) return;
     // balloon
     ctx.fillStyle = '#24160c';
     ctx.beginPath();
@@ -99,9 +102,11 @@ defineVehicle('mast', {
     if (!v.icon) moveBody(v, 0, 1, 0);
   },
   draw(ctx, v, x, y) {
-    box(ctx, x + 2, y, 2, v.h, '#8a5a2b');
-    box(ctx, x, y, 6, 2, '#6e4420');
-    box(ctx, x - 1, y + v.h - 2, 8, 2, '#6e4420');
+    if (v.icon || !drawPainted(ctx, 'prop:mast', x, y, v.w, v.h, 1.08, false, { dy: 0.3 })) {
+      box(ctx, x + 2, y, 2, v.h, '#8a5a2b');
+      box(ctx, x, y, 6, 2, '#6e4420');
+      box(ctx, x - 1, y + v.h - 2, 8, 2, '#6e4420');
+    }
     // the rope to the other mast
     const o = v.link != null && vehicles.find(q => q.id === v.link);
     if (o && o.x > v.x) {
@@ -147,6 +152,7 @@ defineVehicle('gondola', {
     v.y = py + 6;
   },
   draw(ctx, v, x, y) {
+    if (!v.icon && drawPainted(ctx, 'prop:gondola', x, y - 6, v.w, v.h + 6, 1)) return;
     ctx.fillStyle = '#2a2a2a';
     ctx.fillRect(x + v.w / 2, y - 6, 1, 6);
     box(ctx, x, y, v.w, v.h, '#3f7fb0');

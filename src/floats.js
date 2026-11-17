@@ -19,7 +19,7 @@ function updFloats() {
 }
 function drawFloats(ctx, cx, cy) {
   if (!floats.length) return;
-  ctx.font = '8px "Nunito Sans", sans-serif';
+  ctx.font = '400 8px "Bree Serif", Georgia, serif';
   ctx.textBaseline = 'middle';
   for (const f of floats) {
     ctx.globalAlpha = Math.min(1, f.l / 20);
@@ -28,17 +28,15 @@ function drawFloats(ctx, cx, cy) {
     let x = Math.round(f.x - cx - (tw + iw) / 2);
     const y = Math.round(f.y - cy);
     if (f.item) {
-      ctx.drawImage(itemIcon(f.item), x, y - 5);
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(itemIcon(f.item), x, y - 5, 10, 10);
+      ctx.imageSmoothingEnabled = false;
       x += iw;
     }
-    ctx.fillStyle = '#24160c';
-    for (const [dx, dy] of [
-      [-1, 0],
-      [1, 0],
-      [0, -1],
-      [0, 1],
-    ])
-      ctx.fillText(f.text, x + dx, y + dy);
+    ctx.strokeStyle = '#24160c';
+    ctx.lineWidth = 1.8;
+    ctx.lineJoin = 'round';
+    ctx.strokeText(f.text, x, y);
     ctx.fillStyle = f.col;
     ctx.fillText(f.text, x, y);
   }

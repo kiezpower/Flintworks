@@ -1,3 +1,4 @@
+import { drawPainted } from './itemart.js';
 import { capacity } from './heroskills.js';
 // Torches (like Terraria's): the castle makes them from wood and coal (store.js AUTO), a player
 // passing by takes up to three along, and with one chosen in the bag the action button sets it
@@ -65,6 +66,8 @@ function drawTorches(ctx, cx, cy) {
       sy = Math.round(y - cy);
     if (sx < -6 || sx > G.VW + 6 || sy < -8 || sy > G.VH + 6) continue;
     const f = (G.frame + x * 7) % 12 < 6;
+    // painted (itemart.js); the flame flickers as added light
+    if (drawPainted(ctx, 'torch', sx - 1.5, sy - 5, 4, 8, 1, f)) continue;
     ctx.fillStyle = '#24160c';
     ctx.fillRect(sx - 1, sy - 4, 3, 7);
     ctx.fillStyle = '#8b5e34';

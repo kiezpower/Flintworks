@@ -1,6 +1,6 @@
 // Painted terrain is a view of the real cell map, never a second simulation.
 // Native-detail chunks are created only on screen; LRU eviction bounds GPU memory.
-const CHUNK = 32, DENSITY = 4, LIMIT = 192, PERIOD = 32;
+const CHUNK = 32, DENSITY = 4, LIMIT = 192, PERIOD = 48, TILE = 192;
 const frames = new Map(), cache = new Map();
 const ids = [1, 2, 3, 4, 6, 9, 10, 11, 12, 13, 0, 16];
 let owner = null, palette = null;
@@ -9,13 +9,27 @@ const terrainArtReady = new Promise(resolve => {
   image.onload = () => {
     for (let n = 0; n < ids.length; n++) {
       const x = (n % 4) * image.width / 4, y = Math.floor(n / 4) * image.height / 3;
-      // Mirror each tile at its edge: the generated swatches meet without a seam.
-      const c = document.createElement('canvas'); c.width = c.height = 256;
-      const g = c.getContext('2d'); g.imageSmoothingQuality = 'high';
-      for (let j = 0; j < 2; j++) for (let i = 0; i < 2; i++) {
-        g.save(); g.translate(i ? 256 : 0, j ? 256 : 0); g.scale(i ? -1 : 1, j ? -1 : 1);
-        g.drawImage(image, x, y, image.width / 4, image.height / 3, 0, 0, 128, 128); g.restore();
+      // Each swatch becomes a tile that repeats without a seam and without mirror symmetry:
+      // towards its edges it cross-fades into itself shifted by half a tile, first across, then down.
+      const c = document.createElement('canvas'); c.width = c.height = TILE;
+      const g = c.getContext('2d', { willReadFrequently: true }); g.imageSmoothingQuality = 'high';
+      g.drawImage(image, x + 4, y + 4, image.width / 4 - 8, image.height / 3 - 8, 0, 0, TILE, TILE);
+      const img = g.getImageData(0, 0, TILE, TILE), d = img.data, half = TILE / 2;
+      const weight = new Float32Array(TILE);
+      for (let k = 0; k < TILE; k++) {
+        const t = Math.min(1, Math.max(0, (Math.abs(k - (TILE - 1) / 2) / half - 0.55) / 0.4));
+        weight[k] = t * t * (3 - 2 * t);
       }
+      for (const down of [false, true]) {
+        const from = d.slice();
+        for (let py = 0; py < TILE; py++) for (let px = 0; px < TILE; px++) {
+          const w = weight[down ? py : px];
+          if (!w) continue;
+          const i = (py * TILE + px) * 4, j = down ? (((py + half) % TILE) * TILE + px) * 4 : (py * TILE + ((px + half) % TILE)) * 4;
+          for (let k = 0; k < 3; k++) d[i + k] = from[i + k] * (1 - w) + from[j + k] * w;
+        }
+      }
+      g.putImageData(img, 0, 0);
       frames.set(ids[n], c);
     }
     resetTerrainArt(); resolve(true);
@@ -27,7 +41,7 @@ function resetTerrainArt() { cache.clear(); }
 function invalidateTerrainArt(cx, cy) { cache.delete(`${cx},${cy}`); }
 function texture(g, id, x, y) {
   const p = g.createPattern(frames.get(id), 'repeat');
-  p.setTransform(new DOMMatrix().translate(-x, -y).scale(PERIOD / 128));
+  p.setTransform(new DOMMatrix().translate(-x, -y).scale(PERIOD / TILE));
   return p;
 }
 function tokenAt(world, x, y) {
@@ -98,5 +112,16 @@ function drawTerrainArt(g, cx, cy, vw, vh, world) {
     }
   g.restore(); return true;
 }
+// A picture of a whole small cut (menus, the blasting range): painted straight onto g, without
+// touching the world's chunk cache. False while the materials are not loaded.
+function paintTerrainOnce(g, world) {
+  if (!frames.size) return false;
+  g.save(); g.imageSmoothingEnabled = true;
+  for (let y = 0; y * CHUNK < world.H; y++) for (let x = 0; x * CHUNK < world.W; x++) {
+    const c = makeChunk(world, x, y);
+    g.drawImage(c, x * CHUNK, y * CHUNK, c.width / DENSITY, c.height / DENSITY);
+  }
+  g.restore(); return true;
+}
 const terrainArtStats = () => ({ chunks: cache.size, limit: LIMIT, density: DENSITY, materials: frames.size });
-export { drawTerrainArt, invalidateTerrainArt, resetTerrainArt, terrainArtReady, terrainArtStats };
+export { drawTerrainArt, paintTerrainOnce, invalidateTerrainArt, resetTerrainArt, terrainArtReady, terrainArtStats };

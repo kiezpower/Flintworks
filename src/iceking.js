@@ -5,6 +5,7 @@
 // ice (events.js) that freeze whoever they hit – slower for three seconds – and calls bats. Arrows,
 // blasts and the sword hurt him; beaten, he leaves gems and gold (objects.js LOOT). Only the host
 // moves him; the others get him with the creatures.
+import { drawCreature } from './creatureart.js';
 import { announceBanner, quake } from './announce.js';
 import { hurt } from './digger.js';
 import { mkAnimal } from './entities.js';
@@ -120,6 +121,7 @@ function kingUpd(a) {
 
 // ---- the picture: a crowned figure of ice with a flowing cloak ----
 function drawKing(ctx, a, x, y) {
+  if (drawCreature(ctx, a.kind, a.throwT < 24 ? 'attack' : 'idle', x, y, a.w, a.h, a.face, { hurt: a.hurt > 0 && a.hurt & 2 })) return;
   const w = a.w,
     h = a.h,
     hot = a.hurt > 0;

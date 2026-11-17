@@ -5,6 +5,8 @@
 //   upd(v, I)          one tick; I is the rider's input (or null without rider)
 //   draw(ctx, v, x, y) paint it at screen position x, y
 // A rider sits in the vehicle (c.ride = vehicle id); the "Aussteigen" action gets out again.
+import { paintedIcon } from '../itemart.js';
+import { creatureIcon } from '../creatureart.js';
 import { newId } from '../entities.js';
 import { inputOf } from '../players.js';
 import { G, crew, vehicles } from '../state.js';
@@ -115,8 +117,13 @@ function drawVehicles(ctx, cx, cy) {
 }
 // small picture for the build menu
 const iconCache = {};
+const PAINTED = { mast: 'prop:mast', drill: 'drill', train: 'train', raft: 'raft', catapult: 'catapult', target: 'target', airship: 'balloon' };
 function vehicleIcon(kind) {
   if (iconCache[kind]) return iconCache[kind];
+  const art = PAINTED[kind] && paintedIcon(PAINTED[kind].includes(':') ? PAINTED[kind] : 'ui:' + PAINTED[kind]);
+  if (art) return (iconCache[kind] = art);
+  const beast = kind === 'mount' && creatureIcon('fluffel');
+  if (beast) return (iconCache[kind] = beast);
   const K = VK[kind],
     cv = document.createElement('canvas');
   // drawn straight at double resolution (the drawings use half pixels)

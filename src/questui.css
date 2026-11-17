@@ -16,7 +16,7 @@
 .qt-row img {
   width: 18px;
   height: 18px;
-  image-rendering: pixelated;
+  image-rendering: auto;
   object-fit: contain;
 }
 .qt-bar,
@@ -89,7 +89,7 @@
 .qnote img {
   width: 36px;
   height: 36px;
-  image-rendering: pixelated;
+  image-rendering: auto;
   object-fit: contain;
 }
 .qnote b {

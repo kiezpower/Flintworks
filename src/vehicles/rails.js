@@ -2,6 +2,7 @@
 // of pixels a point, one plank (or wood) per 10 points. The train runs along its track by
 // itself, waits at both ends, takes the helpers' load at the far end and sells/stores it when
 // it reaches the castle.
+import { drawPainted } from '../itemart.js';
 import { payRes, hasRes } from '../buildings.js';
 import { moveBody } from '../entities.js';
 import { sfx } from '../sound.js';
@@ -181,6 +182,8 @@ defineVehicle('train', {
       }
   },
   draw(ctx, v, x, y) {
+    // painted (itemart.js): a mine cart, its heap of ore only while it carries something
+    if (!v.icon && drawPainted(ctx, 'ui:train', x, y, v.w, v.h, 1.05, false, { cropTop: v.cargo && v.cargo.length ? 0 : 0.3, dy: 0.3 })) return;
     box(ctx, x, y + 1, v.w, v.h - 3, '#5d6a78');
     box(ctx, x + (v.face > 0 ? v.w - 4 : 0), y - 3, 4, 4, '#3a3a40');
     if (v.cargo && v.cargo.length) {

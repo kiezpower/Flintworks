@@ -143,7 +143,9 @@ function drawBuildFx(ctx, b, sx, sy) {
       ctx.fillStyle = why.full ? '#e8f4d8' : '#f4ead2';
       ctx.fillRect(bx, by, 12, 11);
       ctx.fillRect(bx + 4, by + 11, 4, 2);
+      ctx.imageSmoothingEnabled = true;
       ctx.drawImage(itemIcon(why.item), bx + 1, by + 1, 10, 10);
+      ctx.imageSmoothingEnabled = false;
       ctx.fillStyle = why.full ? '#3f9e4a' : '#e0402f';
       if (why.full) ctx.fillRect(bx + 9, by - 2, 3, 3);
       else {

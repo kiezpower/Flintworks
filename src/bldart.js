@@ -1,4 +1,5 @@
-import { drawPaintedObject } from './objectart.js';
+import { drawPaintedObject, paintedObject } from './objectart.js';
+import { squareIcon } from './itemart.js';
 import { restyle } from './skins.js';
 // Buildings at double resolution with real material detail. The 1× sprites (sprites.js, recoloured
 // for building styles in skins.js) say WHAT is where; here every source pixel is read as a
@@ -126,7 +127,13 @@ function crafted(spr, variant = 1) {
   return o;
 }
 // the same picture as a panel icon (ui.js opt(): a canvas marked hi is shown at half its size)
+const paintedIcons = new WeakMap();
 function craftedIcon(spr) {
+  const art = paintedObject(spr);
+  if (art) {
+    if (!paintedIcons.has(art)) paintedIcons.set(art, squareIcon(art, 64));
+    return paintedIcons.get(art);
+  }
   const o = crafted(spr, 1);
   o.hi = true;
   return o;

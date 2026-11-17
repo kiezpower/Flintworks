@@ -4,7 +4,7 @@
 .blast-stats > div { display: grid; gap: 4px; padding: 8px; border: 1px solid #92704e; background: #211810; border-radius: 4px; }
 .blast-stats span { font-size: 12px; color: #cdb997; }
 .blast-stats b { font-size: 23px; color: #ffe08a; }
-#blastCanvas { display: block; width: 100%; height: auto; aspect-ratio: 2; border: 2px solid #24160c; box-sizing: border-box; image-rendering: pixelated; cursor: crosshair; touch-action: pan-y; }
+#blastCanvas { display: block; width: 100%; height: auto; aspect-ratio: 2; border: 2px solid #b88b51; border-radius: 8px; box-sizing: border-box; cursor: crosshair; touch-action: pan-y; }
 .blast-aim { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 10px; }
 .blast-aim input { min-width: 0; width: 100%; height: 44px; margin: 0; accent-color: #f2c230; cursor: ew-resize; }
 .blast-range button { min-height: 44px; }

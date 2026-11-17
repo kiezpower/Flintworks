@@ -228,7 +228,7 @@
 }
 .ls-pv > canvas.ls-scape {
   object-fit: cover;
-  image-rendering: pixelated;
+  image-rendering: auto;
 }
 
 /* the detail view: big picture left, text right (stacked on low screens) */
@@ -382,6 +382,12 @@
   top: 0;
   image-rendering: pixelated;
   pointer-events: none;
+}
+.ls-mine .ls-ground.painted {
+  image-rendering: auto;
+}
+.ls-mine .ls-me {
+  image-rendering: auto !important;
 }
 .ls-mine .ls-me {
   position: absolute;

@@ -37,3 +37,13 @@ button, input, select { font-family: var(--font-ui); }
 @media (max-width: 600px) {
   #toast { top: 156px; max-width: calc(100% - 32px); font-size: 12px; padding: 4px 9px; }
 }
+
+/* Painted item art (itemart.js) is never shown with hard pixels. */
+canvas.painted, img.painted, #storeRow img, .ico, #lobby .ico, .slot.weapon .wico, .slot.bag .bagico,
+.card .learned img, .store img, .ls-icon { image-rendering: auto !important; }
+.ico, .slot.weapon .wico, .slot.bag .bagico { background-size: contain; background-repeat: no-repeat; background-position: center; }
+#lbGModePv > canvas { image-rendering: auto !important; }
+.cbtn { border-radius: 9px; border-color: #b88b51; box-shadow: inset 0 1px #ffeacb45; width: 38px; }
+.cbtn.sel { border-color: var(--gold); }
+.cbtn .cface { width: 28px; height: 28px; display: block; border-radius: 6px; background: radial-gradient(circle at 50% 35%, #6f8f9a, #2c3a40); }
+.cbtn .hp { border-radius: 2px; overflow: hidden; }

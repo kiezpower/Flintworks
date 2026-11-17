@@ -1,4 +1,4 @@
-// Pixel art made at start-up: the Flintworks logo and the 9-slice frame for all panels.
+// Art made at start-up: the Flintworks wordmark and the 9-slice frame for the remaining framed panels.
 const INK = '#24160c';
 
 function px(c, x, y, col) {
@@ -40,70 +40,53 @@ function frameUrl() {
   return cv.toDataURL();
 }
 
-// The word in the display font, thresholded to crisp pixels, then outlined, shaded and sparkled.
+// The word in the display font as a painted gold wordmark: dark-brown contour, soft drop
+// shadow, a gold gradient with a lit upper edge. Drawn at four times its layout size so it
+// stays smooth on dense screens; lw/lh are the layout size callers scale from.
 function drawLogo(text, size = 24) {
-  const src = document.createElement('canvas'),
-    sc = src.getContext('2d', { willReadFrequently: true });
-  src.width = 20 * size;
-  src.height = Math.round(size * 1.6);
-  sc.font = `700 ${size}px "Bree Serif", monospace`;
-  sc.textBaseline = 'top';
-  sc.fillText(text, 0, 2);
-  const d = sc.getImageData(0, 0, src.width, src.height);
-  const on = (x, y) => x >= 0 && y >= 0 && x < src.width && y < src.height && d.data[(y * src.width + x) * 4 + 3] > 110;
-  let x1 = 0,
-    y0 = 99,
-    y1 = 0;
-  for (let y = 0; y < src.height; y++)
-    for (let x = 0; x < src.width; x++)
-      if (on(x, y)) {
-        x1 = Math.max(x1, x);
-        y0 = Math.min(y0, y);
-        y1 = Math.max(y1, y);
-      }
-  const w = x1 + 1 + 6,
-    h = y1 - y0 + 1 + 6;
-  const out = document.createElement('canvas');
-  out.width = w;
-  out.height = h;
-  const c = out.getContext('2d');
-  const ox = 3,
-    oy = 3 - y0;
-  // outline and drop shadow first
-  for (let y = y0 - 2; y <= y1 + 2; y++)
-    for (let x = -2; x <= x1 + 2; x++) {
-      let near = false,
-        shadow = false;
-      for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) if (on(x + i, y + j)) near = true;
-      if (!near) shadow = on(x, y - 1) || on(x - 1, y - 1) || on(x, y - 2);
-      if (near) px(c, x + ox, y + oy, INK);
-      else if (shadow) px(c, x + ox, y + oy, '#4e3018');
-    }
-  // fill: gold gradient by row, bright rim where the pixel above is empty, darker under-edge
-  const rows = y1 - y0 + 1;
-  for (let y = y0; y <= y1; y++)
-    for (let x = 0; x <= x1; x++) {
-      if (!on(x, y)) continue;
-      const t = (y - y0) / Math.max(1, rows - 1);
-      let col = t < 0.35 ? '#ffe27a' : t < 0.7 ? '#f2c230' : '#d98a1c';
-      if (!on(x, y - 1)) col = '#fff3b0';
-      else if (!on(x, y + 1)) col = '#a85f10';
-      px(c, x + ox, y + oy, col);
-    }
-  // two little sparks
-  for (const [sx, sy] of [
-    [x1 + 2, y0 - 1],
-    [1, y1 + 1],
-  ]) {
-    for (const [dx, dy, col] of [
-      [0, 0, '#ffffff'],
-      [-1, 0, '#ffe27a'],
-      [1, 0, '#ffe27a'],
-      [0, -1, '#ffe27a'],
-      [0, 1, '#ffe27a'],
-    ])
-      px(c, sx + dx + ox, sy + dy + oy, col);
-  }
+  const K = 4,
+    font = `700 ${size}px "Bree Serif", Georgia, serif`;
+  const out = document.createElement('canvas'),
+    c = out.getContext('2d');
+  c.font = font;
+  const pad = Math.ceil(size * 0.28),
+    lw = Math.ceil(c.measureText(text).width) + pad * 2,
+    lh = Math.ceil(size * 1.25) + pad * 2;
+  out.width = lw * K;
+  out.height = lh * K;
+  out.lw = lw;
+  out.lh = lh;
+  c.scale(K, K);
+  c.font = font;
+  c.textBaseline = 'alphabetic';
+  c.lineJoin = 'round';
+  const x = pad,
+    y = pad + size;
+  // drop shadow and contour
+  c.fillStyle = c.strokeStyle = 'rgba(40,22,10,0.55)';
+  c.lineWidth = size * 0.2;
+  c.strokeText(text, x, y + size * 0.1);
+  c.strokeStyle = INK;
+  c.lineWidth = size * 0.2;
+  c.strokeText(text, x, y);
+  c.strokeStyle = '#6b3f17';
+  c.lineWidth = size * 0.09;
+  c.strokeText(text, x, y);
+  // gold body
+  const gold = c.createLinearGradient(0, y - size * 0.8, 0, y + size * 0.15);
+  gold.addColorStop(0, '#fff3b0');
+  gold.addColorStop(0.35, '#ffd95e');
+  gold.addColorStop(0.7, '#f2b52a');
+  gold.addColorStop(1, '#c97a16');
+  c.fillStyle = gold;
+  c.fillText(text, x, y);
+  // a lit upper edge: the same letters, clipped to themselves, shifted down
+  c.save();
+  c.globalCompositeOperation = 'source-atop';
+  c.strokeStyle = 'rgba(255,250,214,0.75)';
+  c.lineWidth = size * 0.035;
+  c.strokeText(text, x, y + size * 0.03);
+  c.restore();
   return out;
 }
 
@@ -119,8 +102,8 @@ function initUiArt() {
     title.classList.add('sr');
     const fit = () => {
       const s = innerHeight >= 900 ? 3 : innerHeight <= 460 ? 1 : 2;
-      cv.style.width = cv.width * s + 'px';
-      cv.style.height = cv.height * s + 'px';
+      cv.style.width = cv.lw * s + 'px';
+      cv.style.height = cv.lh * s + 'px';
     };
     fit();
     addEventListener('resize', fit);

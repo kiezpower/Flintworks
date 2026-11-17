@@ -1,3 +1,4 @@
+import { drawPainted, paintedIcon, squareIcon } from './itemart.js';
 import { drawPaintedObject } from './objectart.js';
 // ---- Sprites ----
 function sp(w, h, fn) {
@@ -409,12 +410,16 @@ function itemArt(t, blink) {
 }
 // draws an item onto g so that it sits on the bottom edge of its w×h box
 function drawItemBig(g, t, x, y, w, h, blink) {
+  if (drawPainted(g, t, x, y, w, h, 1.5, blink && (t === 'nug' || t === 'gem'))) return;
   if (!ITEM_ART[t]) return drawItemPx(g, t, x, y, blink);
   const a = itemArt(t, blink);
   drawHi(g, a, x + Math.floor((w - a.width) / 2), y + h - a.height);
 }
 const iconCache = {};
+// painted (itemart.js) once the atlas is there; the 10×10 pixel icon before that and as a fallback
 function itemIcon(t) {
+  const art = paintedIcon(t);
+  if (art) return art;
   if (iconCache[t]) return iconCache[t];
   const c = document.createElement('canvas');
   c.width = 10;
@@ -680,8 +685,12 @@ PAD_ICONS.balloon = R => {
 };
 // button and menu icons are drawn at 12×12 and shown through their 24×24 double-resolution copy
 // (hi: already double resolution, so menus show it at half its pixel size)
-const padIcon = kind => bevel2x(sp(12, 12, PAD_ICONS[kind])).toDataURL();
+// (painted since v1.137, itemart.js; the pixel drawings above remain the fallback)
+const padIcon = kind => (paintedIcon('ui:' + kind) || bevel2x(sp(12, 12, PAD_ICONS[kind]))).toDataURL();
 const toolIcon = kind => {
+  // (a fresh canvas each time: callers put it straight into the page)
+  const art = paintedIcon('ui:' + kind);
+  if (art) return squareIcon(art, art.width);
   const c = bevel2x(sp(12, 12, PAD_ICONS[kind]));
   c.hi = true;
   return c;

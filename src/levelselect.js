@@ -6,6 +6,8 @@
 // view with the story, goals, dangers, star times and the best time before the start. The two
 // campaign chapters are drawn as a mine shaft going down level by level (mineshaft.js). Opened
 // from the lobby (mode button).
+import { drawSceneArt } from './sceneart.js';
+import { paintTerrainOnce } from './terrainart.js';
 import { PLAY_KINDS, supportsKind } from './playkind.js';
 import { tr } from './i18n.js';
 import { MAP_IDS } from './levels/index.js';
@@ -62,11 +64,41 @@ function dangers(M) {
   } else if (M.campaign && M.diff !== 'relaxed') out.push('Monster', 'Grubengas');
   return [...new Set(out)];
 }
+// the same in the painted look (sceneart.js, terrainart.js): the biome's scenery over a cut
+// through turf and earth with a little gold; null while the pictures are not loaded
+function paintedLandscape(biome) {
+  const w = 384,
+    h = 216,
+    c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  c.painted = true;
+  const g = c.getContext('2d');
+  if (!drawSceneArt(g, biome, w, h * 0.72)) return null;
+  const W = 96,
+    H = 18,
+    mat = new Uint8Array(W * H).fill(1),
+    shade = new Uint8Array(W * H);
+  for (let x = 0; x < W; x++) for (let y = 0; y < 2; y++) shade[y * W + x] = 4;
+  for (const [x, y] of [[14, 9], [52, 13], [78, 7]]) for (let dy = 0; dy < 2; dy++) for (let dx = 0; dx < 3; dx++) mat[(y + dy) * W + x + dx] = 3;
+  g.save();
+  g.translate(0, h - H * 4);
+  g.scale(4, 4);
+  const ok = paintTerrainOnce(g, { W, H, mat, bg: new Uint8Array(W * H), shade, biome, patterns: false, tone: () => 1 });
+  g.restore();
+  return ok ? c : null;
+}
 // a small landscape of a world type for the cards of the game modes: sky, hills, the ground
 // with its top layer and a few nuggets, drawn once per world type
 const scapes = {};
 function landscape(biome, copy = false) {
-  if (scapes[biome]) return copy ? cloneOf(scapes[biome]) : scapes[biome];
+  if (scapes[biome]?.painted) return copy ? cloneOf(scapes[biome]) : scapes[biome];
+  const art = paintedLandscape(biome);
+  if (art) {
+    scapes[biome] = art;
+    return copy ? cloneOf(art) : art;
+  }
+  if (scapes[biome]) return copy ? cloneOf(scapes[biome]) : scapes[biome]; // (drawn before the paintings arrived)
   const B = BIOMES[biome],
     w = 96,
     h = 54,

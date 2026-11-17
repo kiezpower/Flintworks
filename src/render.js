@@ -1,4 +1,6 @@
 import { drawGate, drawSailRotor } from './mechanicalart.js';
+import { drawCreature, hasCreatureArt } from './creatureart.js';
+import { drawPainted } from './itemart.js';
 import { drawingDensity } from './graphicsquality.js';
 import { drawGoal } from './tapgo.js';
 import { drawCue } from './startcue.js';
@@ -263,20 +265,28 @@ function drawAnimal(a, sx, sy) {
   a.air = kind === 'slime' && Math.abs(a.vy || 0) > 0.6;
   const key = `${a.kind}${ph}${hurtF}${glow}${a.air ? 1 : 0}`;
   let spr = animalCache[key];
-  if (!spr) {
+  if (!spr && !hasCreatureArt(a.kind)) {
     spr = animalCache[key] = VARIANT[a.kind] ? variantSprite(a, ph, hurtF, glow) : animalSprite(a, ph, hurtF, glow);
   }
   // a monster about to strike: a blinking "!" over its head
   if (a.warn > 0 && G.frame % 10 < 7) {
     const wx = Math.round(sx + a.w / 2),
       wy = Math.round(sy - 7);
-    ctx.fillStyle = '#24160c';
-    ctx.fillRect(wx - 1, wy - 1, 3, 7);
+    ctx.save();
+    ctx.font = '400 8px "Bree Serif", Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#24160c';
+    ctx.lineWidth = 1.6;
+    ctx.strokeText('!', wx + 0.5, wy + 5);
     ctx.fillStyle = '#ffd23a';
-    ctx.fillRect(wx, wy, 1, 3);
-    ctx.fillRect(wx, wy + 4, 1, 1);
+    ctx.fillText('!', wx + 0.5, wy + 5);
+    ctx.restore();
   }
-  if (f > 0) drawHi(ctx, spr, sx - 2, sy - 2);
+  if (paintedAnimal(a, sx, sy, kind, f, hurtF, ph)) {
+    // (painted, creatureart.js)
+  } else if (f > 0) drawHi(ctx, spr, sx - 2, sy - 2);
   else {
     ctx.save();
     ctx.translate(sx - 2 + spr.width, 0);
@@ -290,10 +300,43 @@ function drawAnimal(a, sx, sy) {
       bx = Math.round(sx + a.w / 2 - bw / 2),
       by = Math.round(sy - (kind === 'golem' ? 5 : 4));
     ctx.fillStyle = 'rgba(26,18,12,0.85)';
-    ctx.fillRect(bx - 0.5, by - 0.5, bw + 1, 2);
+    ctx.beginPath();
+    ctx.roundRect(bx - 0.5, by - 0.5, bw + 1, 2, 1);
+    ctx.fill();
     ctx.fillStyle = a.hp / a.maxHp > 0.35 ? '#e8503a' : '#ffb03a';
-    ctx.fillRect(bx, by, Math.max(0.5, (bw * a.hp) / a.maxHp), 1);
+    ctx.beginPath();
+    ctx.roundRect(bx, by, Math.max(1, (bw * a.hp) / a.maxHp), 1, 0.5);
+    ctx.fill();
   }
+}
+// the painted picture: standing or stepping, the attack pose while it warns and just after it
+// struck; the slime stretches in the air, the Fluffel leaps when it is off the ground
+const struck = new WeakMap();
+function paintedAnimal(a, sx, sy, kind, f, hurtF, ph) {
+  if (!hasCreatureArt(a.kind)) return false;
+  const last = struck.get(a) || { atk: 0, at: -99 };
+  if ((a.atk || 0) > last.atk) last.at = G.frame;
+  last.atk = a.atk || 0;
+  struck.set(a, last);
+  const flying = kind === 'bat' || kind === 'fish',
+    moving = flying || Math.abs(a.vx || 0) > 0.05;
+  // between its two pictures a creature keeps moving: it sways and bobs with its steps (the
+  // slime wobbles, flyers rise and sink), and breathes while it stands; still with reduced motion
+  const still = G.reduceMotion,
+    step = Math.sin((a.anim || 0) * 2),
+    soft = kind === 'slime' ? 0.07 : kind === 'golem' ? 0.015 : 0.03;
+  let pose = moving && ph ? 'move' : 'idle',
+    squash = still ? null : moving ? [1 + step * soft, 1 - step * soft] : [1, 1 + Math.sin(G.frame / 18) * 0.02],
+    angle = still || !moving || flying || kind === 'slime' ? 0 : Math.sin(a.anim || 0) * (kind === 'golem' ? 0.03 : 0.05) * f,
+    dy = still ? 0 : flying ? Math.sin(G.frame / 9 + a.x * 0.3) * 0.35 : moving && kind !== 'slime' ? -Math.abs(step) * 0.3 : 0;
+  if (kind === 'fluffel') {
+    if (Math.abs(a.vy || 0) > 0.4) pose = 'attack';
+  } else if (a.warn > 0 || G.frame - last.at < 14) pose = 'attack';
+  else if (a.air) {
+    pose = 'move';
+    squash = [0.86, 1.2];
+  }
+  return drawCreature(ctx, a.kind, pose, sx, sy, a.w, a.h, f, { hurt: hurtF, pet: a.pet != null, squash, angle, dy });
 }
 // animal frames are painted once into small canvases (2px margin) and drawn smoothed at 2×
 const animalCache = {};
@@ -471,16 +514,21 @@ function animalSprite(a, ph, hurtF, glowOn) {
 }
 
 function nameTag(text, x, y, col) {
-  ctx.font = '5px monospace';
-  const w = Math.ceil(ctx.measureText(text).width) + 3;
-  ctx.fillStyle = 'rgba(36,22,12,0.75)';
-  ctx.fillRect(Math.round(x - w / 2), y - 6, w, 6);
+  ctx.font = '600 4.5px "Nunito Sans", sans-serif';
+  const w = Math.ceil(ctx.measureText(text).width) + 4,
+    l = Math.round(x - w / 2);
+  ctx.fillStyle = 'rgba(36,22,12,0.78)';
+  ctx.beginPath();
+  ctx.roundRect(l, y - 6.5, w, 6.5, 1.6);
+  ctx.fill();
   ctx.fillStyle = col;
-  ctx.fillRect(Math.round(x - w / 2), y - 6, 1, 6);
+  ctx.beginPath();
+  ctx.roundRect(l + 0.8, y - 5.5, 1, 4.5, 0.5);
+  ctx.fill();
   ctx.fillStyle = '#fbf3dc';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText(text, x + 0.5, y - 1.5);
+  ctx.fillText(text, x + 1, y - 1.6);
 }
 const glows = [],
   lanterns = [],
@@ -724,6 +772,8 @@ function render() {
     const x = Math.floor(L.x - cx),
       y = Math.floor(L.y - cy);
     if (x < -14 || x > G.VW || y < -10 || y > G.VH) continue;
+    // painted (itemart.js): the cart, heaped while it is loaded
+    if (drawPainted(ctx, 'ui:train', x, y, 12, 7, 1.05, false, { cropTop: L.items.length ? 0 : 0.3, dy: 0.3 })) continue;
     // the load heaps up over the rim, in the colours of what is in it
     for (let k = 0; k < Math.min(10, L.items.length); k++) {
       ctx.fillStyle = ICOL[L.items[k]] || '#f2c230';
@@ -890,9 +940,17 @@ function render() {
     // other players carry their name over the head
     if (G.net && isPlayer(c) && c !== mine) nameTag(c.name, x + 3, y - (c.bub ? 15 : 4), c.cap);
     if (c === mine && (G.frame >> 4) % 3) {
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(x + 2, y - 4, 3, 1);
-      ctx.fillRect(x + 3, y - 3, 1, 1);
+      ctx.fillStyle = '#fff6dc';
+      ctx.strokeStyle = 'rgba(36,22,12,0.7)';
+      ctx.lineWidth = 0.4;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x + 1.8, y - 4.6);
+      ctx.lineTo(x + 5.2, y - 4.6);
+      ctx.lineTo(x + 3.5, y - 2.4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
     }
     // on a touch screen, three dots in the face show which way the tunnel is going
     if (c === mine && c.digging && G.inputKind === 'touch') {
@@ -977,6 +1035,13 @@ function render() {
       for (let k = 0; k < lanterns.length; k += 2) light(lanterns[k], lanterns[k + 1], 20, 0.85);
     }
     for (const m of meteors) light(m.x - cx, m.y - cy, 30, 0.9);
+    // creatures stay readable in the dark: a faint glimmer about each, a real glow about the molten ones
+    for (const a of animals) {
+      if (a.hp <= 0 || a.kind === 'fish') continue;
+      const hot = a.kind === 'slime' || a.kind === 'queen';
+      if (a.kind === 'worm' && a.seg) light(a.seg[0].x - cx, a.seg[0].y - cy, 14, 0.5);
+      else light(a.x + a.w / 2 - cx, a.y + a.h / 2 - cy, Math.max(a.w, a.h) * (hot ? 1.8 : 1.15), hot ? 0.8 : 0.5);
+    }
     if (G.bolt) light(G.VW / 2, G.VH / 2, G.VW, Math.min(1, G.bolt.l / 6));
     for (const it of items) if (it.fuse > 0) light(it.x - cx, it.y - cy, 10, 0.6);
     for (const t of trees) if (t.burn > 0) light(t.x - cx, t.gy - t.spr.height / 2 - cy, 36, 0.9);

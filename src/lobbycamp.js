@@ -18,6 +18,8 @@ import { openPanel, opt, sec, toast } from './ui.js';
 const GEMART = ['...o...', '..oLo..', '.oLlko.', 'oLllkko', 'oLlkkko', 'oLlkkdo', '.olkdo.', '..odo..', '...o...'];
 const GEMCOL = { o: '#24160c', L: '#e8f4ff', l: '#9ad0ff', k: '#5a8fe0', d: '#3a5aa8' };
 function crystalIcon() {
+  const art = toolIcon('crystal');
+  if (art.painted) return art;
   const c = document.createElement('canvas');
   c.width = 7;
   c.height = 9;
@@ -49,7 +51,7 @@ function styleIcon(id) {
   return c;
 }
 const UP_ICON = {
-  crew: () => SPR.diggerIcon,
+  crew: () => (toolIcon('crew').painted ? toolIcon('crew') : SPR.diggerIcon),
   vault: crystalIcon,
   cash: () => itemIcon('nug'),
   pick: () => itemIcon('rock'),
