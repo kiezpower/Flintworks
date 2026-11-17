@@ -24,6 +24,7 @@ Dieselben sechs Kreaturen in drei Posen; `groessentest.png` zeigt sie in Spielgr
 | `A-zusatz-gegenstaende.png` | 21 Gegenstände, Truhe (zu/offen), großes Versteck | `src/assets/items/atlas.png` |
 | `A-zusatz-icons.png` | 30 Knopf-, Werkzeug- und Fahrzeug-Icons | `src/assets/items/ui.png` |
 | `A-zusatz-laufzyklen.png` | Laufzyklen (4 Phasen) von Monster, Fledermaus, Spinne, Schleim, Golem, Fluffel | `src/assets/creatures/cycles.png` |
+| `A-zusatz-katapult.png` | Katapult: Rahmen und Wurfarm getrennt | `src/assets/items/catapult.png` |
 | `A-zusatz-requisiten.png` | Händler (3 Posen), Grabstein, Schrein, Mast, Gondel, Bohrwagen | `src/assets/items/props.png` |
 
 Alle Bögen wurden mit einem Bildgenerator aus Textbeschreibungen erzeugt (gleiche
@@ -34,13 +35,12 @@ Stilbeschreibung wie A, flacher dunkelgrauer Hintergrund, festes Raster) und mit
 
 Kreaturen und Bosse, Gegenstände, Truhen und Verstecke, Icons in HUD, Menüs und auf den
 Knöpfen, Gebäude-Icons, Floß, Reitfluffel, Luftschiff, Grubenbahn, Lore, Bohrwagen, Seilbahn,
-Händler, Schreine, Grabsteine, Fackeln, das Logo, Boss-Leiste, Schilder, Namensschilder,
+Katapult mit drehendem Wurfarm, Zielscheibe, Händler, Schreine, Grabsteine, Fackeln, das Logo, Boss-Leiste, Schilder, Namensschilder,
 Schadenszahlen, Crew-Gesichter und Tagesuhr im HUD, die Landschaftsbilder der Levelkarten und
 die Kapitel-Karte und der Sprengplatz. Wasser, Lava, Säure und Öl werden im Geländepainter (`terrainart.js`) mit weichen Lichtflecken und Oberflächenband gemalt; der Pixelpuffer lässt sie dann aus. Das Gelände kachelt ohne Spiegelmuster (`umgesetzt.png`, `umgesetzt-wurm.png`).
 
 ## Noch nicht gemalt
 
-- Katapult (der Arm zielt) und Zielscheibe: glatte Vektorzeichnung.
 - Vorschaubilder der Level und Karten (`public/previews`): Übersichtskarten, an Prüfsummen gebunden.
 - Minimap. Lichtpfützen, Explosionen, Funken und Regen sind weich.
 - Kanten von Gelände und Höhlen folgen weiter den Simulationszellen.

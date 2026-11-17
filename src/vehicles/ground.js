@@ -1,5 +1,6 @@
 // Ground and water vehicles: drill wagon, raft, catapult and the riding fluffel.
-import { drawPainted } from '../itemart.js';
+import { drawPainted, paintedItem } from '../itemart.js';
+import { drawPaintedCatapult } from '../catapultart.js';
 import { drawCreature } from '../creatureart.js';
 import { digCell, spawnFromDig } from '../digger.js';
 import { moveBody, spawnItem, unstuck } from '../entities.js';
@@ -367,6 +368,7 @@ function drawCatapult(ctx, v, x, y) {
   else if (cd > 14) th = aim;
   else th = aim + (rest - aim) * (1 - cd / 14);
   if (v.icon) th = 2.2;
+  if (!v.icon && drawPaintedCatapult(ctx, v, x, y, th)) return;
   ctx.save();
   ctx.lineCap = 'round';
   const line = (x0, y0, x1, y1, w, col) => {
@@ -484,6 +486,23 @@ defineVehicle('target', {
   draw(ctx, v, x, y) {
     const cx = x + v.w / 2,
       cy = y + 5;
+    // painted (itemart.js): the bullseye stays where the rings are scored (combat.js); the legs
+    // end at the ground
+    const pic = !v.icon && paintedItem('ui:target');
+    if (pic) {
+      const k = 12.2 / 66, // the board's rim is 66 stored pixels across, the scored rim 12.2 cells
+        ox = cx - 33 * k,
+        oy = cy - 35 * k;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x - 4, y - 4, v.w + 8, v.h + 4.3);
+      ctx.clip();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(pic, ox, oy, pic.width * k, pic.height * k);
+      ctx.restore();
+      return;
+    }
     ctx.save();
     ctx.lineCap = 'round';
     const leg = (x0, y0, x1, y1) => {
