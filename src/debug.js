@@ -26,6 +26,8 @@ import * as events from './events.js';
 import * as effects from './effects.js';
 import * as combat from './combat.js';
 import * as room from './net/room.js';
+import { startMessage } from './net/session.js';
+import { P } from './profile.js';
 import * as modes from './modes.js';
 import * as versus from './versus.js';
 import * as bots from './bots.js';
@@ -51,6 +53,8 @@ window.__ww = {
   climb,
   context,
   room,
+  startMessage,
+  P,
   bots,
   modes,
   versus,

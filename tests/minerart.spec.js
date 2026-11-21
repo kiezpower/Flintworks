@@ -10,7 +10,7 @@ async function lobby(page, artReady = true) {
   });
   await page.goto('/');
   await page.waitForFunction(() => window.__ww);
-  expect(await page.evaluate(async () => (await import('/src/minerart.js')).minerArtReady)).toBe(artReady);
+  expect(await page.evaluate(async () => (await import('/src/minerart.js')).preloadMinerArt())).toBe(artReady);
 }
 
 test('all 144 atlas cells render, move distinctly and stay on their foot baseline', async ({ page }) => {

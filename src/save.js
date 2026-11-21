@@ -46,11 +46,13 @@ import {
 // ---- Save / load (per browser) ----
 const SAVEKEY = 'wuehlwelt-save-v1';
 function b64(u8) {
+  if (typeof u8.toBase64 === 'function') return u8.toBase64();
   let s = '';
   for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
   return btoa(s);
 }
 function unb64(str) {
+  if (typeof Uint8Array.fromBase64 === 'function') return Uint8Array.fromBase64(str);
   const s = atob(str),
     u = new Uint8Array(s.length);
   for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
@@ -76,6 +78,7 @@ function serialize() {
     }
     runs.push(prev, run);
     const u16 = new Uint16Array(runs);
+    const fog = fogPack();
     const strip = o => {
       const r = {};
       for (const k in o) {
@@ -127,7 +130,7 @@ function serialize() {
       picked: G.picked || [],
       torches: G.torches || [],
       zones: G.zones || [],
-      fog: fogPack() && b64(fogPack()), // (what the map knows, fog.js)
+      fog: fog && b64(fog), // (what the map knows, fog.js)
       beams: G.beams || [],
       mis: G.mis || null,
       goldSold: G.goldSold || 0,

@@ -6,7 +6,7 @@ import { VARIANTS } from './herovariants.js';
 import { insightsPanel } from './heroinsights.js';
 import { ROLES, CHAPTERS, chapterCount, progressOf } from './heroskills.js';
 import { ev } from './analytics.js';
-import { minerArtReady } from './minerart.js';
+import { preloadMinerArt } from './minerart.js';
 import { HEROES, heroAvailable, heroOf, selectHero } from './heroes.js';
 import { tr } from './i18n.js';
 import { P, dayNumber, saveProfile } from './profile.js';
@@ -176,7 +176,7 @@ function openHeroAlbum({ onAppearance, onOutfits, onAchievements, onSelected } =
     document.getElementById('lbWho')?.focus({ preventScroll: true });
   });
   update();
-  minerArtReady.then(ready => {
+  preloadMinerArt({ actions: false }).then(() => {
     if (!album.isConnected) return;
     for (const hero of HEROES) cards.get(hero.id).querySelector('canvas').replaceWith(portrait(hero, P.hero === hero.id));
     update();

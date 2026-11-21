@@ -163,8 +163,8 @@ test('reduced motion keeps the lobby scene still', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await lobby(page);
   await page.evaluate(async () => Promise.all([
-    (await import('/src/minerart.js')).minerArtReady,
-    (await import('/src/sceneart.js')).sceneArtReady,
+    (await import('/src/minerart.js')).preloadMinerArt(),
+    (await import('/src/sceneart.js')).preloadSceneArt(),
     (await import('/src/objectart.js')).objectArtReady,
     (await import('/src/terrainart.js')).terrainArtReady,
   ]));
