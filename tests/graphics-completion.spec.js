@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 async function ready(page) {
+  await page.addInitScript(() => { localStorage.setItem('flintworks-lang','de'); localStorage.setItem('flintworks-profile',JSON.stringify({tutorialDone:true,installAsked:'done'})); });
   await page.goto('/'); await page.waitForFunction(() => window.__ww);
 }
 
@@ -93,6 +94,7 @@ test('unavailable mobility and unique creature sheets preserve painted fallbacks
 test('castle shop shows painted helper and cart icons at native resolution',async({page})=>{
   await ready(page);
   await page.evaluate(async()=>{await (await import('/src/minerart.js')).minerArtReady;window.__ww.openBase();});
+  await page.getByRole('tab',{name:'Kaufen',exact:true}).click();
   for(const label of ['Wühler','Lore']) {
     const row=page.locator('.opt').filter({has:page.locator('b',{hasText:label})}).first();
     await expect(row).toBeVisible();await expect(row.locator('canvas')).toHaveClass(/painted/);
