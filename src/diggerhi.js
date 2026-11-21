@@ -1,7 +1,7 @@
-import { minerAction, minerIdentity } from './mineractions.js';
+import { minerAction, mobilityAction, minerIdentity } from './mineractions.js';
 // In-game Wühler at double resolution: the lobby portrait art (16×20 texels = 8×10 landscape
 // pixels) with animated legs, arms for climbing and hanging, tools and the held item.
-import { drawMinerFrame } from './minerart.js';
+import { drawMinerFrame, minerCap } from './minerart.js';
 import { digTool } from './digtool.js';
 import { heroPal } from './heroes.js';
 import { outfitPal, parseSkin } from './skins.js';
@@ -171,7 +171,7 @@ function drawDiggerHi(c, ox, oy, f, g, frame = G.frame) {
   // a pick raised over the shoulder is behind the head
   const tool = digTool(c.digM);
   const selected = c.pid != null && c.pid === G.myId;
-  const special = minerAction(c, frame, selected ? G.aimKind : null, selected ? G.aimDrag : null, G.reduceMotion);
+  const special = minerAction(c, frame, selected ? G.aimKind : null, selected ? G.aimDrag : null, G.reduceMotion) || mobilityAction(c, frame, G.reduceMotion);
   const action = special?.action || (dph >= 0 ? tool : walking || c.climb || c.hangle || c.airT > 3 ? 'walk' : 'idle');
   const spriteFrame = special?.frame ?? (dph >= 0 ? Math.floor(dph * 6) : action === 'walk' ? Math.floor((c.anim || 0) * 6 / (Math.PI * 2)) : Math.floor(frame / 20));
   const artHero = minerIdentity(c, appearance.hero);
@@ -179,7 +179,7 @@ function drawDiggerHi(c, ox, oy, f, g, frame = G.frame) {
   const pickBehind = !sheet && tool === 'pick' && dph >= 0 && pickAngle(c, dph) < -0.7;
   if (pickBehind) drawPick(c, ox, oy, f, g, dph, lean, null);
   // a full pack: a sack on the back, behind the body
-  if (c.inv && c.inv.length >= 3 && !c.dead && !c.climb && !c.hangle && !facing) {
+  if (!sheet && c.inv && c.inv.length >= 3 && !c.dead && !c.climb && !c.hangle && !facing) {
     px(0, 8, 5, 7, FIXED.o);
     px(1, 9, 3, 5, '#a07a48');
     px(1, 9, 3, 1, '#c09a62');
@@ -188,6 +188,12 @@ function drawDiggerHi(c, ox, oy, f, g, frame = G.frame) {
   const hat = () => {
     if (!c.hat || c.hat === 'none') return;
     const rs = hatRects(c.hat);
+    if (sheet) {
+      const head = minerCap(artHero, action, spriteFrame, f);
+      g.save(); g.translate(ox + head.x, oy + head.y); g.scale(f, 1);
+      for (const [x, y, w, h, color] of rs) { g.fillStyle = color; g.beginPath(); g.roundRect(x / 2 - 4, y / 2 - .5, w / 2, h / 2, .15); g.fill(); }
+      g.restore(); return;
+    }
     for (const [x, y, w, h] of rs) px(x - 1, y - 1, w + 2, h + 2, FIXED.o);
     for (const [x, y, w, h, col] of rs) px(x, y, w, h, col);
   };
@@ -209,12 +215,13 @@ function drawDiggerHi(c, ox, oy, f, g, frame = G.frame) {
   hat();
   const skin = pal.s,
     sleeve = pal.t;
-  if (special && sheet) {
+  if (sheet) {
     // Only the held wind-up item is overlaid; the released projectile is its own entity.
-    const held = special.action === 'throw' && special.frame === 1 && c.inv[c.isel];
+    const windup = special?.action === 'throw' && special.frame === 1;
+    const held = (windup || !special && dph < 0 && !c.hammer && !c.chop && !c.bridge) && c.inv[c.isel];
     if (held) {
       g.save(); g.imageSmoothingEnabled = true;
-      g.drawImage(itemIcon(held), ox + 3 - f * 2 - 1, oy + 0.5, 2, 2); g.restore();
+      g.drawImage(itemIcon(held), ox + 3 + (windup ? -f * 2 : f * 2) - 1, oy + (windup ? 0.5 : 6), 2, 2); g.restore();
     }
   } else if (c.hangle) {
     // both arms up to the ceiling

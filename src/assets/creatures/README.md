@@ -15,7 +15,9 @@ Generated for Flintworks in the approved storybook direction (variant A of
 
 `creatureart.js` draws a frame over the unchanged hitbox: standing creatures on
 their feet, flyers, fish and the worm centred. The crystal beetle, spore
-toadstool and shrine guardian recolour the spider, slime and golem. A hurt
+toadstool and shrine guardian use unique silhouettes from `unique.png` / `unique.json`
+(1774×887): idle, four walking phases and attack for each species. Their old
+spider/slime/golem palette variants remain available if this optional atlas fails. A hurt
 flash and the companion's red collar are cached frame variants. If the atlas is
 missing, the earlier pixel sprites are drawn. This is a rendering layer: sizes,
 hit points, behaviour, saves and networking are unchanged.

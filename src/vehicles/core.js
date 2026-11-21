@@ -6,7 +6,7 @@
 //   draw(ctx, v, x, y) paint it at screen position x, y
 // A rider sits in the vehicle (c.ride = vehicle id); the "Aussteigen" action gets out again.
 import { paintedIcon } from '../itemart.js';
-import { creatureIcon } from '../creatureart.js';
+import { creatureIcon, creatureArtReady } from '../creatureart.js';
 import { newId } from '../entities.js';
 import { inputOf } from '../players.js';
 import { G, crew, vehicles } from '../state.js';
@@ -119,11 +119,11 @@ function drawVehicles(ctx, cx, cy) {
 const iconCache = {};
 const PAINTED = { mast: 'prop:mast', drill: 'drill', train: 'train', raft: 'raft', catapult: 'catapult', target: 'target', airship: 'balloon' };
 function vehicleIcon(kind) {
-  if (iconCache[kind]) return iconCache[kind];
   const art = PAINTED[kind] && paintedIcon(PAINTED[kind].includes(':') ? PAINTED[kind] : 'ui:' + PAINTED[kind]);
   if (art) return (iconCache[kind] = art);
   const beast = kind === 'mount' && creatureIcon('fluffel');
   if (beast) return (iconCache[kind] = beast);
+  if (iconCache[kind]) return iconCache[kind];
   const K = VK[kind],
     cv = document.createElement('canvas');
   // drawn straight at double resolution (the drawings use half pixels)
@@ -133,6 +133,14 @@ function vehicleIcon(kind) {
   g.scale(2, 2);
   K.draw(g, { kind, w: K.w, h: K.h, face: 1, t: 0, ang: 0.8, vx: 0, fuel: 100, icon: true }, 2, 4);
   cv.hi = true;
+  if (kind === 'mount') {
+    cv.iconReady = creatureArtReady; cv.redrawIcon = target => {
+      const art = creatureIcon('fluffel'); if (!art) return;
+      target.width = target.height = 48; target.classList.add('painted'); target.style.width = target.style.height = '40px';
+      target.getContext('2d').drawImage(art, 0, 0);
+    };
+  }
+  if (PAINTED[kind]) cv.artIconKey = PAINTED[kind].includes(':') ? PAINTED[kind] : 'ui:' + PAINTED[kind];
   return (iconCache[kind] = cv);
 }
 // outlined box helper for the drawings, lit from above: a bright line along the top, a darker

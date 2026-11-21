@@ -335,8 +335,9 @@ test('the tasks stay in view: a tracker under the money, the board in the menu a
   });
   // lobby: one note per quest, the finished one can be claimed
   await page.click('#lbLvlBtn');
-  await expect(page.locator('#pBody .qnote:not(.qrole, .qproject)')).toHaveCount(3);
-  await expect(page.locator('#pBody .qrole')).toBeVisible();
+  // Classic quest cards have pins; the separate role challenge is also a qnote.
+  await expect(page.locator('#pBody .qnote:has(.pin)')).toHaveCount(3);
+  await expect(page.locator('#pBody .qnote').filter({ hasText: 'Rollenherausforderung:' })).toBeVisible();
   await expect(page.locator('#pBody .qnote.ready button')).toHaveText('Abholen +60 XP');
   await page.click('#pClose');
   await play(page);
