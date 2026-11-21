@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 async function ready(page) {
   await page.goto('/'); await page.waitForFunction(() => window.__ww);
-  await page.evaluate(async () => (await import('/src/minerart.js')).minerArtReady);
+  await page.evaluate(async () => (await import('/src/minerart.js')).preloadMinerArt());
 }
 
 test('all six heroes have distinct throw and grapple frames on a stable foot baseline', async ({ page }) => {

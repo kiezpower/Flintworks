@@ -70,7 +70,7 @@ TAGESSCHACHT
 Jeden Tag eine neue Welt, für alle gleich: acht Minuten, so viele Taler wie möglich. Sammle Medaillen, halte deine Serie und vergleiche dich mit deinen Freunden.
 
 ZUSAMMEN SPIELEN
-Bis zu vier Spieler im Koop, im Versus (zwei Teams) oder Jeder gegen jeden. „Schnell spielen“ bringt dich ohne Code mit anderen zusammen, jede Stunde mit einem anderen Modus. Bist du allein, spielen Bots gegen dich. Freunde lädst du per Link, Code oder QR-Code ein – ganz ohne Konto.
+Bis zu acht Spieler im Koop, im Versus (zwei Teams) oder Jeder gegen jeden. „Schnell spielen“ bringt dich ohne Code mit anderen zusammen, jede Stunde mit einem anderen Modus. Bist du allein, spielen Bots gegen dich. Freunde lädst du per Link, Code oder QR-Code ein – ganz ohne Konto.
 
 KAMPAGNE UND FREIES SPIEL
 Zwei Kapitel mit handgebauten Leveln (rette die Fluffel aus ihren Höhlen, erkunde eine alte Mine, erklimm den Gipfel), dazu Goldrausch, Siedler und Schatzsucher in Wiese, Wüste und Winter.
@@ -88,7 +88,7 @@ DAILY SHAFT
 A new world every day, the same for everybody: eight minutes to earn as many coins as you can. Collect medals, keep your streak and compare with your friends.
 
 PLAY TOGETHER
-Up to four players in co-op, versus (two teams) or free-for-all. Quick play matches you with others without a code, with a different mode every hour. Alone? Bots play against you. Invite friends by link, code or QR code – no account needed.
+Up to eight players in co-op, versus (two teams) or free-for-all. Quick play matches you with others without a code, with a different mode every hour. Alone? Bots play against you. Invite friends by link, code or QR code – no account needed.
 
 CAMPAIGN AND FREE PLAY
 Two chapters of hand-built levels (rescue the fluffels from their caves, explore an old mine, climb the summit), plus Gold Rush, Settlers and Treasure Hunt in meadow, desert and winter.
@@ -100,8 +100,7 @@ No ads, no purchases, no account. In English and German.
 
 ## Fragebögen in der Play Console
 
-Stand v1.69.0. Wenn sich etwas ändert (Käufe, Werbung, Analyse-Dienst mit Versand, Chat), die
-Antworten hier und in der Play Console anpassen.
+Die Antworten vor jeder Einreichung mit dem aktuellen Build und der produktiven Server-Konfiguration abgleichen.
 
 **App-Inhalte (Richtlinie → App-Inhalte):**
 
@@ -120,13 +119,13 @@ Antworten hier und in der Play Console anpassen.
 |---|---|
 | Werden Nutzerdaten erhoben oder geteilt? | Ja (nur Mehrspieler und Freunde) |
 | Verschlüsselt übertragen? | Ja (wss / https) |
-| Können Nutzer das Löschen anfordern? | Es gibt kein Konto. Angeben: Daten liegen auf dem Gerät und verschwinden mit „App-Daten löschen“; der Server hält nur Arbeitsspeicher (Räume höchstens 10 Min., Freunde höchstens 30 Tage nach der letzten Verbindung) |
+| Können Nutzer das Löschen anfordern? | Es gibt kein Konto. „App-Daten löschen“ entfernt den lokalen Stand. Räume und Freundesdaten stehen vorübergehend im Arbeitsspeicher. Geteilte Welten und die zugehörigen Namen und Freundescodes werden auf dem Server gespeichert. Der Eigentümer kann die Serverkopie über „Nicht mehr teilen“ löschen. Unveränderte Kopien verfallen nach 180 Tagen. Weitere Löschanfragen laufen über den Kontakt in der Datenschutzerklärung. |
 
 | Datentyp | Erhoben | Geteilt | Kurzlebig verarbeitet? | Pflicht? | Zweck |
 |---|---|---|---|---|---|
 | Persönliche Angaben → **Name** (frei gewählter Name des Wühlers) | Ja | Nein (die Weitergabe an Mitspieler und Freunde geschieht auf Wunsch des Nutzers) | Nein | Optional (nur Mehrspieler/Freunde) | App-Funktionen |
 | Geräte- oder andere IDs (zufällige Geräte-Kennung, Freundescode) | Ja | Nein | Nein | Optional | App-Funktionen |
-| App-Aktivität → Interaktionen in der App (Spielzüge, Tagesschicht-Ergebnis) | Ja | Nein | Nein | Optional | App-Funktionen |
+| App-Aktivität → Interaktionen in der App (Spielzüge, Tagesschicht-Ergebnis und geteilte Spielstände) | Ja | Nein | Nein | Optional | App-Funktionen |
 
 Nicht erhoben: Standort, Kontakte, Fotos, Dateien, Finanzdaten, Gesundheit, Nachrichten, Absturzberichte, Analysedaten (die Tutorial-Ereignisse aus `src/analytics.js` bleiben auf dem Gerät).
 

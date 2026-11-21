@@ -333,7 +333,8 @@ test('the tasks stay in view: a tracker under the money, the board in the menu a
   });
   // lobby: one note per quest, the finished one can be claimed
   await page.click('#lbLvlBtn');
-  await expect(page.locator('#pBody .qnote')).toHaveCount(3);
+  await expect(page.locator('#pBody .qnote:not(.qrole, .qproject)')).toHaveCount(3);
+  await expect(page.locator('#pBody .qrole')).toBeVisible();
   await expect(page.locator('#pBody .qnote.ready button')).toHaveText('Abholen +60 XP');
   await page.click('#pClose');
   await play(page);

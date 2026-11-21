@@ -21,27 +21,29 @@ const atlases = { ...metadata, ...Object.fromEntries(Object.entries(actionMetada
 const ROW = { idle: 0, walk: 1, shovel: 2, pick: 3 };
 const sources = new Map(), variants = new Map();
 let minerArtLoaded = 0; // generation counter also invalidates partially loaded lobby portraits
-const loads = Object.entries(urls).map(([hero, url]) => new Promise(resolve => {
-  const image = new Image();
-  image.onload = () => {
-    const meta = atlases[hero];
-    if (image.naturalWidth !== meta.width || image.naturalHeight !== meta.height) return resolve(false);
-    const canvas = document.createElement('canvas');
-    canvas.width = meta.width; canvas.height = meta.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(image, 0, 0);
-    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    // Discard translucent background residue, retaining the illustrated edge coverage.
-    for (let i = 3; i < pixels.data.length; i += 4) if (pixels.data[i] < 128) pixels.data[i] = 0;
-    ctx.putImageData(pixels, 0, 0);
-    sources.set(hero, canvas); minerArtLoaded++;
-    image.onload = image.onerror = null; image.src = '';
-    resolve(true);
-  };
-  image.onerror = () => resolve(false); // per-hero fallback; other sheets still work
-  image.src = url;
-}));
-const minerArtReady = Promise.all(loads).then(results => results.every(Boolean));
+const loads = new Map();
+function loadAtlas(hero) {
+  if (!Object.hasOwn(urls, hero)) return Promise.resolve(false);
+  if (!loads.has(hero)) {
+    loads.set(hero, new Promise(resolve => {
+      const image = new Image();
+      image.onload = () => {
+        const meta = atlases[hero];
+        if (image.naturalWidth !== meta.width || image.naturalHeight !== meta.height) return resolve(false);
+        sources.set(hero, image);
+        minerArtLoaded++;
+        resolve(true);
+      };
+      image.onerror = () => resolve(false);
+      image.src = urls[hero];
+    }));
+  }
+  return loads.get(hero);
+}
+async function preloadMinerArt({ actions = true } = {}) {
+  const keys = Object.keys(urls).filter(hero => actions || !hero.endsWith(':actions'));
+  return (await Promise.all(keys.map(loadAtlas))).every(Boolean);
+}
 const rgb = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
 function variant(hero, row, col, cap, outfit, mode) {
   const key = `${hero}|${row}|${col}|${cap}|${outfit}|${mode}`;
@@ -56,7 +58,11 @@ function variant(hero, row, col, cap, outfit, mode) {
   const capRgb = rgb(cap), shirt = outfitPal(outfit).T;
   const shirtRgb = shirt && rgb(shirt);
   for (let i = 0; i < data.length; i += 4) {
-    if (!data[i + 3]) continue;
+    // Discard background residue only in the frame being drawn.
+    if (data[i + 3] < 128) {
+      data[i + 3] = 0;
+      continue;
+    }
     const r = data[i], g = data[i + 1], b = data[i + 2], y = Math.floor(i / 4 / w);
     let target, light;
     if (r > 65 && g < r * .46 && b < r * .4 && y < h * .5) { target = capRgb; light = r / 190; }
@@ -78,9 +84,15 @@ function variant(hero, row, col, cap, outfit, mode) {
 // character. Native source pixels survive larger canvas transforms and DPRs.
 function drawMinerFrame(g, x, y, f, action, frame, cap, outfit, scale = .25, mode = '', hero = 'bruno') {
   const special = action === 'throw' || action === 'hook';
-  if (special && !sources.has(hero + ':actions')) return drawMinerFrame(g, x, y, f, 'idle', frame, cap, outfit, scale, mode, hero);
+  if (special && !sources.has(hero + ':actions')) {
+    loadAtlas(hero + ':actions');
+    return drawMinerFrame(g, x, y, f, 'idle', frame, cap, outfit, scale, mode, hero);
+  }
   if (special) hero += ':actions';
-  if (!sources.has(hero)) return false;
+  if (!sources.has(hero)) {
+    loadAtlas(hero);
+    return false;
+  }
   const row = special ? (action === 'hook' ? 1 : 0) : ROW[action] ?? 0, col = ((Math.floor(frame) % 6) + 6) % 6;
   const meta = atlases[hero], [px, py] = meta.pivots[row][col];
   g.save();
@@ -99,4 +111,4 @@ function minerHand(c, frame, reducedMotion = false) {
   const [px, py] = meta.pivots[1][col], [hx, hy] = meta.hands[col], k = meta.unitScale * .25;
   return { x: 3 + (hx - px) * k * c.face, y: 10 + (hy - py) * k };
 }
-export { drawMinerFrame, minerHand, minerArtReady, minerArtLoaded };
+export { drawMinerFrame, minerHand, preloadMinerArt, minerArtLoaded };

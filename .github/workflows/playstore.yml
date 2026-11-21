@@ -1,29 +1,46 @@
-# Signiertes App-Bundle (AAB) für den Google Play Store. Läuft bei einem Tag "v*" oder von Hand.
+# Pull Requests prüfen den Release-Build. Tags und manuelle Läufe erzeugen ein signiertes Play-Bundle.
 # Braucht die Secrets ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS,
 # ANDROID_KEY_PASSWORD (Upload-Schlüssel, siehe docs/PLAYSTORE.md).
 name: Play-Store-Bundle bauen
 
 on:
+  pull_request:
+    paths:
+      - 'android/**'
+      - 'src/**'
+      - 'public/**'
+      - 'package*.json'
+      - 'capacitor.config.json'
+      - 'vite.config.js'
+      - '*.html'
+      - '.github/workflows/playstore.yml'
   push:
     tags: ['v*']
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   aab:
+    timeout-minutes: 25
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Schlüssel vorhanden?
+      - name: Signierdaten prüfen
+        if: github.event_name != 'pull_request'
         env:
-          KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          if [ -z "$KS" ]; then
-            echo "::error::Secret ANDROID_KEYSTORE_BASE64 fehlt – siehe docs/PLAYSTORE.md"
-            exit 1
-          fi
+          for field in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "${!field}" ]; then
+              echo "::error::Signierparameter $field fehlt. Siehe docs/PLAYSTORE.md."
+              exit 1
+            fi
+          done
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -35,11 +52,19 @@ jobs:
       - name: Android SDK vorbereiten
         run: |
           SDKM=$(ls -d "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager | sort -V | tail -1)
+          # sdkmanager closes stdin after accepting the last license.
+          set +o pipefail
           yes | "$SDKM" --licenses > /dev/null
+          set -o pipefail
           "$SDKM" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
       - run: npm ci
       - run: npm run android
+      - name: Unsignierten Release-Build prüfen
+        if: github.event_name == 'pull_request'
+        working-directory: android
+        run: bash ./gradlew bundleRelease --no-daemon
       - name: Bundle bauen und signieren
+        if: github.event_name != 'pull_request'
         working-directory: android
         env:
           KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -47,14 +72,19 @@ jobs:
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          echo "$KS" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          umask 077
+          trap 'rm -f "$RUNNER_TEMP/upload.jks"' EXIT
+          printf '%s' "$KS" | base64 -d > "$RUNNER_TEMP/upload.jks"
           export KEYSTORE_FILE="$RUNNER_TEMP/upload.jks"
           export VERSION_CODE=$(( 100 + ${{ github.run_number }} ))
           export VERSION_NAME=$(node -p "require('../package.json').version")
-          chmod +x gradlew
-          ./gradlew bundleRelease --no-daemon
+          bash ./gradlew bundleRelease --no-daemon
+          jarsigner -verify app/build/outputs/bundle/release/app-release.aab
+          keytool -printcert -jarfile app/build/outputs/bundle/release/app-release.aab > /dev/null
           cp app/build/outputs/bundle/release/app-release.aab ../flintworks.aab
       - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
         with:
           name: flintworks-aab
           path: flintworks.aab
+          if-no-files-found: error
