@@ -133,7 +133,7 @@ async function detail(id) {
     await preserve();
     // Read again after preserving: the open world may have received a newer autosave.
     const current = await readWorld(id);
-    if (await G.loadWorld(current)) closePanel();
+    await G.loadWorld(current);
   }) });
   opt(actions, { title: tr('Umbenennen'), short: true, onClick: guard(async () => {
     await preserve();
