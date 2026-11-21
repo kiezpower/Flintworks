@@ -83,7 +83,7 @@ import { ICOL, SPR, drawHi, drawItemBig } from './sprites.js';
 import { drawCrafted } from './bldart.js';
 import { G, animals, birds, builds, clouds, crew, flashes, items, lorries, meteors, parts, trees, vparts } from './state.js';
 import { darkness, skyCols, sunAlt } from './weather.js';
-import { H, W, clamp, drawWorld, flush, onResize, rnd } from './world.js';
+import { H, W, clamp, drawWorld, onResize, rnd } from './world.js';
 
 // ---- Rendering ----
 const cv = document.getElementById('cv'),
@@ -549,7 +549,6 @@ const glows = [],
   lanterns = [],
   fires = [];
 function render() {
-  flush();
   ctx.setTransform(cv.width / G.VW, 0, 0, cv.height / G.VH, 0, 0);
   ctx.imageSmoothingEnabled = false;
   // (watching a shared round: the player the camera follows, net/watch.js; two at one screen: the

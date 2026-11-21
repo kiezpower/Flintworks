@@ -156,7 +156,7 @@ function underTexel(c, m, i, x, y, sx, sy, d, mat, SOLID, top) {
   if (top) return depthGrade(c, d);
   if (!PATCH) makePatches();
   // soil patch, vein stain and depth colour make one factor per cell; the find is per cell too
-  // (computed on the cell's first texel, which paintCell always asks for first)
+  // (computed on the cell's first texel, which the terrain renderer asks for first)
   if (i !== ci || (!sx && !sy)) cellLook(i, x >> 1, y >> 1, m, d, mat);
   c = ch3(c, cr, cg, cb);
   return cf ? blend(c, cf) : c;

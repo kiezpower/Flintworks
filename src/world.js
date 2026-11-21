@@ -128,7 +128,6 @@ function setGroundTop(cols) {
 // The world image has double resolution: every landscape cell is painted as 2×2 texels taken
 // from the material texture, with a one-texel rim light on top edges and shade under ceilings.
 const RES = 2;
-let PW = W * RES;
 let WSH = worldShade(W, H);
 const solidAt = j => j >= 0 && j < W * H && SOLID[mat[j]] === 1;
 // Patterns on the finds (settings.js „Fundmuster“, for colour blindness): gold, ore, coal and gems
@@ -201,44 +200,6 @@ function texel(i, sx, sy) {
   if (sx === 1 && i % W < W - 1 && mat[i + 1] === AIR) return tint(c, 0.82);
   return c;
 }
-// While the sand simulation runs (sim.js), cells are not painted at once but noted, and every
-// noted cell is painted once at the end of the step (endPaint): where much flows, a cell and its
-// neighbours were otherwise painted again for every swap next to them.
-let deferN = -1,
-  deferList = new Int32Array(1 << 15),
-  deferMark = new Uint8Array(W * H);
-function beginPaint() {
-  deferN = 0;
-}
-function endPaint() {
-  const n = deferN;
-  deferN = -1;
-  for (let k = 0; k < n; k++) {
-    const i = deferList[k];
-    deferMark[i] = 0;
-    paintNow(i);
-  }
-}
-function paintCell(i) {
-  if (deferN >= 0) {
-    if (deferMark[i]) return;
-    if (deferN < deferList.length) {
-      deferMark[i] = 1;
-      deferList[deferN++] = i;
-      return;
-    }
-  }
-  paintNow(i);
-}
-function paintNow(i) {
-  const x = (i % W) * 2,
-    y = ((i / W) | 0) * 2,
-    o = y * PW + x;
-  px[o] = texel(i, 0, 0);
-  px[o + 1] = texel(i, 1, 0);
-  px[o + PW] = texel(i, 0, 1);
-  px[o + PW + 1] = texel(i, 1, 1);
-}
 // the colour a cell shows on screen, as CSS (crumbs flying off take the colour of the earth)
 const cssOf = i => {
   const c = texel(i, i & 1, 0);
@@ -264,8 +225,6 @@ function dryFresh() {
     if (dryK >= freshN) dryK = 0;
     const i = freshList[dryK];
     fresh[i] = mat[i] === AIR && fresh[i] > 16 ? fresh[i] - 16 : 0;
-    // the earth around it dries along
-    for (const j of [i, i - 1, i + 1, i - W, i + W]) if (j >= 0 && j < W * H && (j === i || mat[j] !== AIR)) paintCell(j);
     markDirty(i % W, (i / W) | 0, 1);
     if (fresh[i]) dryK++;
     else freshList[dryK] = freshList[--freshN];
@@ -282,58 +241,67 @@ const colorOf = i => {
   return PAL[m][m === EARTH ? shade[i] : shade[i] & 3];
 };
 
-// The world image is painted into one big pixel buffer and shown from tiles of TILE × TILE
-// texels: many phone GPUs cannot hold a canvas wider than 4096, a 2800 cell world is 5600.
-// TILE is a multiple of a chunk (CS * RES), so every chunk lies in exactly one tile.
-const TILE = 1024;
-let img, px, tiles;
-function makeImage() {
-  resetTerrainArt();
-  const tw = W * RES,
-    th = H * RES;
-  img = new ImageData(tw, th);
-  px = new Uint32Array(img.data.buffer);
-  tiles = [];
-  for (let y = 0; y < th; y += TILE)
-    for (let x = 0; x < tw; x += TILE) {
-      const cv = document.createElement('canvas');
-      cv.width = Math.min(TILE, tw - x);
-      cv.height = Math.min(TILE, th - y);
-      tiles.push({ x, y, cv, ctx: cv.getContext('2d') });
-    }
-}
-makeImage();
-const tilesAcross = () => Math.ceil((W * RES) / TILE);
-// copies a texel rectangle of the pixel buffer into the tiles it touches
-function upload(x, y, w, h) {
-  for (const t of tiles) {
-    const x0 = Math.max(x, t.x),
-      y0 = Math.max(y, t.y),
-      x1 = Math.min(x + w, t.x + t.cv.width),
-      y1 = Math.min(y + h, t.y + t.cv.height);
-    if (x0 < x1 && y0 < y1) t.ctx.putImageData(img, -t.x, -t.y, x0, y0, x1 - x0, y1 - y0);
-  }
-}
+// Terrain pixels follow the camera. Keep a small LRU of canvases and reuse one
+// scratch buffer to rasterize dirty or newly visible chunks.
+const CS = 32;
+const rasterSize = CS * RES;
+const raster = new ImageData(rasterSize, rasterSize);
+const pixels = new Uint32Array(raster.data.buffer);
+const terrainChunks = new Map();
+const terrainLimit = 192;
 function paintAll() {
+  terrainChunks.clear();
   resetTerrainArt();
   prepareUnder(mat);
-  for (let i = 0; i < W * H; i++) paintCell(i);
-  upload(0, 0, W * RES, H * RES);
 }
-// draws the part of the world from landscape pixel (cx, cy), vw × vh big, at (0, 0)
+function terrainChunk(cx, cy) {
+  const key = cy * CWn + cx;
+  let chunk = terrainChunks.get(key);
+  if (chunk) terrainChunks.delete(key);
+  else {
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.min(CS, W - cx * CS) * RES;
+    canvas.height = Math.min(CS, H - cy * CS) * RES;
+    chunk = {
+      canvas,
+      ctx: canvas.getContext('2d'),
+      tones: new Uint32Array(CS * CS),
+      left: 0, top: 0, right: canvas.width, bottom: canvas.height,
+    };
+  }
+  if (chunk.left < chunk.right) {
+    const { canvas, ctx, left, top, right, bottom } = chunk;
+    for (let y = top; y < bottom; y += RES) {
+      for (let x = left; x < right; x += RES) {
+        const i = (cy * CS + y / RES) * W + cx * CS + x / RES;
+        const o = y * rasterSize + x;
+        const color = texel(i, 0, 0);
+        pixels[o] = color;
+        chunk.tones[(y / RES) * CS + x / RES] = color;
+        pixels[o + 1] = texel(i, 1, 0);
+        pixels[o + rasterSize] = texel(i, 0, 1);
+        pixels[o + rasterSize + 1] = texel(i, 1, 1);
+      }
+    }
+    ctx.putImageData(raster, 0, 0, left, top, right - left, bottom - top);
+    chunk.left = canvas.width;
+    chunk.top = canvas.height;
+    chunk.right = chunk.bottom = 0;
+  }
+  terrainChunks.set(key, chunk);
+  if (terrainChunks.size > terrainLimit) terrainChunks.delete(terrainChunks.keys().next().value);
+  return chunk.canvas;
+}
 function drawWorld(ctx, cx, cy, vw, vh) {
-  const sx0 = cx * RES,
-    sy0 = cy * RES,
-    sx1 = (cx + vw) * RES,
-    sy1 = (cy + vh) * RES;
-  for (const t of tiles) {
-    const x0 = Math.max(sx0, t.x),
-      y0 = Math.max(sy0, t.y),
-      x1 = Math.min(sx1, t.x + t.cv.width),
-      y1 = Math.min(sy1, t.y + t.cv.height);
-    if (x0 >= x1 || y0 >= y1) continue;
-    const [dx, dy, dw, dh] = [x0 - sx0, y0 - sy0, x1 - x0, y1 - y0].map(v => v / RES);
-    ctx.drawImage(t.cv, x0 - t.x, y0 - t.y, x1 - x0, y1 - y0, dx, dy, dw, dh);
+  for (let y = Math.max(0, Math.floor(cy / CS)); y * CS < Math.min(H, cy + vh); y++) {
+    for (let x = Math.max(0, Math.floor(cx / CS)); x * CS < Math.min(W, cx + vw); x++) {
+      const canvas = terrainChunk(x, y);
+      const left = Math.max(cx, x * CS), top = Math.max(cy, y * CS);
+      const width = Math.min(cx + vw, x * CS + canvas.width / RES) - left;
+      const height = Math.min(cy + vh, y * CS + canvas.height / RES) - top;
+      ctx.drawImage(canvas, (left - x * CS) * RES, (top - y * CS) * RES,
+        width * RES, height * RES, left - cx, top - cy, width, height);
+    }
   }
   drawTerrainArt(ctx, cx, cy, vw, vh, { W, H, mat, bg, shade, biome: G.biome, patterns, tone: paintedTone });
 }
@@ -347,12 +315,12 @@ function paintedTone(i) {
   }
   const tex = m === EARTH && (shade[i] & 4) ? topTex() : TEX[m];
   if (!tex) return 1;
-  const a = px[y * RES * PW + x * RES], b = tex[((y * 2) & (T - 1)) * T + ((x * 2) & (T - 1))];
+  const chunk = terrainChunks.get(Math.floor(y / CS) * CWn + Math.floor(x / CS));
+  const a = chunk?.tones[(y % CS) * CS + x % CS] ?? texel(i, 0, 0);
+  const b = tex[((y * 2) & (T - 1)) * T + ((x * 2) & (T - 1))];
   const lum = c => (c & 255) * 0.3 + ((c >>> 8) & 255) * 0.59 + ((c >>> 16) & 255) * 0.11;
   return Math.max(0.25, Math.min(1.7, lum(a) / Math.max(1, lum(b))));
 }
-// changed chunks of the world image, uploaded once per frame
-const CS = 32;
 let CWn = Math.ceil(W / CS),
   CHn = Math.ceil(H / CS);
 // chunks that changed and must be simulated next frame
@@ -377,11 +345,8 @@ function resetSim() {
 }
 const markActive = c => (actNext[c] = 1);
 let acidChunk = new Uint8Array(CWn * CHn);
-let dirty = new Uint8Array(CWn * CHn),
-  dirtyList = new Int32Array(CWn * CHn);
 // chunks changed since the host last sent them to the other players (multiplayer)
 let netDirty = new Uint8Array(CWn * CHn);
-let dirtyN = 0;
 function markDirty(x, y, r) {
   const cx0 = Math.max(0, (x - r) >> 5),
     cx1 = Math.min(CWn - 1, (x + r) >> 5),
@@ -392,9 +357,12 @@ function markDirty(x, y, r) {
       const c = cy * CWn + cx;
       invalidateTerrainArt(cx, cy);
       netDirty[c] = 1;
-      if (!dirty[c]) {
-        dirty[c] = 1;
-        dirtyList[dirtyN++] = c;
+      const chunk = terrainChunks.get(c);
+      if (chunk) {
+        chunk.left = Math.min(chunk.left, Math.max(0, x - r - cx * CS) * RES);
+        chunk.top = Math.min(chunk.top, Math.max(0, y - r - cy * CS) * RES);
+        chunk.right = Math.max(chunk.right, Math.min(chunk.canvas.width, (x + r + 1 - cx * CS) * RES));
+        chunk.bottom = Math.max(chunk.bottom, Math.min(chunk.canvas.height, (y + r + 1 - cy * CS) * RES));
       }
     }
 }
@@ -421,45 +389,14 @@ function activate(x, y) {
   }
 }
 function paint(i) {
-  // neighbours change their lighting too
-  const x = i % W,
-    y = (i / W) | 0;
-  paintCell(i);
-  if (y > 0) paintCell(i - W);
-  if (y > 1) paintCell(i - 2 * W);
-  if (y < H - 1) paintCell(i + W);
-  if (y < H - 2) paintCell(i + 2 * W);
-  if (x > 0) paintCell(i - 1);
-  if (x > 1) paintCell(i - 2);
-  if (x < W - 1) paintCell(i + 1);
-  if (x < W - 2) paintCell(i + 2);
+  const x = i % W, y = (i / W) | 0;
   markDirty(x, y, 2);
   activate(x, y);
 }
-// cheaper repaint when solidity did not change (liquid flowing through air): the tunnel
-// shading only depends on solid cells, so the direct neighbours are enough
 function paintNear(i) {
-  const x = i % W,
-    y = (i / W) | 0;
-  paintCell(i);
-  if (y > 0) paintCell(i - W);
-  if (y < H - 1) paintCell(i + W);
-  if (x > 0) paintCell(i - 1);
-  if (x < W - 1) paintCell(i + 1);
+  const x = i % W, y = (i / W) | 0;
   markDirty(x, y, 1);
   activate(x, y);
-}
-function flush() {
-  // upload only the 32×32 chunks that changed: scattered changes stay cheap
-  for (let k = 0; k < dirtyN; k++) {
-    const c = dirtyList[k];
-    dirty[c] = 0;
-    const x = (c % CWn) * CS * RES,
-      y = ((c / CWn) | 0) * CS * RES,
-      t = tiles[((y / TILE) | 0) * tilesAcross() + ((x / TILE) | 0)];
-    t.ctx.putImageData(img, -t.x, -t.y, x, y, CS * RES, CS * RES);
-  }
-  dirtyN = 0;
 }
 // Sizes a level may have; free play and random multiplayer worlds stay at 1400 × 400.
 const SIZE_MIN = [300, 150],
@@ -480,22 +417,17 @@ function resizeWorld(w = W0, h = H0) {
   stamp = new Uint32Array(W * H);
   fresh = new Uint8Array(W * H);
   freshN = dryK = 0;
-  deferMark = new Uint8Array(W * H);
-  deferN = -1;
   surf = new Int16Array(W);
   setGround(surf, W, H);
-  PW = W * RES;
   WSH = worldShade(W, H);
   CWn = Math.ceil(W / CS);
   CHn = Math.ceil(H / CS);
   act = new Uint8Array(CWn * CHn);
   actNext = new Uint8Array(CWn * CHn);
   acidChunk = new Uint8Array(CWn * CHn);
-  dirty = new Uint8Array(CWn * CHn);
-  dirtyList = new Int32Array(CWn * CHn);
   netDirty = new Uint8Array(CWn * CHn);
-  dirtyN = 0;
-  makeImage();
+  terrainChunks.clear();
+  resetTerrainArt();
   for (const fn of resizeHooks) fn(W, H);
   return true;
 }
@@ -584,8 +516,6 @@ export {
   setDeepGate,
   setPatterns,
   texel,
-  beginPaint,
-  endPaint,
   resetSim,
   W0,
   H0,
@@ -597,7 +527,6 @@ export {
   resizeWorld,
   paintNear,
   netDirty,
-  paintCell,
   RES,
   paintAll,
   GEM,
@@ -642,14 +571,11 @@ export {
   cssOf,
   dryFresh,
   markFresh,
-  flush,
   free,
   hex,
-  img,
   mat,
   matAt,
   paint,
-  px,
   rgba,
   ri,
   rnd,

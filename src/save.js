@@ -1,6 +1,6 @@
 import { fireCells, setFireCells, saveFire, restoreFire } from './fire.js';
 import { fogPack, fogUnpack } from './fog.js';
-import { archiveWorld } from './worldarchive.js';
+import { archiveWorld, resumeSlot } from './worldarchive.js';
 import { glowList, scatterDecor } from './decor.js';
 import { setBiome } from './biomes.js';
 import { arrows } from './buildings.js';
@@ -169,18 +169,34 @@ function serialize() {
     useTeam(cur);
   }
 }
+const soloSlot = resumeSlot(SAVEKEY, save => save && !save.start ? save.data : null);
+const initSavedWorld = () => soloSlot.init();
+let cancelAutosave = null;
+let lastSaveFrame = null;
+
+function saveLater(saveGameNow = saveGame) {
+  if (cancelAutosave) return;
+  const save = () => {
+    cancelAutosave = null;
+    saveGameNow();
+  };
+  if (typeof requestIdleCallback === 'function') {
+    const id = requestIdleCallback(save, { timeout: 250 });
+    cancelAutosave = () => cancelIdleCallback(id);
+  } else {
+    const id = setTimeout(save, 0);
+    cancelAutosave = () => clearTimeout(id);
+  }
+}
 function saveGame() {
-  if (G.state !== 'play' || G.net) return; // network rounds are not saved (yet)
-  // a level from a link or the editor is not kept: after a restart the game would not know it
-  if (G.mode === 'geteilt') return;
-  // a playback (replay.js) is no game of one's own
-  if (G.replaying) return;
-  // A finished tutorial must not be recreated by the pagehide autosave.
-  if (G.mode === 'tut' && !G.tut) return;
+  cancelAutosave?.();
+  cancelAutosave = null;
+  if (G.state !== 'play' || G.net || G.mode === 'geteilt' || G.replaying || (G.mode === 'tut' && !G.tut)) return;
   try {
     const data = serialize();
-    archiveWorld({ data, start: null, players: [] });
-    localStorage.setItem(SAVEKEY, JSON.stringify(data));
+    const archive = G.mode === 'settlement' || G.worldId ? archiveWorld({ data, start: null, players: [] }) : null;
+    soloSlot.write(data, archive);
+    lastSaveFrame = G.frame;
   } catch {}
 }
 function hasSave() {
@@ -190,27 +206,20 @@ function hasSave() {
     return false;
   }
 }
-// the saved game's tutorial state, if it is a tutorial (without loading the world)
 function savedTut() {
-  try {
-    return JSON.parse(localStorage.getItem(SAVEKEY) || 'null')?.tut || null;
-  } catch {
-    return null;
-  }
+  return soloSlot.read()?.tut || null;
 }
 function clearSave() {
-  try {
-    localStorage.removeItem(SAVEKEY);
-  } catch {}
+  lastSaveFrame = null;
+  cancelAutosave?.();
+  cancelAutosave = null;
+  soloSlot.clear();
+}
+function forgetSavedWorld(id) {
+  soloSlot.forget(id);
 }
 function loadGame() {
-  let d;
-  try {
-    d = JSON.parse(localStorage.getItem(SAVEKEY));
-  } catch {
-    return false;
-  }
-  return deserialize(d);
+  return deserialize(soloSlot.load());
 }
 function deserialize(d) {
   if (!d || d.v !== 1) return false;
@@ -344,9 +353,13 @@ function deserialize(d) {
     return false;
   }
 }
+function saveOnExit() {
+  // A navigation can fire both events without advancing the world.
+  if (lastSaveFrame !== G.frame) saveGame();
+}
 addEventListener('visibilitychange', () => {
-  if (document.hidden) saveGame();
+  if (document.hidden) saveOnExit();
 });
-addEventListener('pagehide', saveGame);
+addEventListener('pagehide', saveOnExit);
 
-export { SAVEKEY, b64, clearSave, deserialize, hasSave, loadGame, saveGame, savedTut, serialize, unb64 };
+export { SAVEKEY, b64, clearSave, deserialize, forgetSavedWorld, hasSave, initSavedWorld, loadGame, saveGame, saveLater, savedTut, serialize, unb64 };
