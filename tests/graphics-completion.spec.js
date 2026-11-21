@@ -93,7 +93,9 @@ test('unavailable mobility and unique creature sheets preserve painted fallbacks
 
 test('castle shop shows painted helper and cart icons at native resolution',async({page})=>{
   await ready(page);
-  await page.evaluate(async()=>{await (await import('/src/minerart.js')).preloadMinerArt();window.__ww.openBase();});
+  await page.click('#lbPlay');
+  await page.waitForFunction(() => window.__ww.G.state === 'play');
+  await page.evaluate(() => window.__ww.openBase());
   await page.getByRole('tab',{name:'Kaufen',exact:true}).click();
   for(const label of ['Wühler','Lore']) {
     const row=page.locator('.opt').filter({has:page.locator('b',{hasText:label})}).first();
