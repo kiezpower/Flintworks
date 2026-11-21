@@ -92,9 +92,12 @@ function disconnect(key = 'room') {
   clearTimeout(retryT);
   backoff = 500;
   clearInterval(pingT);
-  if (T.ws) T.ws.close();
+  const ws = T.ws;
+  const wasActive = T.status !== 'off';
   T.ws = null;
   T.status = 'off';
+  ws?.close();
+  if (wasActive) emit('status', T);
 }
 
 const wants = key => users.has(key);
