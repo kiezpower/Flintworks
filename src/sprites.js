@@ -432,6 +432,7 @@ function itemIcon(t) {
     const [w, h] = ITEM[t].s;
     drawItemPx(g, t, Math.floor((10 - w) / 2), Math.floor((10 - h) / 2), false);
   }
+  c.artIconKey = t;
   return (iconCache[t] = c);
 }
 function cactusSprite(stage) {
@@ -692,7 +693,7 @@ const toolIcon = kind => {
   const art = paintedIcon('ui:' + kind);
   if (art) return squareIcon(art, art.width);
   const c = bevel2x(sp(12, 12, PAD_ICONS[kind]));
-  c.hi = true;
+  c.hi = true; c.artIconKey = 'ui:' + kind;
   return c;
 };
 

@@ -11,6 +11,29 @@ import propsUrl from './assets/items/props.png';
 import propsMeta from './assets/items/props.json';
 
 const frames = {};
+const listeners = new Set();
+let itemArtRevision = 0;
+function refreshBoundIcon(node) {
+  const art = paintedIcon(node.dataset.artIcon);
+  if (!art) return;
+  if (node.tagName === 'CANVAS') {
+    node.width = node.height = art.width;
+    node.getContext('2d').drawImage(art, 0, 0);
+    if (node.parentElement?.classList.contains('opt')) { node.style.width = '40px'; node.style.height = '40px'; }
+  } else if (node.tagName === 'IMG') node.src = art.toDataURL();
+  else node.style.backgroundImage = `url("${art.toDataURL()}")`;
+  node.classList.add('painted');
+}
+function bindPaintedIcon(node, key) {
+  node.dataset.artIcon = key;
+  refreshBoundIcon(node);
+}
+function onItemArtReady(fn) { listeners.add(fn); return () => listeners.delete(fn); }
+function artArrived() {
+  itemArtRevision++;
+  for (const node of document.querySelectorAll('[data-art-icon]')) refreshBoundIcon(node);
+  for (const fn of listeners) fn();
+}
 const load = (url, meta, prefix) =>
   new Promise(resolve => {
     const image = new Image();
@@ -24,6 +47,7 @@ const load = (url, meta, prefix) =>
         frames[prefix + name] = c;
       }
       resolve(true);
+      queueMicrotask(artArrived);
     };
     image.onerror = () => resolve(false);
     image.src = url;
@@ -74,6 +98,9 @@ function squareIcon(source, size = 48) {
   return c;
 }
 const icons = {};
-const paintedIcon = (t, size = 48) => (frames[t] ? (icons[t + size] ||= squareIcon(frames[t], size)) : null);
+const paintedIcon = (t, size = 48) => {
+  if (!frames[t]) return null;
+  const icon = icons[t + size] ||= squareIcon(frames[t], size); icon.artIconKey = t; return icon;
+};
 
-export { drawPainted, itemArtReady, paintedIcon, paintedItem, squareIcon };
+export { drawPainted, itemArtReady, paintedIcon, paintedItem, squareIcon, bindPaintedIcon, onItemArtReady, itemArtRevision };

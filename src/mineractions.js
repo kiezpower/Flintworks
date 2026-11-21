@@ -16,5 +16,18 @@ function minerAction(c, frame, aimKind = null, aim = null, reducedMotion = false
   }
   return null;
 }
+function mobilityAction(c, frame, reducedMotion = false) {
+  if (c.dead || c.tumble || c.ride != null || c.digging || c.picking > 0) return null;
+  let action, phase = 0;
+  if (c.hangle) { action = 'hang'; phase = Math.abs(c.vx || 0) > 0.1 ? Math.floor(frame / 8) % 4 : 0; }
+  else if (c.climb) { action = 'climb'; phase = Math.floor(frame / 8) % 4; }
+  else if (c.chop || c.netChop) { action = 'chop'; phase = Math.floor(frame / 5) % 4; }
+  else if (c.hammer || c.bridge || c.netBridge) { action = 'hammer'; phase = Math.floor(frame / 5) % 4; }
+  else if (c.airT > 3) {
+    action = (c.vy || 0) < -0.05 ? 'jump' : 'fall';
+    phase = Math.max(0, Math.min(3, Math.floor(action === 'jump' ? (3 + c.vy) * 1.33 : (c.vy || 0) / 0.9)));
+  }
+  return action ? { action, frame: reducedMotion ? 0 : phase } : null;
+}
 function minerIdentity(c, hero) { return hero || (c.pid != null ? 'anna' : ['bruno', 'mika', 'juna'][Math.abs(c.k ?? c.id ?? 0) % 3]); }
-export { minerAction, minerIdentity, THROW_TICKS };
+export { minerAction, mobilityAction, minerIdentity, THROW_TICKS };

@@ -1,3 +1,6 @@
+import { bindPaintedIcon, onItemArtReady } from './itemart.js';
+import { drawPortrait } from './portrait.js';
+import { minerArtReady } from './minerart.js';
 import { parseSkin } from './skins.js';
 import { drawMinerFrame } from './minerart.js';
 import { minerIdentity } from './mineractions.js';
@@ -75,7 +78,10 @@ function sizeMini() {
 }
 sizeMini();
 onResize(sizeMini);
-for (const el of document.querySelectorAll('[data-ico]')) el.style.backgroundImage = `url(${padIcon(el.dataset.ico)})`;
+for (const el of document.querySelectorAll('[data-ico]')) {
+  el.style.backgroundImage = `url(${padIcon(el.dataset.ico)})`;
+  if (!el.closest('#lobby')) bindPaintedIcon(el, 'ui:' + el.dataset.ico);
+}
 mapView.addEventListener('pointerdown', e => {
   e.stopPropagation();
   toggleMap();
@@ -281,6 +287,7 @@ function hud() {
         cvs.width = cvs.height = art.width;
         if (art.painted) cvs.className = 'painted';
         cvs.getContext('2d').drawImage(art, 0, 0);
+        bindPaintedIcon(cvs, t);
         b.appendChild(cvs);
         if (s + off < 9) b.insertAdjacentHTML('beforeend', `<i class="key">${s + off + 1}</i>`);
       }
@@ -380,7 +387,7 @@ function actIcon(label) {
   if (ACT_ICONS[label]) url = padIcon(ACT_ICONS[label]);
   else if (label === 'Brücke') url = itemIcon('plank').toDataURL();
   else if (label === 'Zünden') url = itemIcon('tnt').toDataURL();
-  else if (label === 'Lore') url = SPR.lorryIcon.toDataURL();
+  else if (label === 'Lore') url = vehicleIcon('train').toDataURL();
   else url = padIcon('act');
   return (actIconCache[label] = url);
 }
@@ -675,6 +682,9 @@ function opt(parent, { icon, title, sub, cost, short, disabled, onClick, state, 
     c.style.justifySelf = 'center';
     b.appendChild(c);
   }
+  const iconNode = b.querySelector('canvas');
+  if (iconNode && icon?.artIconKey) bindPaintedIcon(iconNode, icon.artIconKey);
+  if (iconNode && icon?.redrawIcon) (icon.iconReady || minerArtReady).then(() => { if (iconNode.isConnected) icon.redrawIcon(iconNode); });
   b.insertAdjacentHTML(
     'beforeend',
     `<b>${title}</b><small>${sub || ''}</small><span class="cost">${cost || ''}</span>` +
@@ -908,7 +918,7 @@ function openBase() {
   const l = sec(p, tr('Kaufen · Kasse: {m} Taler', { m: G.money }));
   for (const o of BUY) {
     if (o.t === 'digger' && G.noHelpers) continue; // (helpers switched off, settings.js)
-    const icon = ITEM[o.t] ? itemIcon(o.t) : o.t === 'lorry' ? SPR.lorryIcon : SPR.diggerIcon;
+    const icon = ITEM[o.t] ? itemIcon(o.t) : o.t === 'lorry' ? vehicleIcon('train') : helperShopIcon();
     const alive = crew.filter(x => !x.dead).length;
     const full = o.t === 'digger' && alive >= BASELV[lvl()].crew,
       poor = G.money < o.price;
@@ -1012,3 +1022,20 @@ function openUi(name) {
 // build menu for the second player
 G.menuOpen = () => !panelEl.hidden;
 G.openBuildFor = () => openBuild();
+
+// Refresh visible HUD nodes and cached URLs after slow atlas downloads. No panel
+// is reopened, so focus, scroll position and pending interactions stay intact.
+onItemArtReady(() => {
+  for (const key of Object.keys(iconUrls)) delete iconUrls[key];
+  for (const key of Object.keys(actIconCache)) delete actIconCache[key];
+  G.invKey = G.storeKey = G.actKey = '';
+});
+function helperShopIcon() {
+  const c = document.createElement('canvas'); c.width = c.height = 48; c.painted = true;
+  c.redrawIcon = target => {
+    target.width = target.height = 48; target.classList.add('painted');
+    const g = target.getContext('2d'); g.save(); g.scale(2, 2);
+    drawPortrait(g, 4, 2, 1, '#2f7fd0', 'none', false, 'blue', 'bruno'); g.restore();
+  };
+  c.redrawIcon(c); return c;
+}
