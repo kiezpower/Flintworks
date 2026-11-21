@@ -1,3 +1,4 @@
+import { bindPaintedIcon } from './itemart.js';
 import { TITLES } from './heromissions.js';
 import { ROLES, chapterCount, progressOf } from './heroskills.js';
 import { lobbyIcon } from './lobbyicons.js';
@@ -538,7 +539,11 @@ cv.addEventListener('pointerdown', e => {
   sfx('jump');
   burst(8, ['#f4ead2', '#f2c230']);
 });
-for (const e of el.querySelectorAll('[data-ico]')) e.style.backgroundImage = `url("${lobbyIcon(e.dataset.ico) || padIcon(e.dataset.ico)}")`;
+for (const e of el.querySelectorAll('[data-ico]')) {
+  const own = lobbyIcon(e.dataset.ico);
+  e.style.backgroundImage = `url("${own || padIcon(e.dataset.ico)}")`;
+  if (!own) bindPaintedIcon(e, 'ui:' + e.dataset.ico);
+}
 
 function showLobby(h) {
   if (h) hooks = h;

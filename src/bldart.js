@@ -1,4 +1,4 @@
-import { drawPaintedObject, paintedObject } from './objectart.js';
+import { drawPaintedObject, paintedObject, objectArtReady } from './objectart.js';
 import { squareIcon } from './itemart.js';
 import { restyle } from './skins.js';
 // Buildings at double resolution with real material detail. The 1× sprites (sprites.js, recoloured
@@ -136,6 +136,15 @@ function craftedIcon(spr) {
   }
   const o = crafted(spr, 1);
   o.hi = true;
+  if (spr.artType) {
+    o.iconReady = objectArtReady;
+    o.redrawIcon = target => {
+      const frame = paintedObject(spr); if (!frame) return;
+      const icon = squareIcon(frame, 64); target.width = target.height = 64;
+      target.classList.add('painted'); target.style.width = target.style.height = '40px';
+      target.getContext('2d').drawImage(icon, 0, 0);
+    };
+  }
   return o;
 }
 function drawCrafted(ctx, spr, x, y, variant = 1) {
