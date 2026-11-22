@@ -6,6 +6,7 @@ import { addDigger, mkAnimal, newId, spawnItem } from '../entities.js';
 import { blob, clearFoot, finishWorld, plantTree, settle, topSolid } from '../gen.js';
 import { setupTeams } from '../teams.js';
 import { G, animals, builds, crew } from '../state.js';
+import { MAX_HELPERS, START_HELPERS } from '../players.js';
 import { AIR, COAL, EARTH, GEM, GOLD, H, H0, LOAM, ORE, ROCK, SAND, W, W0 } from '../world.js';
 import { bg, mat, ri, rnd, shade, surf } from '../world.js';
 import { CHARS, FIXED } from './palette.js';
@@ -153,16 +154,21 @@ function placeObjects(L) {
   }
   // the crew at the castle (the trapped ones above are already in the list, they go last)
   const trapped = crew.splice(0);
-  const n = st.crew ?? 3,
+  // your own Wühler plus at most START_HELPERS helpers (and no more than the level allows); the
+  // things the level hands to Wühler that no longer come along go to the last helper
+  const cap = Math.min(START_HELPERS, st.maxHelpers ?? MAX_HELPERS),
+    n = Math.max(1, Math.min(st.crew ?? 3, 1 + cap)),
     inv = st.inv || [['flint', 'rock'], ['loam'], ['rock']];
+  if (st.maxHelpers != null) G.base.maxHelpers = st.maxHelpers;
   for (let k = 0; k < n; k++) {
     const c = addDigger(G.base.x + 10 + k * 6, G.base.gy - 10);
-    c.inv = [...(inv[k] || [])];
+    c.inv = k < n - 1 || n === 1 ? [...(inv[k] || [])] : inv.slice(k).flat();
   }
   crew[0].pid = G.myId;
   G.money = st.money ?? 40;
   // Versus: the same helper count and start money at both castles
   if (second) {
+    if (st.maxHelpers != null) second.maxHelpers = st.maxHelpers;
     for (let k = 0; k < n - 1; k++) {
       const c = addDigger(second.x + 16 + k * 6, second.gy - 10);
       Object.assign(c, { team: 1, inv: [k ? 'rock' : 'loam'] });

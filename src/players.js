@@ -12,6 +12,14 @@ const isAbsent = c => G.mode === 'settlement' && c?.owner && c.pid == null;
 const isPlayer = c => !!c && c.pid != null;
 const diggerOf = pid => crew.find(c => c.pid === pid) || null;
 const helpers = () => crew.filter(c => !isPlayer(c) && !c.dead);
+// Helpers per castle: one comes along at the start, more can be bought up to MAX_HELPERS. A level
+// can allow fewer ("start": {"maxHelpers": 1}, kept on the castle so saves and guests know it).
+// Wühler still trapped under ground (rescue levels) are not counted.
+const START_HELPERS = 1,
+  MAX_HELPERS = 3;
+const helperCap = (base = G.base) => Math.min(MAX_HELPERS, base?.maxHelpers ?? MAX_HELPERS);
+const castleHelpers = (base = G.base) =>
+  helpers().filter(c => !c.trapped && (c.team || 0) === (base?.team || 0)).length;
 // the input that drives a player's Wühler this tick
 const inputOf = pid => (pid === G.myId ? inp : inputs.get(pid) || NOIN);
 // a remote player's latest input; button presses stay set until a tick has used them
@@ -29,4 +37,4 @@ function clearInputs() {
   inputs.clear();
 }
 
-export { isAbsent, dropInput, clearInputs, diggerOf, consumeEdges, helpers, inputOf, isPlayer, setInput };
+export { isAbsent, dropInput, clearInputs, diggerOf, consumeEdges, helpers, inputOf, isPlayer, setInput, START_HELPERS, MAX_HELPERS, helperCap, castleHelpers };

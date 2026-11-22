@@ -14,6 +14,7 @@ import { GAME_MODES, applyModeSetup, treasureGoal } from './modes.js';
 import { setupRound } from './versus.js';
 import { genLevel } from './levels/loader.js';
 import { addDigger, mkAnimal, newId, spawnItem } from './entities.js';
+import { START_HELPERS } from './players.js';
 import { calcTerr } from './render.js';
 import { simulate } from './sim.js';
 import { sp, treeSprite } from './sprites.js';
@@ -470,11 +471,10 @@ function gen() {
   }
   // crew
   G.money = 40;
-  for (let k = 0; k < 3; k++) addDigger(G.base.x + 10 + k * 6, G.base.gy - 10);
-  crew[0].pid = G.myId; // your own Wühler; the other two are helpers
+  for (let k = 0; k <= START_HELPERS; k++) addDigger(G.base.x + 10 + k * 6, G.base.gy - 10);
+  crew[0].pid = G.myId; // your own Wühler; the others are helpers (more can be bought, players.js)
   crew[0].inv = ['flint', 'rock'];
-  crew[1].inv = ['loam'];
-  crew[2].inv = ['rock'];
+  crew[1].inv = ['loam', 'rock'];
   for (let t = 1; t < xs.length; t++) genBase(t, xs[t]);
   if (xs.length > 1) setupTeams(builds.filter(b => b.type === 'base').sort((a, b) => (a.team || 0) - (b.team || 0)));
   // animals
@@ -667,9 +667,10 @@ function genBase(t, cx) {
       plantTree(x, 4);
       n++;
     }
-  for (let k = 0; k < 2; k++) {
+  // as many helpers as at the first castle
+  for (let k = 0; k < START_HELPERS; k++) {
     const c = addDigger(b.x + 16 + k * 6, b.gy - 10);
-    Object.assign(c, { team: t, inv: [k ? 'rock' : 'loam'] });
+    Object.assign(c, { team: t, inv: ['loam', 'rock'] });
   }
 }
 function clearFoot(bx, gy, w, h) {

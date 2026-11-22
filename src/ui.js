@@ -35,7 +35,7 @@ import { BUILDABLE, VK, cannotBuild } from './vehicles/index.js';
 import { craftedIcon } from './bldart.js';
 import { vehicleIcon, vehicleOf } from './vehicles/core.js';
 import { hasBow } from './combat.js';
-import { isPlayer } from './players.js';
+import { castleHelpers, helperCap, isPlayer } from './players.js';
 import { missionText } from './missions.js';
 import { updTracker } from './questui.js';
 import { G, INV_MAX, INV_SHOWN, animals, builds, crew, lorries, safeCap } from './state.js';
@@ -919,17 +919,19 @@ function openBase() {
     if (o.t === 'digger' && G.noHelpers) continue; // (helpers switched off, settings.js)
     const icon = ITEM[o.t] ? itemIcon(o.t) : o.t === 'lorry' ? vehicleIcon('train') : helperShopIcon();
     const alive = crew.filter(x => !x.dead).length;
-    const full = o.t === 'digger' && alive >= BASELV[lvl()].crew,
+    const capped = o.t === 'digger' && castleHelpers() >= helperCap(),
+      full = o.t === 'digger' && (capped || alive >= BASELV[lvl()].crew),
       poor = G.money < o.price;
+    const fullWhy = capped ? tr('Höchstens {n} Helfer', { n: helperCap() }) : tr('Crew voll – erst die Burg ausbauen');
     opt(l, {
       icon,
       title: resName(o.t),
       sub: tr(o.t === 'digger' ? 'Neues Crewmitglied' : o.t === 'lorry' ? 'Transportiert 25 Sachen' : ''),
       cost: tr('{p} Taler', { p: o.price }),
       state: full ? 'locked' : poor ? 'poor' : 'ok',
-      why: full ? tr('Crew voll – erst die Burg ausbauen') : poor ? lacking(c, null, o.price) : '',
+      why: full ? fullWhy : poor ? lacking(c, null, o.price) : '',
       onClick: () => {
-        if (full) return toast('Crew voll – erst die Burg ausbauen');
+        if (full) return toast(capped ? 'Höchstens {n} Helfer' : 'Crew voll – erst die Burg ausbauen', { n: helperCap() });
         if (poor) return toast(lacking(c, null, o.price));
         send('buy', { t: o.t });
         openBase();
@@ -961,7 +963,7 @@ register('take', (c, { t }) => {
 register('buy', (c, { t }) => {
   const o = BUY.find(b => b.t === t);
   if (!o || G.money < o.price) return;
-  if (t === 'digger' && (G.noHelpers || crew.filter(x => !x.dead).length >= BASELV[lvl()].crew)) return;
+  if (t === 'digger' && (G.noHelpers || castleHelpers() >= helperCap() || crew.filter(x => !x.dead).length >= BASELV[lvl()].crew)) return;
   G.money -= o.price;
   sfx('coin');
   if (t === 'digger') {
