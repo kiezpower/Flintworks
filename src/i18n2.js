@@ -1,5 +1,7 @@
 // More English texts (i18n.js holds the rest; split to keep every file under 1000 lines).
 // Kristallstollen, crystals and skins (camp.js, lobbycamp.js, skins.js), production chain (ui.js)
+import { EN3 } from './i18n3.js';
+
 const EN2 = {
   'Tagesrolle für alle': 'Daily role for everyone',
   "Wähle deinen ersten Wühler": "Choose your first digger",
@@ -893,48 +895,6 @@ const EN2 = {
   'Geteilte Welt: Öffne sie unter „Meine Welten“, damit deine Freunde deinen Stand bekommen': 'Shared world: open it under “My worlds” so your friends get your state',
   '{name} teilt die Welt „{world}“ mit dir': '{name} shares the world “{world}” with you',
   '{name} hat an „{world}“ weitergebaut': '{name} built on in “{world}”',
-  // friends and multiplayer (lobbyinvite.js, lobbyfriends.js, net/recent.js, net/emotes.js)
-  'Raum nicht gefunden – prüfe den Code oder lass dir einen neuen Link schicken': 'Room not found – check the code or ask for a new link',
-  'Der Raum ist voll (höchstens 4 Spieler)': 'The room is full (4 players at most)',
-  'Verbindung unterbrochen – versuch es nochmal': 'Connection lost – please try again',
-  'Der Server ist gerade voll – versuch es gleich nochmal': 'The server is busy – try again in a moment',
-  'Dein Platz ist nach 30 Sekunden verfallen – die Runde lief ohne dich weiter': 'Your place expired after 30 seconds – the round went on without you',
-  'Keine Verbindung zum Server – prüfe dein Internet': 'No connection to the server – check your internet',
-  'Verbindung weg': 'Connection lost',
-  'Verbinde neu … dein Platz wird noch {s} s gehalten': 'Reconnecting … your place is held for {s} more s',
-  'Der Raum-Code hat 5 Zeichen': 'The room code has 5 characters',
-  'Tippen: Karte oder Modus ändern': 'Tap: change map or mode',
-  'Der Host wählt die Karte': 'The host picks the map',
-  'Jeder mit eigener Burg, eine gestürmte Burg ist raus, der Letzte gewinnt': 'Everyone has their own castle; a stormed castle is out, the last one wins',
-  'Team {n}/{max}': 'Team {n}/{max}',
-  '{n} bereit': '{n} ready',
-  'nicht bereit': 'not ready',
-  'Als Freund hinzufügen': 'Add as friend',
-  'Zusammen gegen die Tiefe': 'Together against the deep',
-  'Burg gegen Burg': 'Castle against castle',
-  '{n} noch nicht bereit': '{n} not ready yet',
-  'Alle sind bereit!': 'Everyone is ready!',
-  'Du kannst auch allein loslegen': 'You can also start alone',
-  'Bereit!': 'Ready!',
-  'Tippen, um es zurückzunehmen': 'Tap to take it back',
-  'vor {n} Min.': '{n} min ago',
-  'vor {n} Std.': '{n} h ago',
-  'gestern': 'yesterday',
-  'Keine Verbindung': 'No connection',
-  'Ping': 'Ping',
-  'voll': 'full',
-  'Im Spiel': 'In game',
-  'In der Lobby': 'In lobby',
-  'Online': 'Online',
-  'Zuletzt gespielt mit': 'Recently played with',
-  'Freund': 'Friend',
-  'Schnell-Chat': 'Quick chat',
-  'Kurz warten …': 'Wait a moment …',
-  'getrennt – neu verbinden ({s} s)': 'disconnected – reconnecting ({s} s)',
-  'Gleiches Team, gleiche Einstellungen': 'Same team, same settings',
-  'Nochmal spielen': 'Play again',
-  'Gleiches Team – der Host startet': 'Same team – the host starts',
-  'Bereit': 'Ready',
   // the story intro and the tutorial „Der Glutstein“ (intro.js, tutsteps.js, tutorial.js)
   'Das Herdfeuer von Funkenhain ist erloschen.': 'The hearth fire of Funkenhain has gone out.',
   'Ohne Glut kein Werkzeug, ohne Werkzeug kein Winter.': 'No embers, no tools. No tools, no winter.',
@@ -993,4 +953,6 @@ const EN2 = {
   'Abbauen': 'Mine',
   'Feuer': 'Fire',
 };
+// (friends and multiplayer: i18n3.js, to keep every file under 1000 lines)
+Object.assign(EN2, EN3);
 export { EN2 };

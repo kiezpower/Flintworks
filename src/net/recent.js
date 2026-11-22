@@ -9,8 +9,11 @@ const MAX_RECENT = 10;
 if (!Array.isArray(P.recent)) P.recent = [];
 
 // everybody of a round who is not me and has a friend code: newest first, each once
+let round = []; // the players of the last round (not me), for the end card
+const lastRound = () => round;
 function remember(players) {
   const now = Date.now();
+  round = (players || []).filter(pl => pl && pl.fid && pl.fid !== P.fid && pl.pid !== NET.pid).map(pl => ({ fid: String(pl.fid), name: String(pl.name || '').slice(0, 16) }));
   for (const pl of players || []) {
     if (!pl || !pl.fid || pl.fid === P.fid || pl.pid === NET.pid) continue;
     P.recent = P.recent.filter(r => r.fid !== pl.fid);
@@ -41,4 +44,4 @@ function pingHtml(T) {
   return `<span class="pt-ping ${q}" title="${tr('Ping')}"><i></i><i></i><i></i>${ms} ms</span>`;
 }
 
-export { ago, pingHtml, recentPlayers, remember };
+export { ago, lastRound, pingHtml, recentPlayers, remember };

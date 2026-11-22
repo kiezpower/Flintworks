@@ -243,6 +243,7 @@ function sendTo(to, d) {
   send({ t: 'msg', to, d });
 }
 const inRoom = () => !!NET.room && NET.status === 'waiting';
+G.inRoom = inRoom;
 const others = () => NET.players.filter(p => p.pid !== NET.pid);
 
 // in the Android app (localhost) and on itch.io (a frame) invite with the public web address

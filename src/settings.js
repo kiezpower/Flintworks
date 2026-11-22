@@ -68,17 +68,22 @@ function settingsSections(p, reopen, { lobby = false, game: gameSec = null } = {
     () => (P.bots = P.bots === false),
   );
   // the helper Wühler of free play alone (applyHelpers): off, you dig alone, from now on
-  item(
-    game,
-    P.helpers === false ? 'Helfer: aus' : 'Helfer: an',
-    P.helpers === false
-      ? 'Du gräbst allein: keine Helfer-Wühler, kein Anheuern (freies Spiel allein)'
-      : 'Helfer-Wühler arbeiten von selbst für dich (freies Spiel allein)',
-    () => {
-      P.helpers = P.helpers === false;
-      if (G.inRun) applyHelpers();
-    },
-  );
+  // (in multiplayer there are no helpers at all: greyed out with the reason)
+  // (G.inRoom: net/room.js, read through G so settings does not import the room module)
+  if (multi() || G.inRoom?.())
+    opt(game, { title: tr('Helfer: aus'), sub: tr('Im Multiplayer nicht verfügbar'), disabled: true });
+  else
+    item(
+      game,
+      P.helpers === false ? 'Helfer: aus' : 'Helfer: an',
+      P.helpers === false
+        ? 'Du gräbst allein: keine Helfer-Wühler, kein Anheuern (freies Spiel allein)'
+        : 'Helfer-Wühler arbeiten von selbst für dich (freies Spiel allein)',
+      () => {
+        P.helpers = P.helpers === false;
+        if (G.inRun) applyHelpers();
+      },
+    );
 
   const snd = sec(p, 'Ton');
   item(snd, G.muted ? 'Ton aus' : 'Ton an', 'Ton', () => $('sndBtn').click());
@@ -186,16 +191,24 @@ function applyControls() {
   if (!G.climbOn) for (const c of crew) c.climb = c.hangle = false;
 }
 
-// helpers switched off (only in free play alone; Versus, multiplayer, levels, the Tagesschicht and
-// the tutorial keep their crew): the helper Wühler of your castle leave, what they carry goes into
-// the store, and none can be hired (ui.js). Run at every start and resume, and when switched.
+// helpers switched off: in free play alone when chosen (levels, the Tagesschicht and the tutorial
+// keep their crew), and always in multiplayer (Koop and Versus over the network or two at one
+// device), so the other players are clearly seen: no helper Wühler stand in front of them, their
+// names or the markers. The helpers leave (alone: what they carry goes into the store), and none
+// can be hired (ui.js). Run at every start and resume, and when switched. Bots that play a
+// castle in a quick play room are opponents, not helpers: they stay.
+const multi = () => !!G.net || !!G.local;
 function applyHelpers() {
-  G.noHelpers = P.helpers === false && soloBoosts();
+  const mp = multi();
+  G.noHelpers = mp || (P.helpers === false && soloBoosts());
   if (!G.noHelpers) return;
   for (let k = crew.length - 1; k >= 0; k--) {
     const c = crew[k];
-    if (isPlayer(c) || c.bot || c.trapped || c.lost || (c.team || 0) !== (G.myTeam || 0)) continue;
-    for (const t of c.inv || []) addStock(t);
+    if (isPlayer(c) || c.bot || c.trapped || c.lost) continue;
+    // (alone only the own castle's helpers; in multiplayer every castle's, and nobody keeps what
+    // they carried, so all castles start alike)
+    if (!mp && (c.team || 0) !== (G.myTeam || 0)) continue;
+    if (!mp) for (const t of c.inv || []) addStock(t);
     crew.splice(k, 1);
   }
   G.crewKey = '';
