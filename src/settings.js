@@ -204,7 +204,9 @@ function applyHelpers() {
   if (!G.noHelpers) return;
   for (let k = crew.length - 1; k >= 0; k--) {
     const c = crew[k];
-    if (isPlayer(c) || c.bot || c.trapped || c.lost) continue;
+    // (a Wühler with an owner is a player's who is away for now: a saved shared world keeps it
+    // with its pack until that player comes back, net/session.js)
+    if (isPlayer(c) || c.owner || c.bot || c.trapped || c.lost) continue;
     // (alone only the own castle's helpers; in multiplayer every castle's, and nobody keeps what
     // they carried, so all castles start alike)
     if (!mp && (c.team || 0) !== (G.myTeam || 0)) continue;
