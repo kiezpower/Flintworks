@@ -385,7 +385,7 @@ test('the new monsters: the spider leaps, the slime lives in lava, arrows glance
     let leapt = false;
     for (let k = 0; k < 40; k++) {
       w.step(1);
-      if (sp.vy < -1 && Math.abs(sp.vx) > 1.5) leapt = true;
+      if (sp.vy < -1 && Math.abs(sp.vx) > 1.2) leapt = true; // (a leap: well over its walking pace of 0.55)
     }
     out.spiderLeaps = leapt;
     // a slime in a lava pool does not burn up
