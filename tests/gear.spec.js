@@ -2,6 +2,7 @@
 // bow, sword, shield, helmet, steel pick, lamp, drill wagon, raft, riding fluffel, mine train,
 // cable car and airship. Each test builds a flat field, buys or builds the thing and uses it: npm test
 import { expect, test } from '@playwright/test';
+import { playPastIntro } from './skipintro.js';
 
 // a fresh game in the quiet tutorial world, with a flat test field and only your Wühler
 async function setup(page) {
@@ -14,7 +15,7 @@ async function setup(page) {
   });
   await page.reload();
   await page.waitForFunction(() => window.__ww);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   await page.evaluate(() => {
     const w = window.__ww,
       { mat, W, AIR, EARTH, paint } = w.world;

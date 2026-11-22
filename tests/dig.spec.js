@@ -1,6 +1,7 @@
 // Digging through each material straight, slanted down and slanted up: the Wühler never gets
 // stuck, each material has its own pace and the loot lands next to the one digging: npm test
 import { expect, test } from '@playwright/test';
+import { playPastIntro } from './skipintro.js';
 
 async function field(page) {
   const errors = [];
@@ -12,7 +13,7 @@ async function field(page) {
   });
   await page.reload();
   await page.waitForFunction(() => window.__ww);
-  await page.click('#veilGo'); // a fresh player starts in the tutorial world
+  await playPastIntro(page); // a fresh player starts in the tutorial world
   // (only its quiet world: the tutorial's own help, which may carry the Wühler home, is off)
   await page.evaluate(() => window.__ww.endTutorial());
   await page.evaluate(() => {

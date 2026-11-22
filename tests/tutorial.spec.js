@@ -1,8 +1,11 @@
 // The guided first game, played through in the dev build: npm test
-// A fresh player lands in the tutorial world behind the start screen (no lobby), plays three
-// beats (walk and jump, dig to gold, sell it) and goes straight on into a real round.
+// A fresh player lands in the tutorial world behind the start screen (no lobby), sees the story
+// intro, plays the six steps of "Der Glutstein" (walk to the well, dig down, mine flint and ore,
+// build the bridge, run through the cave-in, carry the Glutstein home) and goes straight on into
+// a real round.
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { playPastIntro } from './skipintro.js';
 
 const BOT = readFileSync(new URL('./tutorial-bot.js', import.meta.url), 'utf8');
 
@@ -37,14 +40,18 @@ for (const lang of ['de', 'en'])
     await expect(page.locator('#lobby')).toBeHidden();
     await expect(page.locator('#veilGo b')).toHaveText(lang === 'de' ? 'Spielen' : 'Play');
     expect(await page.evaluate(() => [window.__ww.G.mode, window.__ww.state])).toEqual(['tut', 'veil']);
-    // any key starts
+    // any key starts: first the story intro, any key skips it
     await page.keyboard.press('KeyD');
     await expect(page.locator('#veil')).toBeHidden();
+    await expect(page.locator('.introSkip')).toBeVisible();
+    await page.waitForTimeout(600);
+    await page.keyboard.press('KeyD');
+    await page.waitForFunction(() => window.__ww.G.state === 'play');
     await expect(page.locator('#quest')).toBeVisible();
-    await expect(page.locator('#questStep')).toHaveText('1/3');
+    await expect(page.locator('#questStep')).toHaveText('1/6');
     await page.evaluate(() => (window.__ww.G.inputKind = 'keys'));
     const order = await page.evaluate(() => window.__ww.tutLevel.steps());
-    expect(order).toEqual(['walk', 'dig', 'sell']);
+    expect(order).toEqual(['walk', 'dig', 'mine', 'bridge', 'danger', 'glut']);
     const t0 = await page.evaluate(() => window.__ww.G.playTicks);
     for (const id of order) {
       const now = await page.evaluate(() => window.bot.run(0));
@@ -53,9 +60,9 @@ for (const lang of ['de', 'en'])
       expect(next, `step "${id}" was not finished`).not.toBe(id);
     }
     // well under two minutes of play for a player who knows what to do
-    expect((await page.evaluate(() => window.__ww.G.playTicks)) - t0).toBeLessThan(60 * 30);
+    expect((await page.evaluate(() => window.__ww.G.playTicks)) - t0).toBeLessThan(60 * 60);
     await expect(page.locator('#overlay')).toBeVisible({ timeout: 4000 });
-    await expect(page.locator('#card h1')).toHaveText(lang === 'de' ? 'Erste Schicht geschafft!' : 'First shift done!');
+    await expect(page.locator('#card h1')).toHaveText(lang === 'de' ? 'Das Herdfeuer brennt wieder!' : 'The hearth fire burns again!');
     // the main button has the focus: Enter goes on
     await expect(page.locator('#goBtn')).toBeFocused();
     const prof = await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')));
@@ -73,15 +80,23 @@ for (const lang of ['de', 'en'])
     expect(ev).toEqual([
       'app_open',
       'onb_first_input',
+      'onb_intro',
+      'onb_intro',
       'onb_start',
       'onb_step_start:walk',
       'onb_first_action',
       'onb_step_done:walk',
       'onb_step_start:dig',
       'onb_step_done:dig',
-      'onb_step_start:sell',
-      'onb_step_done:sell',
+      'onb_step_start:mine',
+      'onb_step_done:mine',
       'onb_first_success',
+      'onb_step_start:bridge',
+      'onb_step_done:bridge',
+      'onb_step_start:danger',
+      'onb_step_done:danger',
+      'onb_step_start:glut',
+      'onb_step_done:glut',
       'onb_complete',
       'hero_select',
       'onb_card',
@@ -102,22 +117,22 @@ for (const lang of ['de', 'en'])
 
 test('texts name the touch buttons on a touch screen and the keys on a keyboard', async ({ page }) => {
   await fresh(page);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   await page.evaluate(() => {
     window.__ww.G.inputKind = 'touch';
     window.__ww.step(1);
   });
-  await expect(page.locator('#questText')).toHaveText('Lauf nach rechts');
+  await expect(page.locator('#questText')).toHaveText('Lauf zum Brunnen');
   await page.evaluate(() => {
     window.__ww.G.inputKind = 'keys';
     window.__ww.step(1);
   });
-  await expect(page.locator('#questText')).toHaveText('Lauf nach rechts: → oder D');
+  await expect(page.locator('#questText')).toHaveText('Lauf zum Brunnen: → oder D');
 });
 
 test('the tutorial world is quiet: no missions, no night, nobody gets exhausted', async ({ page }) => {
   await fresh(page);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   const r = await page.evaluate(() => {
     const w = window.__ww,
       c = w.crew[0];
@@ -132,7 +147,7 @@ test('the tutorial world is quiet: no missions, no night, nobody gets exhausted'
 
 test('skipping asks first, is remembered and offers a real round', async ({ page }) => {
   await fresh(page);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   await page.click('#questSkip');
   await expect(page.locator('#questSkip')).toHaveText('Wirklich?');
   expect(await tut(page)).toBe(0);
@@ -147,7 +162,7 @@ test('skipping asks first, is remembered and offers a real round', async ({ page
 
 test('a tutorial left in the middle goes on after a reload, straight from the start screen', async ({ page }) => {
   await fresh(page);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   await page.evaluate(() => (window.__ww.G.inputKind = 'keys'));
   await playStep(page);
   // (the step change saved the game)
@@ -155,10 +170,12 @@ test('a tutorial left in the middle goes on after a reload, straight from the st
   await page.waitForFunction(() => window.__ww);
   await expect(page.locator('#veil')).toBeVisible();
   await expect(page.locator('#veilGo b')).toHaveText('Weiterspielen');
+  // (a saved tutorial goes on at once, without the intro)
   await page.click('#veilGo');
+  expect(await page.locator('.introSkip').isVisible()).toBe(false);
   expect(await tut(page)).toBe(1);
   await expect(page.locator('#quest')).toBeVisible();
-  await expect(page.locator('#questStep')).toHaveText('2/3');
+  await expect(page.locator('#questStep')).toHaveText('2/6');
   const ev = await page.evaluate(() => window.__ww.analytics.events().map(e => e.e));
   expect(ev).toContain('onb_exit');
   expect(ev.at(-1)).toBe('onb_resume');

@@ -75,7 +75,11 @@ test('a friend request, accepted, shows each other online and leads into the roo
   await expect(anna.page.locator('#lbFriendsN')).toHaveText('1');
 
   // Anna opens a room for friends: Bert sees it and joins with one tap
-  await anna.page.locator('#lbSlot1').click();
+  // (a tap right after a panel closed is ignored on purpose: tap again until the panel is up)
+  await expect(async () => {
+    await anna.page.locator('#lbSlot1').click();
+    await expect(anna.page.locator('#lbCreate')).toBeVisible({ timeout: 1500 });
+  }).toPass({ timeout: 15000 });
   await anna.page.locator('#lbCreate').click();
   await expect(anna.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
   const room = await anna.page.locator('.lb-codetap b').textContent();
