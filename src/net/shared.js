@@ -141,11 +141,18 @@ async function openShared(id) {
 }
 
 // ---- saving: every save of the running world goes to the relay (worldarchive.js) ----
-let lastPut = 0;
+// (at most every five seconds; a save inside that time is sent when it is over, so the latest
+// state always reaches the relay)
+let lastPut = 0,
+  laterT = 0;
 G.sharedUpload = (id, save) => {
   if (SH.open !== id || !G.netHost || !inRoom() || transport.status !== 'open') return;
-  const now = Date.now();
-  if (now - lastPut < 5000) return;
+  const wait = lastPut + 5000 - Date.now();
+  clearTimeout(laterT);
+  if (wait > 0) {
+    laterT = setTimeout(() => G.sharedUpload(id, save), wait);
+    return;
+  }
   let text;
   try {
     text = JSON.stringify(save);
@@ -153,7 +160,7 @@ G.sharedUpload = (id, save) => {
     return;
   }
   if (text.length > MAX_STATE) return;
-  lastPut = now;
+  lastPut = Date.now();
   send({ t: 'wput', id, save: text });
 };
 // the room stopped playing the world (left, another world, the round ended), or took one over
