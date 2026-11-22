@@ -27,6 +27,7 @@ import { MAX_PLAYERS, NET, copyText } from './net/room.js';
 import { P } from './profile.js';
 import { G } from './state.js';
 import { $, closePanel, openPanel, panelEl, sec, toast } from './ui.js';
+import { ago, recentPlayers } from './net/recent.js';
 import './friends.css';
 
 const ADD_TOAST = {
@@ -185,16 +186,35 @@ function openFriends(from, redraw = false) {
       },
       armed === f.fid ? 'no' : '',
     ]);
+    // Offline / Online / In der Lobby / Im Spiel (like a friends list on a console)
+    const full = f.n != null && !f.room ? ' · ' + tr('voll') : '';
     const sub = !f.mutual
       ? tr('wartet, bis {name} dich auch hinzufügt', { name: esc(f.name || tr('dein Freund')) })
       : !f.online
         ? tr('offline')
         : f.room === NET.room && NET.room
           ? tr('in deinem Raum')
-          : f.room
-            ? tr('online · im Raum ({n}/{max})', { n: f.n, max: MAX_PLAYERS })
-            : tr('online');
-    row(l, { dot: f.mutual && f.online ? 'on' : f.mutual ? '' : 'wait', name: esc(f.name || showFid(f.fid)), sub, acts }).dataset.fid = f.fid;
+          : f.playing
+            ? `<em class="fr-tag play">${tr('Im Spiel')}</em> ${f.n}/${MAX_PLAYERS}${full}`
+            : f.n != null
+              ? `<em class="fr-tag lobby">${tr('In der Lobby')}</em> ${f.n}/${MAX_PLAYERS}${full}`
+              : `<em class="fr-tag on">${tr('Online')}</em>`;
+    const dot = !f.mutual ? 'wait' : !f.online ? '' : f.playing ? 'play' : 'on';
+    row(l, { dot, name: esc(f.name || showFid(f.fid)), sub, acts }).dataset.fid = f.fid;
+  }
+
+  // "Zuletzt gespielt mit": teammates of the last shared rounds, one tap to send a request
+  const recent = recentPlayers().filter(r => !isFriend(r.fid));
+  if (recent.length) {
+    const rl = sec(p, 'Zuletzt gespielt mit');
+    rl.id = 'frRecent';
+    for (const r of recent.slice(0, 6))
+      row(rl, {
+        dot: 'recent',
+        name: esc(r.name || '?'),
+        sub: ago(r.at),
+        acts: [['+ ' + tr('Freund'), () => tellAdd(addFriend(r.fid, r.name), r.name), 'yes']],
+      });
   }
 
   // today's Tagesschicht among friends

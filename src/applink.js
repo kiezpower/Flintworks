@@ -11,7 +11,7 @@ const PKG = 'de.kiezpower.flintworks';
 const q = new URLSearchParams(location.search);
 const room = q.get('room'),
   friend = q.get('friend');
-const path = room && /^[A-Z0-9]{6}$/i.test(room) ? 'join/' + room.toUpperCase() : friend ? 'friend/' + encodeURIComponent(friend) : '';
+const path = room && /^[A-Z0-9]{5}$/i.test(room) ? 'join/' + room.toUpperCase() : friend ? 'friend/' + encodeURIComponent(friend) : '';
 
 function appIntent() {
   const back = new URL(location.href);

@@ -561,6 +561,11 @@ function showLobby(h) {
   if (P.questNew && P.tutorialDone) toast('Neue Tagesaufgaben!');
   offerInstall();
   dailyFromLink(hooks);
+  // an invitation link was opened: the room lobby comes first
+  if (G.linkJoin && (inRoom() || NET.status === 'error')) {
+    G.linkJoin = false;
+    openInvite();
+  }
   // once per visit: the vault is full, the tunnel crew waits
   if (vaultFull() && !campTold) {
     campTold = true;

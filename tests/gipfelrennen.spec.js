@@ -31,7 +31,7 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 844, height: 390 }
       await page.click(`[data-kind="${kind}"]`);
       const card = page.locator('.ls-card[data-id="gipfelrennen"]');
       await expect(card).toContainText('Erreiche die Bergspitze');
-      await expect(card.locator('.ls-players')).toHaveText(kind === 'solo' ? '1 Spieler' : '2–8 Spieler');
+      await expect(card.locator('.ls-players')).toHaveText(kind === 'solo' ? '1 Spieler' : '2–4 Spieler');
       await expect.poll(() => card.locator('.ls-pv img').evaluate(i => i.complete && i.naturalWidth > 0)).toBe(true);
     }
   });
@@ -61,11 +61,11 @@ for (const [kind, winner] of [['versus', 'host'], ['versus', 'guest'], ['coop', 
     try {
       await open(host, kind); await open(guest, kind);
       await host.click('#lbPlay'); await host.click('#lbCreate');
-      await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+      await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
       await guest.click('#lbSlot1'); await guest.fill('#lbCodeIn', await host.locator('.lb-codetap b').textContent());
-      await guest.click('#lbJoinBtn'); await expect(host.locator('.lb-players .opt')).toHaveCount(2);
-      await guest.locator('.opt', { hasText: 'Bereit?' }).click();
-      await host.locator('.opt', { hasText: 'Spiel starten' }).click();
+      await guest.click('#lbJoinBtn'); await expect(host.locator('.pt-grid .pt-card:not(.empty)')).toHaveCount(2);
+      await guest.locator('.pt-go', { hasText: 'Bereit!' }).click();
+      await host.locator('.pt-go', { hasText: 'Spiel starten' }).click();
       for (const p of [host, guest]) await p.waitForFunction(() => window.__ww.G.net && window.__ww.G.state === 'play');
       expect(await host.evaluate(() => ({ teams: window.__ww.G.teams?.length || 0, minutes: window.__ww.G.mp.len / 3600 || 0 }))).toEqual({ teams: kind === 'versus' ? 2 : 0, minutes: kind === 'versus' ? 4 : 0 });
       expect(await host.evaluate(() => window.__ww.crew.length)).toBe(2);

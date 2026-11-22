@@ -221,6 +221,8 @@ function forgetSavedWorld(id) {
 function loadGame() {
   return deserialize(soloSlot.load());
 }
+// the saved round as data (also when the slot only points to a named world), for the lobby
+const savedData = () => soloSlot.load();
 function deserialize(d) {
   if (!d || d.v !== 1) return false;
   try {
@@ -362,4 +364,4 @@ addEventListener('visibilitychange', () => {
 });
 addEventListener('pagehide', saveOnExit);
 
-export { SAVEKEY, b64, clearSave, deserialize, forgetSavedWorld, hasSave, initSavedWorld, loadGame, saveGame, saveLater, savedTut, serialize, unb64 };
+export { SAVEKEY, b64, clearSave, deserialize, forgetSavedWorld, hasSave, initSavedWorld, loadGame, saveGame, saveLater, savedData, savedTut, serialize, unb64 };

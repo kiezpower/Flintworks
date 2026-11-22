@@ -1,4 +1,4 @@
-// Flintworks multiplayer relay. It does not run the game: it keeps rooms (a code, up to 8
+// Flintworks multiplayer relay. It does not run the game: it keeps rooms (a code of 5 letters, up to 4
 // players, who is host), forwards messages between the players of a room and remembers the
 // host's latest full snapshot for players who join late or reconnect.
 //
@@ -42,7 +42,8 @@
 //   {t:'rooms', rooms}                       open rooms: [{code, host, n, versus, ffa, playing, tag}]
 //   {t:'msg', from, d}                       forwarded message
 //   {t:'snap', d}                            latest snapshot (sent on join/reconnect while a game runs)
-//   {t:'error', e}                           'full' | 'nope' (room unknown) | 'bad'
+//   {t:'error', e}                           'full' | 'nope' (room unknown) | 'bad' | 'busy' |
+//                                            'slot' (the held place ran out while the round went on)
 //   {t:'pong', ts}
 //   {t:'hi', fid}                            my own friend code
 //   {t:'friends', list, asks}                list: mutual friends only [{fid, name, online, room,
@@ -77,7 +78,8 @@ import { join as pathJoin } from 'node:path';
 import { WebSocketServer } from 'ws';
 
 const PORT = Number(process.env.PORT || 8787);
-const MAX = 8;
+const MAX = 4;
+const SLOT_HOLD = 30000; // a player who lost the connection keeps their place this long
 const ROOM_TTL = 10 * 60 * 1000; // an empty room survives this long
 const HOST_GRACE = 5000; // a host that is gone this long hands over to another player
 const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -127,8 +129,9 @@ const mutual = (a, b) => a.friends.has(b.fid) && b.friends.has(a.fid);
 // where a friend is: a room with space (code, players), only while online
 function whereIs(u) {
   const r = u.ws && u.ws.room;
-  if (!r || r.players.length >= capacity(r) || !r.players.includes(u.ws.player)) return {};
-  return { room: r.code, n: r.players.filter(p => !p.serverHost).length };
+  if (!r || !r.players.includes(u.ws.player)) return {};
+  const n = r.players.filter(p => !p.serverHost).length;
+  return { ...(r.players.length < capacity(r) ? { room: r.code } : {}), n, playing: !!r.playing };
 }
 function friendsMsg(u) {
   const list = [],
@@ -399,7 +402,7 @@ function finvite(ws, m) {
 
 function newCode() {
   for (;;) {
-    const c = Array.from({ length: 6 }, () => CHARS[randomInt(CHARS.length)]).join('');
+    const c = Array.from({ length: 5 }, () => CHARS[randomInt(CHARS.length)]).join('');
     if (!rooms.has(c)) return c;
   }
 }
@@ -442,6 +445,7 @@ function join(ws, room, m) {
   let p = room.players.find(q => q.token && q.token === m.token);
   if (!p) {
     if (room.players.length >= capacity(room)) return send(ws, { t: 'error', e: 'full' });
+    if (m.back && room.playing) return send(ws, { t: 'error', e: 'slot' });
     p = { pid: room.nextPid++, token: clean(m.token, 40), ready: false };
     if (room.worldToken && m.token === room.worldToken) { p.serverHost = true; p.watch = true; room.host = p.pid; }
     room.players.push(p);
@@ -493,7 +497,7 @@ function onMessage(ws, raw) {
       // Stable code derived from a secret kept on the operator's disk. Neither a supplied
       // code nor a public player id can claim ownership of an existing world.
       const digest = createHash('sha256').update('fw-world:' + m.token).digest();
-      const code = Array.from(digest.subarray(0, 6), b => CHARS[b & 31]).join('');
+      const code = Array.from(digest.subarray(0, 5), b => CHARS[b & 31]).join('');
       let r = rooms.get(code);
       if (r && r.worldToken !== m.token) return send(ws, { t: 'error', e: 'bad' });
       if (!r) {
@@ -515,7 +519,7 @@ function onMessage(ws, raw) {
     case 'list':
       return send(ws, { t: 'rooms', rooms: openRooms() });
     case 'join': {
-      const r = rooms.get(clean(m.code, 6).toUpperCase());
+      const r = rooms.get(clean(m.code, 5).toUpperCase());
       if (!r) {
         if (++ws.badCodes > MAX_BAD_CODES) return ws.close(4002, 'codes');
         return send(ws, { t: 'error', e: 'nope' });
@@ -568,7 +572,12 @@ function onMessage(ws, raw) {
       // what the room list shows: Koop or Versus, and whether a round is running
       const k = m.d && isHost && m.d.k;
       if (k === 'cfg') Object.assign(room, { versus: !!m.d.versus, ffa: !!m.d.ffa });
-      else if (k === 'start' && m.to === 'all') room.playing = true;
+      else if (k === 'start' && m.to === 'all') {
+        // a new round: "ready" from now on means ready for the next one (rematch)
+        room.playing = true;
+        for (const p of room.players) p.ready = false;
+        broadcast(room, playersMsg(room));
+      }
       else if (k === 'end') room.playing = false;
       const out = { t: 'msg', from: me.pid, d: m.d };
       if (m.to === 'host') {
@@ -620,7 +629,14 @@ setInterval(() => {
     else if (held.has(w.id) && !holder(w.id)) touchWorld(w);
   }
   for (const [code, room] of rooms) {
-    if (room.worldToken) room.players = room.players.filter(p => p.serverHost || p.ws || now - p.gone < 30000);
+    // a place is held for SLOT_HOLD after a dropout, then it is free again
+    const before = room.players.length;
+    room.players = room.players.filter(p => p.serverHost || p.ws || now - p.gone < SLOT_HOLD);
+    if (!room.players.length) {
+      rooms.delete(code);
+      continue;
+    }
+    if (room.players.length !== before) broadcast(room, playersMsg(room));
     if (room.empty && now - room.empty > ROOM_TTL) {
       rooms.delete(code);
       continue;

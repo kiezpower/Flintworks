@@ -1,5 +1,5 @@
 // Load check for a full room (only on demand: MPLOAD=1 npx playwright test tests/mpload.spec.js
-// --workers 1): 2 and 8 players in one room against a relay of its own, everybody walks for 10 s;
+// --workers 1): 2 and 4 players in one room against a relay of its own, everybody walks for 10 s;
 // prints what the host sends and a guest receives per second, the frame rates and how long a tick
 // of the host takes. Numbers of v1.85.1 in docs/MULTIPLAYER_PLAN.md.
 import { expect, test } from '@playwright/test';
@@ -28,17 +28,17 @@ async function player(browser, name) {
   await expect(page.locator('#lbQuick')).toBeVisible();
   return page;
 }
-for (const N of [2, 8]) test(`load ${N}`, async ({ browser }) => {
+for (const N of [2, 4]) test(`load ${N}`, async ({ browser }) => {
   const ps = [];
   for (let k = 0; k < N; k++) ps.push(await player(browser, 'P' + k));
   const [h, ...rest] = ps;
   await h.locator('#lbCreate').click();
-  await expect(h.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  await expect(h.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
   const code = await h.locator('.lb-codetap b').textContent();
   for (const p of rest) { await p.waitForTimeout(300); await p.locator('#lbCodeIn').fill(code); await p.locator('#lbJoinBtn').click(); }
-  await expect(h.locator('.lb-players')).toContainText('P' + (N - 1), { timeout: 15000 });
-  for (const p of rest) { await p.waitForTimeout(300); await p.locator('.opt', { hasText: 'Bereit?' }).click(); }
-  await h.locator('.opt', { hasText: 'Spiel starten' }).click();
+  await expect(h.locator('.pt-grid')).toContainText('P' + (N - 1), { timeout: 15000 });
+  for (const p of rest) { await p.waitForTimeout(300); await p.locator('.pt-go', { hasText: 'Bereit!' }).click(); }
+  await h.locator('.pt-go', { hasText: 'Spiel starten' }).click();
   for (const p of ps) await p.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net, null, { timeout: 30000 });
   await h.waitForTimeout(3000);
   // everybody walks around and digs for 10 s

@@ -8,10 +8,11 @@ import { NET, joinRoom } from './room.js';
 
 function handle(url) {
   if (friendFromUrl(url)) return G.onFriendAdded?.();
-  const m = /[?&]room=([A-Z0-9]{6})/i.exec(url || '') || /join\/([A-Z0-9]{6})/i.exec(url || '');
+  const m = /[?&]room=([A-Z0-9]{5})(?![A-Z0-9])/i.exec(url || '') || /join\/([A-Z0-9]{5})(?![A-Z0-9])/i.exec(url || '');
   if (!m) return;
   const code = m[1].toUpperCase();
   if (NET.room === code || G.net) return; // already there, or busy in a round
+  G.linkJoin = true;
   joinRoom(code);
   G.onInvited?.();
 }
