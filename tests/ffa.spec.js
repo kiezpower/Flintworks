@@ -43,7 +43,7 @@ test('four castles: spread over the world, each with helpers, a hill in the midd
   // left, right, and the two in between, well apart
   const xs = four.bases.map(b => b[1]).sort((a, b) => a - b);
   for (let k = 1; k < 4; k++) expect(xs[k] - xs[k - 1]).toBeGreaterThan(300);
-  expect(four.helpers.every(n => n >= 2)).toBe(true);
+  expect(four.helpers.every(n => n >= 1)).toBe(true);
   expect(four.hill).toBe(true);
   expect(four.len).toBe(8);
   // three castles: the middle one stands where the hill would be
@@ -74,6 +74,8 @@ test('Jeder gegen jeden: the strongest takes the hill, the last castle standing 
     const of = t => w.crew.filter(c => (c.team || 0) === t);
     const me = w.crew.find(c => c.pid === G.myId);
     G.state = 'play';
+    // (every castle starts with one helper: green gets a second one for the fight below)
+    Object.assign(w.addDigger(castle(3).x + 16, castle(3).gy - 10), { team: 3 });
     // yellow alone on the hill takes it
     const h = G.mp.hill,
       put = c => Object.assign(c, { x: h.x - 3, y: h.y - 10, vx: 0, vy: 0 });

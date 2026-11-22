@@ -14,13 +14,10 @@
   "fill": {},
   "start": {
     "money": 60,
-    "crew": 3,
-    "inv": [
-      ["flint", "flint"],
-      ["loam"],
-      ["rock"]
-    ],
-    "tools": ["hook"]
+    "crew": 1,
+    "inv": [["flint", "flint"]],
+    "tools": ["hook"],
+    "store": {"loam": 1, "rock": 1}
   },
   "rules": {"meteors": false},
   "objects": [

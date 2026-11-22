@@ -14,27 +14,10 @@
   },
   "start": {
     "money": 40,
-    "crew": 3,
-    "inv": [
-      [
-        "loam",
-        "loam"
-      ],
-      [
-        "loam"
-      ],
-      [
-        "wood"
-      ]
-    ],
-    "store": {
-      "plank": 6,
-      "wood": 6,
-      "loam": 4
-    },
-    "tools": [
-      "hook"
-    ]
+    "crew": 1,
+    "inv": [["loam", "loam"]],
+    "store": {"plank": 6, "wood": 7, "loam": 5},
+    "tools": ["hook"]
   },
   "rules": {
     "meteors": false

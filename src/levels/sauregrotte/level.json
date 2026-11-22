@@ -15,23 +15,9 @@
   },
   "start": {
     "money": 60,
-    "crew": 3,
-    "inv": [
-      [
-        "flint",
-        "loam"
-      ],
-      [
-        "loam",
-        "loam"
-      ],
-      [
-        "rock"
-      ]
-    ],
-    "store": {
-      "loam": 6
-    }
+    "crew": 1,
+    "inv": [["flint", "loam"]],
+    "store": {"loam": 8, "rock": 1}
   },
   "rules": {
     "meteors": false

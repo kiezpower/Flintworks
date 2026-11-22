@@ -23,11 +23,13 @@ async function level(page) {
   await page.waitForFunction(() => window.__ww);
   await page.click('#lbPlay');
   await page.waitForFunction(() => window.__ww.state === 'play' && window.__ww.G.mode === 'belagerung');
-  // the crew stays in the castle, out of the way
+  // the crew waits at the far edge, out of the way: Wühler at the castle would be attacked
+  // instead of the castle (objects.js: a siege creature marches on the castle only when it sees none)
   await page.evaluate(() => {
-    const w = window.__ww;
+    const w = window.__ww,
+      { W, surf } = w.world;
     window.__park = () => {
-      for (const c of w.crew) Object.assign(c, { x: w.G.base.x + 14, y: w.G.base.gy - 10, vx: 0, vy: 0 });
+      for (const c of w.crew) Object.assign(c, { x: W - 20, y: surf[W - 17] - 11, vx: 0, vy: 0 });
     };
   });
   return errors;

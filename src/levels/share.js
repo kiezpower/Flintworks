@@ -141,6 +141,7 @@ function cleanStart(s) {
   return tidy({
     money: num(s.money, 0, 100000, true),
     crew: num(s.crew, 1, 8, true),
+    maxHelpers: num(s.maxHelpers, 0, 3, true),
     inv: list(s.inv, 8, b => list(b, 16, itemId)),
     research: list(s.research, 16, v => word(v)),
     store: counts(s.store),

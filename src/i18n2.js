@@ -287,6 +287,7 @@ const EN2 = {
   'Fehlt: {list}': 'Missing: {list}',
   'Fehlt: 1 Brett oder 1 Holz': 'Missing: 1 plank or 1 wood',
   'Crew voll – erst die Burg ausbauen': 'Crew full – upgrade the castle first',
+  'Höchstens {n} Helfer': 'At most {n} helpers',
   'Neue Runde': 'New round',
   Nochmal: 'Try again',
   // friends without a login (net/friends.js, lobbyfriends.js)
