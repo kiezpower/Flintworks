@@ -8,7 +8,7 @@ async function ready(page) {
 test('six heroes have six readable mobility actions with four distinct phases', async ({ page }) => {
   await ready(page);
   const frames = await page.evaluate(async () => {
-    const { minerArtReady, drawMinerFrame } = await import('/src/minerart.js'); await minerArtReady;
+    const { preloadMinerArt, drawMinerFrame } = await import('/src/minerart.js'); await preloadMinerArt();
     const out = [];
     for (const hero of ['anna','bruno','mika','juna','toni','nora']) for (const action of ['jump','fall','climb','hang','hammer','chop']) {
       const images = [], counts = [];
@@ -85,7 +85,7 @@ test('unavailable mobility and unique creature sheets preserve painted fallbacks
   await page.route('**/assets/creatures/unique.png',r=>r.abort());
   await ready(page);
   const r=await page.evaluate(async()=>{
-    const m=await import('/src/minerart.js'),c=await import('/src/creatureart.js');await Promise.all([m.minerArtReady,c.creatureArtReady]);
+    const m=await import('/src/minerart.js'),c=await import('/src/creatureart.js');await Promise.all([m.preloadMinerArt(),c.creatureArtReady]);
     const cv=document.createElement('canvas');cv.width=cv.height=160;const g=cv.getContext('2d');
     return {hero:m.drawMinerFrame(g,60,80,1,'climb',2,'#c8402c','blue',1,'','anna'),creatures:['crawler','spore','guardian'].map(k=>c.drawCreature(g,k,'idle',60,60,16,14))};
   });expect(r.hero).toBe(true);expect(r.creatures).toEqual([true,true,true]);
@@ -93,7 +93,9 @@ test('unavailable mobility and unique creature sheets preserve painted fallbacks
 
 test('castle shop shows painted helper and cart icons at native resolution',async({page})=>{
   await ready(page);
-  await page.evaluate(async()=>{await (await import('/src/minerart.js')).minerArtReady;window.__ww.openBase();});
+  await page.click('#lbPlay');
+  await page.waitForFunction(() => window.__ww.G.state === 'play');
+  await page.evaluate(() => window.__ww.openBase());
   await page.getByRole('tab',{name:'Kaufen',exact:true}).click();
   for(const label of ['Wühler','Lore']) {
     const row=page.locator('.opt').filter({has:page.locator('b',{hasText:label})}).first();

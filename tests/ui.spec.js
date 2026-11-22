@@ -261,19 +261,21 @@ test('bots can be switched off in the settings: quick play then fills no castles
   await expect(page.locator('#pBody .opt', { hasText: 'Bots: aus' })).toHaveCount(1);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('flintworks-profile')).bots)).toBe(false);
   // a quick play Versus room, alone: no bot castle (on: one bot for the blue castle)
-  const msg = await page.evaluate(() =>
-    Promise.all([import('/src/net/room.js'), import('/src/net/session.js'), import('/src/profile.js')]).then(
-      ([{ NET }, s, { P }]) => {
-        Object.assign(NET, { auto: { versus: true }, versus: true, ffa: false, pid: 1 });
-        NET.players = [{ pid: 1, name: 'A', online: true }];
-        const off = s.startMessage('gold');
-        P.bots = true;
-        const on = s.startMessage('gold');
-        Object.assign(NET, { auto: null, versus: false, players: [] });
-        return { off: [off.bots, off.versus], on: [on.bots, on.versus] };
-      },
-    ),
-  );
+  const msg = await page.evaluate(() => {
+    const { room: { NET }, startMessage, P } = window.__ww;
+    const room = { auto: NET.auto, versus: NET.versus, ffa: NET.ffa, players: NET.players };
+    const bots = P.bots;
+    Object.assign(NET, { auto: { versus: true }, versus: true, ffa: false, players: [{ pid: 1, name: 'A', online: true }] });
+    try {
+      const off = startMessage('gold');
+      P.bots = true;
+      const on = startMessage('gold');
+      return { off: [off.bots, off.versus], on: [on.bots, on.versus] };
+    } finally {
+      Object.assign(NET, room);
+      P.bots = bots;
+    }
+  });
   expect(msg).toEqual({ off: [[], false], on: [[1], true] });
   // the game menu has it too, in its first section
   await page.keyboard.press('Escape');

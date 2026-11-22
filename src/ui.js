@@ -1,8 +1,7 @@
 import { bindPaintedIcon, onItemArtReady } from './itemart.js';
 import { drawPortrait } from './portrait.js';
-import { minerArtReady } from './minerart.js';
 import { parseSkin } from './skins.js';
-import { drawMinerFrame } from './minerart.js';
+import { drawMinerFrame, preloadMinerAtlas } from './minerart.js';
 import { minerIdentity } from './mineractions.js';
 import { capacity } from './heroskills.js';
 import { markTorches } from './torches.js';
@@ -684,7 +683,7 @@ function opt(parent, { icon, title, sub, cost, short, disabled, onClick, state, 
   }
   const iconNode = b.querySelector('canvas');
   if (iconNode && icon?.artIconKey) bindPaintedIcon(iconNode, icon.artIconKey);
-  if (iconNode && icon?.redrawIcon) (icon.iconReady || minerArtReady).then(() => { if (iconNode.isConnected) icon.redrawIcon(iconNode); });
+  if (iconNode && icon?.redrawIcon) (icon.iconReady || Promise.resolve()).then(() => { if (iconNode.isConnected) icon.redrawIcon(iconNode); });
   b.insertAdjacentHTML(
     'beforeend',
     `<b>${title}</b><small>${sub || ''}</small><span class="cost">${cost || ''}</span>` +
@@ -1032,6 +1031,7 @@ onItemArtReady(() => {
 });
 function helperShopIcon() {
   const c = document.createElement('canvas'); c.width = c.height = 48; c.painted = true;
+  c.iconReady = preloadMinerAtlas('bruno');
   c.redrawIcon = target => {
     target.width = target.height = 48; target.classList.add('painted');
     const g = target.getContext('2d'); g.save(); g.scale(2, 2);

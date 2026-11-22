@@ -17,11 +17,17 @@ async function open(page, kind = 'solo') {
 // entire digging route. Terrain accessibility is checked by levels.spec.js.
 const rescue = ([pid, count]) => {
   const w = window.__ww, c = w.crew.find(c => c.pid === pid);
-  for (const a of w.animals.filter(a => a.lost).slice(0, count))
+  // Keep the remaining animals away from all diggers while directing this rescue.
+  // Otherwise wandering animals can meet the other player during the test ticks.
+  const lost = w.animals.filter(a => a.lost);
+  const waiting = lost.slice(count).map(a => ({ a, x: a.x, y: a.y }));
+  for (const { a } of waiting) a.lost = false;
+  for (const a of lost.slice(0, count))
     for (let k = 0; k < 60 && a.lost; k++) {
       Object.assign(c, { x: a.x, y: a.y - 6, vx: 0, vy: 0 });
       w.step(1);
     }
+  for (const { a, x, y } of waiting) Object.assign(a, { x, y, lost: true });
   return { rescued: w.G.rescued, lost: w.animals.filter(a => a.lost).length, state: w.G.state };
 };
 test('the mobile selection offers Fluffelstollen for solo and co-op, with a loaded preview, but not Versus', async ({ page }) => {
@@ -67,7 +73,7 @@ test('co-op: both players contribute to the same six-fluffel goal and win togeth
   try {
     await open(host, 'coop'); await open(guest, 'coop');
     await host.click('#lbPlay'); await host.click('#lbCreate');
-    await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+    await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/, { timeout: 15_000 });
     await guest.click('#lbSlot1');
     await guest.fill('#lbCodeIn', await host.locator('.lb-codetap b').textContent());
     await guest.click('#lbJoinBtn');

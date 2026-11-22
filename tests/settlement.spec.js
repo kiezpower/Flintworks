@@ -26,8 +26,10 @@ test('a settlement has lasting milestones, survives loading, and never ends at a
     w.G.store.plank = 0;
     const next = settlementStatus().id;
     w.save();
+    await w.G.worldSavePending;
     w.G.settlement = null;
     const loaded = w.load();
+    if (!loaded || !w.G.settlement) throw new Error('The archived settlement could not be loaded');
     const completed = [...w.G.settlement.done];
     w.G.settlement.done = MILESTONES.map(m => m.id);
     const ends = goalReached();

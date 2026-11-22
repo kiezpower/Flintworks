@@ -103,7 +103,14 @@ jobs:
             docker compose pull
             docker compose up -d
 
-            # Wait for the persistent simulation, as well as the WebSocket relay.
+            # Caddy: add play.kiez-power.de once (the same block lives in kiez-power-b2b/deploy/Caddyfile,
+            # so it survives their deploys), then reload without restarting the other sites
+            if ! grep -q "play.kiez-power.de" /opt/kiezpower/Caddyfile; then
+              cat caddy-site.conf >> /opt/kiezpower/Caddyfile
+            fi
+            docker exec kiezpower-caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+
+            # The public relay can serve rooms while the persistent world starts.
             READY=0
             for i in $(seq 1 30); do
               if docker exec flintworks-world node -e "fetch('http://127.0.0.1:8790/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then
@@ -113,16 +120,10 @@ jobs:
               sleep 5
             done
             if [ "$READY" != 1 ]; then
+              docker compose ps
               echo "Dedicated world did not become ready; its volume has been preserved."
               exit 1
             fi
-
-            # Caddy: add play.kiez-power.de once (the same block lives in kiez-power-b2b/deploy/Caddyfile,
-            # so it survives their deploys), then reload without restarting the other sites
-            if ! grep -q "play.kiez-power.de" /opt/kiezpower/Caddyfile; then
-              cat caddy-site.conf >> /opt/kiezpower/Caddyfile
-            fi
-            docker exec kiezpower-caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
 
             docker image prune -f --filter "label=org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" || true
 

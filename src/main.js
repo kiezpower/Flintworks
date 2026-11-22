@@ -56,7 +56,7 @@ import { updResearch } from './research.js';
 import { updEvents } from './events.js';
 import { ALL_IDS, nextLevel, recordCampaign, updScenario } from './scenarios.js';
 import { cam, render, resize } from './render.js';
-import { clearSave, hasSave, loadGame, saveGame, savedTut, deserialize } from './save.js';
+import { clearSave, hasSave, initSavedWorld, loadGame, saveGame, saveLater, savedTut, deserialize } from './save.js';
 import { simulate } from './sim.js';
 import { audioInit, sfx } from './sound.js';
 import { initUiArt } from './uiart.js';
@@ -65,7 +65,7 @@ import { $, closePanel, drawMini, hud, openBase, openBuild, openUi, panelEl, toa
 import { register, send } from './commands.js';
 import { NET, inRoom, onGameMsg, sendTo, token } from './net/room.js';
 import { beginNet, endNet, resumeNet, startMessage } from './net/session.js';
-import { clearNetSave, loadNetSave, saveNet } from './net/netsave.js';
+import { clearNetSave, initNetSave, loadNetSave, saveNet } from './net/netsave.js';
 import { clientStep } from './net/client.js';
 import { hostEnd, hostTick } from './net/host.js';
 import './net/countdown.js';
@@ -722,7 +722,8 @@ function step() {
     if (G.frame % 15 === 0) updAmbience();
     if (G.frame % 30 === 0) updDecor();
     if (G.frame % 60 === 0) checkLessons();
-    if (G.frame % 3600 === 0) G.net ? saveNet() : saveGame();
+    const saveInterval = G.mode === 'settlement' ? 900 : 3600;
+    if (G.frame % saveInterval === 0) saveLater(G.net ? saveNet : saveGame);
     checkGoal();
   }
   if (!paused) {
@@ -864,21 +865,22 @@ applyStatic();
   const paid = seasonRoll();
   if (paid) setTimeout(() => toast('Saison vorbei: {rank} – +{n} Kristalle', { rank: tr(paid.rank), n: paid.kri }), 1500);
 }
-gen();
-resize();
-resetCam();
-hud();
-overlay.hidden = true;
-// a brand-new player starts in the tutorial world, not in the lobby (veil.js); links to the
-// Tagesschicht, a room or a level draft, and players who already played, get the lobby
-const linked = ['daily', 'room', 'draft', 'lvl'].some(k => new URLSearchParams(location.search).has(k));
-// (a tutorial saved before v1.52.0 has another world and other steps: it starts afresh)
-const oldTut = savedTut();
-if (oldTut && !oldTut.run) clearSave();
-if (!P.tutorialDone && !(P.games > 0) && !linked && (!hasSave() || savedTut())) play(false, null, true);
-else menu();
-// an invitation that opens the app while the start screen waits: to the lobby and the room
-// (also on the start screen, which skips the lobby: an old offline copy updates itself)
+function boot() {
+  resize();
+  overlay.hidden = true;
+  // New players only need the tutorial world. The lobby has its own scenery.
+  const linked = ['daily', 'room', 'draft', 'lvl'].some(k => new URLSearchParams(location.search).has(k));
+  const oldTut = savedTut();
+  if (oldTut && !oldTut.run) clearSave();
+  if (!P.tutorialDone && !(P.games > 0) && !linked && (!hasSave() || savedTut())) {
+    play(false, null, true);
+  } else {
+    menu();
+  }
+  requestAnimationFrame(loop);
+}
+Promise.all([initSavedWorld(), initNetSave()]).then(boot);
+// Room links can also arrive while the start screen waits.
 checkUpdate();
 G.onInvited = () => {
   if (!veilOpen()) return;
@@ -886,7 +888,6 @@ G.onInvited = () => {
   discard();
   menu();
 };
-requestAnimationFrame(loop);
 
 // Offline mode for the web version; the Android app ships its files itself
 // (and not inside other sites like itch.io)

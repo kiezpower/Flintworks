@@ -6,14 +6,20 @@ const sources = {
   winter: new URL('./assets/scenes/winter.png', import.meta.url).href,
 };
 const images = {};
-const sceneArtReady = Promise.all(Object.entries(sources).map(([name, url]) => new Promise(resolve => {
-  const im = new Image();
-  im.onload = () => { images[name] = im; resolve(true); };
-  im.onerror = () => resolve(false);
-  im.src = url;
-})));
+const loads = {};
+function loadScene(name) {
+  return loads[name] ??= new Promise(resolve => {
+    const im = new Image();
+    im.onload = () => { images[name] = im; resolve(true); };
+    im.onerror = () => resolve(false);
+    im.src = sources[name];
+  });
+}
+const preloadSceneArt = () => Promise.all(Object.keys(sources).map(loadScene));
 function drawSceneArt(g, biome, width, height, offset = 0, top = 0) {
-  const im = images[biome === 'autumn' ? 'meadow' : biome];
+  const name = biome === 'autumn' ? 'meadow' : biome;
+  if (Object.hasOwn(sources, name)) loadScene(name);
+  const im = images[name];
   if (!im) return false;
   g.save();
   g.imageSmoothingEnabled = true;
@@ -26,4 +32,4 @@ function drawSceneArt(g, biome, width, height, offset = 0, top = 0) {
   g.restore();
   return true;
 }
-export { drawSceneArt, sceneArtReady };
+export { drawSceneArt, preloadSceneArt };

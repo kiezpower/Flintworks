@@ -60,7 +60,6 @@ import {
   resetSim,
   bg,
   clearFresh,
-  flush,
   mat,
   paint,
   paintAll,
@@ -577,7 +576,6 @@ function settle() {
   } finally {
     G.settling = false;
   }
-  flush();
   parts.length = 0;
 }
 // birds, clouds, weather, events and the mode's own start; the last part of every new world

@@ -58,6 +58,23 @@ test('named worlds can be created, renamed, switched, exported and safely import
   expect(errors).toEqual([]);
 });
 
+test('a solo settlement resumes after reload from the archive reference', async ({ page }) => {
+  await open(page);
+  const id = await page.evaluate(async () => {
+    const w = window.__ww;
+    await w.G.createWorld({ name: 'Archivberg', biome: 'meadow' });
+    w.G.money = 2345;
+    w.save();
+    await w.G.worldSavePending;
+    return w.G.worldId;
+  });
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('wuehlwelt-save-v1')))).toEqual({ archive: id });
+  await page.reload();
+  await expect(page.locator('#lbPlayTxt')).toHaveText('Weiterspielen');
+  await page.click('#lbPlay');
+  expect(await page.evaluate(() => [window.__ww.G.worldId, window.__ww.G.money])).toEqual([id, 2345]);
+});
+
 test('a saved cooperative settlement reclaims inventory by identity after renaming and late joining', async ({ browser }, testInfo) => {
   const port = 19500 + testInfo.workerIndex;
   const relay = startRelay(port); await relay.ready;

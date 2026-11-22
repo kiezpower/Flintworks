@@ -40,8 +40,8 @@ test('real world paint invalidates visible art, and switching worlds cannot reus
     const g = c.getContext('2d'); g.scale(4, 4);
     const draw = () => { g.clearRect(0, 0, 32, 32); w.drawWorld(g, 32, 128, 32, 32); return c.toDataURL(); };
     for (let y = 128; y < 160; y++) for (let x = 32; x < 64; x++) { const i = y * w.W + x; w.mat[i] = w.EARTH; w.bg[i] = 1; w.paint(i); }
-    w.flush(); const before = draw();
-    const i = 140 * w.W + 45; w.mat[i] = w.AIR; w.paint(i); w.flush(); const after = draw();
+    const before = draw();
+    const i = 140 * w.W + 45; w.mat[i] = w.AIR; w.paint(i); const after = draw();
     const { drawTerrainArt } = await import('/src/terrainart.js');
     const other = { W: 32, H: 32, mat: new Uint8Array(1024), bg: new Uint8Array(1024), shade: new Uint8Array(1024), tone: () => 1 };
     g.clearRect(0, 0, 32, 32); drawTerrainArt(g, 0, 0, 32, 32, other);

@@ -3,8 +3,8 @@ import { G, esc } from './state.js';
 import { P, saveProfile } from './profile.js';
 import { GAME_MODES } from './modes.js';
 import { NET, createRoom, inRoom } from './net/room.js';
-import { saveGame, serialize } from './save.js';
-import { saveNet } from './net/netsave.js';
+import { forgetSavedWorld, saveGame, serialize } from './save.js';
+import { forgetNetWorld, saveNet } from './net/netsave.js';
 import { archiveWorld } from './worldarchive.js';
 import { MAX_IMPORT, readWorld, listWorlds, renameWorld, deleteWorld, exportWorld, importWorld } from './worldstore.js';
 import { closePanel, openPanel, opt, sec, toast, panelEl } from './ui.js';
@@ -133,7 +133,7 @@ async function detail(id) {
     await preserve();
     // Read again after preserving: the open world may have received a newer autosave.
     const current = await readWorld(id);
-    if (await G.loadWorld(current)) closePanel();
+    await G.loadWorld(current);
   }) });
   opt(actions, { title: tr('Umbenennen'), short: true, onClick: guard(async () => {
     await preserve();
@@ -180,7 +180,7 @@ async function detail(id) {
     if (G.worldId === id && G.inRun) return toast('Verlasse diese Welt, bevor du sie löschst');
     const confirm = openPanel('Welt löschen');
     const n = document.createElement('p'); n.textContent = w.name; confirm.appendChild(n);
-    opt(sec(confirm, ''), { title: tr('Endgültig löschen'), onClick: guard(async () => { await deleteWorld(id); await openWorlds(); }) });
+    opt(sec(confirm, ''), { title: tr('Endgültig löschen'), onClick: guard(async () => { await deleteWorld(id); forgetSavedWorld(id); forgetNetWorld(id); await openWorlds(); }) });
     opt(sec(confirm, ''), { title: tr('Abbrechen'), onClick: () => detail(id) });
   } });
   opt(sec(p, ''), { title: tr('Zurück'), short: true, onClick: openWorlds });

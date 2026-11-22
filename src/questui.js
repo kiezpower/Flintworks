@@ -152,12 +152,12 @@ function questBoard(parent, reopen, onClaim) {
     }
     b.appendChild(n);
   });
-  const roleNote = document.createElement('div'); roleNote.className = 'qnote';
+  const roleNote = document.createElement('div'); roleNote.className = 'qnote qrole';
   roleNote.textContent = tr('Rollenherausforderung: Nutze deine Fähigkeit mit Wirkung') + ' · ' + (P.heroDaily === dayNumber() ? tr('Erledigt') : '+30 XP'); b.append(roleNote);
   const project = projectStatus();
   if (project) {
     const title = document.createElement('h3'); title.textContent = tr(project.title); b.append(title);
-    for (const [key, goal, label] of project.tasks) { const row = document.createElement('div'); row.className = 'qnote'; row.textContent = tr(label) + ` · ${Math.min(goal, project.values[key] || 0)}/${goal}`; b.append(row); }
+    for (const [key, goal, label] of project.tasks) { const row = document.createElement('div'); row.className = 'qnote qproject'; row.textContent = tr(label) + ` · ${Math.min(goal, project.values[key] || 0)}/${goal}`; b.append(row); }
   }
   parent.appendChild(b);
   const f = document.createElement('div');
