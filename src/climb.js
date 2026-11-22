@@ -324,13 +324,9 @@ function climbContext(c) {
   if (G.autoDig && L.wall && digWall(c, L)) return null;
   const plan = stairPlan(c);
   if (plan && hasRes(c, stairCost(c))) return { label: 'Treppe', fn: () => buildStairs(c, plan) };
-  return {
-    label: 'Heim',
-    fn: () => {
-      goHome(c);
-      toast('{name} ist zurück in der Basis', { name: c.name });
-    },
-  };
+  // (no "home" here any more: it threw the Wühler back to the base by accident – whoever is
+  // really stuck finds "Zurück zur Basis" in the menu)
+  return null;
 }
 // can the wall up to this ledge be dug? (set by digger.js: diggable() needs the steel pick for rock)
 let canDig = () => false;

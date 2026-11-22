@@ -478,6 +478,9 @@ function nearTree(c) {
   return null;
 }
 const NOIN = { ax: 0, ay: 0, dig: false, jumpP: false, jumpUp: false, throwP: false, actP: false };
+// top walking speeds in landscape pixels per frame (was 1.05 for everyone)
+const WALK = 0.85,
+  HELPER_WALK = 0.6;
 function updDigger(c, I) {
   // wooden stairs and bridges hold the Wühler only from above (see setPlat)
   if (c.dropT > 0) c.dropT--;
@@ -510,6 +513,7 @@ function updBody(c, I) {
     return;
   }
   if (c.hurt > 0) c.hurt--;
+  if (c.safeT > 0) c.safeT--;
   unstuck(c);
   const mBody = midMat(c, 0.6),
     mHead = midMat(c, 0.1),
@@ -732,7 +736,10 @@ function updBody(c, I) {
   const onG = !free(c.x, c.y + 1, 6, 10);
   // frames in the air, for the jump and fall poses (diggerhi.js); a step down does not count
   c.airT = onG || inLiq ? 0 : (c.airT || 0) + 1;
-  let tvx = Math.abs(I.ax) < 0.25 ? 0 : I.ax * (inLiq ? 0.6 : 1.05) * (c.frost > 0 ? 0.55 : 1);
+  // walking pace: the players' Wühler WALK, the helpers clearly slower on the ground (HELPER_WALK;
+  // in the air they keep the old pace, so the jumps of their planned paths still reach)
+  const helper = c.pid == null && !c.bot;
+  let tvx = Math.abs(I.ax) < 0.25 ? 0 : I.ax * (inLiq ? 0.6 : helper && !onG ? 1.05 : helper ? HELPER_WALK : WALK) * (c.frost > 0 ? 0.55 : 1);
   // starting off from standing, and stopping from a run, for the poses (diggerhi.js)
   if (onG && Math.abs(I.ax) > 0.25 && Math.abs(c.vx) < 0.15 && G.frame - (c.startF ?? -99) > 12) c.startF = G.frame;
   if (onG && Math.abs(I.ax) < 0.25 && Math.abs(c.vx) > 0.7 && G.frame - (c.stopF ?? -99) > 12) c.stopF = G.frame;
@@ -1054,7 +1061,7 @@ function context(c) {
   // right at a wall: up onto it, to shoot from there (fort.js)
   const wc = wallContext(c);
   if (wc) return wc;
-  // stuck below a ledge too high for a jump: hook, stairs or home (climb.js)
+  // stuck below a ledge too high for a jump: stairs (climb.js)
   const up = climbContext(c);
   if (up) return up;
   const it = c.inv[c.isel];

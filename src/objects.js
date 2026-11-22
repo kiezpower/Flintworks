@@ -342,17 +342,30 @@ function ignite(t) {
 // How the attacking creatures behave: speed and how far they notice you, how hard and how
 // often they strike (dmg on a hit, touch every frame of contact), knock-back, and what is
 // special: the spider leaps and poisons, the slime hops and sets you alight, the golem stomps.
+// speed: walking pace (the Wühler walks 0.85, so every kind can be outrun); after a strike a
+// monster backs off for a moment and the Wühler gets a short grace (SAFE) without being stunned
 const FOE = {
-  monster: { speed: 0.5, accel: 0.08, sense: 110, warnAt: 20, dmg: 10, touch: 0.12, cd: 70, knock: 2.2, reach: 0, step: 3, climb: -2.4 },
-  spider: { speed: 0.9, accel: 0.15, sense: 130, warnAt: 30, dmg: 6, touch: 0.06, cd: 55, knock: 1.4, reach: 0, step: 3, climb: -2.4, leap: true, poison: 180 },
+  monster: { speed: 0.36, accel: 0.08, sense: 110, warnAt: 20, dmg: 10, touch: 0.12, cd: 70, knock: 2.2, reach: 0, step: 3, climb: -2.4 },
+  spider: { speed: 0.55, accel: 0.1, sense: 130, warnAt: 30, dmg: 6, touch: 0.06, cd: 55, knock: 1.4, reach: 0, step: 3, climb: -2.4, leap: true, poison: 180 },
   slime: { speed: 0, accel: 0, sense: 120, warnAt: 22, dmg: 12, touch: 0.1, cd: 60, knock: 1.8, reach: 0, step: 2, climb: -2, hop: true, burn: 90 },
-  golem: { speed: 0.26, accel: 0.05, sense: 100, warnAt: 28, dmg: 20, touch: 0.15, cd: 110, knock: 3.4, reach: 2, step: 3, climb: -2.0, stomp: true },
+  golem: { speed: 0.2, accel: 0.05, sense: 100, warnAt: 28, dmg: 20, touch: 0.15, cd: 110, knock: 3.4, reach: 2, step: 3, climb: -2.0, stomp: true },
   // the cave biomes' own (zones.js): a crystal beetle that leaps like the spider, a spore toadstool
   // that hops like the slime and poisons; the shrines' guardian, a stronger golem (shrines.js)
-  crawler: { speed: 0.7, accel: 0.12, sense: 110, warnAt: 28, dmg: 9, touch: 0.08, cd: 60, knock: 1.8, reach: 0, step: 3, climb: -2.4, leap: true },
+  crawler: { speed: 0.45, accel: 0.09, sense: 110, warnAt: 28, dmg: 9, touch: 0.08, cd: 60, knock: 1.8, reach: 0, step: 3, climb: -2.4, leap: true },
   spore: { speed: 0, accel: 0, sense: 110, warnAt: 22, dmg: 7, touch: 0.1, cd: 70, knock: 1.4, reach: 0, step: 2, climb: -2, hop: true, poison: 240 },
-  guardian: { speed: 0.32, accel: 0.06, sense: 70, warnAt: 28, dmg: 24, touch: 0.15, cd: 100, knock: 3.6, reach: 2, step: 3, climb: -2.0, stomp: true },
+  guardian: { speed: 0.24, accel: 0.06, sense: 70, warnAt: 28, dmg: 24, touch: 0.15, cd: 100, knock: 3.6, reach: 2, step: 3, climb: -2.0, stomp: true },
 };
+const SAFE = 60; // frames of grace after a monster's strike
+// a monster's strike pushes the Wühler away (a hop: in the air the push carries, on the ground
+// the player's own running takes over again at once)
+function knockBack(c, vx, vy) {
+  if (c.dead || c.ride != null) return;
+  c.climb = c.hangle = false;
+  c.digging = false;
+  c.chop = null;
+  c.vx = vx;
+  c.vy = Math.min(c.vy, vy);
+}
 function updAnimal(a) {
   if (a.hurt > 0) a.hurt--;
   const m = midMat(a, 0.5),
@@ -476,18 +489,22 @@ function updAnimal(a) {
         if (!(a.hopT > 0)) {
           a.hopT = tgt ? 38 : ri(60, 140);
           a.vy = tgt ? -2.3 : -1.4;
-          a.vx = tgt ? dir * 1.25 : (rnd() < 0.5 ? -1 : 1) * 0.5;
+          a.vx = tgt ? dir * 0.95 : (rnd() < 0.5 ? -1 : 1) * 0.5;
           sfx('land', a.x, a.y);
         }
       }
       a.tvx = null;
+    } else if (a.back > 0) {
+      // just struck: backs off for a moment, so the Wühler can run or strike back
+      a.back--;
+      a.tvx = -(a.backDir || 1) * F.speed * 0.8;
     } else if (tgt) {
       a.tvx = dir * F.speed;
       // the spider leaps at you from a little way off
       if (F.leap && onG && !(a.leapCd > 0) && a.atk <= 0 && Math.abs(tgt.x - a.x) < 50 && Math.abs(tgt.y - a.y) < 16) {
-        a.vy = -2.3;
-        a.vx = dir * 2.2;
-        a.leapCd = 90;
+        a.vy = -2.1;
+        a.vx = dir * 1.6;
+        a.leapCd = 150;
         sfx('clack', a.x, a.y);
       }
       if (G.frame % 180 === 0) sfx('growl', a.x, a.y);
@@ -509,12 +526,19 @@ function updAnimal(a) {
     if (a.atk > 0) a.atk--;
     for (const c of crew) {
       if (c.dead || !overlap(a, c, F.reach)) continue;
+      // (right after a hit the Wühler has a short grace: no touching, no next strike)
+      if (c.safeT > 0) continue;
       const g = guard(c, 'monster');
       hurt(c, F.touch * g, true);
       if (a.atk <= 0) {
         a.atk = F.cd;
         const k = Math.sign(c.x - a.x || 1);
-        startTumble(c, k * F.knock * g, -1.6 * g);
+        // pushed away with a little hop – no longer knocked down: the Wühler keeps control and
+        // can run off right away (before, every strike stunned and the next one followed)
+        knockBack(c, k * F.knock * g, -1.4 * g);
+        c.safeT = SAFE;
+        a.back = 40;
+        a.backDir = k;
         hurt(c, F.dmg * g);
         if (F.poison) c.poison = Math.max(c.poison || 0, F.poison);
         if (F.burn) c.burn = Math.max(c.burn || 0, F.burn);

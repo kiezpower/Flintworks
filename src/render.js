@@ -857,6 +857,9 @@ function render() {
       return;
     }
     drawHook(ctx, c, x, y, cx, cy);
+    // the grace after a monster's strike (objects.js): the Wühler blinks
+    const blink = c.safeT > 0 && (c.safeT >> 2) & 1;
+    if (blink) ctx.globalAlpha = 0.45;
     if (c.tumble) {
       ctx.save();
       ctx.translate(x + 3, y + 5);
@@ -878,6 +881,7 @@ function render() {
         ctx.restore();
       } else drawDiggerHi(c, x, y, c.face, ctx);
     }
+    if (blink) ctx.globalAlpha = 1;
     drawGear(ctx, c, x, y);
     // poisoned by a spider: a green shimmer and little bubbles rising off the Wühler
     if (c.poison > 0 && !c.dead) {
