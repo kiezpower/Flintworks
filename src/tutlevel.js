@@ -1,63 +1,90 @@
-// The tutorial world: a fixed meadow with a short teaching path to the right of the castle. It
-// teaches only the core loop – walk, jump, dig to gold, carry it home and sell it – the rest
-// comes as tips in the first real round (lessons.js).
+// The tutorial world: Funkenhain, a small village whose hearth fire has gone out, and the way
+// down to the Glutstein beneath it. Every part of the path teaches one thing (tutsteps.js):
 //
-//   [castle]  start   ▲bump   ✦      flat … the normal world
-//   ──────────────────█████───────────────
-//                            ░gold░
+//   [castle] hearth huts  ▲bump  well ↓shaft                                      ramp ↗ surface
+//   ─────────────────────█████─────╥──────────────────────────────────────────────────╱─────
+//                                  ║                                                ╱
+//                     ┌────────────╨──┬──flint──┬──ore──┬beams┐      ┌───────────┬╱
+//                     │   cave        █        ▓       ▓     │abyss │ cave-in   │ Glutstein room
+//                     └───────────────┴────────┴───────┴─────┘      └───────────┘   ◆ on a rock
 //
-// The bump is rock (no pick yet: it cannot be dug) and 7 px high: higher than a step (3 px),
-// much lower than a jump (17 px), so the only way on is a jump. The gold lies just under the
-// ground, close enough to dig to in a few strokes; a sparkle above it shows where.
-import { blob } from './gen.js';
+// The bump is rock (no pick yet) and 7 px high: higher than a step (3 px), lower than a jump
+// (17 px). The shaft goes 22 px through plain earth into the first cave; the flint wall is rock
+// (the pick comes with that step), the ore wall is ore. The abyss is 44 px wide: too far for a
+// jump, short enough for one plank bridge (84 px). The cave-in corridor is where the ceiling
+// comes down (tutscene.js), the ramp brings the Glutstein back up to the surface.
+import { spawnItem } from './entities.js';
 import { GAME_MODES } from './modes.js';
-import { G, animals, crew, items, parts, trees } from './state.js';
-import { AIR, EARTH, GOLD, H, ROCK, W, bg, mat, paint, shade, surf } from './world.js';
+import { G, animals, crew, items, trees } from './state.js';
+import { AIR, EARTH, H, ORE, ROCK, W, bg, mat, paint, shade, surf } from './world.js';
 
-// x positions of the path; heights are relative to the castle's ground
+// x positions of the path; heights (dy) are below the castle's ground
 const TUT = {
-  bump: { x0: 140, x1: 146, up: 7 },
-  gold: { x: 178, dy: 8 },
-  end: 280, // the flat part ends here and blends into the normal world
+  hearth: { x: 130 },
+  huts: [
+    { x: 142, w: 18, h: 14 },
+    { x: 166, w: 15, h: 11 },
+  ],
+  bump: { x0: 190, x1: 197, up: 7 },
+  well: { x: 222 },
+  shaft: { x: 240 },
+  cave: { x0: 216, x1: 334, top: 22, floor: 38 }, // (air from top to floor-1)
+  flint: { x0: 262, x1: 270 },
+  ore: { x0: 294, x1: 302 },
+  beams: [314, 322],
+  gap: { x0: 334, x1: 378, deep: 72 },
+  hall: { x0: 378, x1: 500 }, // the cave-in corridor (same height as the cave)
+  room: { x0: 500, x1: 566, top: 8, floor: 46 },
+  glut: { x: 533 },
+  ramp: { x0: 566, x1: 658 },
+  end: 720, // the flat part ends here and blends into the normal world
 };
+const DUSK = 0.55; // (the time of day while the fire is out; the finale turns it to noon)
 const ground = () => surf[90];
-const goldSpot = () => ({ x: TUT.gold.x, y: ground() + TUT.gold.dy });
-const bumpTop = () => ({ x: (TUT.bump.x0 + TUT.bump.x1) / 2, y: ground() - TUT.bump.up });
-// is there gold left in the vein (looked at a few pixels, cheap)
-function goldLeft() {
-  const g = goldSpot();
-  for (let y = g.y - 4; y <= g.y + 4; y++)
-    for (let x = g.x - 8; x <= g.x + 8; x++) if (mat[y * W + x] === GOLD) return true;
-  return false;
+const at = dy => ground() + dy;
+const caveFloor = () => at(TUT.cave.floor);
+const shaftSpot = () => ({ x: TUT.shaft.x, y: ground() });
+const hearthSpot = () => ({ x: TUT.hearth.x, y: ground() });
+const glutSpot = () => ({ x: TUT.glut.x, y: at(TUT.room.floor) - 4 });
+// the floor of the ramp at x (y of the first solid row)
+const rampFloor = x => Math.round(at(TUT.room.floor) - (x - TUT.ramp.x0) * (TUT.room.floor / (TUT.ramp.x1 - TUT.ramp.x0)));
+// how many cells of a material are left in a box (cheap: the walls are small)
+function left(x0, x1, y0, y1, m) {
+  let n = 0;
+  for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) if (mat[y * W + x] === m) n++;
+  return n;
 }
-// a twinkle on the ground above the vein, now and then, while the gold is still in there
-function sparkle() {
-  if (G.frame % 40 || !goldLeft()) return;
-  const g = goldSpot(),
-    x = g.x + Math.round((Math.random() - 0.5) * 10);
-  parts.push({ x, y: ground() - 1, vx: 0, vy: -0.15, l: 30, c: '#fff3c0', g: 0 });
-  parts.push({ x: x + 1, y: ground() - 2, vx: 0, vy: -0.1, l: 18, c: '#f2c230', g: 0 });
-}
+const flintLeft = () => left(TUT.flint.x0, TUT.flint.x1, at(TUT.cave.top), caveFloor(), ROCK);
+const FLINT_CELLS = (TUT.flint.x1 - TUT.flint.x0) * (TUT.cave.floor - TUT.cave.top);
 
 function set(x, y, m) {
+  if (x < 0 || x >= W || y < 0 || y >= H) return;
   const i = y * W + x;
   mat[i] = m;
   bg[i] = m === AIR ? 0 : 1;
   paint(i);
 }
+// air with a dug-out back wall (a cave, not open sky)
+function hollow(x, y) {
+  if (x < 0 || x >= W || y < 0 || y >= H) return;
+  const i = y * W + x;
+  mat[i] = AIR;
+  bg[i] = 1;
+  paint(i);
+}
 function setup() {
   const gy = ground();
   // flat ground and plain earth below it, so nothing surprising lies on the way
-  for (let x = 108; x < TUT.end; x++) {
-    const t = Math.max(0, (x - (TUT.end - 40)) / 40),
+  for (let x = 108; x < TUT.end + 40; x++) {
+    const t = Math.max(0, (x - TUT.end) / 40),
       s = Math.round(gy * (1 - t) + surf[x] * t);
-    for (let y = 0; y < Math.min(H - 12, s + 60); y++) {
+    for (let y = 0; y < Math.min(H - 12, s + 112); y++) {
       shade[y * W + x] = (shade[y * W + x] & 3) | (y > s && y <= s + 3 ? 4 : 0);
       set(x, y, y > s ? EARTH : AIR);
     }
     surf[x] = s;
   }
-  // the bump: a low block of rock with rounded top corners, a little into the ground
+  // the bump on the village road: a low block of rock with rounded top corners
   const B = TUT.bump;
   for (let y = gy - B.up + 1; y <= gy + 3; y++)
     for (let x = B.x0; x < B.x1; x++) {
@@ -65,17 +92,49 @@ function setup() {
       set(x, y, ROCK);
     }
   for (let x = B.x0; x < B.x1; x++) surf[x] = gy - B.up;
-  // a dense vein just under the ground
-  blob(TUT.gold.x, gy + TUT.gold.dy, 7, 3, GOLD);
-  for (let y = gy; y < gy + TUT.gold.dy + 10; y++)
-    for (let x = TUT.gold.x - 14; x < TUT.gold.x + 14; x++) paint(y * W + x);
-  // nothing on the path: no trees, no items, no animals nearby
+  // the first cave, under the well
+  const C = TUT.cave;
+  for (let x = C.x0; x < C.x1; x++) {
+    // (a slightly rounded ceiling at the far left end)
+    const top = at(C.top) + (x - C.x0 < 4 ? 4 - (x - C.x0) : 0);
+    for (let y = top; y < at(C.floor); y++) hollow(x, y);
+  }
+  // the flint wall (rock: the pick is needed) and the ore wall, each from floor to ceiling
+  for (let y = at(C.top); y < at(C.floor); y++) {
+    for (let x = TUT.flint.x0; x < TUT.flint.x1; x++) set(x, y, ROCK);
+    for (let x = TUT.ore.x0; x < TUT.ore.x1; x++) set(x, y, ORE);
+  }
+  // the abyss: deep, with earth at the bottom
+  const A = TUT.gap;
+  for (let x = A.x0; x < A.x1; x++) for (let y = at(C.top); y < at(A.deep); y++) hollow(x, y);
+  // the cave-in corridor, then a step down into the Glutstein room
+  for (let x = TUT.hall.x0; x < TUT.hall.x1; x++) for (let y = at(C.top); y < at(C.floor); y++) hollow(x, y);
+  const R = TUT.room;
+  for (let x = R.x0; x < R.x1; x++) {
+    const d = Math.abs(x - (R.x0 + R.x1) / 2) / ((R.x1 - R.x0) / 2),
+      top = at(R.top) + Math.round(d * d * 8);
+    for (let y = top; y < at(R.floor); y++) hollow(x, y);
+  }
+  // the Glutstein lies on a small rock
+  for (let x = TUT.glut.x - 4; x < TUT.glut.x + 4; x++)
+    for (let y = at(R.floor) - 3; y < at(R.floor); y++) if (!(y === at(R.floor) - 3 && (x === TUT.glut.x - 4 || x === TUT.glut.x + 3))) set(x, y, ROCK);
+  // the ramp up to the surface: an old tunnel, 13 px high, rising 1 px every 2 px
+  for (let x = TUT.ramp.x0 - 2; x < TUT.ramp.x1 + 2; x++) {
+    const f = rampFloor(Math.min(TUT.ramp.x1, Math.max(TUT.ramp.x0, x)));
+    for (let y = f - 13; y < f; y++) if (y > gy) hollow(x, y);
+  }
+  // the old beams of a broken bridge, at the edge of the abyss
+  for (const x of TUT.beams) spawnItem('wood', x, caveFloor() - 3, 0, 0, 0);
+  // nothing on the path: no trees, no animals; no gas
   for (let k = trees.length - 1; k >= 0; k--) if (trees[k].x < TUT.end + 10) trees.splice(k, 1);
-  for (let k = items.length - 1; k >= 0; k--) if (items[k].x < TUT.end + 20) items.splice(k, 1);
+  for (let k = items.length - 1; k >= 0; k--) if (items[k].x < TUT.end + 20 && items[k].t !== 'wood') items.splice(k, 1);
   for (let k = animals.length - 1; k >= 0; k--) if (animals[k].x < TUT.end + 60) animals.splice(k, 1);
   G.gas = [];
-  // bright day for the first look (the clock stands still in the tutorial, weather.js)
-  G.dayT = 0.3;
+  if (G.chests) G.chests = G.chests.filter(ch => ch.x > TUT.end + 20);
+  // dusk over the village: the fire is out (the clock stands still in the tutorial, weather.js);
+  // the finale brings the day back (tutscene.js)
+  G.dayT = DUSK;
+  G.tutLit = 0;
   // you start alone with empty pockets: only what is taught is in play
   crew.length = 1;
   crew[0].inv = [];
@@ -84,7 +143,7 @@ function setup() {
 
 GAME_MODES.tut = {
   name: 'Tutorial',
-  desc: 'Die erste Schicht',
+  desc: 'Der Glutstein',
   biome: 'meadow',
   seed: 4711,
   diff: 'relaxed',
@@ -97,4 +156,4 @@ GAME_MODES.tut = {
   setup,
 };
 
-export { TUT, bumpTop, goldLeft, goldSpot, ground, sparkle };
+export { DUSK, FLINT_CELLS, TUT, at, caveFloor, flintLeft, glutSpot, ground, hearthSpot, rampFloor, shaftSpot };

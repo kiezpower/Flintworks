@@ -997,6 +997,7 @@ function lorryNear(c) {
 }
 function context(c) {
   if (!c || c.dead) return { label: '—' };
+  if (G.tutCtx?.(c)) return G.tutCtx(c); // (a spot of the tutorial: bridge, hearth; tutsteps.js)
   // vehicles: getting out and stopping the rail laying come first, getting in after the castle
   const vc = vehicleContext(c);
   if (vc && (c.ride != null || c.laying)) return vc;

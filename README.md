@@ -30,7 +30,7 @@ Ein Aufbau- und Grabespiel mit Pixel-Physik im Stil der Klassiker: Führe deine 
 
 **Produktion im Blick:** Im Burg-Menü zeigt „Produktion“, welches Gebäude läuft und welches auf was wartet. Fehlt Holz, Erz oder Kohle, schickt „Helfer schicken“ einen freien Helfer los. Wartet ein Gebäude länger als 30 Sekunden, blinkt seine Blase.
 
-Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch und Englisch (Umschalter im Startbildschirm). Beim allerersten Start geht es ohne Lobby direkt in eine kleine Welt („Die erste Schicht“): eine Taste oder ein Tippen, dann in drei Schritten laufen und springen, zum Gold graben und es an der Burg verkaufen – unter zwei Minuten. Wer es kann, sieht keine Anleitung; Überspringen geht jederzeit (Knopf oder Esc → Menü). Danach erklären Tipps und kleine Aufträge in der ersten echten Runde den Rest, nachzulesen unter Optionen → Spielhilfe. Ablauf und Messungen: [docs/TUTORIAL_PLAN.md](docs/TUTORIAL_PLAN.md).
+Läuft im Browser, als installierbare Web-App und als Android-App, auf Deutsch und Englisch (Umschalter im Startbildschirm). Beim allerersten Start geht es ohne Lobby direkt los: eine Taste oder ein Tippen, dann ein Story-Intro (unter 30 Sekunden, jederzeit überspringbar per Taste, Tippen oder Knopf) – eine Kamerafahrt vom Nachthimmel über das dunkle Dorf Funkenhain hinab ins Erdreich; der letzte Funke des Herdfeuers erlischt, „FLINTWORKS“ glüht auf, vier Texttafeln erscheinen im Schreibmaschinen-Effekt. Danach folgt das Tutorial „Der Glutstein“ (3–5 Minuten, Lernen durch Tun): zum Brunnen laufen und springen, einen Schacht graben, Feuerstein und Erz abbauen, aus Balken und Erz eine Brücke über den Abgrund bauen, einem Einsturz ausweichen und den Glutstein hoch ins Dorf tragen, wo er das Herdfeuer neu entfacht und Licht die Szene flutet. Ein Finger zeigt direkt auf die Stelle, der nächste Schritt kommt erst nach der gelungenen Aktion, jeder Schritt wird mit Funken, Klang und kurzem Aufleuchten belohnt. Das Tutorial (mit Intro) gibt es nur beim ersten Start von selbst; wiederholen kann man es unter Optionen → „Tutorial spielen“. Wer es kann, sieht keine Anleitung; Überspringen geht jederzeit (Knopf oder Esc → Menü). Danach erklären Tipps und kleine Aufträge in der ersten echten Runde den Rest, nachzulesen unter Optionen → Spielhilfe. Ablauf und Messungen: [docs/TUTORIAL_PLAN.md](docs/TUTORIAL_PLAN.md).
 
 ## Spielen
 
@@ -187,9 +187,12 @@ src/
   skins.js            Outfits für Wühler und Baustile für Gebäude
   sprites.js          Pixel-Grafiken
   veil.js             Erster Start: Startschleier über der Tutorial-Welt (Spielen, Sprache)
-  tutorial.js         Geführtes Tutorial: Ablauf, Hinweise, Rettungen, Aufdecken des HUD, Zielpfeil, Geisterhand, Abschlusskarte
-  tutsteps.js         Die drei Schritte des Tutorials
-  tutlevel.js         Die Tutorial-Welt mit festem Lehrpfad (Felsbuckel, Goldader)
+  intro.js            Story-Intro vor dem Tutorial: Pixel-Kamerafahrt, Schreibmaschinen-Texte, eigener Klang, überspringbar
+  story.css           Gestaltung von Intro und Belohnungs-Aufleuchten im Tutorial
+  tutorial.js         Geführtes Tutorial: Ablauf, Hinweise, Rettungen, Aufdecken des HUD, Belohnungen, Geisterhand, Abschlusskarte
+  tutsteps.js         Die sechs Schritte des Tutorials „Der Glutstein“
+  tutlevel.js         Die Tutorial-Welt: Dorf, Brunnen, Höhle mit Feuerstein- und Erzwand, Abgrund, Einsturzstollen, Glutstein-Kammer, Rampe
+  tutscene.js         Dorfkulisse, Herdfeuer, Glutstein, fallende Steine, Zeigefinger und Licht-Finale des Tutorials
   onboarding.css      Startschleier, HUD im Tutorial, große Texte
   panels.css          Fenster als Spiel-UI: Kachelzustände, Grund-Chips, Reiter
   props.js            Burghof, Fässer, Kisten, Zäune, Laternen, Wege und Stromleitungen (nur Bild)
