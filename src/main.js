@@ -63,7 +63,7 @@ import { initUiArt } from './uiart.js';
 import { G, animals, builds, crew, lorries, esc, parts, vparts } from './state.js';
 import { $, closePanel, drawMini, hud, openBase, openBuild, openUi, panelEl, toast, toastEl, toggleMap } from './ui.js';
 import { register, send } from './commands.js';
-import { NET, inRoom, onGameMsg, sendTo, token } from './net/room.js';
+import { NET, inRoom, onGameMsg, sendTo, setReady, token } from './net/room.js';
 import { beginNet, endNet, resumeNet, startMessage } from './net/session.js';
 import { clearNetSave, initNetSave, loadNetSave, saveNet } from './net/netsave.js';
 import { clientStep } from './net/client.js';
@@ -99,6 +99,7 @@ import { chestTick, updVersus, vsResult } from './versus.js';
 import { updCoop } from './coop.js';
 import { statsHtml } from './stats.js';
 import { addButtonsHtml, wireAddButtons } from './lobbyfriends.js';
+import { remember } from './net/recent.js';
 import { dayNo, endCard, shareAndTell } from './daily.js';
 import { H, H0, W, W0, clamp, dryFresh, getSeed, setSeed, surf } from './world.js';
 import { grantMasterOutfits } from './heromissions.js';
@@ -238,6 +239,7 @@ function playNet(d) {
   G.nextVersus = false;
   G.nextFfa = 0;
   beginNet(d);
+  remember(d.players);
   resetCam();
   G.inRun = true;
   startGame(false);
@@ -469,17 +471,25 @@ function endScreen(won, why, winner = null) {
   if (next) card.innerHTML += `<button class="go" id="nextBtn">${tr('Nächstes Level: {name}', { name: tr(GAME_MODES[next].name) })}</button>`;
   // multiplayer: the host starts the next round for everybody with the same settings
   const again = G.net && inRoom();
-  if (again && NET.host) card.innerHTML += `<button class="go" id="againBtn">${tr('Revanche!')}</button>`;
-  else if (again) card.innerHTML += `<p class="hint">${tr('Der Host kann gleich eine Revanche starten')}</p>`;
+  // (Brawl Stars style: the same team plays again, nobody has to leave or join anew)
+  if (again && NET.host) card.innerHTML += `<button class="go" id="againBtn">${tr('Revanche!')}<small>${tr('Gleiches Team, gleiche Einstellungen')}</small></button>`;
+  else if (again) card.innerHTML += `<button class="go" id="readyAgain">${tr('Nochmal spielen')}<small>${tr('Gleiches Team – der Host startet')}</small></button>`;
   // free play alone: straight into a new round is the main way on, the lobby the quiet one
   const solo = !G.net && !M.campaign && !M.daily;
   if (solo) card.innerHTML += `<button class="go" id="soloBtn">${tr(won ? 'Neue Runde' : 'Nochmal')}</button>`;
-  card.innerHTML += `<button class="go${next || D || solo || (again && NET.host) ? ' alt' : ''}" id="goBtn">${tr('Zur Lobby')}</button>`;
+  card.innerHTML += `<button class="go${next || D || solo || again ? ' alt' : ''}" id="goBtn">${tr('Zur Lobby')}</button>`;
   $('goBtn').onclick = () => {
     overlay.hidden = true;
     menu();
   };
   wireAddButtons(card);
+  if (again && !NET.host)
+    $('readyAgain').onclick = () => {
+      setReady(true);
+      const b = $('readyAgain');
+      b.disabled = true;
+      b.innerHTML = `✓ ${tr('Bereit')}<small>${tr('Warte auf den Host …')}</small>`;
+    };
   if (again && NET.host)
     $('againBtn').onclick = () => {
       overlay.hidden = true;

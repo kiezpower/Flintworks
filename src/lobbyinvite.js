@@ -8,6 +8,9 @@ import { PLAY_KINDS } from './playkind.js';
 import { tr } from './i18n.js';
 import { openName } from './lobbyname.js';
 import {
+  CODE_RE,
+  errorText,
+  slotLeft,
   MAX_PLAYERS,
   setWatch,
   NET,
@@ -35,8 +38,10 @@ import { fromTag, kindName, modeName, rotation } from './net/rotation.js';
 import { P, saveProfile } from './profile.js';
 import { G, safeCap } from './state.js';
 import { $, closePanel, opt, openPanel, panelEl, sec, toast } from './ui.js';
+import { transport } from './net/transport.js';
+import { pingHtml } from './net/recent.js';
+import './party.css';
 
-const ERRORS = { nope: 'Raum nicht gefunden', full: 'Der Raum ist voll', bad: 'Verbindung unterbrochen' };
 let open = false,
   shown = ''; // the room state the panel was drawn for
 const stateKey = () => `${NET.status}|${NET.room}|${NET.error}`;
@@ -49,7 +54,12 @@ function openInvite() {
   box.className = 'lb-invite';
   p.appendChild(box);
   if (NET.status === 'connecting') {
-    box.innerHTML = `<p>${tr('Verbinde mit dem Server …')}</p>`;
+    // a dropout: the place in the room is held for 30 s (server/relay.js)
+    const left = NET.pid != null ? slotLeft() : null;
+    box.innerHTML =
+      left != null
+        ? `<div class="pt-lost"><b>${tr('Verbindung weg')}</b><span>${tr('Verbinde neu … dein Platz wird noch {s} s gehalten', { s: left })}</span></div>`
+        : `<div class="pt-lost pt-wait"><span class="pt-spin"></span><span>${tr('Verbinde mit dem Server …')}</span></div>`;
     leaveOpt(p, 'Abbrechen');
     return;
   }
@@ -57,7 +67,7 @@ function openInvite() {
     // straight to the point: one tap and you play with whoever is there, no code needed; below
     // the open rooms to pick one, a room for friends and joining with a code
     if (NET.status === 'error' && NET.error)
-      box.innerHTML = `<p class="hint">${tr(ERRORS[NET.error] || 'Keine Verbindung zum Server')}</p>`;
+      box.innerHTML = `<p class="pt-err" role="alert">⚠ ${esc(errorText(NET.error))}</p>`;
     box.appendChild(meRow());
     const quick = document.createElement('button');
     quick.className = 'lb-create';
@@ -83,11 +93,11 @@ function openInvite() {
     box.insertAdjacentHTML('beforeend', `<p class="lb-or">${tr('oder mit Code beitreten')}</p>`);
     const row = document.createElement('div');
     row.className = 'lb-join';
-    row.innerHTML = `<input id="lbCodeIn" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="${tr('Code')}"><button class="opt short" id="lbJoinBtn"><b>${tr('Beitreten')}</b></button>`;
+    row.innerHTML = `<input id="lbCodeIn" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCDE"><button class="opt short" id="lbJoinBtn"><b>${tr('Beitreten')}</b></button>`;
     box.appendChild(row);
     $('lbJoinBtn').addEventListener('click', () => {
       const code = $('lbCodeIn').value.trim().toUpperCase();
-      if (!/^[A-Z0-9]{6}$/.test(code)) return toast('Der Code hat 6 Zeichen');
+      if (!CODE_RE.test(code)) return toast('Der Raum-Code hat 5 Zeichen');
       joinRoom(code);
     });
     $('lbCodeIn').addEventListener('keydown', e => e.key === 'Enter' && $('lbJoinBtn').click());
@@ -123,35 +133,8 @@ function openInvite() {
   $('lbCodeTap').addEventListener('click', async () => {
     if (fresh()) toast((await copyText(NET.room)) ? 'Code kopiert' : 'Kopieren nicht möglich');
   });
-  if (NET.players.length < MAX_PLAYERS) box.appendChild(shareRow());
-  if (NET.players.length < MAX_PLAYERS) box.appendChild(friendsBtn());
-  box.appendChild(meRow());
-  // who is in
-  const l = sec(p, tr('Spieler {n}/{max}', { n: NET.players.length, max: MAX_PLAYERS }));
-  l.classList.add('lb-players');
-  for (const pl of NET.players) {
-    const host = pl.pid === NET.hostPid;
-    // another player who is no friend yet: tap to add (they get a request)
-    const add = canAdd(pl);
-    const state = !pl.online
-      ? tr('getrennt')
-      : host
-        ? tr('Host')
-        : (pl.watch ? '👁 ' + tr('schaut zu') + ' · ' : '') + (pl.ready ? tr('bereit') : tr('noch nicht bereit'));
-    opt(l, {
-      title: `<span class="lb-dot" style="background:${safeCap(pl.cap)}"></span>${esc(pl.name)}${pl.pid === NET.pid ? ' ' + tr('(du)') : ''}`,
-      sub: add ? `${state} · ${tr('Tippen: als Freund hinzufügen')}` : state,
-      cost: add ? '+' : host ? '★' : pl.ready ? '✓' : '',
-      short: true,
-      onClick: () => {
-        if (pl.pid === NET.pid && !G.net) openName(openInvite);
-        else if (add) {
-          addPlayer(pl);
-          openInvite();
-        }
-      },
-    });
-  }
+  // who is in: four places, empty ones invite
+  box.appendChild(partyGrid());
   // a quick play room: the mode of the hour, and it starts by itself (net/countdown.js)
   if (NET.auto)
     opt(sec(p, 'Modus der Stunde'), {
@@ -164,37 +147,41 @@ function openInvite() {
       ),
       short: true,
     });
-  // The lobby owns kind and level; the invitation panel only shows that choice.
+  // Koop or Versus: the host picks, everybody sees it
   if (!NET.auto) {
-    const choice = sec(p, 'Eure Auswahl');
+    box.appendChild(modeSwitch());
+    const choice = sec(p, 'Karte');
     opt(choice, {
-      title: tr(PLAY_KINDS[NET.versus ? 'versus' : 'coop'].name),
+      title: tr((GAME_MODES[NET.gmode || P.gmode] || GAME_MODES.gold).name),
       disabled: !NET.host,
-      sub: tr((GAME_MODES[NET.gmode || P.gmode] || GAME_MODES.gold).name),
+      sub: tr(NET.host ? 'Tippen: Karte oder Modus ändern' : 'Der Host wählt die Karte'),
       short: true,
       onClick: () => {
         closePanel();
         $('lbKind').click();
       },
     });
-    if (NET.versus && !GAME_MODES[NET.gmode || P.gmode]?.pkg)
+    if (NET.versus && !GAME_MODES[NET.gmode || P.gmode]?.pkg && NET.players.length > 2)
       opt(choice, {
         title: tr('Jeder gegen jeden'),
-        sub: tr('Ab 3 Spielern: jeder mit eigener Burg (höchstens vier, ab 5 Spielern zu zweit), eine gestürmte Burg ist raus, der Letzte gewinnt (zu zweit Versus)'),
+        sub: tr('Jeder mit eigener Burg, eine gestürmte Burg ist raus, der Letzte gewinnt'),
         short: true,
         cost: NET.ffa ? '✓' : '',
         disabled: !NET.host,
         onClick: () => NET.host && setVersus(true, !NET.ffa),
       });
   }
+  box.appendChild(readyBar());
+  // more ways to invite below (the empty places invite too)
+  if (NET.players.length < MAX_PLAYERS) {
+    box.insertAdjacentHTML('beforeend', `<p class="lb-or">${tr('Freunde einladen')}</p>`);
+    box.appendChild(shareRow());
+    box.appendChild(friendsBtn());
+  }
+  box.appendChild(meRow());
   const a = sec(p, '');
   if (!NET.host) {
     const mine = NET.players.find(q => q.pid === NET.pid);
-    opt(a, {
-      title: tr(mine && mine.ready ? 'Bereit ✓' : 'Bereit?'),
-      sub: tr(NET.auto ? 'Sind alle bereit, geht es gleich los' : 'Der Host startet das Spiel'),
-      onClick: () => setReady(!(mine && mine.ready)),
-    });
     // watch instead of playing: no Wühler of your own, the camera follows the others
     opt(a, {
       title: tr(mine && mine.watch ? 'Zuschauen ✓' : 'Zuschauen'),
@@ -215,14 +202,6 @@ function openInvite() {
           $('lbPlay').click();
         },
       });
-    opt(a, {
-      title: tr('Spiel starten'),
-      sub: tr(NET.auto ? 'Sofort, ohne auf den Countdown zu warten' : 'Mit „Spielen“ in der Lobby geht es für alle los'),
-      onClick: () => {
-        closePanel();
-        $('lbPlay').click();
-      },
-    });
   }
   // an open room: anybody finds it in the list and through quick play, the code works too
   if (NET.host)
@@ -258,6 +237,100 @@ function drawRooms() {
       onClick: () => fresh() && joinRoom(r.code),
     });
   }
+}
+// the four places of a room: colour, name, host / ready / gone; an empty place invites
+function partyGrid() {
+  const wrap = document.createElement('div');
+  wrap.className = 'pt-party';
+  const ready = NET.players.filter(q => q.pid === NET.hostPid || q.ready || q.watch).length;
+  wrap.innerHTML = `<div class="pt-head"><b>${tr('Team {n}/{max}', { n: NET.players.length, max: MAX_PLAYERS })}</b><span>${tr('{n} bereit', { n: ready })}</span>${pingHtml(transport)}</div>`;
+  const grid = document.createElement('div');
+  grid.className = 'pt-grid';
+  for (let k = 0; k < MAX_PLAYERS; k++) {
+    const pl = NET.players[k];
+    const b = document.createElement('button');
+    if (!pl) {
+      b.className = 'pt-card empty';
+      b.innerHTML = `<span class="pt-av">+</span><span class="pt-nm">${tr('Einladen')}</span>`;
+      b.addEventListener('click', async () => {
+        if (!fresh()) return;
+        const r = await shareInvite();
+        if (r === 'copied') toast('Einladung kopiert');
+        else if (r === 'failed') toast('Teilen nicht möglich');
+      });
+      grid.appendChild(b);
+      continue;
+    }
+    const host = pl.pid === NET.hostPid,
+      mine = pl.pid === NET.pid,
+      add = canAdd(pl);
+    const [cls, txt] = !pl.online
+      ? ['off', tr('getrennt')]
+      : host
+        ? ['host', '★ ' + tr('Host')]
+        : pl.watch
+          ? ['watch', '👁 ' + tr('schaut zu')]
+          : pl.ready
+            ? ['ready', '✓ ' + tr('bereit')]
+            : ['wait', tr('nicht bereit')];
+    b.className = `pt-card ${cls}${mine ? ' me' : ''}`;
+    b.innerHTML = `<span class="pt-av" style="--c:${safeCap(pl.cap)}">${esc((pl.name || '?').slice(0, 1).toUpperCase())}</span>
+      <span class="pt-nm">${esc(pl.name)}${mine ? ' ' + tr('(du)') : ''}</span><span class="pt-st">${txt}</span>${add ? '<span class="pt-add" title="' + tr('Als Freund hinzufügen') + '">+</span>' : ''}`;
+    b.addEventListener('click', () => {
+      if (!fresh()) return;
+      if (mine && !G.net) openName(openInvite);
+      else if (add) {
+        addPlayer(pl);
+        openInvite();
+      }
+    });
+    grid.appendChild(b);
+  }
+  wrap.appendChild(grid);
+  return wrap;
+}
+// Koop or Versus side by side; only the host can switch
+function modeSwitch() {
+  const w = document.createElement('div');
+  w.className = 'pt-seg' + (NET.host ? '' : ' ro');
+  for (const [v, icon, name, sub] of [
+    [false, '🤝', 'Koop', 'Zusammen gegen die Tiefe'],
+    [true, '⚔️', 'Versus', 'Burg gegen Burg'],
+  ]) {
+    const b = document.createElement('button');
+    b.className = 'pt-segb' + (!!NET.versus === v ? ' on' : '');
+    b.disabled = !NET.host;
+    b.innerHTML = `<i>${icon}</i><b>${tr(name)}</b><small>${tr(sub)}</small>`;
+    b.addEventListener('click', () => {
+      if (!fresh() || !NET.host || !!NET.versus === v) return;
+      P.playKind = v ? 'versus' : 'coop';
+      saveProfile();
+      setVersus(v);
+    });
+    w.appendChild(b);
+  }
+  return w;
+}
+// the big button: get ready (players) or start (host)
+function readyBar() {
+  const b = document.createElement('button');
+  const mine = NET.players.find(q => q.pid === NET.pid);
+  const waiting = NET.players.filter(q => q.online && q.pid !== NET.hostPid && !q.ready && !q.watch).length;
+  if (NET.host) {
+    b.className = 'pt-go' + (waiting ? ' soft' : '');
+    b.innerHTML = `${tr('Spiel starten')}<small>${waiting ? tr('{n} noch nicht bereit', { n: waiting }) : NET.players.length > 1 ? tr('Alle sind bereit!') : tr('Du kannst auch allein loslegen')}</small>`;
+    b.addEventListener('click', () => {
+      if (!fresh()) return;
+      closePanel();
+      $('lbPlay').click();
+    });
+  } else {
+    const r = !!(mine && mine.ready);
+    b.className = 'pt-go' + (r ? ' done' : '');
+    b.innerHTML = `${tr(r ? 'Bereit ✓' : 'Bereit!')}<small>${tr(r ? 'Tippen, um es zurückzunehmen' : NET.auto ? 'Sind alle bereit, geht es gleich los' : 'Der Host startet das Spiel')}</small>`;
+    b.addEventListener('click', () => fresh() && setReady(!r));
+  }
+  return b;
 }
 function leaveOpt(p, title) {
   opt(sec(p, ''), {
@@ -339,7 +412,7 @@ function shareRow() {
 const fresh = () => performance.now() - G.panelT >= (G.tapGuard ?? 450);
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
 
-// the two "+" slots beside the hero show the other players (with up to eight in a room, the second
+// the two "+" slots beside the hero show the other players (with up to four in a room, the second
 // one also says how many more there are)
 function refreshSlots() {
   const list = others();
@@ -362,6 +435,12 @@ function refreshSlots() {
 onRoomChange(() => {
   refreshSlots();
   G.onRoomChange?.();
+  // joined through an invitation link: straight into the room lobby (or show why not)
+  if (G.linkJoin && (NET.status === 'waiting' || NET.status === 'error') && G.state === 'menu' && !$('lobby').hidden && panelEl.hidden) {
+    G.linkJoin = false;
+    openInvite();
+    return;
+  }
   // keep the open room panel up to date; a new room list only redraws the list (so a code being
   // typed stays)
   if (open && !panelEl.hidden) {
@@ -369,6 +448,11 @@ onRoomChange(() => {
     else openInvite();
   } else open = false;
 });
+
+// while the line is down, count the held place down once a second
+setInterval(() => {
+  if (open && !panelEl.hidden && NET.status === 'connecting' && NET.lostAt) openInvite();
+}, 1000);
 
 // joining a friend's room from the friends panel: on to the room panel
 G.onFriendJoin = () => openInvite();

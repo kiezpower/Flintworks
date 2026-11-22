@@ -6,22 +6,19 @@ import { tr } from '../i18n.js';
 import { diggerOf, isPlayer } from '../players.js';
 import { G, crew } from '../state.js';
 import { teamOf } from '../teams.js';
-import { closePanel, openPanel, opt, sec, toast } from '../ui.js';
-import { onGameMsg, sendTo } from './room.js';
+import { closePanel, openPanel, sec, toast } from '../ui.js';
+import { onGameMsg, sendTo, slotLeft } from './room.js';
+import '../party.css';
 import { transport } from './transport.js';
 
+// eight fixed calls, no free text (nobody can write anything hurtful)
 const EMOTES = [
   ['👋', 'Hallo!'],
-  ['⛏️', 'Hier graben!'],
-  ['💰', 'Gold gefunden!'],
   ['🆘', 'Hilfe!'],
+  ['💰', 'Gold gefunden!'],
   ['👍', 'Gut gemacht!'],
-  ['🏰', 'Zur Basis!'],
   ['⚔️', 'Angriff!'],
   ['🛡️', 'Verteidigen!'],
-  ['🚩', 'Zum Hügel!'],
-  ['💣', 'Gleich knallt es!'],
-  ['😈', 'Na warte!'],
   ['😂', 'Haha!'],
   ['📍', 'Hierher!'],
 ];
@@ -39,22 +36,30 @@ function show(pid, k) {
   }
   if (pid !== G.myId) toast(`${c.name}: ${EMOTES[k][0]} ${tr(EMOTES[k][1])}`);
 }
-onGameMsg('emo', (d, from) => show(from, d.e));
+onGameMsg('emo', (d, from) => Number.isInteger(d.e) && show(from, d.e));
+// one call every 1.5 s at most (no flood of bubbles)
+let lastEmo = 0;
 
 function openEmotes() {
-  const p = openPanel('Zuruf');
+  const p = openPanel('Schnell-Chat');
   const l = sec(p, 'Alle sehen es über deinem Wühler');
-  EMOTES.forEach(([e, t], k) =>
-    opt(l, {
-      title: `${e} ${tr(t)}`,
-      short: true,
-      onClick: () => {
-        show(G.myId, k);
-        sendTo('all', { k: 'emo', e: k });
-        closePanel();
-      },
-    }),
-  );
+  const grid = document.createElement('div');
+  grid.className = 'emo-grid';
+  EMOTES.forEach(([e, t], k) => {
+    const b = document.createElement('button');
+    b.className = 'emo-b';
+    b.innerHTML = `<i>${e}</i><small>${tr(t)}</small>`;
+    b.addEventListener('click', () => {
+      if (performance.now() - G.panelT < (G.tapGuard ?? 450)) return;
+      closePanel();
+      if (performance.now() - lastEmo < 1500) return toast('Kurz warten …');
+      lastEmo = performance.now();
+      show(G.myId, k);
+      sendTo('all', { k: 'emo', e: k });
+    });
+    grid.appendChild(b);
+  });
+  l.appendChild(grid);
 }
 const btn = document.getElementById('emoBtn');
 btn.addEventListener('click', () => openEmotes());
@@ -66,7 +71,9 @@ function updEmoBtn() {
   netTxt.hidden = !G.net;
   if (!G.net) return;
   const ms = transport.rtt;
-  const q = transport.status !== 'open' ? tr('getrennt …') : ms < 120 ? '▮▮▮' : ms < 250 ? '▮▮▯' : '▮▯▯';
+  // a dropout: the place is held for 30 s, count it down
+  const left = slotLeft();
+  const q = transport.status !== 'open' ? (left != null ? tr('getrennt – neu verbinden ({s} s)', { s: left }) : tr('getrennt …')) : ms < 120 ? '▮▮▮' : ms < 250 ? '▮▮▯' : '▮▯▯';
   const t = `${G.netHost ? tr('Host') : tr('Verbindung')} ${q}${transport.status === 'open' ? ' ' + ms + ' ms' : ''}`;
   if (netTxt.textContent !== t) netTxt.textContent = t;
 }

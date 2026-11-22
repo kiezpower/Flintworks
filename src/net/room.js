@@ -1,4 +1,4 @@
-// Rooms: create or join with a 6-letter code, or without one: "quick play" takes any open room
+// Rooms: create or join with a 5-letter code, or without one: "quick play" takes any open room
 // with space (or opens one), and the list shows the open rooms. See who is in, get ready, start
 // together.
 // The relay hands out the codes and player ids; the game messages go through sendTo().
@@ -28,11 +28,24 @@ const NET = {
   hosted: false, // a dedicated world with an operator-owned host
   auto: null, // a quick play room: its mode {gmode, versus}, fixed; it starts by itself
   cdEnd: 0, // the next round starts at this time (performance.now()), 0: no countdown
+  lostAt: 0, // the line to the room broke at this time (performance.now()), 0: connected
 };
 let quick = false, // the next room to enter is any open one
   wantHosted = false,
   wantPub = false; // a room about to be created is open
-const MAX_PLAYERS = 8; // (the relay's limit, server/relay.js MAX)
+const MAX_PLAYERS = 4; // (the relay's limit, server/relay.js MAX)
+const CODE_RE = /^[A-Z0-9]{5}$/i;
+const SLOT_HOLD = 30000; // the relay keeps a lost player's place this long (server/relay.js)
+// what went wrong, in words a player understands (NET.error)
+const ERRORS = {
+  nope: 'Raum nicht gefunden – prüfe den Code oder lass dir einen neuen Link schicken',
+  full: 'Der Raum ist voll (höchstens 4 Spieler)',
+  bad: 'Verbindung unterbrochen – versuch es nochmal',
+  busy: 'Der Server ist gerade voll – versuch es gleich nochmal',
+  slot: 'Dein Platz ist nach 30 Sekunden verfallen – die Runde lief ohne dich weiter',
+  lost: 'Keine Verbindung zum Server – prüfe dein Internet',
+};
+const errorText = e => tr(ERRORS[e] || ERRORS.bad);
 const listeners = [];
 const msgHandlers = new Map(); // game message kind → fn(d, from)
 const changed = () => listeners.forEach(fn => fn(NET));
@@ -80,6 +93,7 @@ on('room', m => {
   NET.auto = fromTag(m.tag);
   if (NET.auto) Object.assign(NET, { versus: NET.auto.versus, ffa: NET.auto.ffa, gmode: NET.auto.gmode });
   NET.status = 'waiting';
+  NET.lostAt = 0;
   quick = false;
   browseRooms(false);
   NET.error = null;
@@ -98,11 +112,14 @@ on('players', m => {
 on('error', m => {
   NET.error = m.e;
   NET.status = 'error';
-  if (m.e === 'nope' || m.e === 'full') leaveRoom(true);
+  if (['nope', 'full', 'slot', 'busy'].includes(m.e)) leaveRoom(true);
   changed();
 });
 on('status', () => {
-  if (transport.status !== 'open' && NET.room) NET.status = 'connecting';
+  if (transport.status !== 'open' && NET.room) {
+    NET.status = 'connecting';
+    NET.lostAt ||= performance.now();
+  }
   changed();
 });
 on('rooms', m => {
@@ -143,7 +160,8 @@ on('msg', m => {
 
 // (re)connect and enter the room; with no room yet a new one is created (or any open one taken)
 function enter() {
-  if (NET.room) send({ t: 'join', code: NET.room, ...me() });
+  // (back: we were in the room before, so a place that ran out is an error, not a new place)
+  if (NET.room) send({ t: 'join', code: NET.room, back: NET.pid != null && !!G.net, ...me() });
   else if (quick) send({ t: 'quick', tag: rotation().tag, ...me() });
   else send({ t: 'create', pub: wantPub, hosted: wantHosted, ...me() });
 }
@@ -201,6 +219,7 @@ function browseRooms(on, stillOpen) {
 }
 function joinRoom(code) {
   NET.room = String(code).toUpperCase();
+  NET.pid = null;
   go();
 }
 function leaveRoom(keepError) {
@@ -208,7 +227,7 @@ function leaveRoom(keepError) {
   if (NET.room) send({ t: 'leave' });
   disconnect('room');
   quick = false;
-  Object.assign(NET, { room: null, pid: null, host: false, pub: false, hosted: false, auto: null, cdEnd: 0, players: [], gmode: null, status: keepError ? 'error' : 'offline' });
+  Object.assign(NET, { room: null, pid: null, host: false, pub: false, hosted: false, auto: null, cdEnd: 0, lostAt: 0, players: [], gmode: null, status: keepError ? 'error' : 'offline' });
   G.myId = 0;
   changed();
 }
@@ -294,9 +313,20 @@ document.addEventListener('visibilitychange', () => {
 
 // ?room=CODE in the address: someone invited us – join right away
 const fromUrl = new URLSearchParams(location.search).get('room');
-if (fromUrl && /^[A-Z0-9]{6}$/i.test(fromUrl)) joinRoom(fromUrl);
+if (fromUrl && CODE_RE.test(fromUrl)) {
+  G.linkJoin = true; // the lobby opens the room panel once we are in (lobbyinvite.js)
+  joinRoom(fromUrl);
+}
+// reconnect: seconds left of the held place (null while connected)
+function slotLeft() {
+  if (!NET.lostAt) return null;
+  return Math.max(0, Math.ceil((SLOT_HOLD - (performance.now() - NET.lostAt)) / 1000));
+}
 
 export {
+  CODE_RE,
+  errorText,
+  slotLeft,
   setWatch,
   MAX_PLAYERS,
   token,
