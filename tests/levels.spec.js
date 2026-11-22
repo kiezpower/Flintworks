@@ -320,7 +320,9 @@ test('a Versus map gets two castles, two teams and a winner', async ({ page }) =
   expect(Object.keys(r).length).toBeGreaterThan(0);
   for (const id in r) {
     const { crewSize, ...actual } = r[id];
-    expect(actual, id).toEqual({ bases: 2, teams: 2, apart: true, team0: crewSize, team1: crewSize - 1 });
+    // (your own Wühler and at most one helper at the start, players.js START_HELPERS)
+    const n = Math.min(crewSize, 2);
+    expect(actual, id).toEqual({ bases: 2, teams: 2, apart: true, team0: n, team1: n - 1 });
   }
   expect(errors).toEqual([]);
 });
