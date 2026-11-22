@@ -45,7 +45,7 @@ async function befriend(a, b) {
   await b.page.locator('#frAddBtn').click();
   await expect(a.page.locator('#frAsks .fr-act.yes')).toHaveCount(1, { timeout: 8000 });
   await a.page.locator('#frAsks .fr-act.yes').first().click();
-  await expect(b.page.locator('#frList')).toContainText('online', { timeout: 8000 });
+  await expect(b.page.locator('#frList')).toContainText('Online', { timeout: 8000 });
   await a.page.locator('#pClose').click();
   await b.page.locator('#pClose').click();
 }
@@ -189,7 +189,7 @@ test('a friend joins a shared world that is being played, and carries it on when
   expect(id).toBeTruthy();
   await eva.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.netHost);
   // Finn opens it: he lands in Eva's room, not in a copy of his own
-  await expect.poll(() => finn.page.evaluate(async id => (await import('/src/net/shared.js')).sharedInfo(id)?.room || '', id), { timeout: 10000 }).toMatch(/^[A-Z0-9]{6}$/);
+  await expect.poll(() => finn.page.evaluate(async id => (await import('/src/net/shared.js')).sharedInfo(id)?.room || '', id), { timeout: 10000 }).toMatch(/^[A-Z0-9]{5}$/);
   expect(await finn.page.evaluate(async id => (await import('/src/net/shared.js')).openShared(id), id)).toBe('joined');
   await finn.page.waitForFunction(() => window.__ww.G.netClient && window.__ww.G.state === 'play' && window.__ww.G.worldName === 'Evas Hof', null, { timeout: 30000 });
   await expect.poll(() => eva.page.evaluate(async () => (await import('/src/net/room.js')).NET.players.length), { timeout: 10000 }).toBe(2);

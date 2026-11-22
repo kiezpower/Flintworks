@@ -38,7 +38,7 @@ test('the mobile selection offers Fluffelstollen for solo and co-op, with a load
     await page.click(`[data-kind="${kind}"]`);
     const card = page.locator('.ls-card[data-id="fluffelstollen"]');
     await expect(card).toContainText('Rettet 6 Fluffel');
-    await expect(card.locator('.ls-players')).toHaveText(kind === 'solo' ? '1 Spieler' : '2–8 Spieler');
+    await expect(card.locator('.ls-players')).toHaveText(kind === 'solo' ? '1 Spieler' : '2–4 Spieler');
     await expect(card.locator('.ls-pv img')).toBeAttached();
     await expect.poll(() => card.locator('.ls-pv img').evaluate(i => i.complete && i.naturalWidth > 0)).toBe(true);
   }
@@ -73,13 +73,13 @@ test('co-op: both players contribute to the same six-fluffel goal and win togeth
   try {
     await open(host, 'coop'); await open(guest, 'coop');
     await host.click('#lbPlay'); await host.click('#lbCreate');
-    await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/, { timeout: 15_000 });
+    await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/, { timeout: 15_000 });
     await guest.click('#lbSlot1');
     await guest.fill('#lbCodeIn', await host.locator('.lb-codetap b').textContent());
     await guest.click('#lbJoinBtn');
-    await expect(host.locator('.lb-players .opt')).toHaveCount(2);
-    await guest.locator('.opt', { hasText: 'Bereit?' }).click();
-    await host.locator('.opt', { hasText: 'Spiel starten' }).click();
+    await expect(host.locator('.pt-grid .pt-card:not(.empty)')).toHaveCount(2);
+    await guest.locator('.pt-go', { hasText: 'Bereit!' }).click();
+    await host.locator('.pt-go', { hasText: 'Spiel starten' }).click();
     for (const p of [host, guest]) await p.waitForFunction(() => window.__ww.G.net && window.__ww.G.state === 'play');
     const own = await host.evaluate(() => window.__ww.G.myId);
     const other = await guest.evaluate(() => window.__ww.G.myId);

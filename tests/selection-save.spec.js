@@ -56,14 +56,14 @@ test('a saved Versus round can still be resumed from an invitation room while al
       await host.click('#lbPlay');
       await host.waitForFunction(() => performance.now() - window.__ww.G.panelT >= 500);
       await host.click('#lbCreate');
-      await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+      await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
     }
     await create();
     await guest.click('#lbSlot1');
     await guest.fill('#lbCodeIn', await host.locator('.lb-codetap b').textContent());
     await guest.click('#lbJoinBtn');
-    await expect(host.locator('.lb-players')).toContainText('Bert');
-    await host.locator('.opt', { hasText: 'Spiel starten' }).click();
+    await expect(host.locator('.pt-grid')).toContainText('Bert');
+    await host.locator('.pt-go', { hasText: 'Spiel starten' }).click();
     await host.waitForFunction(() => window.__ww.G.net && window.__ww.G.state === 'play');
     await host.evaluate(async () => (await import('/src/net/netsave.js')).saveNet());
     expect(await host.evaluate(() => !!localStorage.getItem('flintworks-netsave'))).toBe(true);

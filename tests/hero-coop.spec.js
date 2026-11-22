@@ -19,10 +19,10 @@ test('guest ability executes on the host and guest receives only its own mastery
       await page.click('#lbTogether');
     }
     await host.click('#lbCreate');
-    await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+    await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
     await guest.fill('#lbCodeIn', await host.locator('.lb-codetap b').textContent());
     await guest.click('#lbJoinBtn');
-    await expect(host.locator('.lb-players')).toContainText('Gast');
+    await expect(host.locator('.pt-grid')).toContainText('Gast');
     await host.keyboard.press('Escape'); await host.click('#lbPlay');
     for (const page of [host, guest]) await page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.crew.length >= 2);
     await expect(guest.locator('#heroAbility')).toBeVisible();
@@ -50,9 +50,9 @@ test('live host migration continues a guest maintenance boost without counting t
       await page.addInitScript(({name,hero}) => localStorage.setItem('flintworks-profile',JSON.stringify({tutorialDone:true,installAsked:'done',name,hero,level:5,playKind:'coop',gmode:'gold',games:3})),{name,hero});
       await page.goto(`/?mp=ws://localhost:${port}`); await page.waitForFunction(()=>window.__ww);await page.click('#lbTogether');
     }
-    await host.click('#lbCreate'); await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+    await host.click('#lbCreate'); await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
     await guest.fill('#lbCodeIn',await host.locator('.lb-codetap b').textContent());await guest.click('#lbJoinBtn');
-    await expect(host.locator('.lb-players')).toContainText('Gast');await host.keyboard.press('Escape');await host.click('#lbPlay');
+    await expect(host.locator('.pt-grid')).toContainText('Gast');await host.keyboard.press('Escape');await host.click('#lbPlay');
     await guest.waitForFunction(()=>window.__ww.G.state==='play');
     await host.evaluate(()=>{
       const {G,crew,builds}=window.__ww,c=crew.find(c=>c.name==='Gast');

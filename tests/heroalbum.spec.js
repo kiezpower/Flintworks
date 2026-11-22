@@ -160,12 +160,12 @@ test('changing a hero in a waiting room updates the other player', async ({ brow
     await lobby(guest, { name: 'Gast' }, 'de', `/?mp=ws://localhost:${port}`);
     await host.click('#lbTogether');
     await host.click('#lbCreate');
-    await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+    await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
     const code = await host.locator('.lb-codetap b').textContent();
     await guest.click('#lbTogether');
     await guest.fill('#lbCodeIn', code);
     await guest.click('#lbJoinBtn');
-    await expect(guest.locator('.lb-players')).toContainText('Host');
+    await expect(guest.locator('.pt-grid')).toContainText('Host');
     await host.keyboard.press('Escape');
     await host.click('#lbWho');
     await host.click('[data-hero="mika"]');
