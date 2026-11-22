@@ -14,6 +14,13 @@ async function setup(page) {
   await page.reload();
   await page.waitForFunction(() => window.__ww);
   await page.click('#veilGo');
+  // (the story intro plays first: skipped like a player would, after its first moment)
+  const skip = page.locator('.introSkip');
+  if (await skip.isVisible().catch(() => false)) {
+    await page.waitForTimeout(600);
+    await skip.click();
+  }
+  await page.waitForFunction(() => window.__ww.state === 'play');
   await page.evaluate(() => {
     const w = window.__ww,
       { mat, W, AIR, EARTH, paint } = w.world;
