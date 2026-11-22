@@ -2,8 +2,8 @@
 // opposing team only when a second castle exists. Assault rules need that team.
 export const PLAY_KINDS = {
   solo: { name: 'Alleine', players: '1 Spieler', desc: 'Dein Abenteuer, dein Tempo' },
-  coop: { name: 'Zusammen', players: '2–8 Spieler', desc: 'Eine Burg, ein gemeinsames Ziel' },
-  versus: { name: 'Gegeneinander', players: '2–8 Spieler', desc: 'Zwei Teams, zwei Burgen – wer gewinnt?' },
+  coop: { name: 'Zusammen', players: '2–4 Spieler', desc: 'Eine Burg, ein gemeinsames Ziel' },
+  versus: { name: 'Gegeneinander', players: '2–4 Spieler', desc: 'Zwei Teams, zwei Burgen – wer gewinnt?' },
 };
 export function supportsKind(M, kind) {
   if (!M || !PLAY_KINDS[kind]) return false;

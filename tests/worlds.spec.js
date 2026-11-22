@@ -70,7 +70,9 @@ test('a solo settlement resumes after reload from the archive reference', async 
   });
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('wuehlwelt-save-v1')))).toEqual({ archive: id });
   await page.reload();
-  await expect(page.locator('#lbPlayTxt')).toHaveText('Weiterspielen');
+  // (the slot only points to the world: the lobby still knows its name)
+  await expect(page.locator('#lbPlayTxt')).toHaveText('Welt fortsetzen');
+  await expect(page.locator('#lbResumeName')).toHaveText('Archivberg');
   await page.click('#lbPlay');
   expect(await page.evaluate(() => [window.__ww.G.worldId, window.__ww.G.money])).toEqual([id, 2345]);
 });

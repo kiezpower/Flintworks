@@ -3,6 +3,7 @@
 // the teaching path's collision, failure-safe analytics and layouts at many sizes: npm test
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { playPastIntro } from './skipintro.js';
 
 const BOT = readFileSync(new URL('./tutorial-bot.js', import.meta.url), 'utf8');
 
@@ -32,12 +33,19 @@ test('the start screen: language switch does not start, a tap does; the HUD stay
   await page.click('#veilLang');
   await page.mouse.click(100, 400); // anywhere on the screen
   await expect(page.locator('#veil')).toBeHidden();
+  // the story intro comes first; any key skips it
+  await expect(page.locator('.introSkip')).toBeVisible();
+  expect(await visible(page, '#menuBtn')).toBe(false);
+  await page.waitForTimeout(600);
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => window.__ww.state === 'play');
   expect(await page.evaluate(() => [window.__ww.state, window.__ww.tut?.i])).toEqual(['play', 0]);
   // the first beat: no crew bar, no build button, no map, no money, no pack yet
   await page.evaluate(() => window.__ww.step(10));
   for (const sel of ['#crew', '#buildBtn', '#miniThumb', '.purse', '#inv'])
     expect(await visible(page, sel), sel).toBe(false);
-  expect(await visible(page, '#menuBtn')).toBe(true);
+  // (the HUD follows on the next drawn frames)
+  await expect(page.locator('#menuBtn')).toBeVisible();
 });
 
 test('no install offer and no lobby before the first real round', async ({ page }) => {
@@ -51,24 +59,36 @@ test('links to the Tagesschicht or a room still open the lobby for a new player'
   await expect(page.locator('#veil')).toBeHidden();
 });
 
-test('the HUD turns up when it becomes useful: the pack with the gold, the money at the castle', async ({ page }) => {
+test('the HUD turns up when it becomes useful: the pack with the first find, the action button with the beam', async ({ page }) => {
   await fresh(page);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   await page.evaluate(() => (window.__ww.G.inputKind = 'keys'));
   await page.evaluate(() => window.bot.run(5400)); // walk
-  await page.evaluate(() => window.bot.run(5400)); // dig: a nugget in the pack
-  await page.evaluate(() => window.__ww.step(5));
+  await page.waitForTimeout(150);
+  expect(await visible(page, '#inv')).toBe(false);
+  await page.evaluate(() => window.bot.run(5400)); // dig: earth in the pack
+  await page.evaluate(() => window.bot.run(5400)); // mine: flint and ore
   await page.waitForTimeout(150);
   expect(await visible(page, '#inv')).toBe(true);
+  // the action button comes with the old beam at the abyss
+  await expect(page.locator('#game')).not.toHaveClass(/onb-act/);
+  await page.evaluate(() => {
+    const w = window.__ww;
+    for (let k = 0; k < 600 && !w.crew[0].inv.includes('wood'); k++) {
+      window.bot.release();
+      window.bot.act(k);
+      w.step(1);
+    }
+    window.bot.release();
+  });
+  await expect(page.locator('#game')).toHaveClass(/onb-act/);
+  // no money in the tutorial
   expect(await visible(page, '.purse')).toBe(false);
-  await page.evaluate(() => window.bot.run(5400)); // sell
-  await page.waitForTimeout(150);
-  expect(await visible(page, '.purse')).toBe(true);
 });
 
 test('touch: texts and the stick hand, the jump hint at the bump with the jump button', async ({ page }) => {
   await fresh(page);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   const r = await page.evaluate(() => {
     const w = window.__ww,
       c = w.crew[0],
@@ -88,9 +108,9 @@ test('touch: texts and the stick hand, the jump hint at the bump with the jump b
   });
 });
 
-test('classic controls: the dig button is asked for and the pit can be climbed out of', async ({ page }) => {
+test('classic controls: the dig button is asked for, shaft and walls are dug with it', async ({ page }) => {
   await fresh(page, { profile: { autodig: false } });
-  await page.click('#veilGo');
+  await playPastIntro(page);
   await page.evaluate(() => (window.__ww.G.inputKind = 'keys'));
   expect(await page.evaluate(() => window.__ww.G.autoDig)).toBe(false);
   await page.evaluate(() => window.bot.run(5400));
@@ -98,16 +118,16 @@ test('classic controls: the dig button is asked for and the pit can be climbed o
     window.__ww.tut.s.shown = true;
     window.__ww.step(1);
   });
-  await expect(page.locator('#questText')).toHaveText('Grab dich zum Gold: Shift halten, ↓ lenkt');
-  for (const id of ['dig', 'sell']) expect(await page.evaluate(() => window.bot.run(5400))).not.toBe(id);
+  await expect(page.locator('#questText')).toHaveText('Grab neben dem Brunnen nach unten: Shift halten, ↓ lenkt');
+  for (const id of ['dig', 'mine']) expect(await page.evaluate(() => window.bot.run(5400))).not.toBe(id);
 });
 
 test('a player who knows the game never sees a prompt after the first one', async ({ page }) => {
   await fresh(page);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   await page.evaluate(() => (window.__ww.G.inputKind = 'keys'));
   const texts = new Set();
-  for (let k = 0; k < 3; k++) {
+  for (let k = 0; k < 6; k++) {
     await page.evaluate(() => window.bot.run(5400));
     if (await page.evaluate(() => !!window.__ww.tut))
       texts.add(await page.evaluate(() => document.getElementById('questText').textContent));
@@ -116,77 +136,93 @@ test('a player who knows the game never sees a prompt after the first one', asyn
   const done = await page.evaluate(() =>
     window.__ww.analytics.sessionEvents().filter(e => e.e === 'onb_step_done' || e.e === 'onb_complete'),
   );
-  expect(done.map(e => e.prompted)).toEqual([true, false, false, undefined]);
+  expect(done.map(e => e.prompted)).toEqual([true, false, false, false, false, false, undefined]);
   expect(done.at(-1).skilled).toBe(true);
   // the card comes at once, without the confetti pause
   await expect(page.locator('#overlay')).toBeVisible({ timeout: 500 });
 });
 
-test('out of order: a nugget already in the pack and the bump tunnelled under still work', async ({ page }) => {
+test('out of order: the bump tunnelled under and flint and ore already in the pack still work', async ({ page }) => {
   await fresh(page);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   const r = await page.evaluate(() => {
     const w = window.__ww,
       c = w.crew[0],
-      T = w.tutLevel.TUT;
-    c.inv.push('nug');
-    c.x = T.bump.x1 + 4; // past the bump some other way
-    w.step(2);
+      T = w.tutLevel.TUT,
+      floor = w.tutLevel.ground() + T.cave.floor;
+    c.inv.push('flint', 'ore');
+    c.x = T.well.x; // past the bump some other way
+    w.step(4);
     const a = w.tut.i;
-    w.step(2);
-    return [a, w.tut.i];
+    // and down into the cave some other way
+    Object.assign(c, { x: T.cave.x0 + 30, y: floor - 10, vx: 0, vy: 0 });
+    w.step(4);
+    const b = w.tut.i;
+    w.step(4);
+    return [a, b, w.tut.i];
   });
-  // walk done, dig done at once (the gold is already there), now selling
-  expect(r).toEqual([2, 2]);
+  // walk done, dig done, mine done at once (both are already there), now the bridge
+  expect(r).toEqual([1, 3, 3]);
 });
 
-test('ignoring every hint: the rescues lift over the bump, hand out gold and bring you home', async ({ page }) => {
+test('ignoring every hint: each step has a rescue that gets you through', async ({ page }) => {
+  test.setTimeout(240_000);
   await fresh(page);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   const r = await page.evaluate(() => {
     const w = window.__ww,
       c = w.crew[0],
-      B = w.tutLevel.TUT.bump,
+      T = w.tutLevel.TUT,
+      ids = w.tutLevel.steps(),
       out = [];
-    c.x = B.x0 - 8;
-    w.step(60 * 32); // stands at the bump doing nothing
-    out.push(w.tut.i);
-    w.step(60 * 32); // does not dig
-    out.push(w.tut.i, c.inv.includes('nug'));
-    w.step(60 * 42); // does not walk home
-    out.push(w.tut ? w.tut.i : 'end');
+    const id = () => (w.tut ? ids[w.tut.i] : 'end');
+    // walks right but never jumps: lifted over the bump
+    for (let k = 0; k < 60 * 60 && id() === 'walk'; k++) {
+      w.keys.r = 1;
+      w.step(1);
+    }
+    w.keys.r = 0;
+    out.push(id());
+    // stands by the shaft and does not dig, does not mine, does not build: the next step comes anyway
+    for (const want of ['dig', 'mine', 'bridge', 'danger']) {
+      for (let k = 0; k < 60 * 120 && id() === want; k++) {
+        // (once the bridge stands, walking over it is all that is left)
+        if (want === 'bridge' && (w.tut.s.built || c.bridge)) w.keys.r = 1;
+        w.step(1);
+      }
+      w.keys.r = 0;
+      out.push(id());
+    }
     return out;
   });
-  expect(r).toEqual([1, 2, true, 'end']);
+  expect(r).toEqual(['dig', 'mine', 'bridge', 'danger', 'glut']);
   const ev = await page.evaluate(() =>
     window.__ww.analytics
       .sessionEvents()
       .filter(e => e.e === 'onb_rescue')
       .map(e => e.step + ':' + e.kind),
   );
-  // (the hint to stand on the sparkle comes first, then the gift)
-  expect(ev).toEqual(['walk:lift', 'dig:dig', 'dig:gift', 'sell:home']);
+  for (const k of ['walk:lift', 'dig:drop', 'mine:gift', 'bridge:auto', 'danger:push']) expect(ev).toContain(k);
 });
 
-test('stuck in the pit: the action button turns up with a hint', async ({ page }) => {
+test('at the abyss with a beam: the action button turns into "Brücke" with a hint', async ({ page }) => {
   await fresh(page);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   await page.evaluate(() => (window.__ww.G.inputKind = 'keys'));
-  await page.evaluate(() => window.bot.run(5400));
-  await page.evaluate(() => window.bot.run(5400));
-  // dig deep down by the gold and stand still there
+  for (let k = 0; k < 3; k++) await page.evaluate(() => window.bot.run(5400));
   const r = await page.evaluate(() => {
     const w = window.__ww,
       c = w.crew[0],
-      { mat, W, AIR, paint } = w.world,
-      x0 = Math.round(c.x) - 2,
-      y0 = Math.round(c.y) + 10;
-    for (let y = y0; y < y0 + 30; y++) for (let x = x0; x < x0 + 11; x++) ((mat[y * W + x] = AIR), paint(y * W + x));
-    w.step(60 * 22);
-    return document.getElementById('questText').textContent;
+      T = w.tutLevel.TUT,
+      floor = w.tutLevel.ground() + T.cave.floor;
+    if (!c.inv.includes('wood')) c.inv.push('wood');
+    Object.assign(c, { x: T.gap.x0 - 9, y: floor - 10, vx: 0, vy: 0 });
+    // (the prompt shows once the player hesitates)
+    w.tut.s.shown = true;
+    w.step(10);
+    return [w.tutLevel.steps()[w.tut.i], document.getElementById('questText').textContent];
   });
-  expect(r).toBe('Steckst du fest? Drück F');
-  // (the HUD follows on the next drawn frames)
+  expect(r).toEqual(['bridge', 'Balken + Erz: drück F für die Brücke']);
   await expect(page.locator('#game')).toHaveClass(/onb-act/);
   await expect(page.locator('.pad.act')).toHaveClass(/tut-hl/);
 });
@@ -195,7 +231,7 @@ test('the teaching path: start free of the castle, the bump needs a jump both wa
   page,
 }) => {
   await fresh(page);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   const r = await page.evaluate(() => {
     const w = window.__ww,
       c = w.crew[0],
@@ -242,20 +278,17 @@ test('the teaching path: start free of the castle, the bump needs a jump both wa
   });
 });
 
-test('gold is sold once: the money goes up by the nugget value and the step ends once', async ({ page }) => {
+test('the walls give flint and ore, and the first success is counted once', async ({ page }) => {
   await fresh(page);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   await page.evaluate(() => (window.__ww.G.inputKind = 'keys'));
   await page.evaluate(() => window.bot.run(5400));
   await page.evaluate(() => window.bot.run(5400));
-  const before = await page.evaluate(() => [
-    window.__ww.money,
-    window.__ww.crew[0].inv.filter(t => t === 'nug').length,
-  ]);
+  expect(await page.evaluate(() => window.bot.run(5400))).toBe('bridge');
+  const inv = await page.evaluate(() => window.__ww.crew[0].inv);
+  expect(inv).toContain('flint');
+  expect(inv).toContain('ore');
   await page.evaluate(() => window.bot.run(5400));
-  await page.evaluate(() => window.__ww.step(120));
-  const after = await page.evaluate(() => window.__ww.money);
-  expect(after - before[0]).toBe(25 * before[1]);
   const n = await page.evaluate(
     () => window.__ww.analytics.sessionEvents().filter(e => e.e === 'onb_first_success').length,
   );
@@ -264,7 +297,7 @@ test('gold is sold once: the money goes up by the nugget value and the step ends
 
 test('the same path works at any frame pacing (single ticks or bursts of four)', async ({ page }) => {
   await fresh(page);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   const done = await page.evaluate(() => {
     const w = window.__ww,
       orig = w.step;
@@ -273,7 +306,7 @@ test('the same path works at any frame pacing (single ticks or bursts of four)',
       for (let k = 0; k < n; k += 4) orig(Math.min(4, n - k));
     };
     w.G.inputKind = 'keys';
-    for (let k = 0; k < 3 && w.tut; k++) window.bot.run(5400);
+    for (let k = 0; k < 6 && w.tut; k++) window.bot.run(5400);
     w.step = orig;
     return !w.tut;
   });
@@ -282,7 +315,7 @@ test('the same path works at any frame pacing (single ticks or bursts of four)',
 
 test('skipping with the keyboard: Esc opens the menu with "Tutorial überspringen"', async ({ page }) => {
   await fresh(page);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   await page.keyboard.press('Escape');
   await expect(page.locator('#panel')).toBeVisible();
   await page.waitForTimeout(400); // (a panel ignores clicks right after it opened)
@@ -310,7 +343,7 @@ test('analytics never breaks the game: blocked storage, a broken provider, bad e
     Storage.prototype.setItem = set;
     return { bad, good: !!good };
   });
-  await page.click('#veilGo');
+  await playPastIntro(page);
   await page.evaluate(() => window.__ww.step(30));
   await page.waitForTimeout(100);
   expect(r).toEqual({ bad: [null, null, null], good: true });
@@ -334,7 +367,7 @@ for (const [w, h] of [
       }, sel);
     expect(await fits('#veilGo')).toBe(true);
     await expect(page.locator('#veilGo small')).toContainText('[');
-    await page.click('#veilGo');
+    await playPastIntro(page);
     await page.evaluate(() => {
       window.__ww.G.inputKind = 'touch';
       window.__ww.step(5);
@@ -359,19 +392,17 @@ test('reduced motion: the arrow stands still and the start screen just goes', as
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await fresh(page);
   expect(await page.evaluate(() => window.__ww.G.reduceMotion)).toBe(true);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   await expect(page.locator('#veil')).toBeHidden({ timeout: 50 });
 });
 
-test('a hesitant newcomer (reads first, waits for the jump hint, walks out of the pit) is done in under two minutes', async ({
+test('a hesitant newcomer (reads every prompt first, then needs a moment) is done in under two minutes', async ({
   page,
 }) => {
   await fresh(page);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   const r = await page.evaluate(() => {
     const w = window.__ww,
-      L = w.tutLevel,
-      c = w.crew[0],
       q = document.getElementById('questText'),
       out = {};
     w.G.inputKind = 'keys';
@@ -379,43 +410,22 @@ test('a hesitant newcomer (reads first, waits for the jump hint, walks out of th
     let seen = -1,
       step = -1;
     for (let k = 0; k < 60 * 180 && w.tut; k++) {
-      for (const key in w.keys) w.keys[key] = 0;
+      window.bot.release();
       if (w.tut.i !== step) {
         step = w.tut.i;
         seen = -1;
         out[w.tutLevel.steps()[step]] = Math.round((w.G.playTicks - t0) / 6) / 10;
       }
-      // reads the prompt, then needs a second and a half to act on it
-      if (q.textContent && seen < 0) seen = k;
-      const go = seen >= 0 && k - seen > 90;
-      const id = w.tutLevel.steps()[w.tut.i];
-      if (id === 'walk' && go) {
-        w.keys.r = 1;
-        if (/Spring|Jump/.test(q.textContent) && k % 40 === 0) w.edge.jump = true;
-      } else if (id === 'dig') {
-        const nug = w.items.find(i => i.t === 'nug');
-        const tx = nug ? nug.x + 1 : L.TUT.gold.x;
-        if (go || nug) {
-          if (c.x + 3 < tx - 2) w.keys.r = 1;
-          else if (c.x + 3 > tx + 2) w.keys.l = 1;
-          else if (!nug) w.keys.d = 1;
-        }
-      } else if (id === 'sell') {
-        // never jumps in the pit: walks into its wall until the ramp is dug
-        w.keys.l = 1;
-        if (c.y + 10 <= L.ground() + 3 && Math.abs(c.vx) < 0.05 && k % 40 === 0) w.edge.jump = true;
-      }
+      // the first prompt of a step is read first: a second and a half before acting on it
+      if (seen < 0 && q.textContent) seen = k;
+      if (seen >= 0 ? k - seen > 90 : w.tut.i > 0) window.bot.act(k);
       w.step(1);
     }
     out.total = Math.round((w.G.playTicks - t0) / 6) / 10;
     out.done = !w.tut;
-    out.help = w.analytics
-      .sessionEvents()
-      .filter(e => /rescue|recover|hint/.test(e.e))
-      .map(e => e.e + ':' + (e.kind || e.level));
     return out;
   });
-  console.log('hesitant newcomer, seconds at the start of each beat:', JSON.stringify(r));
+  console.log('hesitant newcomer, seconds at the start of each step:', JSON.stringify(r));
   expect(r.done).toBe(true);
   expect(r.total).toBeLessThan(120);
 });
@@ -430,7 +440,7 @@ test('a tutorial saved by an older version starts afresh in the new world', asyn
   await page.reload();
   await page.waitForFunction(() => window.__ww);
   await expect(page.locator('#veilGo b')).toHaveText('Spielen');
-  await page.click('#veilGo');
+  await playPastIntro(page);
   expect(await page.evaluate(() => [window.__ww.G.mode, window.__ww.tut.i])).toEqual(['tut', 0]);
 });
 

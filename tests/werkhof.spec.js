@@ -129,15 +129,15 @@ test('the crew uses live room members, readiness and additional player counts', 
     const [host, ...guests] = pages;
     await host.click('#lbTogether');
     await host.click('#lbCreate');
-    await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+    await expect(host.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
     const code = await host.locator('.lb-codetap b').textContent();
     for (const guest of guests) {
       await guest.click('#lbTogether');
       await guest.fill('#lbCodeIn', code); await guest.click('#lbJoinBtn');
-      await expect(guest.locator('.lb-players')).toContainText('Anna');
+      await expect(guest.locator('.pt-grid')).toContainText('Anna');
     }
-    await guests[0].getByText('Bereit?', { exact: true }).click();
-    await expect(host.locator('.lb-players')).toContainText('Dora');
+    await guests[0].locator('.pt-go', { hasText: 'Bereit!' }).click();
+    await expect(host.locator('.pt-grid')).toContainText('Dora');
     await host.click('#pClose');
     await expect(host.locator('#lbCrewState')).toHaveText('Spieler im Raum: 4');
     await expect(host.locator('#lbSlot1')).toContainText('Bert ✓');
@@ -155,7 +155,7 @@ test('the crew uses live room members, readiness and additional player counts', 
     }
     await host.screenshot({ path: 'test-results/werkhof-crew-landscape.png' });
     await host.click('#lbSlot2');
-    await expect(host.locator('.lb-players')).toContainText('Dora');
+    await expect(host.locator('.pt-grid')).toContainText('Dora');
   } finally { await Promise.all(pages.map(p => p.close())); r.relay.kill(); }
 });
 

@@ -48,7 +48,7 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 844, height: 390 }
         expect(ids.includes('expedition')).toBe(kind === 'coop');
         expect(ids.includes('festungssturm')).toBe(kind === 'versus');
         expect(ids).toContain('zweiburgen');
-        await expect(page.locator('.ls-card[data-id="gold"] .ls-players')).toHaveText('2–8 Spieler');
+        await expect(page.locator('.ls-card[data-id="gold"] .ls-players')).toHaveText('2–4 Spieler');
       }
     }
     await page.locator('.ls-card[data-id="c3"]').click();
@@ -90,17 +90,17 @@ for (const kind of ['coop', 'versus']) {
     await host.waitForFunction(() => performance.now() - window.__ww.G.panelT >= 500);
     await host.click('#lbCreate');
     const code = host.locator('.lb-codetap b');
-    await expect(code).toHaveText(/^[A-Z0-9]{6}$/);
+    await expect(code).toHaveText(/^[A-Z0-9]{5}$/);
     await expect(host.locator('#pTitle')).toHaveText('Zusammen spielen');
     await guest.click('#lbSlot1');
     await guest.fill('#lbCodeIn', await code.textContent());
     await guest.click('#lbJoinBtn');
-    await expect(host.locator('.lb-players')).toContainText('Bert');
+    await expect(host.locator('.pt-grid')).toContainText('Bert');
     await expect(guest.locator('#lbKindTxt')).toContainText(kind === 'coop' ? 'Zusammen' : 'Gegeneinander');
     await expect(guest.locator('#lbKind')).toBeDisabled();
     await expect(guest.locator('#lbGModeTxt')).toContainText(kind === 'coop' ? 'Expedition' : 'Zwei Burgen');
-    await guest.locator('.opt', { hasText: 'Bereit?' }).click();
-    await host.locator('.opt', { hasText: 'Spiel starten' }).click();
+    await guest.locator('.pt-go', { hasText: 'Bereit!' }).click();
+    await host.locator('.pt-go', { hasText: 'Spiel starten' }).click();
     for (const page of [host, guest]) {
       await page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net);
       expect(await page.evaluate(() => [window.__ww.G.mode, !!window.__ww.G.teams])).toEqual([

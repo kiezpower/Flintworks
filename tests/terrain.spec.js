@@ -54,13 +54,13 @@ async function room(browser, guestOpts) {
   const h = await player(browser, 'Hanna');
   const g = await player(browser, 'Gus', guestOpts);
   await h.page.locator('#lbCreate').click();
-  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
   const code = await h.page.locator('.lb-codetap b').textContent();
   await g.page.locator('#lbCodeIn').fill(code);
   await g.page.locator('#lbJoinBtn').click();
-  await expect(h.page.locator('.lb-players')).toContainText('Gus', { timeout: 15000 });
-  await g.page.locator('.opt', { hasText: 'Bereit?' }).click();
-  await h.page.locator('.opt', { hasText: 'Spiel starten' }).click();
+  await expect(h.page.locator('.pt-grid')).toContainText('Gus', { timeout: 15000 });
+  await g.page.locator('.pt-go', { hasText: 'Bereit!' }).click();
+  await h.page.locator('.pt-go', { hasText: 'Spiel starten' }).click();
   for (const p of [h, g]) await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net, null, { timeout: 30000 });
   // (past the first seconds, in which the host sends whole chunks anyway)
   await h.page.waitForFunction(() => window.__ww.G.frame > 400, null, { timeout: 20000 });

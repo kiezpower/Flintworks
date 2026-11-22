@@ -45,13 +45,13 @@ test('Festung in Koop: the guest sees the nights, the walls and the cannon; two 
   const h = await player(browser, 'Hilde', { gmode: 'fort', mode: 'meadow' });
   const g = await player(browser, 'Gustav');
   await h.page.locator('#lbCreate').click();
-  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
   const code = await h.page.locator('.lb-codetap b').textContent();
   await g.page.locator('#lbCodeIn').fill(code);
   await g.page.locator('#lbJoinBtn').click();
-  await expect(h.page.locator('.lb-players')).toContainText('Gustav');
-  await g.page.locator('.opt', { hasText: 'Bereit?' }).click();
-  await h.page.locator('.opt', { hasText: 'Spiel starten' }).click();
+  await expect(h.page.locator('.pt-grid')).toContainText('Gustav');
+  await g.page.locator('.pt-go', { hasText: 'Bereit!' }).click();
+  await h.page.locator('.pt-go', { hasText: 'Spiel starten' }).click();
   for (const p of [h, g])
     await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net && window.__ww.G.mode === 'fort', null, {
       timeout: 10000,
@@ -127,13 +127,13 @@ test('finding each other: a call comes as a line, "Hierher!" sets a marker, an a
   const h = await player(browser, 'Ilse');
   const g = await player(browser, 'Jakob');
   await h.page.locator('#lbCreate').click();
-  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
   const code = await h.page.locator('.lb-codetap b').textContent();
   await g.page.locator('#lbCodeIn').fill(code);
   await g.page.locator('#lbJoinBtn').click();
-  await expect(h.page.locator('.lb-players')).toContainText('Jakob');
-  await g.page.locator('.opt', { hasText: 'Bereit?' }).click();
-  await h.page.locator('.opt', { hasText: 'Spiel starten' }).click();
+  await expect(h.page.locator('.pt-grid')).toContainText('Jakob');
+  await g.page.locator('.pt-go', { hasText: 'Bereit!' }).click();
+  await h.page.locator('.pt-go', { hasText: 'Spiel starten' }).click();
   for (const p of [h, g])
     await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net, null, { timeout: 10000 });
   // Ilse walks far off to the right and calls "Hierher!"
@@ -150,7 +150,7 @@ test('finding each other: a call comes as a line, "Hierher!" sets a marker, an a
     new MutationObserver(() => window.__lines.push(t.textContent)).observe(t, { childList: true, characterData: true, subtree: true });
   });
   await h.page.locator('#emoBtn').click();
-  await h.page.locator('#panel .opt', { hasText: 'Hierher!' }).click();
+  await h.page.locator('#panel .emo-b', { hasText: 'Hierher!' }).click();
   // Jakob gets the line and the marker
   await g.page.waitForFunction(() => window.__lines.some(l => l.includes('Ilse') && l.includes('Hierher')), null, {
     timeout: 8000,
@@ -169,19 +169,15 @@ test('the score while a Versus round runs: the clock, both teams with goal and c
   const h = await player(browser, 'Karla');
   const g = await player(browser, 'Lutz');
   await h.page.locator('#lbCreate').click();
-  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
   const code = await h.page.locator('.lb-codetap b').textContent();
   await h.page.waitForFunction(() => performance.now() - window.__ww.G.panelT >= 500);
-  await h.page.locator('.opt', { hasText: 'Zusammen' }).first().click();
-  await h.page.click('.ls-kind[data-kind="versus"]');
-  await h.page.locator('.ls-card[data-id="gold"]').click();
-  await h.page.click('.ls-go');
-  await h.page.click('#lbInvite');
+  await h.page.locator('.pt-segb', { hasText: 'Versus' }).click();
   await g.page.locator('#lbCodeIn').fill(code);
   await g.page.locator('#lbJoinBtn').click();
-  await expect(h.page.locator('.lb-players')).toContainText('Lutz');
-  await g.page.locator('.opt', { hasText: 'Bereit?' }).click();
-  await h.page.locator('.opt', { hasText: 'Spiel starten' }).click();
+  await expect(h.page.locator('.pt-grid')).toContainText('Lutz');
+  await g.page.locator('.pt-go', { hasText: 'Bereit!' }).click();
+  await h.page.locator('.pt-go', { hasText: 'Spiel starten' }).click();
   for (const p of [h, g])
     await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net && window.__ww.G.teams, null, {
       timeout: 10000,
@@ -215,19 +211,19 @@ test('Festungssturm: Red gets the fortress kit, Blue its explosives after the tr
   const h = await player(browser, 'Moritz', { gmode: 'festungssturm' });
   const g = await player(browser, 'Nele');
   await h.page.locator('#lbCreate').click();
-  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
   const code = await h.page.locator('.lb-codetap b').textContent();
   await h.page.waitForFunction(() => performance.now() - window.__ww.G.panelT >= 500);
-  await h.page.locator('.opt', { hasText: 'Zusammen' }).first().click();
+  await h.page.locator('.opt', { hasText: 'Karte oder Modus ändern' }).first().click();
   await h.page.click('.ls-kind[data-kind="versus"]');
   await h.page.locator('.ls-card[data-id="festungssturm"]').click();
   await h.page.click('.ls-go');
   await h.page.click('#lbInvite');
   await g.page.locator('#lbCodeIn').fill(code);
   await g.page.locator('#lbJoinBtn').click();
-  await expect(h.page.locator('.lb-players')).toContainText('Nele');
-  await g.page.locator('.opt', { hasText: 'Bereit?' }).click();
-  await h.page.locator('.opt', { hasText: 'Spiel starten' }).click();
+  await expect(h.page.locator('.pt-grid')).toContainText('Nele');
+  await g.page.locator('.pt-go', { hasText: 'Bereit!' }).click();
+  await h.page.locator('.pt-go', { hasText: 'Spiel starten' }).click();
   for (const p of [h, g])
     await p.page.waitForFunction(
       () => window.__ww.G.state === 'play' && window.__ww.G.teams && window.__ww.G.mode === 'festungssturm',
@@ -300,36 +296,38 @@ test('Festungssturm: Red gets the fortress kit, Blue its explosives after the tr
   for (const p of [h, g]) await p.page.close();
 });
 
-test('up to eight in a room: a fifth player gets in; "Jeder gegen jeden" with five makes four castles, two share one', async ({
+test('up to four in a room: a fifth player is turned away; "Jeder gegen jeden" with four makes four castles', async ({
   browser,
 }) => {
-  const names = ['Olga', 'Paul', 'Quirin', 'Rosa', 'Sven'];
+  const names = ['Olga', 'Paul', 'Quirin', 'Rosa'];
   const ps = [];
   for (const n of names) ps.push(await player(browser, n));
   const [h, ...rest] = ps;
   await h.page.locator('#lbCreate').click();
-  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
   const code = await h.page.locator('.lb-codetap b').textContent();
   await h.page.waitForFunction(() => performance.now() - window.__ww.G.panelT >= 500);
-  await h.page.locator('.opt', { hasText: 'Zusammen' }).first().click();
-  await h.page.click('.ls-kind[data-kind="versus"]');
-  await h.page.click('.ls-card[data-id="gold"]');
-  await h.page.click('.ls-go');
-  await h.page.click('#lbInvite');
-  await h.page.waitForFunction(() => performance.now() - window.__ww.G.panelT >= 500);
-  await h.page.locator('.opt', { hasText: 'Jeder gegen jeden' }).first().click();
+  await h.page.locator('.pt-segb', { hasText: 'Versus' }).click();
   for (const p of rest) {
     await p.page.locator('#lbCodeIn').fill(code);
     await p.page.locator('#lbJoinBtn').click();
   }
-  await expect(h.page.locator('.lb-players')).toContainText('Sven', { timeout: 8000 });
+  await expect(h.page.locator('.pt-grid')).toContainText('Rosa', { timeout: 8000 });
+  await expect(h.page.locator('.pt-card.empty')).toHaveCount(0);
+  // the room is full: a fifth player gets a clear message
+  const sven = await player(browser, 'Sven');
+  await sven.page.locator('#lbCodeIn').fill(code);
+  await sven.page.locator('#lbJoinBtn').click();
+  await expect(sven.page.locator('.pt-err')).toContainText('voll', { timeout: 8000 });
   // the slot beside the hero says how many more there are
-  await expect(h.page.locator('#lbSlot2')).toContainText('+2');
+  await expect(h.page.locator('#lbSlot2')).toContainText('+1');
+  await h.page.waitForFunction(() => performance.now() - window.__ww.G.panelT >= 500);
+  await h.page.locator('.opt', { hasText: 'Jeder gegen jeden' }).first().click();
   for (const p of rest) {
     await p.page.waitForTimeout(300);
-    await p.page.locator('.opt', { hasText: 'Bereit?' }).click();
+    await p.page.locator('.pt-go', { hasText: 'Bereit!' }).click();
   }
-  await h.page.locator('.opt', { hasText: 'Spiel starten' }).click();
+  await h.page.locator('.pt-go', { hasText: 'Spiel starten' }).click();
   for (const p of ps)
     await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.teams, null, { timeout: 15000 });
   const r = await h.page.evaluate(() => {
@@ -338,9 +336,9 @@ test('up to eight in a room: a fifth player gets in; "Jeder gegen jeden" with fi
     for (const c of w.crew) if (c.pid != null) byTeam[c.team || 0] = (byTeam[c.team || 0] || 0) + 1;
     return { teams: w.G.teams.length, castles: w.builds.filter(b => b.type === 'base').length, byTeam: Object.values(byTeam).sort() };
   });
-  expect(r).toEqual({ teams: 4, castles: 4, byTeam: [1, 1, 1, 2] });
-  for (const p of ps) expect(p.errors).toEqual([]);
-  for (const p of ps) await p.page.close();
+  expect(r).toEqual({ teams: 4, castles: 4, byTeam: [1, 1, 1, 1] });
+  for (const p of [...ps, sven]) expect(p.errors).toEqual([]);
+  for (const p of [...ps, sven]) await p.page.close();
 });
 
 test('watching: a guest who only watches gets no Wühler, the camera follows the host, "Mitspielen" steps in', async ({
@@ -349,16 +347,16 @@ test('watching: a guest who only watches gets no Wühler, the camera follows the
   const h = await player(browser, 'Tilda');
   const g = await player(browser, 'Ulf');
   await h.page.locator('#lbCreate').click();
-  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{6}$/);
+  await expect(h.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
   const code = await h.page.locator('.lb-codetap b').textContent();
   await g.page.locator('#lbCodeIn').fill(code);
   await g.page.locator('#lbJoinBtn').click();
-  await expect(h.page.locator('.lb-players')).toContainText('Ulf');
+  await expect(h.page.locator('.pt-grid')).toContainText('Ulf');
   // Ulf only wants to watch: the host sees it
   await g.page.locator('.opt', { hasText: 'Zuschauen' }).click();
-  await expect(h.page.locator('.lb-players')).toContainText('schaut zu');
-  await g.page.locator('.opt', { hasText: 'Bereit?' }).click();
-  await h.page.locator('.opt', { hasText: 'Spiel starten' }).click();
+  await expect(h.page.locator('.pt-grid')).toContainText('schaut zu');
+  await g.page.locator('.pt-go', { hasText: 'Bereit!' }).click();
+  await h.page.locator('.pt-go', { hasText: 'Spiel starten' }).click();
   for (const p of [h, g])
     await p.page.waitForFunction(() => window.__ww.G.state === 'play' && window.__ww.G.net, null, { timeout: 10000 });
   // no Wühler for Ulf; on his screen the bar names Tilda and the camera is with her

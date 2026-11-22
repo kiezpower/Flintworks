@@ -18,7 +18,7 @@ async function client() {
   };
 }
 
-test('a hosted room reserves its server slot, accepts eight humans and keeps ownership and its code on reconnect', async () => {
+test('a hosted room reserves its server slot, accepts four humans and keeps ownership and its code on reconnect', async () => {
   const host = await client(), token = randomBytes(16).toString('hex');
   host.send({ t: 'create', hosted: true, token, name: 'Dauerwelt', pub: true });
   const room = await host.wait('room');
@@ -26,7 +26,7 @@ test('a hosted room reserves its server slot, accepts eight humans and keeps own
   expect(room.players).toMatchObject([{ serverHost: true, watch: true }]);
   expect(JSON.stringify(room)).not.toContain(token);
   const guests = [];
-  for (let n = 0; n < 8; n++) {
+  for (let n = 0; n < 4; n++) {
     const g = await client(); guests.push(g);
     g.send({ t: 'join', code: room.code, token: randomBytes(16).toString('hex'), name: 'Freund ' + n });
     expect((await g.wait('room')).players.length).toBe(n + 2);
@@ -41,5 +41,5 @@ test('a hosted room reserves its server slot, accepts eight humans and keeps own
   reconnected.send({ t: 'create', hosted: true, token, pub: true, name: 'Dauerwelt' });
   const same = await reconnected.wait('room');
   expect([same.code, same.host, same.pid]).toEqual([room.code, room.host, room.pid]);
-  expect(same.players).toHaveLength(9);
+  expect(same.players).toHaveLength(5);
 });

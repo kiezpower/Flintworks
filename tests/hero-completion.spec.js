@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { playPastIntro } from './skipintro.js';
 async function start(page, extra = {}) {
   await page.addInitScript(extra => {
     localStorage.setItem('flintworks-lang','de');
@@ -85,7 +86,7 @@ test('daily uses the same role and variant for every profile; versus unlocks all
   });expect(r).toEqual({a:'bruno',b:'bruno',fixed:true,role:'nora',unlocked:true,hasHook:false});
 });
 test('tutorial completion offers a first hero and the chosen role reaches the first real round',async({page})=>{
-  await page.goto('/');await page.waitForFunction(()=>window.__ww);await page.click('#veilGo');
+  await page.goto('/');await page.waitForFunction(()=>window.__ww);await playPastIntro(page);
   await page.evaluate(async()=> (await import('/src/tutorial.js')).endTutorial('skip'));
   await expect(page.locator('#firstHeroChoice')).toBeVisible();
   await page.locator('#firstHeroChoice [data-hero="mika"]').click();await page.click('#goBtn');
@@ -102,7 +103,7 @@ test('retention report distinguishes days not yet observed and retains actual D1
   });expect(r).toEqual({fresh1:null,fresh7:null,day1:true,day7:true});
 });
 for (const viewport of [{width:320,height:568},{width:844,height:390}]) test(`first hero choice and continue remain reachable at ${viewport.width}x${viewport.height}`,async({page})=>{
-  await page.setViewportSize(viewport);await page.goto('/');await page.waitForFunction(()=>window.__ww);await page.click('#veilGo');
+  await page.setViewportSize(viewport);await page.goto('/');await page.waitForFunction(()=>window.__ww);await playPastIntro(page);
   await page.evaluate(async()=> (await import('/src/tutorial.js')).endTutorial('skip'));
   await page.locator('#firstHeroChoice [data-hero="juna"]').click();await page.locator('#goBtn').scrollIntoViewIfNeeded();
   const box=await page.locator('#goBtn').boundingBox();expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(viewport.width);expect(box.y+box.height).toBeLessThanOrEqual(viewport.height);
@@ -115,7 +116,7 @@ test('completed master title is visible on the podium without browser rendering 
   await page.screenshot({path:'test-results/hero-master-podium.png'});expect(errors).toEqual([]);
 });
 test('unfinished hero selection survives closing the tutorial card and reloading',async({page})=>{
-  await page.goto('/');await page.waitForFunction(()=>window.__ww);await page.click('#veilGo');
+  await page.goto('/');await page.waitForFunction(()=>window.__ww);await playPastIntro(page);
   await page.evaluate(async()=> (await import('/src/tutorial.js')).endTutorial('skip'));
   await page.reload();await page.waitForFunction(()=>window.__ww);await page.click('#lbPlay');
   if (await page.locator('.ls-kind[data-kind="solo"]').isVisible()) {
@@ -139,7 +140,7 @@ test('Mika keeps gold and gem discoveries across worlds and precision picks the 
   });expect(r).toEqual({found:2,nearest:[199,99],count:4});
 });
 test('autosave cannot resurrect a completed tutorial during the completion animation',async({page})=>{
-  await page.goto('/');await page.waitForFunction(()=>window.__ww);await page.click('#veilGo');
+  await page.goto('/');await page.waitForFunction(()=>window.__ww);await playPastIntro(page);
   const r=await page.evaluate(async()=>{
     const {endTutorial}=await import('/src/tutorial.js');const {saveGame,hasSave}=await import('/src/save.js');
     endTutorial('done');saveGame();return {saved:hasSave(),pending:(await import('/src/profile.js')).P.heroChoicePending};

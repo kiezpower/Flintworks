@@ -1,5 +1,6 @@
 // The lorry can be pushed up wooden stairs and up a hillside, and rolls back down: npm test
 import { expect, test } from '@playwright/test';
+import { playPastIntro } from './skipintro.js';
 
 test('a lorry is pushed up stairs and up a hill', async ({ page }) => {
   const errors = [];
@@ -11,7 +12,7 @@ test('a lorry is pushed up stairs and up a hill', async ({ page }) => {
   });
   await page.reload();
   await page.waitForFunction(() => window.__ww);
-  await page.click('#veilGo');
+  await playPastIntro(page);
   await page.evaluate(() => window.__ww.endTutorial());
   const r = await page.evaluate(() => {
     const w = window.__ww,
