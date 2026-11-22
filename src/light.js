@@ -13,14 +13,62 @@ const AMB_MAX = 0.58, // darkest the deep underground gets (lamps and lava cut h
 const TINT = '14,8,22';
 
 // first solid or liquid cell of a column; refreshed a few times per second for the visible columns
-let colTop = new Int16Array(W).fill(-1);
-onResize(() => (colTop = new Int16Array(W).fill(-1)));
+// colTop: the surface (wet ground, rain); lightTop: where the depth dimming starts. Daylight also
+// falls in from the side: next to a deep cleft or pit the dimming starts lower and fades into the
+// wall over a few pixels (a cone, SLOPE pixels down per pixel to the side), and the air under a
+// thin ledge that sticks out into such an opening stays bright. Before, every steep wall and every
+// ledge made a hard-edged dark block from the top of its column down. A cave roof has no open sky
+// next to it and keeps its dark.
+let colTop = new Int16Array(W).fill(-1),
+  lightTop = new Int16Array(W).fill(-1),
+  rawTop = new Int16Array(W);
+onResize(() => {
+  colTop = new Int16Array(W).fill(-1);
+  lightTop = new Int16Array(W).fill(-1);
+  rawTop = new Int16Array(W);
+});
+const LEDGE = 24, // solid layers thinner than this (with air below) may be ledges
+  SIDE = 48, // how far to the side the open sky beside a ledge is looked for
+  SLOPE = 4; // the side light: how many pixels deeper per pixel into the wall
+const hit = i => SOLID[mat[i]] || LIQ[mat[i]];
 function refreshTops(cx) {
-  const x1 = Math.min(W, cx + G.VW + 1);
-  for (let x = Math.max(0, cx); x < x1; x++) {
+  const reach = Math.ceil(H / SLOPE), // columns beyond the view that can still light it
+    v0 = Math.max(0, cx),
+    v1 = Math.min(W, cx + G.VW + 1),
+    b0 = Math.max(0, cx - reach),
+    b1 = Math.min(W, cx + G.VW + 1 + reach),
+    a0 = Math.max(0, b0 - SIDE),
+    a1 = Math.min(W, b1 + SIDE);
+  for (let x = a0; x < a1; x++) {
     let y = 0;
-    while (y < H && !SOLID[mat[y * W + x]] && !LIQ[mat[y * W + x]]) y++;
+    while (y < H && !hit(y * W + x)) y++;
     colTop[x] = y;
+  }
+  // thin ledges over open air are skipped
+  for (let x = b0; x < b1; x++) {
+    let y = colTop[x];
+    for (let k = 0; k < 4 && y < H; k++) {
+      if (LIQ[mat[y * W + x]]) break;
+      let e = y;
+      while (e < H && e - y < LEDGE && SOLID[mat[e * W + x]]) e++;
+      if (e - y >= LEDGE || e >= H || hit(e * W + x)) break;
+      // open sky beside it, reaching below the ledge?
+      let open = false;
+      for (let d = 4; d <= SIDE && !open; d += 4)
+        open = (x - d >= a0 && colTop[x - d] > e) || (x + d < a1 && colTop[x + d] > e);
+      if (!open) break;
+      y = e;
+      while (y < H && !hit(y * W + x)) y++;
+    }
+    rawTop[x] = y;
+  }
+  // the side light: the deepest of the neighbours' tops, raised by SLOPE per column (two passes)
+  let run = -1e4;
+  for (let x = b0; x < b1; x++) rawTop[x] = run = Math.max(rawTop[x], run - SLOPE);
+  run = -1e4;
+  for (let x = b1 - 1; x >= b0; x--) {
+    run = Math.max(rawTop[x], run - SLOPE);
+    if (x >= v0 && x < v1) lightTop[x] = run;
   }
 }
 
@@ -52,11 +100,11 @@ ramp2.height = AMB_LEN2;
 // Paints the depth dimming into the light layer; false when the view is all above ground.
 const deep = [];
 function depthShade(lctx, cx, cy) {
-  if (G.frame % 15 === 0 || colTop[Math.min(W - 1, cx + (G.VW >> 1))] < 0) refreshTops(cx);
+  if (G.frame % 15 === 0 || lightTop[Math.min(W - 1, cx + (G.VW >> 1))] < 0) refreshTops(cx);
   lctx.fillStyle = `rgba(${TINT},${AMB_MAX})`;
   let any = false;
   for (let sx = 0; sx < G.VW; sx++) {
-    const top = colTop[cx + sx] - cy + AMB_GAP;
+    const top = lightTop[cx + sx] - cy + AMB_GAP;
     if (top >= G.VH) continue;
     any = true;
     if (top > -AMB_LEN) lctx.drawImage(ramp, sx, top);
@@ -84,7 +132,7 @@ function surfTops(cx) {
 }
 // how far below the surface a world position is, 0 (above) to 1 (deep)
 function depthAt(x, y) {
-  const t = colTop[Math.max(0, Math.min(W - 1, x | 0))];
+  const t = lightTop[Math.max(0, Math.min(W - 1, x | 0))];
   return t < 0 ? 0 : Math.max(0, Math.min(1, (y - t - AMB_GAP) / AMB_LEN));
 }
 

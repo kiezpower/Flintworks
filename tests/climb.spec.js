@@ -100,17 +100,12 @@ test('in a rock pit with wood the action builds stairs up to the ledge', async (
   expect(errors).toEqual([]);
 });
 
-test('in a rock pit without wood the action takes the Wühler home', async ({ page }) => {
+test('in a rock pit without wood the action button no longer throws the Wühler home', async ({ page }) => {
   const errors = await field(page);
   await page.evaluate(PIT, ['ROCK', 480]);
-  expect(await label(page)).toBe('Heim');
-  await act(page);
-  const home = await page.evaluate(() => {
-    const w = window.__ww,
-      c = w.crew[0];
-    return Math.abs(c.x - (w.base.x + 10)) < 2 && Math.abs(c.y - (w.base.gy - 10)) < 2;
-  });
-  expect(home).toBe(true);
+  const lbl = await page.evaluate(() => window.__ww.context(window.__ww.crew[0])?.label);
+  expect(lbl).not.toBe('Heim');
+  // (home is only in the menu: "Zurück zur Basis")
   expect(errors).toEqual([]);
 });
 
@@ -147,8 +142,8 @@ test('the grappling hook is bought at the base, gets its own button and pulls on
   expect(await page.evaluate(() => [!!window.__ww.G.tools.hook, window.__ww.money])).toEqual([true, 70]);
   const rim = await page.evaluate(PIT, ['ROCK', 480]);
   expect(await hookBtn(page)).toBe(true);
-  // the action button keeps to stairs and home: the hook has its own
-  expect(await label(page)).toBe('Heim');
+  // the action button keeps to stairs: the hook has its own
+  expect(await page.evaluate(() => window.__ww.context(window.__ww.crew[0])?.label)).not.toBe('Heim');
   // without a direction it goes for the ledge and pulls up over it
   const r = await hook(page);
   expect(r.flying).toBe(true);

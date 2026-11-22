@@ -85,3 +85,19 @@
 @media (min-width: 601px) and (max-height: 500px) {
   .werkhof .lb-crew-heading { width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 }
+
+/* Launch area without scrolling: on landscape screens the level and the play mode sit side by
+   side under the big button (each with its small label), instead of a column that had to be
+   scrolled in the middle of the screen. */
+@media (min-width: 601px) {
+  .werkhof .lb-play { flex-flow: row wrap; align-content: flex-start; overflow: visible; }
+  .werkhof .lb-play > .lb-go, .werkhof .lb-play > .lb-resume-name { flex: 1 0 100%; }
+  .werkhof .lb-play > .lb-sel, .werkhof .lb-play > .lb-new { flex: 1 1 40%; min-width: 0; }
+  .werkhof .lb-sel { align-content: center; }
+  .werkhof .lb-sel small { display: block; font-size: 10px; line-height: 1.1; color: #7a5532; }
+  .werkhof .lb-sel b { overflow: hidden; text-overflow: ellipsis; }
+}
+@media (min-width: 601px) and (max-height: 500px) {
+  .werkhof .lb-play { top: auto; bottom: max(6px, env(safe-area-inset-bottom)); }
+  .werkhof .lb-sel { min-height: 40px; padding-top: 2px; padding-bottom: 2px; }
+}
