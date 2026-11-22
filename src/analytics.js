@@ -32,6 +32,7 @@ const EVENTS = {
   onb_first_success: { f: { sec: 'n', money: 'n' }, once: 'run' },
   onb_skip: { f: { step: 's', sec: 'n', via: 's' }, once: 'run' },
   onb_menu: { f: { action: 's' } },
+  onb_intro: { f: { action: 's', sec: 'n' } },
   onb_complete: { f: { sec: 'n', hints: 'n', skilled: 'b' }, once: 'run' },
   onb_card: { f: { choice: 's', result: 's' }, once: 'run' },
   onb_exit: { f: { step: 's', sec: 'n' } },

@@ -126,7 +126,7 @@ function play(song, n, t) {
 // called every frame with the current mood
 function updMusic(song) {
   if (!G.AC || G.AC.state !== 'running') return;
-  const on = !G.muted && P.music !== false;
+  const on = !G.muted && P.music !== false && !G.introOn; // (the story intro has its own sound)
   if (!bus) {
     bus = G.AC.createGain();
     bus.connect(G.MUS || G.MG);

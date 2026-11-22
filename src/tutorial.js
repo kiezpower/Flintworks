@@ -1,11 +1,14 @@
 import { P, saveProfile, track } from './profile.js';
-// Guided first game ("Die erste Schicht") in its own small world: three beats of the core loop
-// (walk, dig to gold, sell it) with an arrow to the goal, a pulsing button, hints that fit the
-// situation, rescues when the player is stuck and a closing card. Under two minutes for a
+// Guided first game ("Der Glutstein") in its own small world: six beats learned by doing them
+// (walk and jump, dig, mine, build a bridge, run from a cave-in, bring the Glutstein home) with a
+// finger at the spot, a pulsing button, hints that fit the situation, rescues when the player is
+// stuck, a small reward after every beat and a closing card. Three to five minutes for a
 // newcomer; players who already know what to do never see a prompt.
-// The steps are in tutsteps.js, the world in tutlevel.js, the funnel events in analytics.js.
+// The steps are in tutsteps.js, the world in tutlevel.js, what it shows beyond the terrain in
+// tutscene.js, the story intro before it in intro.js, the funnel events in analytics.js.
 import { ev, newRun } from './analytics.js';
 import { sel_ } from './entities.js';
+import { celebrate } from './effects.js';
 import { addFloat } from './floats.js';
 import { tr } from './i18n.js';
 import { mode } from './modes.js';
@@ -13,7 +16,7 @@ import { sfx } from './sound.js';
 import { SPR, itemIcon, padIcon } from './sprites.js';
 import { G, parts } from './state.js';
 import { STEPS } from './tutsteps.js';
-import { drawArrow } from './arrow.js';
+import { drawTutFront, flash } from './tutscene.js';
 import { closePanel, mapView, toast, toastEl } from './ui.js';
 
 const box = document.getElementById('quest');
@@ -38,6 +41,8 @@ rm.addEventListener?.('change', () => (G.reduceMotion = rm.matches));
 let hooks = {};
 const setTutHooks = h => (hooks = h);
 const stepOf = () => G.tut && STEPS[G.tut.i];
+// what the action button does at a spot of the current step (digger.js context)
+G.tutCtx = c => (G.tut && G.state === 'play' && c === sel_() && stepOf()?.act?.(c, G.tut.s)) || null;
 const secs = () => Math.round((G.playTicks || 0) / 6) / 10;
 
 // a text can be plain, per input ({ touch, keys }) or worked out right now
@@ -104,7 +109,7 @@ function endTutorial(result, via = 'button') {
   saveProfile();
   if (!mode().tutorial) return;
   if (result === 'skip' || skilled(run)) return finishCard(result);
-  // a moment of confetti over the castle before the card
+  // a moment of confetti over the fire before the card
   closePanel();
   mapView.hidden = true;
   confetti();
@@ -113,7 +118,7 @@ function endTutorial(result, via = 'button') {
 // two beats done before their prompt was needed: this player knows the game
 const skilled = run => !!run && run.quiet >= 2;
 function confetti() {
-  const COLS = ['#f2c230', '#e0572f', '#3f9e4a', '#2f7fd0', '#f2f2f2', '#d04f8a'];
+  const COLS = ['#f2c230', '#e0572f', '#ffcf4a', '#ff7a2a', '#fff3c0', '#d04f8a'];
   const c = sel_(),
     spots = [{ x: G.base.x + G.base.w / 2, y: G.base.gy - G.base.h }];
   if (c) spots.push({ x: c.x + 3, y: c.y });
@@ -141,14 +146,18 @@ function finishCard(result) {
   // what you learned, as the game's own icons
   const learned = [
     [SPR.diggerIcon.toDataURL(), 'Laufen'],
+    [padIcon('jump'), 'Springen'],
     [padIcon('dig'), 'Graben'],
-    [itemIcon('nug').toDataURL(), 'Verkaufen'],
+    [itemIcon('ore').toDataURL(), 'Abbauen'],
+    [itemIcon('plank').toDataURL(), 'Bauen'],
+    [itemIcon('flint').toDataURL(), 'Feuer'],
   ]
     .map(([src, t]) => `<span><img src="${src}" alt="">${tr(t)}</span>`)
     .join('');
   card.innerHTML =
     result === 'done'
-      ? `<h1>${tr('Erste Schicht geschafft!')}</h1>
+      ? `<h1>${tr('Das Herdfeuer brennt wieder!')}</h1>
+         <p>${tr('Funkenhain hat seine Glut zurück – und einen neuen Gräber.')}</p>
          <div class="learned">${learned}</div>
          <p>${tr('Belohnung: Grubenhelm und {n} Taler Startgeld für deine erste Runde', { n: REWARD })}</p>
          <p class="hint">${tr('Zeit {time}', { time: `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` })} · ${tr('Den Rest zeigen dir Tipps im Spiel')}</p>`
@@ -226,16 +235,7 @@ function updTutorial(paused = false) {
       ev('onb_rescue', { step: step.id, kind: r.id });
       if (r.id === 'home') ev('onb_recover', { kind: 'home' });
     }
-    // out of the pit by yourself
-    if (step.id === 'sell') {
-      if ((s.deepT || 0) > 60) s.inPit = true;
-      if (s.inPit && !(s.deepT > 0)) {
-        s.inPit = false;
-        ev('onb_recover', { kind: G.autoDig ? 'ramp' : 'climb' });
-      }
-    }
-    if (c.inv.includes('nug')) run.show.inv = true;
-    if (s.near) run.show.money = true;
+    if (c.inv.length) run.show.inv = true;
   }
   // one line at a time: a rescue, else a hint that fits right now, else the task
   const h = s.shown && !s.rescue && step.hint?.(c, s);
@@ -256,24 +256,31 @@ function updTutorial(paused = false) {
 function progress(c, s) {
   if (G.tut.i === 0) return true; // the first prompt is shown at once anyway
   const id = stepOf().id;
-  if (id === 'dig') return c.digging || Math.abs(c.vx) > 0.2;
-  if (id === 'sell') return c.vx < -0.2 || c.digging || c.vy < -0.5;
-  return Math.abs(c.vx) > 0.2;
+  if (id === 'dig' || id === 'mine') return c.digging || Math.abs(c.vx) > 0.2;
+  if (id === 'glut') return Math.abs(c.vx) > 0.2 || c.vy < -0.5 || !!G.tut.s.litT;
+  return Math.abs(c.vx) > 0.2 || !!c.bridge;
 }
 function completeStep(c, step, s, run) {
   const prompted = s.shown && G.tut.i > 0;
   if (!s.shown) run.quiet++;
   ev('onb_step_done', { step: step.id, i: G.tut.i, sec: s.t / 60, prompted: !!s.shown, hints: s.help });
   step.leave?.(c, s);
-  sfx('pick');
-  addFloat(c.x + 3, c.y - 6, '✓', '#7ed957');
-  if (step.praise && (prompted || !skilled(run))) toast(step.praise);
-  if (step.id === 'sell') {
-    run.show.money = true;
-    ev('onb_first_success', { sec: secs(), money: G.money });
-  }
+  reward(c, G.tut.i + 1 === STEPS.length);
+  const praise = say(step.praise, c, s);
+  if (praise && (prompted || !skilled(run))) toast(praise);
+  if (step.id === 'mine') ev('onb_first_success', { sec: secs(), money: G.money });
   if (G.tut.i + 1 < STEPS.length) enterStep(G.tut.i + 1);
   else endTutorial('done');
+}
+
+// after every beat: a burst of sparks, a bright chime and a short warm flash of the screen
+function reward(c, last) {
+  sfx('pick');
+  sfx('ting');
+  if (!last) sfx('coin');
+  addFloat(c.x + 3, c.y - 6, '✓', '#7ed957');
+  celebrate(c.x + 3, c.y + 2, G.reduceMotion ? 8 : 26);
+  flash(last);
 }
 
 // ---- what the HUD shows: only what is useful yet; the pulsing frame of the current step ----
@@ -319,11 +326,12 @@ function showHand(c, el) {
   if (hand.className !== 'on ' + g) hand.className = 'on ' + g;
 }
 
-// yellow arrow above the goal, or at the screen edge pointing towards it
+// the finger at the spot of the step (or the yellow arrow at the screen edge), and the glows of
+// the Glutstein and the fire (tutscene.js)
 function drawTutorial(ctx, cx, cy) {
-  const c = G.tut && G.state === 'play' && sel_();
-  const t = c && stepOf().target?.(c, G.tut.s);
-  if (t) drawArrow(ctx, t.x - cx, t.y - cy);
+  const c = sel_();
+  const t = G.tut && G.state === 'play' && c && stepOf().target?.(c, G.tut.s);
+  drawTutFront(ctx, cx, cy, c, t || null);
 }
 // leaving the page in the middle of the tutorial: where players drop off
 addEventListener('pagehide', () => {

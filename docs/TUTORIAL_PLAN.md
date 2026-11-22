@@ -1,5 +1,7 @@
 # Tutorial-Plan: „Die erste Schicht“ (v2, unter 2 Minuten)
 
+> **Abgelöst ab v1.139.0** durch das Story-Intro (`src/intro.js`) und das sechsstufige Tutorial „Der Glutstein“ (`src/tutsteps.js`, `src/tutlevel.js`, `src/tutscene.js`): Laufen & Springen, Graben, Abbauen, Brücke bauen, Einsturz ausweichen, Glutstein heimtragen. Die Grundsätze unten (Lernen durch Tun, Rettungen, Hinweise erst bei Bedarf, Messpunkte) gelten weiter.
+
 > **Stand: umgesetzt in v1.52.0.** Löst die erste Fassung (v1.22.0–v1.51.0, 10 Schritte, 6–8 min) ab.
 > Zielgruppe: völlige Neulinge, Web mit Tastatur und Handy mit Touch, kein Konto, Einstieg beim
 > ersten Start. Code: `src/veil.js` (Startschleier), `src/tutorial.js` (Ablauf, Hinweise, Aufdecken,

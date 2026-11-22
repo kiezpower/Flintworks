@@ -105,6 +105,7 @@ function drawDecor(ctx, cx, cy) {
     drawNature(ctx, d, x, y, G.biome);
     if (d.kind === 'stal' && d.drip && (G.frame + d.t) % 240 === 0) drip(x + 0.5, y + d.h + 1);
   }
+  G.drawTutScene?.(ctx, cx, cy); // (the village of the tutorial, tutscene.js; set there, no import cycle)
 }
 
 export { decor, drawDecor, glowList, glowSpots, scatterDecor, updDecor };
