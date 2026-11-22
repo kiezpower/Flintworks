@@ -811,11 +811,14 @@ function loop(t) {
   let n = 0;
   // game tempo: the whole simulation runs a bit slower or faster (the difficulty, settings.js DIFF)
   const dt = 16.667 / (G.speed || 1);
+  // the helpers' path planning gets 5 ms per picture, shared by all the steps it takes (helpers.js)
+  G.pfPicture = 5;
   while (G.acc >= dt && n < 4) {
     step();
     G.acc -= dt;
     n++;
   }
+  G.pfPicture = null;
   if (n === 4) G.acc = 0;
   const t1 = performance.now();
   // Drawing and the HUD come after the ticks and must not change the game: the random numbers

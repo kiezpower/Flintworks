@@ -2,6 +2,11 @@
 // Native-detail chunks are created only on screen; LRU eviction bounds GPU memory.
 const CHUNK = 32, DENSITY = 4, LIMIT = 192, PERIOD = 48, TILE = 192;
 const frames = new Map(), cache = new Map();
+// Chunks whose cells changed keep their old picture until rebuilt. Digging helpers and flowing
+// liquids touch the same chunks every frame, so only the REBUILDS oldest ones are repainted per
+// picture (the rest follow a frame or two later); chunks not painted yet are always made at once.
+const dirty = new Map(), REBUILDS = 4;
+let dirtySeq = 0;
 const ids = [1, 2, 3, 4, 6, 9, 10, 11, 12, 13, 0, 16];
 let owner = null, palette = null;
 const image = new Image();
@@ -37,8 +42,11 @@ const terrainArtReady = new Promise(resolve => {
   image.onerror = () => resolve(false);
   image.src = new URL('./assets/scenes/materials.png', import.meta.url).href;
 });
-function resetTerrainArt() { cache.clear(); }
-function invalidateTerrainArt(cx, cy) { cache.delete(`${cx},${cy}`); }
+function resetTerrainArt() { cache.clear(); dirty.clear(); }
+function invalidateTerrainArt(cx, cy) {
+  const key = `${cx},${cy}`;
+  if (cache.has(key) && !dirty.has(key)) dirty.set(key, dirtySeq++);
+}
 function texture(g, id, x, y) {
   const p = g.createPattern(frames.get(id), 'repeat');
   p.setTransform(new DOMMatrix().translate(-x, -y).scale(PERIOD / TILE));
@@ -107,11 +115,23 @@ function paintLiquids(g, world, x0, y0, w, h) {
     g.restore();
   }
 }
-function makeChunk(world, cx, cy) {
+// one scratch canvas for the per-cell lighting of every chunk (written as pixels, not fillRects)
+const lighting = document.createElement('canvas'); lighting.width = lighting.height = CHUNK;
+const light = lighting.getContext('2d', { willReadFrequently: true });
+const lightImg = light.createImageData(CHUNK, CHUNK);
+// reuse: the chunk's previous canvas, repainted in place instead of allocating a new one
+function makeChunk(world, cx, cy, reuse) {
   const x0 = cx * CHUNK, y0 = cy * CHUNK;
   const w = Math.min(CHUNK, world.W - x0), h = Math.min(CHUNK, world.H - y0);
-  const c = document.createElement('canvas'); c.width = w * DENSITY; c.height = h * DENSITY;
-  const g = c.getContext('2d'); g.scale(DENSITY, DENSITY);
+  let c = reuse, g;
+  if (c && c.width === w * DENSITY && c.height === h * DENSITY) {
+    g = c.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1;
+    g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, c.width, c.height);
+  } else {
+    c = document.createElement('canvas'); c.width = w * DENSITY; c.height = h * DENSITY;
+    g = c.getContext('2d');
+  }
+  g.scale(DENSITY, DENSITY);
   const paths = new Map();
   // Horizontal runs form exact material masks, including one-cell tunnels.
   for (let y = 0; y < h; y++) for (let x = 0; x < w;) {
@@ -130,15 +150,15 @@ function makeChunk(world, cx, cy) {
     if (id === 16 && world.biome === 'winter') { g.fillStyle = '#ecf4eeed'; g.fill(path); }
   }
   paintLiquids(g, world, x0, y0, w, h);
-  const lighting = document.createElement('canvas'); lighting.width = w; lighting.height = h;
-  const light = lighting.getContext('2d');
+  const ld = lightImg.data; ld.fill(0);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const wx = x0 + x, wy = y0 + y, id = tokenAt(world, wx, wy);
     if (id < 0) continue;
     const tone = world.tone(wy * world.W + wx);
     if (Math.abs(tone - 1) > 0.025) {
-      light.fillStyle = tone < 1 ? `rgba(5,9,15,${Math.min(0.8, 1 - tone)})` : `rgba(255,242,213,${Math.min(0.4, (tone - 1) * 0.45)})`;
-      light.fillRect(x, y, 1, 1);
+      const o = (y * CHUNK + x) * 4, dark = tone < 1;
+      ld[o] = dark ? 5 : 255; ld[o + 1] = dark ? 9 : 242; ld[o + 2] = dark ? 15 : 213;
+      ld[o + 3] = Math.round(255 * (dark ? Math.min(0.8, 1 - tone) : Math.min(0.4, (tone - 1) * 0.45)));
     }
     // Accessible find marks survive the new material art, at world-locked positions.
     if (world.patterns && [3, 10, 11, 13].includes(id)) {
@@ -150,21 +170,38 @@ function makeChunk(world, cx, cy) {
     }
   }
   g.save(); g.globalCompositeOperation = 'source-atop'; g.imageSmoothingEnabled = true;
-  g.drawImage(lighting, 0, 0, w, h); g.restore();
+  light.putImageData(lightImg, 0, 0);
+  g.drawImage(lighting, 0, 0, w, h, 0, 0, w, h); g.restore();
   return c;
 }
 function drawTerrainArt(g, cx, cy, vw, vh, world) {
   if (!frames.size) return false;
   const look = `${world.biome}|${!!world.patterns}`;
   if (owner !== world.mat || palette !== look) { resetTerrainArt(); owner = world.mat; palette = look; }
+  // the visible chunks with changed cells, oldest change first, get this picture's rebuilds
+  const redo = new Set();
+  if (dirty.size) {
+    const seen = [];
+    for (let y = Math.max(0, Math.floor(cy / CHUNK)); y * CHUNK < Math.min(world.H, cy + vh); y++)
+      for (let x = Math.max(0, Math.floor(cx / CHUNK)); x * CHUNK < Math.min(world.W, cx + vw); x++) {
+        const key = `${x},${y}`;
+        if (dirty.has(key)) seen.push(key);
+      }
+    seen.sort((a, b) => dirty.get(a) - dirty.get(b));
+    for (const key of seen.slice(0, REBUILDS)) redo.add(key);
+  }
   g.save(); g.imageSmoothingEnabled = true;
   for (let y = Math.max(0, Math.floor(cy / CHUNK)); y * CHUNK < Math.min(world.H, cy + vh); y++)
     for (let x = Math.max(0, Math.floor(cx / CHUNK)); x * CHUNK < Math.min(world.W, cx + vw); x++) {
       const key = `${x},${y}`;
       let c = cache.get(key);
-      if (c) cache.delete(key); else c = makeChunk(world, x, y);
+      if (!c) c = makeChunk(world, x, y);
+      else {
+        cache.delete(key);
+        if (redo.has(key)) { dirty.delete(key); c = makeChunk(world, x, y, c); }
+      }
       cache.set(key, c);
-      if (cache.size > LIMIT) cache.delete(cache.keys().next().value);
+      if (cache.size > LIMIT) { const old = cache.keys().next().value; cache.delete(old); dirty.delete(old); }
       g.drawImage(c, x * CHUNK - cx, y * CHUNK - cy, c.width / DENSITY, c.height / DENSITY);
     }
   g.restore(); return true;

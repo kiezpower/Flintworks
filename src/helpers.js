@@ -223,7 +223,10 @@ function plan(c, n) {
   if (G.detPlan) return planNodes(c, n);
   if (G.pfFrame !== G.frame) {
     G.pfFrame = G.frame;
-    G.pfLeft = 5;
+    // G.pfPicture: what is left of the share of the picture being made (main.js loop). When a slow
+    // device runs several game steps for one picture, they split it instead of taking 5 ms each –
+    // otherwise planning made every catch-up frame slower still.
+    G.pfLeft = G.pfPicture == null ? 5 : Math.min(5, G.pfPicture);
   }
   if (G.pfLeft <= 0.3) return undefined;
   if (!c.plan) c.plan = { stages: planStages(c, n), cur: null };
@@ -244,7 +247,9 @@ function plan(c, n) {
     P.cur = null;
     r = undefined;
   }
-  G.pfLeft -= performance.now() - t0;
+  const used = performance.now() - t0;
+  G.pfLeft -= used;
+  if (G.pfPicture != null) G.pfPicture -= used;
   if (r !== undefined) c.plan = null;
   return r;
 }
