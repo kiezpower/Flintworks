@@ -39,6 +39,7 @@ import { seasonLine, seasonResult, seasonRoll } from './season.js';
 import { ghostTick } from './ghost.js';
 import { playStart, playStop, playing, recStart, recStop, replayAfter, replayTick, savedReplay, worldHash } from './replay.js';
 import { closeVeil, openVeil, veilOpen } from './veil.js';
+import { playIntro } from './intro.js';
 import { startCue, updCue } from './startcue.js';
 import { updBuilds, updLorry } from './buildings.js';
 import { NOIN, context, doThrow, updDigger } from './digger.js';
@@ -209,10 +210,12 @@ function play(withTutorial, level = null, veil = false) {
       G.tutEntry = 'first_launch';
       hideLobby();
       overlay.hidden = true;
-      openVeil(() => startGame(go), go === 'loaded');
+      // a new tutorial begins with the story intro (skippable), a saved one goes on at once
+      openVeil(() => (go === true ? intro(() => startGame(go)) : startGame(go)), go === 'loaded');
       tutHud(); // hide controls immediately, before the first scheduled HUD refresh
       return;
     }
+    if (withTutorial === true) return intro(() => startGame(true));
     startGame(withTutorial);
     if (bonus) toast('Startgeld aus dem Tutorial: +{n} Taler', { n: bonus });
     else if (boost) toast('Startkasse aus dem Kristallstollen: +{n} Taler', { n: boost });
@@ -312,6 +315,14 @@ function menu() {
   // (a new version waited for the round to end: the game is saved, load it now)
   if (G.updateReady) return G.updateReady();
   showLobby(lobbyHooks);
+}
+// the story intro over the waiting tutorial world: the HUD stays hidden as behind the start screen
+function intro(then) {
+  hideLobby();
+  overlay.hidden = true;
+  G.state = 'veil';
+  tutHud();
+  playIntro(then);
 }
 function startGame(withTutorial = false) {
   if (withTutorial === true) startTutorial(G.tutEntry || 'replay');

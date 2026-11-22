@@ -117,7 +117,7 @@ wählen den Modus → `gen.js` (oder `levels/loader.js`) baut die Welt → pro T
 
 | Modul | Aufgabe |
 |---|---|
-| `veil.js`, `tutorial.js`, `tutsteps.js`, `tutlevel.js` | Erster Start und „Die erste Schicht“ |
+| `veil.js`, `intro.js`, `tutorial.js`, `tutsteps.js`, `tutlevel.js`, `tutscene.js` | Erster Start, Story-Intro und Tutorial „Der Glutstein“ |
 | `lessons.js` | Tipps zur rechten Zeit |
 | `startcue.js`, `castlecue.js`, `arrow.js` | Hinweise in den ersten Sekunden, Zielpfeil |
 | `analytics.js` | Ereignisse für Funnels, siehe [ANALYTICS.md](ANALYTICS.md) |

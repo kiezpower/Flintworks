@@ -51,6 +51,7 @@
 | `onb_complete` | `sec`, `hints`, `skilled` | Tutorial geschafft | `tutorial.js` |
 | `onb_skip` | `step`, `sec`, `via` (`button`, `menu`) | Tutorial übersprungen | `tutorial.js` |
 | `onb_menu` | `action` (`open`, `skip`, `lobby`, `home`) | Spielmenü im Tutorial; `open` ohne Folgeaktion = abgebrochen | `main.js` |
+| `onb_intro` | `action` (`start`, `done`, `skip`), `sec` | Story-Intro vor dem Tutorial: gestartet, zu Ende gesehen oder übersprungen (nach wie vielen Sekunden) | `intro.js` |
 | `onb_card` | `choice` (`play`, `lobby`), `result` (`done`, `skip`) | Wahl auf der Abschlusskarte | `tutorial.js` |
 | `onb_exit` | `step`, `sec` | Seite verlassen mitten im Tutorial (Abbruchstelle) | `tutorial.js` |
 | `onb_resume` | `step` | Gespeichertes Tutorial geht weiter | `tutorial.js` |
