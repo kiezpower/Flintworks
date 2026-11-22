@@ -23,11 +23,11 @@ import {
   showFid,
   watchFriends,
 } from './net/friends.js';
-import { MAX_PLAYERS, NET, copyText } from './net/room.js';
+import { MAX_PLAYERS, NET, copyText, createRoom, onRoomChange } from './net/room.js';
 import { P } from './profile.js';
 import { G } from './state.js';
 import { $, closePanel, openPanel, panelEl, sec, toast } from './ui.js';
-import { ago, recentPlayers } from './net/recent.js';
+import { ago, lastRound, recentPlayers } from './net/recent.js';
 import './friends.css';
 
 const ADD_TOAST = {
@@ -68,6 +68,57 @@ function tellAdd(r, name) {
   toast(ADD_TOAST[r], { name: name || tr('deinen Freund') });
 }
 
+// one-tap "Einladen" without a room of my own: a room for friends opens first, the invitation
+// follows once it is there
+let pendingInvite = null;
+function invite(f) {
+  if (NET.room) return toast(inviteFriend(f.fid) ? 'Einladung an {name} geschickt' : 'Keine Verbindung zum Server', { name: f.name });
+  pendingInvite = f;
+  createRoom();
+  toast('Raum wird geöffnet – {name} bekommt gleich die Einladung', { name: f.name });
+}
+onRoomChange(() => {
+  if (!pendingInvite || !NET.room || NET.status !== 'waiting') return;
+  const f = pendingInvite;
+  pendingInvite = null;
+  toast(inviteFriend(f.fid) ? 'Einladung an {name} geschickt' : 'Keine Verbindung zum Server', { name: f.name });
+  // on to the new room: you see your friend come in
+  if (G.state === 'menu') {
+    open = false;
+    G.onFriendJoin?.();
+  }
+});
+// where a friend is: Im Menü / In Lobby / Im Match (only for mutual friends who are online)
+function where(f) {
+  if (!f.mutual) return ['wait', tr('wartet, bis {name} dich auch hinzufügt', { name: esc(f.name || tr('dein Freund')) })];
+  if (!f.online) return ['', tr('offline')];
+  if (NET.room && f.room === NET.room) return ['on', `<em class="fr-tag lobby">${tr('In deinem Raum')}</em>`];
+  const full = f.n != null && !f.room ? ' · ' + tr('voll') : '';
+  if (f.playing) return ['on', `<em class="fr-tag play">${tr('Im Match')}</em> ${f.n}/${MAX_PLAYERS}${full}`];
+  if (f.n != null) return ['on', `<em class="fr-tag lobby">${tr('In Lobby')}</em> ${f.n}/${MAX_PLAYERS}${full}`];
+  return ['on', `<em class="fr-tag on">${tr('Im Menü')}</em>`];
+}
+// the friends panel is a sheet on the right side (like the friends list of Brawl Stars or
+// Fortnite); any other panel opened later is the normal one in the middle again
+let sideTitle = '';
+new MutationObserver(() => {
+  if (panelEl.hidden || $('pTitle').textContent !== sideTitle) panelEl.classList.remove('fr-side');
+}).observe(panelEl, { attributes: true, attributeFilter: ['hidden'], subtree: true, childList: true, characterData: true });
+// the big button of an empty list: share the own code and link
+function inviteBig() {
+  const b = document.createElement('button');
+  b.className = 'lb-create fr-empty';
+  b.id = 'frInviteBig';
+  b.innerHTML = `${tr('Freunde einladen')}<small>${tr('Code, Link oder QR-Code teilen')}</small>`;
+  b.addEventListener('click', async () => {
+    if (!fresh()) return;
+    const r = await shareFriend();
+    if (r === 'copied') toast('Link kopiert');
+    else if (r === 'failed') toast('Teilen nicht möglich');
+  });
+  return b;
+}
+
 // redraw: the panel is already open, only its content changes (no sound, taps stay live, the
 // scroll position stays)
 function openFriends(from, redraw = false) {
@@ -80,6 +131,8 @@ function openFriends(from, redraw = false) {
     scroll = p.scrollTop;
     p.innerHTML = '';
   } else p = openPanel('Freunde');
+  sideTitle = $('pTitle').textContent;
+  panelEl.classList.add('fr-side');
   const box = document.createElement('div');
   box.className = 'fr-box';
   p.appendChild(box);
@@ -89,61 +142,19 @@ function openFriends(from, redraw = false) {
   if (inv) {
     const c = document.createElement('div');
     c.className = 'fr-invite';
-    c.id = 'frInvite';
+    c.id = 'frInvCard';
     c.innerHTML = `<b>${tr('{name} lädt dich ein', { name: esc(inv.name) })}</b>`;
     const yes = document.createElement('button');
     yes.className = 'lb-create';
-    yes.id = 'frInvJoin';
-    yes.textContent = tr('Beitreten');
-    yes.addEventListener('click', () => fresh() && (closePanel(), joinFriend(inv.room), G.onFriendJoin?.()));
+    yes.textContent = tr('Annehmen');
+    yes.addEventListener('click', () => fresh() && acceptInvite(inv));
     const no = document.createElement('button');
     no.className = 'fr-act';
-    no.textContent = tr('Später');
+    no.textContent = tr('Ablehnen');
     no.addEventListener('click', () => fresh() && dropInvite());
     c.append(yes, no);
     box.appendChild(c);
   }
-
-  // the own code: tap to copy, the QR code for the sofa, share the link
-  if (P.fid) {
-    box.insertAdjacentHTML(
-      'beforeend',
-      `<div class="lb-code">
-        <button class="lb-codetap" id="frCodeTap" title="${tr('Tippen zum Kopieren')}">
-          <small>${tr('Dein Freundescode')}</small><b id="frMyCode">${showFid(P.fid)}</b><small>${tr('Tippen zum Kopieren')}</small>
-        </button>
-        <div class="lb-qr" title="${tr('Mit der Kamera scannen')}">${qrSvg(friendLink())}</div>
-      </div>`,
-    );
-    $('frCodeTap').addEventListener('click', async () => {
-      if (fresh()) toast((await copyText(showFid(P.fid))) ? 'Code kopiert' : 'Kopieren nicht möglich');
-    });
-    const sh = document.createElement('button');
-    sh.className = 'lb-way lb-friends';
-    sh.id = 'frShare';
-    sh.textContent = tr('Freundescode teilen …');
-    sh.addEventListener('click', async () => {
-      if (!fresh()) return;
-      const r = await shareFriend();
-      if (r === 'copied') toast('Link kopiert');
-      else if (r === 'failed') toast('Teilen nicht möglich');
-    });
-    box.appendChild(sh);
-  } else box.insertAdjacentHTML('beforeend', `<p class="hint" id="frWait">${tr('Verbinde mit dem Server …')}</p>`);
-
-  // add a code
-  box.insertAdjacentHTML('beforeend', `<p class="lb-or">${tr('Code eines Freundes eingeben')}</p>`);
-  const add = document.createElement('div');
-  add.className = 'lb-join';
-  add.innerHTML = `<input id="frCodeIn" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD-EFGH"><button class="fr-act yes" id="frAddBtn">${tr('Hinzufügen')}</button>`;
-  box.appendChild(add);
-  $('frAddBtn').addEventListener('click', () => {
-    if (!fresh()) return;
-    const r = addFriend($('frCodeIn').value);
-    tellAdd(r);
-    if (r === 'ok') $('frCodeIn').value = '';
-  });
-  $('frCodeIn').addEventListener('keydown', e => e.key === 'Enter' && $('frAddBtn').click());
 
   // requests: they added me
   if (FR.asks.length) {
@@ -161,18 +172,26 @@ function openFriends(from, redraw = false) {
       });
   }
 
-  // the friends: online first, then the others, then the ones who have not added me yet
+  // the friends: online first (green dot and where they are), then offline, then the ones who
+  // have not added me yet
   const rows = friendRows().sort((a, b) => b.mutual - a.mutual || b.online - a.online || a.name.localeCompare(b.name));
-  const l = sec(p, rows.length ? tr('Freunde {n}', { n: rows.length }) : 'Freunde');
+  const on = rows.filter(f => f.mutual && f.online).length;
+  const l = sec(p, rows.length ? tr('Freunde · {on} von {n} online', { on, n: rows.length }) : 'Freunde');
   l.id = 'frList';
-  if (!rows.length)
-    l.innerHTML = `<p class="hint">${tr('Noch keine Freunde. Teile deinen Code oder tippe in einem Raum auf „+“ neben einem Mitspieler.')}</p>`;
-  const space = NET.room && NET.players.length < MAX_PLAYERS;
+  if (!rows.length) {
+    l.insertAdjacentHTML('beforeend', `<p class="hint">${tr('Noch keine Freunde – lade welche ein oder tippe nach einem Match auf „+ Freund“.')}</p>`);
+    l.appendChild(inviteBig());
+  }
+  let heading = '';
   for (const f of rows) {
+    const h = !f.mutual ? 'Ausstehend' : f.online ? 'Online' : 'Offline';
+    if (h !== heading) {
+      heading = h;
+      l.insertAdjacentHTML('beforeend', `<p class="fr-head">${tr(h)}</p>`);
+    }
     const acts = [];
     if (f.mutual && f.online && f.room && f.room !== NET.room) acts.push([tr('Beitreten'), () => (closePanel(), joinFriend(f.room), G.onFriendJoin?.()), 'yes']);
-    else if (f.mutual && f.online && space && f.room !== NET.room)
-      acts.push([tr('Einladen'), () => toast(inviteFriend(f.fid) ? 'Einladung an {name} geschickt' : 'Keine Verbindung zum Server', { name: f.name }), 'yes']);
+    else if (f.mutual && f.online && f.n == null && (!NET.room || NET.players.length < MAX_PLAYERS)) acts.push([tr('Einladen'), () => invite(f), 'yes']);
     acts.push([
       armed === f.fid ? tr('Entfernen?') : '✕',
       () => {
@@ -186,20 +205,7 @@ function openFriends(from, redraw = false) {
       },
       armed === f.fid ? 'no' : '',
     ]);
-    // Offline / Online / In der Lobby / Im Spiel (like a friends list on a console)
-    const full = f.n != null && !f.room ? ' · ' + tr('voll') : '';
-    const sub = !f.mutual
-      ? tr('wartet, bis {name} dich auch hinzufügt', { name: esc(f.name || tr('dein Freund')) })
-      : !f.online
-        ? tr('offline')
-        : f.room === NET.room && NET.room
-          ? tr('in deinem Raum')
-          : f.playing
-            ? `<em class="fr-tag play">${tr('Im Spiel')}</em> ${f.n}/${MAX_PLAYERS}${full}`
-            : f.n != null
-              ? `<em class="fr-tag lobby">${tr('In der Lobby')}</em> ${f.n}/${MAX_PLAYERS}${full}`
-              : `<em class="fr-tag on">${tr('Online')}</em>`;
-    const dot = !f.mutual ? 'wait' : !f.online ? '' : f.playing ? 'play' : 'on';
+    const [dot, sub] = where(f);
     row(l, { dot, name: esc(f.name || showFid(f.fid)), sub, acts }).dataset.fid = f.fid;
   }
 
@@ -248,6 +254,50 @@ function openFriends(from, redraw = false) {
     });
     if (r) r.id = 'frRank';
   }
+
+  // adding friends: the own code (tap to copy, QR code for the sofa, share the link) and a code
+  const ad = sec(p, 'Freunde hinzufügen');
+  ad.classList.add('fr-add');
+  if (P.fid) {
+    ad.insertAdjacentHTML(
+      'beforeend',
+      `<div class="lb-code">
+        <button class="lb-codetap" id="frCodeTap" title="${tr('Tippen zum Kopieren')}">
+          <small>${tr('Dein Freundescode')}</small><b id="frMyCode">${showFid(P.fid)}</b><small>${tr('Tippen zum Kopieren')}</small>
+        </button>
+        <div class="lb-qr" title="${tr('Mit der Kamera scannen')}">${qrSvg(friendLink())}</div>
+      </div>`,
+    );
+    ad.querySelector('#frCodeTap').addEventListener('click', async () => {
+      if (fresh()) toast((await copyText(showFid(P.fid))) ? 'Code kopiert' : 'Kopieren nicht möglich');
+    });
+    if (rows.length) {
+      const sh = document.createElement('button');
+      sh.className = 'lb-way lb-friends';
+      sh.id = 'frShare';
+      sh.textContent = tr('Freundescode teilen …');
+      sh.addEventListener('click', async () => {
+        if (!fresh()) return;
+        const r = await shareFriend();
+        if (r === 'copied') toast('Link kopiert');
+        else if (r === 'failed') toast('Teilen nicht möglich');
+      });
+      ad.appendChild(sh);
+    }
+  } else ad.insertAdjacentHTML('beforeend', `<p class="hint" id="frWait">${tr('Verbinde mit dem Server …')}</p>`);
+  ad.insertAdjacentHTML('beforeend', `<p class="lb-or">${tr('Code eines Freundes eingeben')}</p>`);
+  const add = document.createElement('div');
+  add.className = 'lb-join';
+  add.innerHTML = `<input id="frCodeIn" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD-EFGH"><button class="fr-act yes" id="frAddBtn">${tr('Hinzufügen')}</button>`;
+  ad.appendChild(add);
+  add.querySelector('#frAddBtn').addEventListener('click', () => {
+    if (!fresh()) return;
+    const r = addFriend($('frCodeIn').value);
+    tellAdd(r);
+    if (r === 'ok') $('frCodeIn').value = '';
+  });
+  add.querySelector('#frCodeIn').addEventListener('keydown', e => e.key === 'Enter' && $('frAddBtn').click());
+
   p.insertAdjacentHTML('beforeend', `<p class="hint fr-note">${tr('Ohne Konto: Dein Code und deine Liste gehören zu diesem Gerät. Was andere sehen: dein Name, ob du online bist und deine Tagesschicht (Ergebnis und bester Lauf als Geist) – nur Freunde, die dich auch hinzugefügt haben. Für deinen Platz unter allen zählt nur dein Ergebnis, ohne Namen.')}</p>`);
   if (back) {
     const b = document.createElement('button');
@@ -259,14 +309,63 @@ function openFriends(from, redraw = false) {
   if (redraw) p.scrollTop = scroll;
 }
 
-// the chip in the lobby: friends online, a dot for requests and invitations
+// the button at the top right of the main menu: green, friends online; red, requests and
+// invitations waiting
 function refreshFriendsChip() {
   const b = $('lbFriends');
   if (!b) return;
-  const n = onlineCount();
+  const n = onlineCount(),
+    a = FR.asks.length + (liveInvite() ? 1 : 0);
   $('lbFriendsN').textContent = n ? String(n) : '';
-  b.classList.toggle('alert', FR.asks.length > 0 || !!liveInvite());
+  $('lbFriendsAlert').textContent = a ? String(a) : '';
+  b.classList.toggle('alert', a > 0);
+  b.title = [n && tr('{n} online', { n }), a && tr('{n} neu', { n: a })].filter(Boolean).join(' · ') || tr('Freunde');
+  showPop();
 }
+
+// ---- an invitation as a pop-up: wherever you are in the menu, on top of any panel ----
+function acceptInvite(inv) {
+  hidePop();
+  closePanel();
+  joinFriend(inv.room);
+  G.onFriendJoin?.();
+}
+let pop = null;
+function hidePop() {
+  if (pop) pop.hidden = true;
+}
+function showPop() {
+  const inv = liveInvite();
+  // (in a round the invitation waits: a line at the top says so)
+  if (!inv || G.state !== 'menu') return hidePop();
+  if (!pop) {
+    pop = document.createElement('div');
+    pop.className = 'fr-pop';
+    pop.setAttribute('role', 'alertdialog');
+    pop.addEventListener('pointerdown', e => e.stopPropagation());
+    document.getElementById('game').appendChild(pop);
+  }
+  if (!pop.hidden && pop.dataset.room === inv.room) return;
+  pop.dataset.room = inv.room;
+  pop.id = 'frInvite';
+  pop.innerHTML = `<i class="fr-pop-i" aria-hidden="true">🤝</i><b>${tr('{name} lädt dich ein', { name: esc(inv.name) })}</b><small>${tr('Raum {code} · Tippe, um mitzuspielen', { code: inv.room })}</small>`;
+  const yes = document.createElement('button');
+  yes.className = 'fr-act yes';
+  yes.id = 'frInvJoin';
+  yes.textContent = tr('Annehmen');
+  yes.addEventListener('click', () => acceptInvite(inv));
+  const no = document.createElement('button');
+  no.className = 'fr-act';
+  no.textContent = tr('Ablehnen');
+  no.addEventListener('click', () => {
+    hidePop();
+    dropInvite();
+  });
+  pop.append(yes, no);
+  pop.hidden = false;
+}
+// an invitation runs out after a while (net/friends.js INVITE_TTL)
+setInterval(() => pop && !pop.hidden && !liveInvite() && hidePop(), 2000);
 
 // "+" next to a player met in a room or a round: they get a request
 function addPlayer(pl) {
@@ -274,18 +373,23 @@ function addPlayer(pl) {
   tellAdd(addFriend(pl.fid, pl.name), pl.name);
 }
 const canAdd = pl => !!pl && !!pl.fid && pl.pid !== NET.pid && pl.fid !== P.fid && !isFriend(pl.fid);
-// the end screen of a shared round: one button per player who is no friend yet
+// after a match: everybody of the round (also who already left), one tap each to add as a friend
 function addButtonsHtml() {
-  const list = NET.players.filter(canAdd);
+  const seen = new Set(),
+    list = [...lastRound(), ...NET.players].filter(pl => pl && pl.fid && pl.fid !== P.fid && !seen.has(pl.fid) && seen.add(pl.fid));
   if (!list.length) return '';
-  return `<p class="fr-end">${list.map(pl => `<button class="fr-act yes" data-addfid="${pl.fid}">+ ${esc(pl.name)}</button>`).join(' ')}</p>`;
+  const btn = pl =>
+    isFriend(pl.fid)
+      ? `<span class="fr-mate"><b>${esc(pl.name)}</b><em>✓ ${tr('Freund')}</em></span>`
+      : `<span class="fr-mate"><b>${esc(pl.name)}</b><button class="fr-act yes" data-addfid="${pl.fid}" data-name="${esc(pl.name)}">+ ${tr('Freund')}</button></span>`;
+  return `<div class="fr-end"><p>${tr('Mitspieler als Freund hinzufügen')}</p>${list.map(btn).join('')}</div>`;
 }
 function wireAddButtons(root) {
   for (const b of root.querySelectorAll('[data-addfid]'))
     b.addEventListener('click', () => {
-      addPlayer(NET.players.find(pl => pl.fid === b.dataset.addfid));
+      addPlayer({ fid: b.dataset.addfid, name: b.dataset.name });
       b.disabled = true;
-      b.textContent = '✓ ' + b.textContent.slice(2);
+      b.textContent = '✓ ' + tr('Anfrage gesendet');
     });
 }
 
@@ -304,10 +408,10 @@ onFriendsChange(() => {
     watchFriends(false);
   }
 });
-// an invitation: the panel opens in the lobby (when nothing else is open), a note during a round
+// an invitation: a pop-up in the menu (over any panel), a line during a round
 G.onFriendInvite = inv => {
-  if (G.state === 'menu' && !$('lobby').hidden && panelEl.hidden) openFriends(null);
-  else toast(G.state === 'menu' ? '{name} lädt dich ein – unter „Freunde“' : '{name} lädt dich ein – in der Lobby annehmen', { name: inv.name });
+  if (G.state === 'menu') showPop();
+  else toast('{name} lädt dich ein – in der Lobby annehmen', { name: inv.name });
 };
 G.onFriendAdded = p => p && toast('Anfrage an {name} geschickt', { name: p.name || tr('deinen Freund') });
 

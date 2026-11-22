@@ -60,9 +60,9 @@ test('a friend request, accepted, shows each other online and leads into the roo
 
   await befriend(anna, bert);
   await expect(anna.page.locator('#frList')).toContainText('Bert');
-  await expect(anna.page.locator('#frList')).toContainText('Online', { timeout: 8000 });
+  await expect(anna.page.locator('#frList')).toContainText('Im Menü', { timeout: 8000 });
   await expect(bert.page.locator('#frList')).toContainText('Anna');
-  await expect(bert.page.locator('#frList')).toContainText('Online', { timeout: 8000 });
+  await expect(bert.page.locator('#frList')).toContainText('Im Menü', { timeout: 8000 });
   // today's Tagesschicht: Bert played, Anna not yet
   await expect(anna.page.locator('#frDaily')).toContainText('512 Taler');
   await expect(anna.page.locator('#frDaily')).toContainText('noch nicht gespielt');
@@ -83,7 +83,7 @@ test('a friend request, accepted, shows each other online and leads into the roo
   await anna.page.locator('#lbCreate').click();
   await expect(anna.page.locator('.lb-codetap b')).toHaveText(/^[A-Z0-9]{5}$/);
   const room = await anna.page.locator('.lb-codetap b').textContent();
-  await expect(bert.page.locator('#frList')).toContainText('In der Lobby', { timeout: 8000 });
+  await expect(bert.page.locator('#frList')).toContainText('In Lobby', { timeout: 8000 });
   await bert.page.locator('#frList .fr-act.yes').click();
   await expect(bert.page.locator('.lb-codetap b')).toHaveText(room, { timeout: 8000 });
   await expect(anna.page.locator('.pt-grid')).toContainText('Bert');
@@ -92,7 +92,7 @@ test('a friend request, accepted, shows each other online and leads into the roo
   const cleo = await player(browser, 'Cleo');
   await closePanel(anna.page);
   await befriend(cleo, anna);
-  await expect(anna.page.locator('#frList [data-fid]').filter({ hasText: 'Cleo' })).toContainText('Online', { timeout: 8000 });
+  await expect(anna.page.locator('#frList [data-fid]').filter({ hasText: 'Cleo' })).toContainText('Im Menü', { timeout: 8000 });
   await closePanel(cleo.page);
   await anna.page.locator('#frList [data-fid]').filter({ hasText: 'Cleo' }).locator('.fr-act.yes').click();
   await expect(cleo.page.locator('#frInvite')).toContainText('Anna lädt dich ein', { timeout: 8000 });
@@ -118,7 +118,7 @@ test('without friends the game does not connect, and a code alone shows nothing'
   await dora.page.locator('#frCodeIn').fill('ABCD-EFGH');
   await dora.page.locator('#frAddBtn').click();
   await expect(dora.page.locator('#frList')).toContainText('wartet');
-  await expect(dora.page.locator('#frList')).not.toContainText('Online');
+  await expect(dora.page.locator('#frList')).not.toContainText('Im Menü');
   // a wrong code
   await dora.page.locator('#frCodeIn').fill('XY');
   await dora.page.locator('#frAddBtn').click();

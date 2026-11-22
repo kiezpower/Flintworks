@@ -45,7 +45,7 @@ async function befriend(a, b) {
   await b.page.locator('#frAddBtn').click();
   await expect(a.page.locator('#frAsks .fr-act.yes')).toHaveCount(1, { timeout: 8000 });
   await a.page.locator('#frAsks .fr-act.yes').first().click();
-  await expect(b.page.locator('#frList')).toContainText('Online', { timeout: 8000 });
+  await expect(b.page.locator('#frList')).toContainText('Im Menü', { timeout: 8000 });
   await a.page.locator('#pClose').click();
   await b.page.locator('#pClose').click();
 }
