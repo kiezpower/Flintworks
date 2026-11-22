@@ -98,13 +98,32 @@ jobs:
             echo "$GHCR_TOKEN" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
 
+            # Room for the new images first: every deploy pulls images with a tag of its own, so the
+            # old Flintworks images are removed (images of the running containers stay until the
+            # new ones run), and dangling layers too. The vServer's disk is shared with Kiez Power.
+            cleanup() {
+              for repo in ${{ env.IMAGE }} ${{ env.WORLD_IMAGE }}; do
+                docker images "$repo" --format '{{.Repository}}:{{.Tag}}' | grep -v ":${IMAGE_TAG}\$" | xargs -r docker rmi 2>/dev/null || true
+              done
+              docker image prune -f >/dev/null || true
+            }
+            cleanup
+            df -h / | tail -1
+
             # the kiez-power apps own the network and Caddy; the relay just joins them
             docker network inspect kiezpower-net >/dev/null 2>&1 || docker network create kiezpower-net
             docker compose pull
             docker compose up -d
+            # (now the images of the previous deploy are free as well)
+            cleanup
+            docker system df
 
             # Caddy: add play.kiez-power.de once (the same block lives in kiez-power-b2b/deploy/Caddyfile,
             # so it survives their deploys), then reload without restarting the other sites
+            if ! docker ps --format '{{.Names}}' | grep -qx kiezpower-caddy; then
+              echo "::error::Caddy (kiezpower-caddy) läuft nicht – erst Kiez Power deployen, dann diesen Workflow erneut starten. Der Relay selbst läuft."
+              exit 1
+            fi
             if ! grep -q "play.kiez-power.de" /opt/kiezpower/Caddyfile; then
               cat caddy-site.conf >> /opt/kiezpower/Caddyfile
             fi
@@ -125,7 +144,6 @@ jobs:
               exit 1
             fi
 
-            docker image prune -f --filter "label=org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" || true
 
       - name: Health check
         run: |
