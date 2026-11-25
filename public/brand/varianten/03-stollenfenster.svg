@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" role="img" aria-labelledby="title desc">
+<title id="title">Flintworks – Stollenfenster</title><desc id="desc">Ein Stollenbogen öffnet den Blick auf eine goldene Untertagewelt.</desc>
+<defs><linearGradient id="cave" x2="0" y2="1"><stop stop-color="#203349"/><stop offset="1" stop-color="#39536a"/></linearGradient></defs>
+<g transform="translate(39 34)"><path fill="#26394c" d="M0 188V94C0 42 42 0 94 0s94 42 94 94v94h-30V94c0-35-29-64-64-64S34 59 34 94v94z"/><path fill="url(#cave)" d="M42 188V94a52 52 0 0 1 104 0v94z"/><path fill="#f5b948" d="M54 148h24v-24h24v-24h22v24h20v48H54z"/><path fill="#a8cf77" d="M34 166h18v22H34zm126-11h20v33h-20z"/><path fill="#fff0ad" d="M92 116h18v18H92z"/><path fill="#202b38" d="M76 170h54v18H76z"/></g>
+<text x="285" y="145" fill="#203247" font-family="Arial,sans-serif" font-size="70" font-weight="900" letter-spacing="2">FLINTWORKS</text><text x="292" y="194" fill="#bc8635" font-family="Arial,sans-serif" font-size="24" font-weight="700" letter-spacing="5">FINDE DEINEN WEG ZUM GLUTSTEIN</text></svg>
