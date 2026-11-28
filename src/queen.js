@@ -27,16 +27,19 @@ const depthOf = c => c.y + 10 - surf[Math.max(0, Math.min(W - 1, Math.floor(c.x 
 function lakeNear(x, y, r = 90) {
   let best = null,
     bd = 1e9;
-  for (let yy = Math.max(1, y - r); yy < Math.min(H - 1, y + r); yy += 2)
-    for (let xx = Math.max(1, x - r); xx < Math.min(W - 1, x + r); xx += 3) {
-      const i = yy * W + xx;
-      if (mat[i] !== LAVA || mat[i - W] !== AIR) continue;
-      const d = Math.abs(xx - x) + Math.abs(yy - y);
-      if (d < bd) {
-        bd = d;
-        best = { x: xx, y: yy };
+  // (every second row is looked at, so each look checks that row and the one below: the lake's
+  // surface is a single row, and skipping it made the queen miss half of all lakes)
+  for (let y0 = Math.max(1, y - r); y0 < Math.min(H - 1, y + r); y0 += 2)
+    for (let xx = Math.max(1, x - r); xx < Math.min(W - 1, x + r); xx += 3)
+      for (let yy = y0; yy <= y0 + 1 && yy < H - 1; yy++) {
+        const i = yy * W + xx;
+        if (mat[i] !== LAVA || mat[i - W] !== AIR) continue;
+        const d = Math.abs(xx - x) + Math.abs(yy - y);
+        if (d < bd) {
+          bd = d;
+          best = { x: xx, y: yy };
+        }
       }
-    }
   return best;
 }
 function spawnQueen(at) {
