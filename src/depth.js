@@ -165,8 +165,20 @@ function roofAt(wx, cy) {
   }
   return null;
 }
-function drawRoot(ctx, k, r, sx, wx, cx, cy) {
+// (a column's roof is looked up again only when the camera moved a few pixels up or down or a
+// fifth of a second went by: digging changes roofs, a still picture does not)
+const roofs = new Map();
+function roofCached(wx, cy) {
+  const key = Math.round(cy / 4),
+    c = roofs.get(wx);
+  if (c && c.key === key && G.frame - c.f < 12) return c.y;
   const y = roofAt(wx, cy);
+  roofs.set(wx, { key, f: G.frame, y });
+  if (roofs.size > 512) roofs.delete(roofs.keys().next().value);
+  return y;
+}
+function drawRoot(ctx, k, r, sx, wx, cx, cy) {
+  const y = roofCached(wx, cy);
   if (y == null) return;
   const sy = y - cy,
     a = clearOf(sx, sy + 4, cx, cy) * (0.45 + 0.2 * r);
