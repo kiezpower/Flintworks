@@ -25,7 +25,7 @@ import { endTutorial, resumeTutorial, setTutHooks, startTutorial, tutHud, updTut
 import { applyStatic, tr } from './i18n.js';
 import { chips, openPanel, opt, sec, setTab } from './ui.js';
 import { onTrackerOpen, questBoard } from './questui.js';
-import { DIFF, applyControls, applyHelpers, applyPatterns, diffOf, settingsSections } from './settings.js';
+import { DIFF, applyControls, applyDepth, applyHelpers, applyPatterns, diffOf, settingsSections } from './settings.js';
 import { goHome } from './climb.js';
 import '@fontsource/bree-serif/latin-400.css';
 import '@fontsource/nunito-sans/latin-600.css';
@@ -350,6 +350,7 @@ function startGame(withTutorial = false) {
   applyHelpers();
   applyControls();
   G.lightFx = P.lightfx !== false;
+  applyDepth();
   G.vibe = P.vibe !== false;
   applyPatterns();
   G.speed = DIFF[diffOf(P.diff)].speed;
@@ -796,6 +797,8 @@ function perfGuard(dt) {
   perfT = perfN = perfW = 0;
   if (perfSlow >= 3) {
     perfSlow = 0;
+    // (first the 2.5D near layer goes, then the fine graphics, depth.js)
+    if (G.depth && !G.depthLite) return void (G.depthLite = true);
     G.res = 1;
     resize();
     toast('Grafik auf „schnell“ gestellt, damit es flüssig läuft (Einstellungen)');

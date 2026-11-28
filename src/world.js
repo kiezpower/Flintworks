@@ -303,7 +303,7 @@ function drawWorld(ctx, cx, cy, vw, vh) {
         width * RES, height * RES, left - cx, top - cy, width, height);
     }
   }
-  drawTerrainArt(ctx, cx, cy, vw, vh, { W, H, mat, bg, shade, biome: G.biome, patterns, tone: paintedTone });
+  drawTerrainArt(ctx, cx, cy, vw, vh, { W, H, mat, bg, shade, biome: G.biome, patterns, tone: paintedTone, depth: !!G.depth, solid: solidAt });
 }
 // Transfer the existing lighting, wet edges, vein rims and depth gate onto the
 // painted material, without enlarging the simulation or the world pixel buffer.
@@ -352,6 +352,8 @@ function markDirty(x, y, r) {
     cx1 = Math.min(CWn - 1, (x + r) >> 5),
     cy0 = Math.max(0, (y - r) >> 5),
     cy1 = Math.min(CHn - 1, (y + r) >> 5);
+  // (the 2.5D shadows fall a few cells down: the chunk below is repainted too, depth.js)
+  if (((y + r + 3) >> 5) > cy1 && cy1 + 1 < CHn) for (let cx = cx0; cx <= cx1; cx++) invalidateTerrainArt(cx, cy1 + 1);
   for (let cy = cy0; cy <= cy1; cy++)
     for (let cx = cx0; cx <= cx1; cx++) {
       const c = cy * CWn + cx;

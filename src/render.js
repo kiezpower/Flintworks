@@ -10,6 +10,8 @@ import { drawDiggerHi } from './diggerhi.js';
 import { aimPath, drawArrows, drawGear } from './combat.js';
 import { drawEvents } from './events.js';
 import { drawBackdrop } from './backdrop.js';
+import { drawContactShadows, drawHaze, drawNear } from './depth.js';
+import { drawFlag } from './flagart.js';
 import { hasGear } from './tools.js';
 import { drawHazards } from './hazards.js';
 import { drawChests } from './treasure.js';
@@ -624,6 +626,7 @@ function render() {
     if (G.biome !== 'winter') drawRainFar(ctx);
   }
   drawBackdrop(ctx, cx, scy);
+  drawHaze(ctx, cx, cy); // (2.5D, depth.js)
   for (const b of birds) {
     const x = Math.round(b.x - cx * 0.9),
       y = Math.round(b.y - scy * 0.9);
@@ -671,7 +674,7 @@ function render() {
       drawBuildFx(ctx, b, sx, sy);
       if (b.type === 'base') {
         // (Versus: the team colour, and the castle's hit points)
-        if (!(b.hp <= 0)) drawFlag(sx + 4, sy - 10, 14, 7, TEAM_COLS[b.team || 0]);
+        if (!(b.hp <= 0)) drawFlag(ctx, sx + 4, sy - 10, 14, 7, TEAM_COLS[b.team || 0]);
         drawCastleHp(ctx, b, sx, sy);
       }
       if (b.type === 'shop' && b.busy) {
@@ -695,7 +698,7 @@ function render() {
       if (b.done && b.type === 'wind') drawSailRotor(ctx, sx + 7, sy + 6, b.rot, 11);
       if (b.done && b.type === 'gate') drawGate(ctx, sx, sy, b.open);
       if (b.done && b.type === 'flag') {
-        drawFlag(sx, sy, 18, 6);
+        drawFlag(ctx, sx, sy, 18, 6);
       }
       if (b.done) drawMoving(ctx, b, sx, sy);
       if (b.done && b.type === 'furnace' && b.busy) {
@@ -809,7 +812,7 @@ function render() {
   drawHill(ctx, cx, cy);
   drawCoop(ctx, cx, cy);
   drawHazards(ctx, cx, cy);
-  // items
+  drawContactShadows(ctx, cx, cy); // (2.5D: under all that stands on the ground, depth.js)
   for (const it of items) {
     const x = Math.floor(it.x - cx),
       y = Math.floor(it.y - cy);
@@ -979,6 +982,7 @@ function render() {
       }
     }
   });
+  drawNear(ctx, cx, cy); // (2.5D: grass and stones in front, depth.js)
   // the Tagesschicht: the friends' ghosts run along (ghost.js)
   G.drawGhosts?.(ctx, cx, cy, drawDiggerHi, nameTag);
   for (const list of [parts, vparts])
@@ -1126,17 +1130,4 @@ function render() {
 }
 // a stable per-wühler phase so lamp flicker is not in lockstep
 const n0 = c => (c.x * 0 + (c.name ? c.name.length : 0)) * 1.7;
-function drawFlag(x, y, pole, len, col = '#c8402c') {
-  ctx.save(); ctx.lineCap = 'round';
-  const timber = ctx.createLinearGradient(x - 0.3, 0, x + 0.7, 0); timber.addColorStop(0, '#d3ad6d'); timber.addColorStop(1, '#64452f');
-  ctx.strokeStyle = timber; ctx.lineWidth = 0.8;
-  ctx.beginPath(); ctx.moveTo(x + 0.4, y + pole); ctx.lineTo(x + 0.4, y); ctx.stroke();
-  const wave = G.reduceMotion ? 0 : Math.sin(G.frame * 0.12) * 0.7;
-  const cloth = ctx.createLinearGradient(0, y, 0, y + 5); cloth.addColorStop(0, shade(col, 1.2)); cloth.addColorStop(1, col);
-  ctx.fillStyle = cloth; ctx.beginPath(); ctx.moveTo(x + 1, y + 1);
-  ctx.bezierCurveTo(x + len * 0.4, y - 0.2 + wave, x + len * 0.6, y + 3 - wave, x + len + 1, y + 1 + wave);
-  ctx.lineTo(x + len, y + 4 + wave); ctx.bezierCurveTo(x + len * 0.6, y + 6 - wave, x + len * 0.4, y + 3.2 + wave, x + 1, y + 5); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = '#e1ba70'; ctx.beginPath(); ctx.arc(x + 0.4, y, 0.65, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-}
-
-export { calcTerr, cam, ctx, cv, drawAnimal, drawHat, shade, drawFlag, lc, lctx, render, resize, stars };
+export { calcTerr, cam, ctx, cv, drawAnimal, drawHat, shade, lc, lctx, render, resize, stars };

@@ -162,6 +162,7 @@ function settingsSections(p, reopen, { lobby = false, game: gameSec = null } = {
   const low = G.state === 'play' ? G.res === 1 : P.gfx === 'low';
   item(gfx, low ? 'Grafik: schnell' : 'Grafik: fein', 'Schnell läuft flüssiger auf älteren Handys', () => {
     P.gfx = low ? 'high' : 'low';
+    applyDepth();
     if (G.state === 'play') {
       G.res = P.gfx === 'low' ? 1 : 2;
       resize();
@@ -171,6 +172,18 @@ function settingsSections(p, reopen, { lobby = false, game: gameSec = null } = {
     P.lightfx = P.lightfx === false;
     G.lightFx = P.lightfx;
   });
+  // the 2.5D look (depth.js): only with fine graphics
+  if (P.gfx === 'low') opt(gfx, { title: tr('Tiefe (2,5D): aus'), sub: tr('Nur mit feiner Grafik'), disabled: true });
+  else
+    item(gfx, P.depth === false ? 'Tiefe (2,5D): aus' : 'Tiefe (2,5D): an', 'Plastische Kanten, Schatten und Gras im Vordergrund', () => {
+      P.depth = P.depth === false;
+      applyDepth();
+    });
+}
+// the 2.5D look follows the profile: on with fine graphics unless switched off (depth.js)
+function applyDepth() {
+  G.depth = P.depth !== false && P.gfx !== 'low';
+  G.depthLite = false;
 }
 
 // the text size from the profile (also right at the start)
@@ -216,4 +229,4 @@ function applyHelpers() {
   G.crewKey = '';
 }
 
-export { DIFF, applyControls, applyHelpers, applyPatterns, applyText, diffOf, settingsSections };
+export { DIFF, applyControls, applyDepth, applyHelpers, applyPatterns, applyText, diffOf, settingsSections };

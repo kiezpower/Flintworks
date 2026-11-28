@@ -172,11 +172,41 @@ function makeChunk(world, cx, cy, reuse) {
   g.save(); g.globalCompositeOperation = 'source-atop'; g.imageSmoothingEnabled = true;
   light.putImageData(lightImg, 0, 0);
   g.drawImage(lighting, 0, 0, w, h, 0, 0, w, h); g.restore();
+  if (world.depth && world.solid) paintDepth(g, world, x0, y0, w, h);
   return c;
+}
+// The 2.5D look of the ground (depth.js), painted into the chunk once: light from the top left
+// gives solid ground a lit top and left edge and a dark underside and right edge where it meets
+// open space; on the back wall of a dug gallery the roof and the left wall cast a short shadow.
+const LIT = 'rgba(255,244,214,', DARK = 'rgba(12,7,4,', WALL = 'rgba(8,5,14,';
+const SHADE_ROOF = [0, 0.5, 0.36, 0.24, 0.14, 0.06], SHADE_WALL = [0, 0.3, 0.16, 0.06];
+function paintDepth(g, world, x0, y0, w, h) {
+  const W = world.W, H = world.H;
+  const sol = (x, y) => x >= 0 && y >= 0 && x < W && y < H && world.solid(y * W + x);
+  const paths = new Map(), add = (style, x, y, rw, rh) => {
+    let p = paths.get(style); if (!p) paths.set(style, p = new Path2D());
+    p.rect(x, y, rw, rh);
+  };
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const wx = x0 + x, wy = y0 + y, i = wy * W + wx;
+    if (sol(wx, wy)) {
+      // the edge that faces open space looks like the front of a thick slab
+      if (!sol(wx, wy - 1)) { add(LIT + '0.5)', x, y, 1, 0.3); add(LIT + '0.18)', x, y + 0.3, 1, 0.5); }
+      if (!sol(wx, wy + 1)) { add(DARK + '0.5)', x, y + 0.55, 1, 0.45); add(DARK + '0.2)', x, y + 0.1, 1, 0.45); }
+      if (!sol(wx - 1, wy)) add(LIT + '0.22)', x, y, 0.4, 1);
+      if (!sol(wx + 1, wy)) add(DARK + '0.3)', x + 0.6, y, 0.4, 1);
+    } else if (!world.mat[i] && world.bg[i]) {
+      let a = 0;
+      for (let k = 1; k <= 5; k++) if (sol(wx, wy - k)) { a = SHADE_ROOF[k]; break; }
+      for (let k = 1; k <= 3; k++) if (sol(wx - k, wy)) { a = Math.max(a, SHADE_WALL[k]); break; }
+      if (a) add(WALL + a + ')', x, y, 1, 1);
+    }
+  }
+  for (const [style, p] of paths) { g.fillStyle = style; g.fill(p); }
 }
 function drawTerrainArt(g, cx, cy, vw, vh, world) {
   if (!frames.size) return false;
-  const look = `${world.biome}|${!!world.patterns}`;
+  const look = `${world.biome}|${!!world.patterns}|${!!world.depth}`;
   if (owner !== world.mat || palette !== look) { resetTerrainArt(); owner = world.mat; palette = look; }
   // the visible chunks with changed cells, oldest change first, get this picture's rebuilds
   const redo = new Set();
