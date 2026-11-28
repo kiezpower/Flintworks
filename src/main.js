@@ -893,6 +893,7 @@ applyStatic();
   if (paid) setTimeout(() => toast('Saison vorbei: {rank} – +{n} Kristalle', { rank: tr(paid.rank), n: paid.kri }), 1500);
 }
 function boot() {
+  applyDepth(); // (the lobby and the other screens draw with it before the first round)
   resize();
   overlay.hidden = true;
   // New players only need the tutorial world. The lobby has its own scenery.

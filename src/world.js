@@ -303,7 +303,7 @@ function drawWorld(ctx, cx, cy, vw, vh) {
         width * RES, height * RES, left - cx, top - cy, width, height);
     }
   }
-  drawTerrainArt(ctx, cx, cy, vw, vh, { W, H, mat, bg, shade, biome: G.biome, patterns, tone: paintedTone, depth: !!G.depth, solid: solidAt });
+  drawTerrainArt(ctx, cx, cy, vw, vh, { W, H, mat, bg, shade, biome: G.biome, patterns, tone: paintedTone, depth: !!G.depth, solid: solidAt, liquid: j => LIQ[mat[j]] === 1 });
 }
 // Transfer the existing lighting, wet edges, vein rims and depth gate onto the
 // painted material, without enlarging the simulation or the world pixel buffer.

@@ -1,4 +1,5 @@
 import { paintTerrainOnce } from './terrainart.js';
+import { depthOf } from './depthflags.js';
 import { T, TEX } from './tex.js';
 import { drawItemBig } from './sprites.js';
 import { drawPortrait } from './portrait.js';
@@ -24,7 +25,7 @@ export function rangePainter(canvas) {
       for (let y = top; y < top + 2 && y < HEIGHT; y++) if (s.cells[y * WIDTH + x] === 1) shade[y * WIDTH + x] = 4;
     }
     tg.scale(K, K);
-    painted = paintTerrainOnce(tg, { W: WIDTH, H: HEIGHT, mat: s.cells, bg, shade, biome: 'meadow', patterns: false, tone: i => (s.cells[i] ? 1 : 0.8) });
+    painted = paintTerrainOnce(tg, { W: WIDTH, H: HEIGHT, mat: s.cells, bg, shade, biome: 'meadow', patterns: false, tone: i => (s.cells[i] ? 1 : 0.8), ...depthOf(s.cells) });
     if (!painted) {
       tg.setTransform(1, 0, 0, 1, 0, 0);
       const lo = document.createElement('canvas'); lo.width = WIDTH * 2; lo.height = HEIGHT * 2;

@@ -187,14 +187,24 @@ function paintDepth(g, world, x0, y0, w, h) {
     let p = paths.get(style); if (!p) paths.set(style, p = new Path2D());
     p.rect(x, y, rw, rh);
   };
+  const liq = (x, y) => x >= 0 && y >= 0 && x < W && y < H && !!world.liquid?.(y * W + x);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const wx = x0 + x, wy = y0 + y, i = wy * W + wx;
+    if (liq(wx, wy)) {
+      // the surface of water, lava, acid or oil catches the light; lava glows warm
+      if (!sol(wx, wy - 1) && !liq(wx, wy - 1)) add(world.mat[i] === 7 ? 'rgba(255,214,120,0.7)' : LIT + '0.55)', x, y, 1, 0.25);
+      continue;
+    }
     if (sol(wx, wy)) {
+      // under a liquid the bank is dark (no light falls on it); beside one, a dark wet rim
+      if (liq(wx, wy - 1)) add(DARK + '0.3)', x, y, 1, 0.35);
+      if (liq(wx - 1, wy)) add(DARK + '0.26)', x, y, 0.35, 1);
+      if (liq(wx + 1, wy)) add(DARK + '0.26)', x + 0.65, y, 0.35, 1);
       // the edge that faces open space looks like the front of a thick slab
-      if (!sol(wx, wy - 1)) { add(LIT + '0.5)', x, y, 1, 0.3); add(LIT + '0.18)', x, y + 0.3, 1, 0.5); }
+      if (!sol(wx, wy - 1) && !liq(wx, wy - 1)) { add(LIT + '0.5)', x, y, 1, 0.3); add(LIT + '0.18)', x, y + 0.3, 1, 0.5); }
       if (!sol(wx, wy + 1)) { add(DARK + '0.5)', x, y + 0.55, 1, 0.45); add(DARK + '0.2)', x, y + 0.1, 1, 0.45); }
-      if (!sol(wx - 1, wy)) add(LIT + '0.22)', x, y, 0.4, 1);
-      if (!sol(wx + 1, wy)) add(DARK + '0.3)', x + 0.6, y, 0.4, 1);
+      if (!sol(wx - 1, wy) && !liq(wx - 1, wy)) add(LIT + '0.22)', x, y, 0.4, 1);
+      if (!sol(wx + 1, wy) && !liq(wx + 1, wy)) add(DARK + '0.3)', x + 0.6, y, 0.4, 1);
     } else if (!world.mat[i] && world.bg[i]) {
       let a = 0;
       for (let k = 1; k <= 5; k++) if (sol(wx, wy - k)) { a = SHADE_ROOF[k]; break; }

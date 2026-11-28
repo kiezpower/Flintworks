@@ -10,7 +10,7 @@ import { drawDiggerHi } from './diggerhi.js';
 import { aimPath, drawArrows, drawGear } from './combat.js';
 import { drawEvents } from './events.js';
 import { drawBackdrop } from './backdrop.js';
-import { drawContactShadows, drawHaze, drawNear } from './depth.js';
+import { drawContactShadows, drawGroundShadows, drawHaze, drawNear } from './depth.js';
 import { drawFlag } from './flagart.js';
 import { hasGear } from './tools.js';
 import { drawHazards } from './hazards.js';
@@ -654,6 +654,7 @@ function render() {
       ctx.fillStyle = '#6f6a64';
       ctx.fillRect(b.x + 7 - cx, b.gy - cy, 2, b.pipe);
     }
+  drawGroundShadows(ctx, cx, cy); // (2.5D: under buildings, trees, chests, carts, depth.js)
   // barrels, crates and lanterns around the buildings (props.js), behind them
   drawProps(ctx, cx, cy);
   // buildings
@@ -662,10 +663,9 @@ function render() {
       sy = b.gy - b.h - cy,
       spr = buildSprite(b); // (in its builder's style, skins.js)
     if (sx < G.VW && sx + b.w > 0 && sy < G.VH + 40 && sy + b.h > -20) {
-      // a shadow where the building stands on the ground: one solid darker row, a dithered one below
+      // a shadow where the building stands: a solid darker row and a dithered one (2.5D: soft, depth.js)
       ctx.fillStyle = 'rgba(20,12,6,0.3)';
-      ctx.fillRect(sx - 1, sy + b.h, b.w + 2, 1);
-      for (let x = -2; x < b.w + 2; x += 2) ctx.fillRect(sx + x, sy + b.h + 1, 1, 1);
+      if (!G.depth) for (let x = -2; x < b.w + 2; x += 2) ctx.fillRect(sx + x, sy + b.h + 1, 1, 1), ctx.fillRect(sx + x, sy + b.h, 2, 1);
       if (b.done && b.type !== 'flag' && b.type !== 'gate') {
         drawCrafted(ctx, spr, sx, sy);
         drawRoofWeather(ctx, b, sx, sy);

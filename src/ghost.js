@@ -205,6 +205,7 @@ function drawGhosts(ctx, cx, cy, drawDigger, nameTag) {
   }
 }
 G.drawGhosts = drawGhosts;
+G.ghostBodies = () => (active() && G.state === 'play' ? runners().map(g => g.c) : []); // (their shadows, depth.js)
 // for the HUD of the shift (daily.js status): the ghost just ahead of me, or the best one behind
 function ghostRival() {
   if (!active()) return null;
