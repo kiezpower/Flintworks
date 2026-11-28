@@ -61,5 +61,10 @@ const EN3 = {
   'Mitspieler als Freund hinzufügen': 'Add teammates as friends',
   'Anfrage gesendet': 'Request sent',
   'Im Multiplayer nicht verfügbar': 'Not available in multiplayer',
+  // the 2.5D look (settings.js, depth.js)
+  'Tiefe (2,5D): an': 'Depth (2.5D): on',
+  'Tiefe (2,5D): aus': 'Depth (2.5D): off',
+  'Nur mit feiner Grafik': 'Only with fine graphics',
+  'Plastische Kanten, Schatten und Gras im Vordergrund': 'Raised edges, shadows and grass in the foreground',
 };
 export { EN3 };

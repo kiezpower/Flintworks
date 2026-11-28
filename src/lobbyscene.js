@@ -1,5 +1,6 @@
 import { tr } from './i18n.js';
 import { drawTerrainArt, invalidateTerrainArt } from './terrainart.js';
+import { depthOf } from './depthflags.js';
 import { drawSceneArt } from './sceneart.js';
 import { objectArtReady } from './objectart.js';
 // Lobby backdrop in the style of classic game menus: a cut through the landscape with
@@ -311,7 +312,7 @@ function drawScene(g, opts) {
   if (!drawSceneArt(g, biome, LW, LH)) drawSky(g, b, t);
   g.imageSmoothingEnabled = true;
   g.drawImage(paintedTerrain || terrain, 0, 0, LW, LH);
-  drawTerrainArt(g, 0, 0, LW, LH, { W: LW, H: LH, mat: land.cells, bg: land.artBg, shade: land.artShade, biome, patterns: false, tone: () => 0.93 });
+  drawTerrainArt(g, 0, 0, LW, LH, { W: LW, H: LH, mat: land.cells, bg: land.artBg, shade: land.artShade, biome, patterns: false, tone: () => 0.93, ...depthOf(land.cells) });
   g.drawImage(overlay, 0, 0, LW, LH);
   drawWorkers(g, reducedMotion);
   // the hero on the hill: twice as big as in the game, bobbing and turning now and then

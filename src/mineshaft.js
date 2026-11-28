@@ -11,6 +11,7 @@ import { drawPortrait } from './portrait.js';
 import { P } from './profile.js';
 import { drawSceneArt } from './sceneart.js';
 import { paintTerrainOnce } from './terrainart.js';
+import { depthOf } from './depthflags.js';
 
 const S = 3, // screen pixels per landscape pixel
   STEP = 150, // from station to station
@@ -261,7 +262,7 @@ function paintShaft(cv, w, h, part, over, lanterns) {
   if (!part && !drawSceneArt(g, 'meadow', w * K, 14 * K)) return false;
   g.save();
   g.scale(K, K);
-  const ok = paintTerrainOnce(g, { W: w, H: h, mat: rec.mat, bg, shade: rec.shade, biome: 'meadow', patterns: false, tone: i => rec.tone[i] });
+  const ok = paintTerrainOnce(g, { W: w, H: h, mat: rec.mat, bg, shade: rec.shade, biome: 'meadow', patterns: false, tone: i => rec.tone[i], ...depthOf(rec.mat) });
   if (!ok) {
     g.restore();
     return false;
